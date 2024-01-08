@@ -1,0 +1,54 @@
+.top-links {
+	margin: 0; 
+	padding: 0; 
+	color: #291E3B; 
+
+	ul {
+		margin: 0; 
+		padding: 0; 
+	}
+
+	li {
+		display: inline-block; 
+	}
+
+	li + li {
+		margin-left: 26px;
+	}
+
+	button {
+		position: relative; 
+		display: inline-block; 
+		background: none; 
+		border: none;
+		font-size: 16px; 
+		padding: 0; 
+		transition: opacity .4s; 
+
+		&:hover {
+			opacity: .7; 
+			cursor: help;
+		}
+
+		> em {
+			position: absolute; 
+			top: 2px; 
+			right: -1px; 
+			width: 8px; 
+			height: 8px; 
+			background: #F06147; 
+			border-radius: 50%;
+		}
+
+		span {
+			display: inline-block; 
+			padding-left: 3px;
+			position: relative; 
+			top: 3px; 
+		}
+	}
+
+	.screen-mobile({
+		display: none; 
+	})
+}

@@ -1,0 +1,62 @@
+[
+    {
+        "courseTitle": "English",
+        "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/us.png",
+        "courseAbbreviation": "eng",
+        "localizationId": "en",
+        "basedLanguages": [
+            {
+              "language" : "Español",
+              "abbreviation":"spa",
+              "localizationId": "es",
+              "flag": "https://d2eaaub12s77xu.cloudfront.net/es.png"
+            },
+            {
+              "language" : "Português",
+              "abbreviation":"por",
+              "localizationId": "pt",
+              "flag": "https://d2eaaub12s77xu.cloudfront.net/br.png"
+            }
+          ]
+      },
+      {
+        "courseTitle": "Español",
+        "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/es.png",
+        "courseAbbreviation": "spa",
+        "localizationId": "es",
+        "basedLanguages": [
+            {
+              "language" : "English",
+              "abbreviation":"eng",
+              "localizationId": "en",
+              "flag": "https://d2eaaub12s77xu.cloudfront.net/us.png"
+            },
+            {
+              "language" : "Português",
+              "abbreviation":"por",
+              "localizationId": "pt",
+              "flag": "https://d2eaaub12s77xu.cloudfront.net/br.png"
+            }
+          ]
+      },
+       { 
+        "courseTitle": "Português",
+        "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/br.png",
+        "courseAbbreviation": "por",
+        "localizationId": "pt",
+        "basedLanguages": [
+            {
+              "language" : "English",
+              "abbreviation":"eng",
+              "localizationId": "en",
+              "flag": "https://d2eaaub12s77xu.cloudfront.net/us.png"
+            },
+            {
+              "language" : "Español",
+              "abbreviation":"spa",
+              "localizationId": "es",
+              "flag": "https://d2eaaub12s77xu.cloudfront.net/es.png"
+            }
+          ]
+      }
+]

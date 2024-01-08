@@ -1,0 +1,113 @@
+.ant-menu {
+    font-weight: @font-weight-semibold;
+}
+
+.ant-menu-horizontal {
+  
+    > .ant-menu-item-active,
+    > .ant-menu-item-open,
+    > .ant-menu-item-selected,
+    > .ant-menu-submenu-active,
+    > .ant-menu-submenu-open,
+    > .ant-menu-submenu-selected {
+      border-bottom: 0px;
+    }
+  
+    &:not(.ant-menu-dark) {
+        > .ant-menu-item:hover,
+        > .ant-menu-submenu:hover, 
+        > .ant-menu-item-active, 
+        > .ant-menu-submenu-active, 
+        > .ant-menu-item-open, 
+        > .ant-menu-submenu-open, 
+        > .ant-menu-item-selected, 
+        > .ant-menu-submenu-selected {
+            border-bottom: 0px;
+        }
+    }
+  
+    > .ant-menu-item,
+    > .ant-menu-submenu {
+        border-bottom: 0px;
+    
+        &:hover {
+            border-bottom: 0px;
+        }
+    }
+}
+
+.go-back-btn{
+    cursor: pointer;
+    background-color: #a6a2af;
+    /* border: none; */
+    color: white;
+    padding: 8px 25px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.go-back-text{
+    font-size: 15px;
+    padding-top: 15px;
+}
+.go-back-img{
+    height:20px;
+    margin-right: 5px
+}
+.course-flag {
+    float: left;
+    padding-right: 7px;
+    padding-top: 7px;
+}
+
+.course-name{
+    padding-top: 3px;
+}
+
+.upper-nav-icon{
+    padding-right: 10px;
+    height: 35px;
+}
+
+.side-nav-icon { 
+    width: 20px;
+    height: 21px;
+}
+.ant-menu-sub {
+    font-weight: @font-weight-normal;
+}
+
+.ant-menu-inline-collapsed {
+
+    .ant-menu-item-group-title {
+      display: none;
+    }
+}
+
+.ant-menu-item-group-title {
+    padding: 12px 24px;
+    color: rgba(@gray-dark, .6);
+    font-size: 12px;
+    line-height: 1.5;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 15px;
+}
+
+.expandableMenu{
+    // padding-left: 15px;
+    // padding-left: 30px;
+    padding-left: 6px; // SIDE BAR PADDING EXPANDABLE
+}
+.ant-menu-title-content{
+    // margin-left: 15px;
+    margin-left: -9px;
+}
+
+.ant-menu-title-content > span {
+    padding-left: 5px;
+}

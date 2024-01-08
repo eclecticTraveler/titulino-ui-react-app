@@ -1,0 +1,45 @@
+.app-page-header {
+    .screen-mobile-above ({
+        display: flex;
+    });
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .print({
+        display: none;
+    });
+}
+
+.app-page-header--alt {
+	.ant-breadcrumb {
+		a {
+			font-weight: 700; 
+			color: #1A85C2; 
+		}
+
+		> span:last-child {
+			a {
+				color: #9A9A9A;
+			}
+		}
+
+		.ant-breadcrumb-separator {
+			font-size: 0; 
+
+			&:after {
+				content: '';
+				display: inline-block; 
+				width: 8px; 
+				height: 8px; 
+				border-top: 1px solid #9A9A9A; 
+				border-right: 1px solid #9A9A9A; 
+				transform: rotate(45deg); 
+				position: relative; 
+				top: -1px; 
+				margin-right: 4px; 
+			}
+		}
+	}
+
+
+}

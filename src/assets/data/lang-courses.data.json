@@ -1,0 +1,71 @@
+[
+  {
+    "basedlanguage" : "Español",
+    "abbreviation":"spa",
+    "localizationId": "es",
+    "flag": "https://d2eaaub12s77xu.cloudfront.net/es.png",
+    "isAvailable": true,
+    "courses" : [
+      {
+        "courseTitle": "Inglés",
+        "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/us.png",
+        "courseAbbreviation": "eng",
+        "localizationId": "en",
+        "isAvailable": true
+      },
+      {
+        "courseTitle": "Portugues",
+        "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/br.png",
+        "courseAbbreviation": "por",
+        "localizationId": "pt",
+        "isAvailable": false
+      }
+    ]
+  },
+  {
+    "basedlanguage" : "English",
+    "abbreviation":"eng",
+    "localizationId": "en",
+    "flag": "https://d2eaaub12s77xu.cloudfront.net/us.png",
+    "isAvailable": false,
+    "courses" : [
+        {
+          "courseTitle": "Spanish",
+          "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/es.png",
+          "courseAbbreviation": "spa",
+          "localizationId": "es",
+          "isAvailable": false
+        },
+        {
+          "courseTitle": "Portuguese",
+          "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/br.png",
+          "courseAbbreviation": "por",
+          "localizationId": "pt",
+          "isAvailable": false
+        }
+    ]
+  },
+  {
+    "basedlanguage" : "Português",
+    "abbreviation":"por",
+    "localizationId": "pt",
+    "flag": "https://d2eaaub12s77xu.cloudfront.net/br.png",
+    "isAvailable": false,
+    "courses":[
+      {
+        "courseTitle": "Inglês",
+        "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/us.png",
+        "courseAbbreviation": "eng",
+        "localizationId": "en",
+        "isAvailable": false
+      },
+      {
+        "courseTitle": "Espanhol",
+        "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/es.png",
+        "courseAbbreviation": "spa",
+        "localizationId": "es",
+        "isAvailable": false
+      }
+    ]
+  }
+]

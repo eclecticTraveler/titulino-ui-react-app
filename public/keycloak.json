@@ -1,0 +1,8 @@
+{
+  "realm": "titulino-react",
+  "auth-server-url": "http://localhost:8080/",
+  "ssl-required": "external",
+  "resource": "lrn-local",
+  "public-client": true,
+  "confidential-port": 0
+}
