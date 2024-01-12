@@ -36,7 +36,8 @@ import {
   ON_LOADING_DUMMY_DATA,
   ON_SELECTING_CORRECTION_RECORD,
   ON_SELECTING_CORRECTION_MODAL,
-  ON_LOADING_LANDING_DASHBOARD
+  ON_LOADING_LANDING_DASHBOARD,
+  ON_LOADING_LANDING_PAGE
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -53,6 +54,7 @@ export const onDummyDataLoad = async() => {
     dummyJSONdata: dummyData
   }
 }
+
 
 export const onAddressRequestLoad = async(id) => {
   const rawUserAddresses =  await ProfileService.getCompanyAddressesByCompanyId("token", 11, "onAddressRequestLoad");
@@ -89,6 +91,15 @@ export const onKeycloakAuthentication = async (kc) => {
   return {
     type: ON_KC_AUTHENTICATION,
     keycloakRedux: kc
+  }
+}
+
+export const onLoadingLandingPage = async (isToRetrieveByNewDate) => {
+  const landingPictures = await LandingWidgetsService.getLandingPictures();
+  const landingPictureOfTheDay = await LocalStorageService.getLandingPicture(landingPictures, isToRetrieveByNewDate)
+  return {
+    type: ON_LOADING_LANDING_PAGE,
+    landingObjectPictureOfTheDay: landingPictureOfTheDay
   }
 }
 

@@ -21,7 +21,8 @@ import {
   ON_LOADING_DUMMY_DATA,
   ON_SELECTING_CORRECTION_MODAL,
   ON_SELECTING_CORRECTION_RECORD,
-  ON_LOADING_LANDING_DASHBOARD
+  ON_LOADING_LANDING_DASHBOARD,
+  ON_LOADING_LANDING_PAGE
 } from "../constants/Lrn";
 
 const initState = {
@@ -33,6 +34,11 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_LOADING_LANDING_PAGE:
+      return {
+        ...state,
+        landingObjectPictureOfTheDay: action.landingObjectPictureOfTheDay
+      }
     case ON_LOADING_LANDING_DASHBOARD:
       return {
         ...state,
