@@ -92,8 +92,8 @@ class CourseSelection extends Component {
 							(!this.props.nativeLanguage) && 
 							<div id="course-selection-section">
 								<div className="information">
-									<h2>What is your native language?</h2>
-									<p>Mi lengua Nativa es / A Minha língua nativa é / My Native Language is:</p>
+									<h2>Select your native language below</h2>
+									<p>Seleccione abajo su idioma nativo / Selecione embaixo o seu idioma nativo</p>
 								</div>
 								<div>
 								{listOfBasedLanguages}
