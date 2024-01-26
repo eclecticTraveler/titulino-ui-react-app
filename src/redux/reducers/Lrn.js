@@ -17,7 +17,7 @@ import {
   ON_EDIT_ADDRESS_CHANGE,
   ON_EDIT_USER_PROFILE_CHANGE,
   ON_ADDRESS_REQUEST,
-  ON_LANDING_PAGE_RELOAD,
+  ON_LOADING_FIVE_MIN_LESSON,
   ON_LOADING_DUMMY_DATA,
   ON_SELECTING_CORRECTION_MODAL,
   ON_SELECTING_CORRECTION_RECORD,
@@ -54,9 +54,10 @@ const lrn = (state = initState, action) => {
         ...state,
         selectedCorrectionRecord: action.selectedCorrectionRecord
       }
-    case ON_LANDING_PAGE_RELOAD:
+    case ON_LOADING_FIVE_MIN_LESSON:
       return {
-        ...state
+        ...state,
+        fiveMinuteLesson: action.fiveMinuteLesson
       }
     case ON_ADDRESS_REQUEST:
       return {

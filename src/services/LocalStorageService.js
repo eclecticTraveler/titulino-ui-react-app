@@ -1,3 +1,4 @@
+ 
 const setLocalStorageObject = async(objectToStore, localStorageKey) => {
   localStorage.setItem(localStorageKey, JSON.stringify(objectToStore));
 }
@@ -8,7 +9,7 @@ const getLocalStorageObject = async(localStorageKey) => {
   return transformedObj
 }
 
-const getRandomObject = async(objectsArray, storageKey, isToRetrieveByNewDate) => {
+const getRandomObjectFromArray = async(objectsArray, storageKey, isToRetrieveByNewDate) => {
 
   const localStorageKey = storageKey;  
   const localStorageDateKey = 'RandomObjectSavedDate';
@@ -25,6 +26,30 @@ const getRandomObject = async(objectsArray, storageKey, isToRetrieveByNewDate) =
   }
   setLocalStorageObject(randomObject, localStorageKey);
   setLocalStorageObject(today, localStorageDateKey)
+  return randomObject;
+
+  }
+
+  return randomObject;
+}
+
+const processRandomObject = async(randomObject, storageKey, isToRetrieveByNewDate) => {
+
+  const localStorageKey = storageKey;  
+  const localStorageDateKey = 'RandomObjectSavedDate';
+
+  if(isToRetrieveByNewDate){
+  const today = new Date().toDateString();
+  const formedKey = `${today}-${localStorageKey}`
+
+  const existingLocalStorageObject = await getLocalStorageObject(localStorageKey);
+  const existingDateLocalStorage = await getLocalStorageObject(`${localStorageDateKey}-${localStorageKey}`);
+
+  if ((existingLocalStorageObject && existingDateLocalStorage) && existingDateLocalStorage === today) {
+    return existingLocalStorageObject;
+  }
+  setLocalStorageObject(randomObject, localStorageKey);
+  setLocalStorageObject(today, `${localStorageDateKey}-${localStorageKey}`)
   return randomObject;
 
   }
@@ -55,10 +80,13 @@ export const setUserConfiguration = async(nativeLanguage, courseToLearn) => {
   setLocalStorageObject(courseToLearn, "SelectedCourse");
 }
 
-export const getLandingPicture = async(pictureObjectArray, isToRetrieveByNewDate) => {
-    const pictureObject = await getRandomObject(pictureObjectArray, "LandingPictureOfTheDay", isToRetrieveByNewDate);
-    return pictureObject;
+export const processLandingPicture = async(pictureObj, isToRetrieveByNewDate) => {
+  const pictureObject = await processRandomObject(pictureObj, "LandingPictureOfTheDay", isToRetrieveByNewDate);
+  return pictureObject;
 }
+
+
+
 
 const LocalStorageService = {
   setUserConfiguration,
@@ -66,7 +94,7 @@ const LocalStorageService = {
   getUserSelectedCourse,
   setUserSelectedCourse,
   setUserSelectedNativeLanguage,
-  getLandingPicture
+  processLandingPicture
 };
 
 export default LocalStorageService;

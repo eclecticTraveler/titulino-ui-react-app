@@ -32,12 +32,12 @@ import {
   ON_EDIT_ADDRESS_CHANGE,
   ON_EDIT_USER_PROFILE_CHANGE,
   ON_ADDRESS_REQUEST,
-  ON_LANDING_PAGE_RELOAD,
   ON_LOADING_DUMMY_DATA,
   ON_SELECTING_CORRECTION_RECORD,
   ON_SELECTING_CORRECTION_MODAL,
   ON_LOADING_LANDING_DASHBOARD,
-  ON_LOADING_LANDING_PAGE
+  ON_LOADING_LANDING_PAGE,
+  ON_LOADING_FIVE_MIN_LESSON
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -54,7 +54,6 @@ export const onDummyDataLoad = async() => {
     dummyJSONdata: dummyData
   }
 }
-
 
 export const onAddressRequestLoad = async(id) => {
   const rawUserAddresses =  await ProfileService.getCompanyAddressesByCompanyId("token", 11, "onAddressRequestLoad");
@@ -94,9 +93,9 @@ export const onKeycloakAuthentication = async (kc) => {
   }
 }
 
-export const onLoadingLandingPage = async (isToRetrieveByNewDate) => {
-  const landingPictures = await LandingWidgetsService.getLandingPictures();
-  const landingPictureOfTheDay = await LocalStorageService.getLandingPicture(landingPictures, isToRetrieveByNewDate)
+export const onLoadingLandingPicture = async (isToRetrieveByNewDate) => {
+  const landingPicture = await LandingWidgetsService.getLandingPicture();
+  const landingPictureOfTheDay = await LocalStorageService.processLandingPicture(landingPicture, isToRetrieveByNewDate)
   return {
     type: ON_LOADING_LANDING_PAGE,
     landingObjectPictureOfTheDay: landingPictureOfTheDay
@@ -119,11 +118,11 @@ const url = await VideoClassService.getVideoClassUrl(levelNo, chapterNo, nativeL
   }
 }
 
-export const getFiveMinLessonUrl = async (levelNo, nativeLanguage, course) => {
-  const url = await LandingWidgetsService.getFiveMinuteLessonUrl(levelNo, nativeLanguage, course);
+export const onLoadingFiveMinLesson = async (levelNo, nativeLanguage, course, isToRetrieveByNewDate) => {
+  const fiveMinuteLesson = await LandingWidgetsService.getFiveMinuteRandomLesson(levelNo, nativeLanguage, course);
     return {
-      type: ON_LANDING_PAGE_RELOAD,
-      videoClass: url
+      type: ON_LOADING_FIVE_MIN_LESSON,
+      fiveMinuteLesson: fiveMinuteLesson
     }
   }
 

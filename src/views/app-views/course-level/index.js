@@ -5,10 +5,13 @@ import { bindActionCreators } from 'redux';
 
 class CourseLevel extends Component {
 
-    componentDidMount() {                
-
+    componentDidMount() {            
     }
      
+    componentDidUpdate() {
+        // Add here modules that change with the course
+	}
+
     render() {
                  
         return (
@@ -20,14 +23,14 @@ class CourseLevel extends Component {
 }
 
 function mapDispatchToProps(dispatch){
- return bindActionCreators({
- }, dispatch)
+	return bindActionCreators({
+	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme}) => {
- const { wasUserConfigSet, selectedCourse, nativeLanguage } = lrn;
-    const { locale, direction, course } = theme;
- return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage }
+	const { wasUserConfigSet, selectedCourse, nativeLanguage } = lrn;
+    const { locale, direction, course } =  theme;
+	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);

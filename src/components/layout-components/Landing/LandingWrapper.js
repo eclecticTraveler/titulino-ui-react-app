@@ -12,7 +12,6 @@ class LandingWrapper extends Component {
 	}
 
 	componentDidUpdate() {
-
 	}
 
 	render(){ 

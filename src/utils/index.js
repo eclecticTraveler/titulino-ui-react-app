@@ -69,6 +69,25 @@ class Utils {
 		}
 	  }
 
+
+
+	/**
+	 * Get Last part of window URL
+	 * @return {String} last url path
+	 */
+	static getLastPathInCurrentUrl = () => {
+		const path = window.location.pathname?.split('/');
+		return path[path.length - 1];
+	  }
+
+	/**
+	 * Get URL Path 
+	 * @return {String} url path
+	 */
+		static getPathInCurrentUrl = () => {			
+			return window.location.pathname;
+		  }  
+
 	/**
 	 * Capitalize first letter of string
 	 * @param {String} string - any given string

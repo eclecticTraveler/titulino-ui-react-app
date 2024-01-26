@@ -35,7 +35,7 @@ export const MobileNav = ({
 			<Flex flexDirection="column" className="h-100">
 				<div className="mobile-logo">
 					<Flex justifyContent="between" alignItems="center">
-						<LogoAlt />
+						<LogoAlt/>
 
 						<div className="nav-close" onClick={() => onClose()}>
 							<ArrowLeftOutlined />

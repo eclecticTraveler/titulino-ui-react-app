@@ -32,9 +32,19 @@ const loadRandomFullLessonModule = async(levelNo, nativeLanguage, course) => {
   return randomRequestedModule;
 }
 
+const loadRandomLandingPictureObjects = async() => {  
+  const allPictures = await loadStartRandomLandingPicturesData();
+  const randomPictureObject = allPictures[Math.floor(Math.random() * allPictures?.length)];
+ return randomPictureObject;
+}
+
 
 export const getLandingPictures = async() => {
   return await loadStartRandomLandingPicturesData();
+}
+
+export const getLandingPicture = async() => {
+  return await loadRandomLandingPictureObjects();
 }
 
 export const getFiveMinuteRandomLesson = async(levelNo, nativeLanguage, course) => {
@@ -48,7 +58,8 @@ export const getRandomFullLesson = async(levelNo, nativeLanguage, course) => {
 const LandingWidgetsService = {
   getFiveMinuteRandomLesson,
   getRandomFullLesson,
-  getLandingPictures
+  getLandingPictures,
+  getLandingPicture
 };
 
 export default LandingWidgetsService;
