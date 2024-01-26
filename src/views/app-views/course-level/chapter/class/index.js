@@ -37,9 +37,6 @@ class VideoClass extends Component {
         }else{
             return (
                 <div>
-                    <div>
-                        <Loading cover="content"/>
-                    </div>
                     <InternalIFrame iFrameUrl={`${this.props.videoClass}`}/>                    
                 </div>
             )
