@@ -18,7 +18,7 @@ class UnderConstruccion extends Component {
 
               {/* <!--Props the SVG and the title--> */}
               <div className="upperTitleConstruction">
-                 {/* <img className="experienceSVG" src="/img/modalLogos/ExperienceManagement.svg" alt="Experience Management" /> */}
+                 {/* <img/> */}
               </div>
 
               {/* <!--Lock Icon--> */}
