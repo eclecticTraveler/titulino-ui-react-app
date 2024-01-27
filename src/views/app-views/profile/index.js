@@ -56,7 +56,7 @@ class Profile extends Component {
 								cover={
 									<img
 									alt="company logo"
-									src="https://info.homecarepulse.com/hubfs/Inform%20Letter%20Templates/Caregiver_XM.png"
+									src="https://info.com/hubfs/Inform%20Letter%20Templates/s.png"
 									/>
 								}>
 									<Meta title="Username" description="here goes the username" />

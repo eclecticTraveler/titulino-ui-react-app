@@ -26,6 +26,7 @@ class PhraseOfTheDay extends Component {
 						<h3>a.- God </h3>
 						<span>las familias</span>
 						<h3>b.- families </h3>
+						<span>los profetas</span>
 						<h3>c.- prophets </h3>
 					</Card>
 				</Card>

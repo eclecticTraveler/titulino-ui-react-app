@@ -20,10 +20,10 @@ class BelieveYouHaveAccess extends Component {
                     <div className="have-access-solutions-container">
                         <div className="have-access-solutions">
                             <div>
-                                <p>&#8226; Follow <a href="https://learn.homecarepulse.com" target="_blank">this link</a> to login directly</p>
+                                <p>&#8226; Follow <a href="" target="_blank">this link</a> to login directly</p>
                             </div>
                             <div>
-                                <p>&#8226; Send us an email to <a href="mailto:customersupport@homecarepulse.com">customersupport@homecarepulse.com</a></p>
+                                <p>&#8226; Send us an email to <a href="mailto:customersupport@.com">customersupport@.com</a></p>
                             </div> 
                             <div>
                                 <p>OR</p>

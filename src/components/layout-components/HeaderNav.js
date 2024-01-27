@@ -7,6 +7,7 @@ import TopLinks  from './TopLinks';
 import NavProfile from './NavProfile';
 import NavNotification from './NavNotification';
 import MenuContentTop  from './MenuContentTop';
+import NavLanguage from './NavLanguage';
 import IconFallback from "../util-components/IconFallback";
 import Toggle from 'react-toggle';
 import "react-toggle/style.css";
@@ -86,6 +87,7 @@ export const HeaderNav = props => {
 					{/* TODO: TITULINO PROFILE NAVIGATION */}
 					{/* titulino fix the nav notification Menu Item issue to ellipsis */}
 					{/* <NavNotification /> */}
+					<NavLanguage/>
 					{env.KC_ENABLED_FEATURE && 
 					!keycloak.authenticated && (
 						<Button

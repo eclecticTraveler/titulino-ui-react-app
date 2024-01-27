@@ -24,7 +24,7 @@ export const setVantageAgency = async(whoCalledMe) => {
 export const getAdminIdFromUsername = async(token, username, whoCalledMe) => {       
   let debbugingUsername = "";
   if (token && username) {
-    if(username === "aalbertoarellano@homecarepulse.com"){   
+    if(username === "a@.com"){   
       debbugingUsername = "";
     }
     requestBody["JWT"] = token;
@@ -62,9 +62,8 @@ export const getAdminIdFromUsername = async(token, username, whoCalledMe) => {
 export const getUserAccountsInfo = async(token, username, whoCalledMe) => {
   let debbugingUsername = "";
   if (token && username) {
-    if(username === "aalbertoarellano@homecarepulse.com"){
-      // debbugingUsername = "jaredw@familyrhc.com";    
-      debbugingUsername = "kire@homecarepulse.com";
+    if(username === "aalbertoarellano@.com"){
+      debbugingUsername = "e@.com";
     }
     requestBody["JWT"] = token;
     requestBody["Username"] = debbugingUsername ? debbugingUsername : username;
