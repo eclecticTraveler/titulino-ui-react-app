@@ -1,6 +1,7 @@
 import { APP_PREFIX_PATH, SELECTED_COURSE_PATH, AUTH_PREFIX_PATH } from '../../AppConfig'
 import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic' 
-import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic'
+import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
+import { getCourseSubNavigationHighBasic } from '../Submenus/CourseSubNavigationHighBasic';
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from '../../../configs/CourseThemeConfig'
 import {GoogleSVG} from '../../../assets/svg/icon'
 
@@ -58,7 +59,9 @@ const dashBoardNavTree = [
 		isSubmenuCorpType: false,
 		isFree: false,
 		course: "English",
-		submenu: []
+		submenu: [
+			...getCourseSubNavigationHighBasic("eng")
+		]
 	}
 ]
 

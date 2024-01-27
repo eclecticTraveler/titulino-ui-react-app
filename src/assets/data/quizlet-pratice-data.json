@@ -1272,6 +1272,28 @@
             "title": "Espanhol 01: lección 24"
           }
         ]
+      },
+      {
+        "id":13,
+        "courseTitle":"titulino-3",
+        "level": 3,
+        "resourceName": "Titulino Upper Beginner",
+        "nativeLanguage": "es",
+        "course": "eng",
+        "courses" : [
+          {
+            "id":"875581939",
+            "title": "The Human Body - Part 1"
+          },
+          {
+            "id":"875584704",
+            "title": "The Human Body - Part 2"
+          },
+          {
+            "id":"875630077",
+            "title": "The Human Body - La Cara - Part 3"
+          }
+        ]
       }
     ]
   }

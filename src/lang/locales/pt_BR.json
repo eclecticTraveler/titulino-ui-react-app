@@ -17,7 +17,7 @@
 	"sidenave.practice": "Pratica",
 	"sidenave.play":"Joga",	
 	"sidenav.login": "Entrar",
-	"under.construction.title":"Em construção",
+	"under.construction.title":"Em construção, proximanente",
 	"under.construction.subtitle":"Avisaremos quando estiver disponível para você",
 	"under.construction.gratitute":"Obrigado pelo seu apoio",
 	"under.construction.explanation":"Estamos trabalhando para deixar este e outros recursos prontos para você",
@@ -72,5 +72,32 @@
 	"sidenav.mid.basic.chapter.21": "Capítulo 21",
 	"sidenav.mid.basic.chapter.22": "Capítulo 22",
 	"sidenav.mid.basic.chapter.23": "Capítulo 23",
-	"sidenav.mid.basic.chapter.24": "Capítulo 24"
+	"sidenav.mid.basic.chapter.24": "Capítulo 24",
+
+	"sidenav.chapter.1": "Capítulo 1",
+	"sidenav.chapter.2": "Capítulo 2",
+	"sidenav.chapter.3": "Capítulo 3",
+	"sidenav.chapter.4": "Capítulo 4",
+	"sidenav.chapter.5": "Capítulo 5",
+	"sidenav.chapter.6": "Capítulo 6",
+	"sidenav.chapter.7": "Capítulo 7",
+	"sidenav.chapter.8": "Capítulo 8",
+	"sidenav.chapter.9": "Capítulo 9",
+	"sidenav.chapter.10": "Capítulo 10",
+	"sidenav.chapter.11": "Capítulo 11",
+	"sidenav.chapter.12": "Capítulo 12",
+	"sidenav.chapter.13": "Capítulo 13",
+	"sidenav.chapter.14": "Capítulo 14",
+	"sidenav.chapter.15": "Capítulo 15",
+	"sidenav.chapter.16": "Capítulo 16",
+	"sidenav.chapter.17": "Capítulo 17",
+	"sidenav.chapter.18": "Capítulo 18",
+	"sidenav.chapter.19": "Capítulo 19",
+	"sidenav.chapter.20": "Capítulo 20",
+	"sidenav.chapter.21": "Capítulo 21",
+	"sidenav.chapter.22": "Capítulo 22",
+	"sidenav.chapter.23": "Capítulo 23",
+	"sidenav.chapter.24": "Capítulo 24"
+
+	
 }
