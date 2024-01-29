@@ -1,6 +1,34 @@
 import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 import { getCoursePracticeInnerSubMenu } from './CoursePracticeInnerSubMenu';
+import { 
+	DashboardOutlined, 
+	AppstoreOutlined,
+	FileTextOutlined,
+	PieChartOutlined,
+	EnvironmentOutlined,
+	AntDesignOutlined,
+	SafetyOutlined,
+	StopOutlined,
+	DotChartOutlined,
+	MailOutlined,
+	MessageOutlined,
+	CalendarOutlined,
+	BulbOutlined,
+	InfoCircleOutlined,
+	CompassOutlined,
+	LayoutOutlined,
+	DesktopOutlined,
+	FileDoneOutlined,
+	CommentOutlined,
+	RobotOutlined,
+	PlusCircleOutlined,
+	FundOutlined,
+	ShoppingCartOutlined,
+	BookOutlined,
+	FileUnknownOutlined,
+	ProfileOutlined
+  } from '@ant-design/icons';
 // TITULINO: Submenu keys must be unique and you are repeating them in submenu many times
 
 export const getCourseSubNavigationLowBasic = (lang) => {
@@ -9,7 +37,7 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'sidenav.low.basic.chapter.1',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-1`,
 		title: 'sidenav.low.basic.chapter.1',
-		icon: '',
+		icon: ProfileOutlined,
 		iconAlt:'/img/sidebar/school-solid.svg',
 		breadcrumb: false,
 		submenu: [

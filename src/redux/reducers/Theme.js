@@ -8,7 +8,8 @@ import {
   TOGGLE_MOBILE_NAV,
   SWITCH_THEME,
   DIRECTION_CHANGE,
-  CHANGE_COURSE
+  CHANGE_COURSE,
+  RETRIEVE_THEME
 } from '../constants/Theme';
 import { THEME_CONFIG } from '../../configs/AppConfig'
 
@@ -18,6 +19,11 @@ const initTheme = {
 
 const theme = (state = initTheme, action) => {
   switch (action.type) {
+    case RETRIEVE_THEME: 
+      return {
+      ...state,
+      currentTheme: action.currentTheme
+    }
     case CHANGE_COURSE:
       return {
         ...state,

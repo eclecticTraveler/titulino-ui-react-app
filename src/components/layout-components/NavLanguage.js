@@ -31,7 +31,7 @@ export const NavLanguage = ({ locale, configDisplay, onLocaleChange }) => {
 						className={locale === elm.langId? 'ant-dropdown-menu-item-active': ''} 
 						onClick={() => onLocaleChange(elm.langId)}
 					>
-						<span className="d-flex justify-content-between align-items-center">
+						<span className="d-flex justify-content-between align-items-center" >
 							<div>
 								<img style={{maxWidth: '20px'}} src={`/img/flags/${elm.icon}.png`} alt={elm.langName}/>
 								<span className="font-weight-normal ml-2">{elm.langName}</span>
@@ -54,10 +54,10 @@ export const NavLanguage = ({ locale, configDisplay, onLocaleChange }) => {
 				)
 				:
 				(
-					<Menu mode="horizontal">
-						<Menu.Item>
+					<Menu mode="horizontal" className="menu-right-padding">
+						<Menu.Item className="menu-right-padding">
 							<a href="#/" onClick={e => e.preventDefault()}>
-								<GlobalOutlined className="nav-icon mr-0 menu-right-further" />
+								<GlobalOutlined className="nav-icon mr-0 menu-right-size" />
 							</a>
 						</Menu.Item>
 					</Menu>

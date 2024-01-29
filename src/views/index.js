@@ -11,23 +11,29 @@ import AppLayout from "../layouts/app-layout";
 import RenderOnAuthenticated from '../components/RenderOnAuthenticated';
 import CourseSelection from './app-views/course-selection';
 import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage, onKeycloakAuthentication}  from '../redux/actions/Lrn';
-import { onLocaleChange, onCourseChange } from '../redux/actions/Theme'
+import { onLocaleChange, onCourseChange, onLoadingUserSelectedTheme } from '../redux/actions/Theme'
 import RenderOnlyOnAuthenticated from "../components/RenderOnlyOnAuthenticated";
 import { useKeycloak, KeycloakProvider } from "@react-keycloak/web";
-
+import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
   
 export const Views = (props) => { 
 	const { locale, location, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, onKeycloakAuthentication,
-            wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange } = props;
+            wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme } = props;
     const localization = locale ? locale : 'en';
     const currentAppLocale = AppLocale[localization];
     const { keycloak } = useKeycloak();
+    const { switcher, themes } = useThemeSwitcher();
     // console.log("LOCALE")
     // console.log(currentAppLocale)
     useBodyClass(`dir-${direction}`);
 
     onKeycloakAuthentication(keycloak);
+
+    // Load user selected theme
+    onLoadingUserSelectedTheme();
+    switcher({ theme: themes[currentTheme] });
+
 
     const repopulateConfiguration = () => {
         // Changes lost on a refresh, order of these functions are important
@@ -80,7 +86,8 @@ function mapDispatchToProps(dispatch){
         onCourseChange: onCourseChange,
         getUserNativeLanguage: getUserNativeLanguage,
         onLocaleChange: onLocaleChange,
-        onKeycloakAuthentication: onKeycloakAuthentication
+        onKeycloakAuthentication: onKeycloakAuthentication,
+        onLoadingUserSelectedTheme: onLoadingUserSelectedTheme
 	}, dispatch)
 }
 
@@ -88,8 +95,8 @@ function mapDispatchToProps(dispatch){
 // This connects us with Redux to pass the "props" as if it was a Session
 const mapStateToProps = ({ theme, lrn }) => {
     const { wasUserConfigSet, selectedCourse, nativeLanguage } = lrn;
-	const { locale, direction, course } =  theme;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage }
+	const { locale, direction, course, currentTheme } =  theme;
+	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, currentTheme }
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Views));

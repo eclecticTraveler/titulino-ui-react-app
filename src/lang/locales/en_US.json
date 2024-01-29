@@ -95,6 +95,16 @@
 	"sidenav.chapter.21": "Chapter 21",
 	"sidenav.chapter.22": "Chapter 22",
 	"sidenav.chapter.23": "Chapter 23",
-	"sidenav.chapter.24": "Chapter 24"
+	"sidenav.chapter.24": "Chapter 24",
+
+	"settings.menu.main.title":"Settings",
+	"settings.menu.sub.title.1": "Theme",
+	"settings.menu.sub.title.1.navtype": "Navigation Type:",
+	"settings.menu.sub.title.1.navtype.side": "Side",
+	"settings.menu.sub.title.1.navtype.top": "Top",
+	"settings.menu.sub.title.1.navcollapse": "Side Nav Collapse:",
+	"settings.menu.sub.title.1.darktheme": "Dark Theme:",
+	"settings.menu.sub.title.2": "Local:",
+	"settings.menu.sub.title.2.language": "Language"
 
 }

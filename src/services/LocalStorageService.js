@@ -85,8 +85,14 @@ export const processLandingPicture = async(pictureObj, isToRetrieveByNewDate) =>
   return pictureObject;
 }
 
+export const setCurrentThemeConfiguration = async(currentTheme) => {
+  setLocalStorageObject(currentTheme, "selectedCurrentTheme");
+}
 
-
+export const getCurrentThemeConfiguration = async() => {
+  const transformedObj = await getLocalStorageObject("selectedCurrentTheme");
+  return transformedObj
+}
 
 const LocalStorageService = {
   setUserConfiguration,
@@ -94,7 +100,10 @@ const LocalStorageService = {
   getUserSelectedCourse,
   setUserSelectedCourse,
   setUserSelectedNativeLanguage,
-  processLandingPicture
+  processLandingPicture,
+  setCurrentThemeConfiguration,
+  getCurrentThemeConfiguration
+
 };
 
 export default LocalStorageService;

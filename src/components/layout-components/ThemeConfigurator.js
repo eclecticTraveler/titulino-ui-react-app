@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Radio, Switch, Button, message } from 'antd';
+import IntlMessage from "../util-components/IntlMessage";
 import { 
 	toggleCollapsedNav, 
 	onNavTypeChange,
@@ -10,9 +11,6 @@ import {
 	onSwitchTheme,
 	onDirectionChange
 } from 'redux/actions/Theme';
-import { CopyOutlined } from '@ant-design/icons';
-import ColorPicker from '../../components/shared-components/ColorPicker';
-import CopyToClipboard from 'react-copy-to-clipboard';
 import NavLanguage from './NavLanguage';
 import { 
 	SIDE_NAV_LIGHT,
@@ -39,6 +37,9 @@ const ListOption = ({name, selector, disabled, vertical}) => (
 		<div>{selector}</div>
 	</div>
 )
+
+const setLocale = (isLocaleOn, localeKey) =>
+	isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
 
 export const ThemeConfigurator = ({ 
 	navType, 
@@ -92,61 +93,26 @@ export const ThemeConfigurator = ({
 		onNavTypeChange(value)
 	}
 
-	const genCopySettingJson = (configState) => JSON.stringify(configState, null, 2);
-
 	return (
 		<>
 			<div className="mb-5">
-				<h4 className="mb-3 font-weight-bold">Navigation</h4>
-				{
-					isNavTop ?
-					<ListOption 
-						name="Top Nav Color:"
-						vertical
-						selector={
-							<ColorPicker color={topNavColor} colorChange={ontopNavColorClick}/>
-						}
-					/>
-					:
-					<ListOption 
-						name="Header Nav Color:"
-						vertical
-						selector={
-							<ColorPicker color={headerNavColor} colorChange={onHeaderNavColorClick}/>
-						}
-					/>
-				}
-				
+			<h4 className="mb-3 font-weight-bold">{setLocale(locale, 'settings.menu.sub.title.1')}</h4>
 				<ListOption 
-					name="Navigation Type:"
+					name={setLocale(locale, 'settings.menu.sub.title.1.navtype')}
 					selector={
 						<Radio.Group 
 							size="small" 
 							onChange={e => onNavTypeClick(e.target.value)} 
 							value={navType}
 						>
-							<Radio.Button value={NAV_TYPE_SIDE}>Side</Radio.Button>
-							<Radio.Button value={NAV_TYPE_TOP}>Top</Radio.Button>
+							<Radio.Button value={NAV_TYPE_SIDE}>{setLocale(locale, 'settings.menu.sub.title.1.navtype.side')}</Radio.Button>
+							<Radio.Button value={NAV_TYPE_TOP}>{setLocale(locale, 'settings.menu.sub.title.1.navtype.top')}</Radio.Button>
 						</Radio.Group>
 					}
 				/>
+
 				<ListOption 
-					name="Side Nav Color:"
-					selector={
-						<Radio.Group
-							disabled={isNavTop}
-							size="small" 
-							onChange={e => onNavStyleChange(e.target.value)} 
-							value={sideNavTheme}
-						>
-							<Radio.Button value={SIDE_NAV_LIGHT}>Light</Radio.Button>
-							<Radio.Button value={SIDE_NAV_DARK}>Dark</Radio.Button>
-						</Radio.Group>
-					}
-					disabled={isNavTop}
-				/>
-				<ListOption 
-					name="Side Nav Collapse:"
+					name={setLocale(locale, 'settings.menu.sub.title.1.navcollapse')}
 					selector={
 						<Switch 
 							disabled={isNavTop} 
@@ -157,44 +123,22 @@ export const ThemeConfigurator = ({
 					disabled={isNavTop}
 				/>
 				<ListOption 
-					name="Dark Theme:"
+					name={setLocale(locale, 'settings.menu.sub.title.1.darktheme')}
 					selector={
 						<Switch checked={currentTheme === 'dark'} onChange={toggleTheme} />
 					}
 				/>
-				<ListOption 
-					name="Direction:"
-					selector={
-						<Radio.Group
-							size="small" 
-							onChange={e => onDirectionChange(e.target.value)} 
-							value={direction}
-						>
-							<Radio.Button value={DIR_LTR}>LTR</Radio.Button>
-							<Radio.Button value={DIR_RTL}>RTL</Radio.Button>
-						</Radio.Group>
-					}
-				/>
 			</div>
 			<div className="mb-5">
-				<h4 className="mb-3 font-weight-bold">Locale</h4>
+				<h4 className="mb-3 font-weight-bold">{setLocale(locale, 'settings.menu.sub.title.2')}</h4>
 				<ListOption 
-					name="Language:"
+					name={setLocale(locale, 'settings.menu.sub.title.2.language')}
 					selector={
 						<NavLanguage configDisplay/>
 					}
 				/>
 			</div>
-			<div>
-				<CopyToClipboard
-					text={genCopySettingJson({ navType, sideNavTheme, navCollapsed, topNavColor, headerNavColor, locale, currentTheme, direction})}
-					onCopy={() => message.success('Copy Success, please paste it to src/configs/AppConfig.js THEME_CONFIG variable.') }
-				>
-					<Button icon={<CopyOutlined /> } block>
-						<span>Copy Setting</span>
-					</Button>
-				</CopyToClipboard>
-			</div>
+
 		</>
 	)
 }

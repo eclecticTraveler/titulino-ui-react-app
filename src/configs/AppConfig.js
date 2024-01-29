@@ -1,4 +1,4 @@
-import { SIDE_NAV_LIGHT, NAV_TYPE_SIDE, DIR_LTR } from '../constants/ThemeConstant';
+import { SIDE_NAV_LIGHT, NAV_TYPE_SIDE, DIR_LTR, SIDE_NAV_DARK } from '../constants/ThemeConstant';
 import { env } from './EnvironmentConfig'
 
 export const APP_NAME = 'LRN';
@@ -13,11 +13,12 @@ export const THEME_CONFIG = {
 	locale: 'en',
 	course: '',	
 	navType: NAV_TYPE_SIDE,
-	topNavColor: '#3e82f7',
+	topNavColor: '#4A5C78',//'#3e82f7'
 	headerNavColor: '',
 	mobileNav: false,
 	currentTheme: 'light',
 	direction: DIR_LTR,
 	subNavColor:'#3CA292'
 };
+
 

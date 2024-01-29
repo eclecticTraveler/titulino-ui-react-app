@@ -12,6 +12,7 @@ const { Sider } = Layout;
 export const SideNav = ({navColor, navTitle, navCollapsed, sideNavTheme, routeInfo, hideGroupTitle, localization = true, currentRoute }) => {
 	const props = { sideNavTheme, routeInfo , hideGroupTitle, localization, currentRoute}
 	let hexColor = navColor ? navColor : "#3ca292";
+	console.log("POSS", sideNavTheme)
 	return (
 		<Sider 
 			className={`side-nav side-nav--alt ${sideNavTheme === SIDE_NAV_DARK? 'side-nav-dark' : ''}`} 

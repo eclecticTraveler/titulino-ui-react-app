@@ -4,6 +4,7 @@ import { Drawer, Menu } from 'antd';
 import ThemeConfigurator from './ThemeConfigurator';
 import { connect } from "react-redux";
 import { DIR_RTL } from '../../constants/ThemeConstant';
+import IntlMessage from "../util-components/IntlMessage";
 
 export class NavPanel extends Component {
 	state = { visible: false };
@@ -19,17 +20,21 @@ export class NavPanel extends Component {
       visible: false,
     });
 	};
+  
 	
 	render() {
+    const setLocale = (isLocaleOn, localeKey) =>
+	      isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+
 		return (
       <>
         <Menu mode="horizontal">
-          <Menu.Item onClick={this.showDrawer}>
-            <SettingOutlined className="nav-icon mr-0" />
+          <Menu.Item onClick={this.showDrawer } className="menu-right-padding">
+            <SettingOutlined className="nav-icon mr-0 menu-right-size" />
           </Menu.Item>
         </Menu>
         <Drawer
-          title="Theme Config"
+          title={setLocale(this.props.locale, 'settings.menu.main.title')}
           placement={this.props.direction === DIR_RTL ? 'left' : 'right'} 
           width={350}
           onClose={this.onClose}

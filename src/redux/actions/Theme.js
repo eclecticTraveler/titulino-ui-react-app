@@ -8,8 +8,11 @@ import {
   TOGGLE_MOBILE_NAV,
   SWITCH_THEME,
   DIRECTION_CHANGE,
-  CHANGE_COURSE
+  CHANGE_COURSE,
+  RETRIEVE_THEME
 } from '../constants/Theme';
+import LocalStorageService from "services/LocalStorageService";
+import { THEME_CONFIG } from 'configs/AppConfig';
 
 export function toggleCollapsedNav(navCollapsed) {
   return {
@@ -67,9 +70,21 @@ export function onMobileNavToggle(mobileNav) {
   };
 }
 
-export function onSwitchTheme(currentTheme) {
+export const onSwitchTheme = async (currentTheme) => {
+  LocalStorageService.setCurrentThemeConfiguration(currentTheme);
   return {
     type: SWITCH_THEME,
+    currentTheme
+  };
+}
+
+export const onLoadingUserSelectedTheme = async() => {
+  let currentTheme = await LocalStorageService.getCurrentThemeConfiguration();
+  if(!currentTheme){
+    currentTheme = THEME_CONFIG.currentTheme;
+  }
+  return {
+    type: RETRIEVE_THEME,
     currentTheme
   };
 }

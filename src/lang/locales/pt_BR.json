@@ -97,7 +97,15 @@
 	"sidenav.chapter.21": "Capítulo 21",
 	"sidenav.chapter.22": "Capítulo 22",
 	"sidenav.chapter.23": "Capítulo 23",
-	"sidenav.chapter.24": "Capítulo 24"
+	"sidenav.chapter.24": "Capítulo 24",
 
-	
+	"settings.menu.main.title":"Configurações",
+	"settings.menu.sub.title.1": "Tema",
+	"settings.menu.sub.title.1.navtype": "Tipo de navegação:",
+	"settings.menu.sub.title.1.navtype.side": "Lateral",
+	"settings.menu.sub.title.1.navtype.top": "Horizonal",
+	"settings.menu.sub.title.1.navcollapse": "Recolher navegação lateral:",
+	"settings.menu.sub.title.1.darktheme": "Tema escuro:",
+	"settings.menu.sub.title.2": "Local",
+	"settings.menu.sub.title.2.language": "Idioma"	
 }
