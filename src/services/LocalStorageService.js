@@ -94,6 +94,33 @@ export const getCurrentThemeConfiguration = async() => {
   return transformedObj
 }
 
+export const setCurrentSubnavigationConfiguration = async(currentTheme) => {
+  setLocalStorageObject(currentTheme, "selectedSubnavigationPosition");
+}
+
+export const getCurrentSubnavigationConfiguration = async() => {
+  const transformedObj = await getLocalStorageObject("selectedSubnavigationPosition");
+  return transformedObj
+}
+
+export const setIsCurrentNavCollapsed = async(isNavCollapsed) => {
+  setLocalStorageObject(isNavCollapsed, "selectedNavigationCollapse");
+}
+
+export const getIsCurrentNavCollapsed = async() => {
+  const transformedObj = await getLocalStorageObject("selectedNavigationCollapse");
+  return transformedObj
+}
+
+export const setOnLocale = async(locale) => {
+  setLocalStorageObject(locale, "selectedLocale");
+}
+
+export const getOnLocale = async() => {
+  const transformedObj = await getLocalStorageObject("selectedLocale");
+  return transformedObj
+}
+
 const LocalStorageService = {
   setUserConfiguration,
   getUserSelectedNativeLanguage,
@@ -102,8 +129,13 @@ const LocalStorageService = {
   setUserSelectedNativeLanguage,
   processLandingPicture,
   setCurrentThemeConfiguration,
-  getCurrentThemeConfiguration
-
+  getCurrentThemeConfiguration,
+  setCurrentSubnavigationConfiguration,
+  getCurrentSubnavigationConfiguration,
+  setIsCurrentNavCollapsed,
+  getIsCurrentNavCollapsed,
+  setOnLocale,
+  getOnLocale
 };
 
 export default LocalStorageService;

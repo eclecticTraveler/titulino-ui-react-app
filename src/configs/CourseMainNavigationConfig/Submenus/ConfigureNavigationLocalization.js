@@ -5,12 +5,13 @@ export const getLocalizedConfig = (lang) => {
 		class: "class",
 		listening: "listening",
 		resources: "resources",
+		test: "test",
+		spell:"spell",
 		level: "level",
 		practice: "practice",
-		test: "test",
 		play:"play",
-		spell:"spell",
-		modality: "modality"
+		modality: "modality",
+		module: "module"
 
 	}
 
@@ -28,6 +29,7 @@ export const getLocalizedConfig = (lang) => {
 			localization.play = "joga";
 			localization.spell = "escreve";
 			localization.modality = "modalidade";
+			localization.module = "módulo";
 			return localization;
 		case "spa":
 			localization.chapter = "capitulo";
@@ -40,6 +42,7 @@ export const getLocalizedConfig = (lang) => {
 			localization.play = "juega";
 			localization.spell = "redacta";
 			localization.modality = "modalidad";
+			localization.module = "módulo";
 			return localization;        
 		default:
 			return localization;

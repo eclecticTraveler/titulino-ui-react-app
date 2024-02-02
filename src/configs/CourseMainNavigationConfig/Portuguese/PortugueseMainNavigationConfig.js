@@ -5,9 +5,9 @@ import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationM
 import { COURSE_COLOR_CONFIG } from '../../../configs/CourseThemeConfig'
 const dashBoardNavTree = [
 	{
-		key: 'level1',
+		key: 'level-1-por',
 		path: `${APP_PREFIX_PATH}/por/nivel-1`,
-		title: 'Nivel 1',
+		title: 'main.upper.nav.level.1',
 		sideTitle: 'Iniciante Basico',
 		icon: '',
 		iconAlt:'/img/mainnav/Experience.svg',
@@ -24,9 +24,9 @@ const dashBoardNavTree = [
 		]
 	},
 	{
-		key: 'level2',
+		key: 'level-2-por',
 		path: `${APP_PREFIX_PATH}/por/nivel-2`,
-		title: 'Nivel 2',
+		title: 'main.upper.nav.level.2',
 		sideTitle: 'Iniciante Inter',
 		icon: '',
 		iconAlt:'/img/mainnav/Training.svg',
@@ -43,9 +43,9 @@ const dashBoardNavTree = [
 		]
 	},
 	{
-		key: 'level3',
+		key: 'level-3-por',
 		path: `${APP_PREFIX_PATH}/por/nivel-3`,
-		title: 'Nivel 3',
+		title: 'main.upper.nav.level.3',
 		sideTitle: 'Iniciante Superior',
 		icon: '',
 		iconAlt:'/img/mainnav/ReviewManager.svg',

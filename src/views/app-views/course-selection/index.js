@@ -6,6 +6,9 @@ import IconFallback from "../../../components/util-components/IconFallback";
 import { withRouter } from "react-router-dom";
 import { onLocaleChange, onCourseChange } from '../../../redux/actions/Theme'
 import IntlMessage from "../../../components/util-components/IntlMessage";
+import { 
+	ArrowRightOutlined
+} from '@ant-design/icons';
 
 class CourseSelection extends Component {
 
@@ -45,8 +48,8 @@ class CourseSelection extends Component {
 				return language?.isAvailable && (
 					<div key={i} className="single-web-account" onClick={() => this.processUserNativeLanguage(language)}>
 					<div>
-						<div className="single-acc-arrow ">
-							<IconFallback path={"/img/sidebar/Account-Chevron-Right.svg"} />
+						<div className='antd-icon-arrow'>
+							<ArrowRightOutlined />
 						</div>
 						<div className="course">
 							<img className="course-flag" src={language.flag} alt={language.flag}/>
@@ -64,8 +67,8 @@ class CourseSelection extends Component {
 					return course?.isAvailable && (
 						<div key={i} className="single-web-account" onClick={() => this.processSelectedCourse(course)}>
 							<div>
-								<div className="single-acc-arrow ">
-									<IconFallback path={"/img/sidebar/Account-Chevron-Right.svg"} />						
+								<div className='antd-icon-arrow'>
+									<ArrowRightOutlined />
 								</div>
 								<div className="course">
 									<img  className="course-flag" src={course.courseFlag} alt={course.courseFlag}/>
@@ -105,8 +108,8 @@ class CourseSelection extends Component {
 						(this.props.nativeLanguage) && 						
 							<div id="native-language-selection-modal">
 								<div className="information-account">
-									<h2>{this.setLocale(locale, "select.course.modal.subtitle")}</h2>
-									<p>{this.setLocale(locale, "select.course.modal.title")}</p>
+									<h2>{this.setLocale(locale, "select.course.modal.title")}</h2>
+									<h4>{this.setLocale(locale, "select.course.modal.subtitle")}</h4>
 								</div>
 								<div>													
 								{listOfCoursesBySelectedNativeLanguage}

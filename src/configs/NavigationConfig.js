@@ -11,7 +11,7 @@ const dashBoardNavTree = [
 		submenu: []
 	},
 	{
-		key: 'reports',
+		key: 'dashboards-reports',
 		path: `${APP_PREFIX_PATH}/reports`,
 		title: 'reports',
 		icon: '',
@@ -20,7 +20,7 @@ const dashBoardNavTree = [
 		submenu: []
 	},
 	{
-		key: 'surveys',
+		key: 'dashboards-surveys',
 		path: `${APP_PREFIX_PATH}/surveys`,
 		title: 'surveys',
 		icon: '',
@@ -28,7 +28,7 @@ const dashBoardNavTree = [
 		breadcrumb: false,
 		submenu: [
 			{
-				key: 'dashboard',
+				key: 'dashboards-dashboard-1',
 				path: `${APP_PREFIX_PATH}/home`,
 				title: 'dashboard',
 				icon: '',
@@ -39,7 +39,7 @@ const dashBoardNavTree = [
 		]
 	},
 	{
-		key: 'contacts',
+		key: 'dashboards-contacts',
 		path: `${APP_PREFIX_PATH}/contacts`,
 		title: 'contacts',
 		icon: '',
@@ -48,7 +48,7 @@ const dashBoardNavTree = [
 		submenu: []
 	},
 	{
-		key: 'resources',
+		key: 'extra-resources',
 		path: `${APP_PREFIX_PATH}/resources`,
 		title: 'resources',
 		icon: '',
@@ -57,7 +57,7 @@ const dashBoardNavTree = [
 		submenu: []
 	},
 	{
-		key: 'awards',
+		key: 'extra-awards',
 		path: `${APP_PREFIX_PATH}/awards`,
 		title: 'awards',
 		icon: '',

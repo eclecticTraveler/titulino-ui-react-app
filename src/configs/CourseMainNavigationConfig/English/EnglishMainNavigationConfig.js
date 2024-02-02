@@ -7,9 +7,9 @@ import {GoogleSVG} from '../../../assets/svg/icon'
 
 const dashBoardNavTree = [
 	{
-		key: 'level-1',
+		key: 'level-1-eng',
 		path: `${APP_PREFIX_PATH}/eng/level-1`,
-		title: 'Level 1',
+		title: 'main.upper.nav.level.1',
 		sideTitle: 'Lower Beginner',
 		icon: '',
 		iconAlt: COURSE_ICON_CONFIG.default,
@@ -26,9 +26,9 @@ const dashBoardNavTree = [
 		]
 	},
 	{
-		key: 'level-2',
+		key: 'level-2-eng',
 		path: `${APP_PREFIX_PATH}/eng/level-2`,
-		title: 'Level 2',
+		title: 'main.upper.nav.level.2',
 		sideTitle: 'Mid Beginner',
 		icon: '',
 		iconAlt: COURSE_ICON_CONFIG.default,
@@ -45,9 +45,9 @@ const dashBoardNavTree = [
 		]
 	},
 	{
-		key: 'level-3',
+		key: 'level-3-eng',
 		path: `${APP_PREFIX_PATH}/eng/level-3`,
-		title: 'Level 3',
+		title: 'main.upper.nav.level.3',
 		sideTitle: 'Upper Beginner',
 		icon: '',
 		iconAlt: COURSE_ICON_CONFIG.default,

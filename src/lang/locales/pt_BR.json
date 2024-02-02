@@ -107,5 +107,20 @@
 	"settings.menu.sub.title.1.navcollapse": "Recolher navegação lateral:",
 	"settings.menu.sub.title.1.darktheme": "Tema escuro:",
 	"settings.menu.sub.title.2": "Local",
-	"settings.menu.sub.title.2.language": "Idioma"	
+	"settings.menu.sub.title.2.language": "Idioma"	,
+	"local.level":"Nível",
+	"local.chapter":"Capítulo",
+	"local.module":"Módulo",
+
+	"module.class": "Clase",
+	"module.listening": "Compreensão",
+	"module.resources": "Recursos",
+	"module.test": "Teste",
+	"module.spell":"Redação",
+	"module.play":"Jogo",
+
+	"main.upper.nav.level.1": "Nível 1",
+	"main.upper.nav.level.2": "Nível 2",
+	"main.upper.nav.level.3": "Nível 3"
+
 }

@@ -3,15 +3,14 @@ import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 
 const uuidv4 = () => {
 	return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-	  (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-	);
+	  ((c ^ crypto.getRandomValues(new Uint8Array(1))[0]) & 15) >> (c / 4)).toString(16)
   }
 
 export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 // spell  || flashcards -> Resources || Match || Learn --> pratica|| Test
   	return [
 		{
-			key: `${uuidv4()}`,					
+			key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.class}`,
 			title: 'sidenav.class',
 			icon: '',
@@ -21,7 +20,7 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			submenu: []
 		},
 		{
-			key: `${uuidv4()}`,	
+			key: `module-listening-${levelNo}-${chapterNo}-${uuidv4()}`,
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.listening}`,
 			title: 'sidenav.listening',
 			icon: '',
@@ -31,7 +30,7 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			submenu: []
 		},
 		{
-			key: `${uuidv4()}`,	
+			key: `module-resources-${levelNo}-${chapterNo}-${uuidv4()}`,
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.resources}`,
 			title: 'sidenav.resources',
 			icon: '',
@@ -41,7 +40,7 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			submenu: []
 		},
 		{
-			key: `${uuidv4()}`,	
+			key: `module-play-${levelNo}-${chapterNo}-${uuidv4()}`,	
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.play}`,
 			title: 'sidenav.match',
 			icon: '',
@@ -51,7 +50,7 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			submenu: []
 		},
 		{
-			key: `${uuidv4()}`,	
+			key: `module-spell-${levelNo}-${chapterNo}-${uuidv4()}`,
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.spell}`,
 			title: 'sidenav.spell',
 			icon: '',
@@ -61,7 +60,7 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			submenu: []
 		},
 		{
-			key: `${uuidv4()}`,	
+			key: `module-test-${levelNo}-${chapterNo}-${uuidv4()}`,
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.test}`,
 			title: 'sidenav.test',
 			icon: '',
@@ -73,5 +72,4 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 	]
 
 }
-
 

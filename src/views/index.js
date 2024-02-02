@@ -19,20 +19,22 @@ import { bindActionCreators } from 'redux';
   
 export const Views = (props) => { 
 	const { locale, location, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, onKeycloakAuthentication,
-            wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme } = props;
+            wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, subNavPosition } = props;
     const localization = locale ? locale : 'en';
     const currentAppLocale = AppLocale[localization];
     const { keycloak } = useKeycloak();
     const { switcher, themes } = useThemeSwitcher();
-    // console.log("LOCALE")
-    // console.log(currentAppLocale)
+ 
     useBodyClass(`dir-${direction}`);
 
     onKeycloakAuthentication(keycloak);
 
     // Load user selected theme
     onLoadingUserSelectedTheme();
-    switcher({ theme: themes[currentTheme] });
+
+    if(currentTheme){
+        switcher({ theme: themes[currentTheme] });
+    }
 
 
     const repopulateConfiguration = () => {
@@ -95,8 +97,8 @@ function mapDispatchToProps(dispatch){
 // This connects us with Redux to pass the "props" as if it was a Session
 const mapStateToProps = ({ theme, lrn }) => {
     const { wasUserConfigSet, selectedCourse, nativeLanguage } = lrn;
-	const { locale, direction, course, currentTheme } =  theme;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, currentTheme }
+	const { locale, direction, course, currentTheme, subNavPosition } =  theme;
+	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, currentTheme, subNavPosition }
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Views));

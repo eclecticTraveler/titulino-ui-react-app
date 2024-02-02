@@ -22,7 +22,10 @@ const theme = (state = initTheme, action) => {
     case RETRIEVE_THEME: 
       return {
       ...state,
-      currentTheme: action.currentTheme
+      currentTheme: action.currentTheme,
+      navType: action.subNavPosition,
+      navCollapsed: action.isCollapse,
+      locale: action.locale
     }
     case CHANGE_COURSE:
       return {

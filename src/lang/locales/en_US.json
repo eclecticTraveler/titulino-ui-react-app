@@ -105,6 +105,20 @@
 	"settings.menu.sub.title.1.navcollapse": "Side Nav Collapse:",
 	"settings.menu.sub.title.1.darktheme": "Dark Theme:",
 	"settings.menu.sub.title.2": "Local:",
-	"settings.menu.sub.title.2.language": "Language"
+	"settings.menu.sub.title.2.language": "Language",
+	"local.level":"Level",
+	"local.chapter":"Chapter",
+	"local.module":"Module",
+
+	"module.class": "Class",
+	"module.listening": "Listening",
+	"module.resources": "Resources",
+	"module.test": "Test",
+	"module.spell":"Spell",
+	"module.play":"Play",
+
+	"main.upper.nav.level.1": "Level 1",
+	"main.upper.nav.level.2": "Level 2",
+	"main.upper.nav.level.3": "Level 3"
 
 }

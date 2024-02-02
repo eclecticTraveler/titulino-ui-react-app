@@ -6,6 +6,7 @@ import NavSearch  from './NavSearch';
 import TopLinks  from './TopLinks';
 import NavProfile from './NavProfile';
 import NavNotification from './NavNotification';
+import NavSearchWrapper from './NavSearchWrapper';
 import NavPanel from './NavPanel';
 import MenuContentTop  from './MenuContentTop';
 import NavLanguage from './NavLanguage';
@@ -19,6 +20,8 @@ import utils from '../../utils'
 import { useKeycloak } from "@react-keycloak/web";
 import { Button } from "antd";
 import IntlMessage from "../../components/util-components/IntlMessage";
+import { MenuFoldOutlined, MenuUnfoldOutlined, SearchOutlined } from '@ant-design/icons';
+import SearchInput from './NavSearch/SearchInput.js'
 
 
 const { Header } = Layout;
@@ -36,6 +39,10 @@ export const HeaderNav = props => {
 
 	const isToogleToBeDisplayedToUser =  false;
 	const defaultToogleFlagValue =  false;
+
+	const onSearchActive = () => {
+		setSearchActive(true)
+	  }
 
 	const onSearchClose = () => {
 		setSearchActive(false)
@@ -82,12 +89,13 @@ export const HeaderNav = props => {
 			<div className="app-header-wrapper">
 				<LogoAlt />
 
-				<MenuContentTop localization={false} />				
+				<MenuContentTop localization={true} />				
 				
 				<div className="nav-right menu-right-padding">
 					{/* TODO: TITULINO PROFILE NAVIGATION */}
 					{/* titulino fix the nav notification Menu Item issue to ellipsis */}
 					{/* <NavNotification /> */}
+					<NavSearchWrapper isMobile={false} mode={mode}/>
 					<NavLanguage/>
 					<NavPanel direction={direction} />
 					{env.KC_ENABLED_FEATURE && 
@@ -123,7 +131,8 @@ export const HeaderNav = props => {
 			}
 
 			{/* TODO This is the lower navigation that we will release feature by feature as its ready*/}
-			<div className={`app-header-wrapper-alt ${searchVisible ? "active" : ""}`}>
+			{ isMobile && 
+				<div className={`app-header-wrapper-alt ${searchVisible ? "active" : ""}`}>
 				<button className="btn-burger" onClick={() => {onToggle()}}>
 					<span></span>
 					
@@ -132,14 +141,14 @@ export const HeaderNav = props => {
 					<span></span>
 				</button>
 
-				{/* <button className="btn-search" onClick={() => setSearchVisible(!searchVisible)}>					
+				<button className="btn-search" onClick={() => setSearchVisible(!searchVisible)}>					
 					<IconFallback path={"/img/others/ico-search.png"} />
 				</button>
 
-				<NavSearch active={searchActive} close={onSearchClose}/> */}
-
-				{/* <TopLinks /> */}
+				<NavSearch active={searchActive} close={onSearchClose}/>
 			</div>
+			}
+
 		</Header>
 	)
 }

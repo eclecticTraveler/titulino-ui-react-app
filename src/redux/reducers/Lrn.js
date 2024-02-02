@@ -99,6 +99,7 @@ const lrn = (state = initState, action) => {
       return{
         ...state,
         currentRoute: action.route
+
       }
     case GET_USER_SELECTED_COURSE:
       return {

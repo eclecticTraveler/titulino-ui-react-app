@@ -15,6 +15,7 @@ import LocalStorageService from "services/LocalStorageService";
 import { THEME_CONFIG } from 'configs/AppConfig';
 
 export function toggleCollapsedNav(navCollapsed) {
+  LocalStorageService.setIsCurrentNavCollapsed(navCollapsed);
   return {
     type: TOGGLE_COLLAPSED_NAV,
     navCollapsed
@@ -29,6 +30,7 @@ export function onNavStyleChange(sideNavTheme) {
 }
 
 export function onLocaleChange(locale) {
+  LocalStorageService.setOnLocale(locale);
   return {
     type: CHANGE_LOCALE,
     locale
@@ -43,6 +45,7 @@ export function onCourseChange(course) {
 }
 
 export function onNavTypeChange(navType) {
+  LocalStorageService.setCurrentSubnavigationConfiguration(navType);
   return {
     type: NAV_TYPE_CHANGE,
     navType
@@ -80,12 +83,26 @@ export const onSwitchTheme = async (currentTheme) => {
 
 export const onLoadingUserSelectedTheme = async() => {
   let currentTheme = await LocalStorageService.getCurrentThemeConfiguration();
+  let subNavPosition = await LocalStorageService.getCurrentSubnavigationConfiguration();
+  let isCollapse = await LocalStorageService.getIsCurrentNavCollapsed();
+  let locale = await LocalStorageService.getOnLocale();
+
   if(!currentTheme){
     currentTheme = THEME_CONFIG.currentTheme;
   }
+  if(!subNavPosition){
+    subNavPosition = THEME_CONFIG.navType;
+  }
+  if(!locale){
+    locale = THEME_CONFIG.locale;
+  }
+
   return {
     type: RETRIEVE_THEME,
-    currentTheme
+    currentTheme,
+    subNavPosition,
+    isCollapse,
+    locale
   };
 }
 

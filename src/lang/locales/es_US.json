@@ -105,7 +105,19 @@
 	"settings.menu.sub.title.1.navcollapse": "Colapso de navegación lateral",
 	"settings.menu.sub.title.1.darktheme": "Tema oscuro",
 	"settings.menu.sub.title.2": "Local",
-	"settings.menu.sub.title.2.language": "Idioma"
+	"settings.menu.sub.title.2.language": "Idioma",
+	"local.level":"Nivel",
+	"local.chapter":"Capítulo",
+	"local.module":"Módulo",
 
+	"module.class": "Clase",
+	"module.listening": "Comprensión",
+	"module.resources": "Recursos",
+	"module.test": "Examen",
+	"module.spell":"Redacción",
+	"module.play":"Juego",
 
+	"main.upper.nav.level.1": "Nivel  1",
+	"main.upper.nav.level.2": "Nivel 2",
+	"main.upper.nav.level.3": "Nivel 3"
 }
