@@ -2,7 +2,7 @@ import React from "react";
 import { Drawer } from "antd";
 import { connect } from "react-redux";
 import { NAV_TYPE_SIDE } from "../../constants/ThemeConstant";
-import { Scrollbars } from "react-custom-scrollbars";
+import { Scrollbars } from "react-custom-scrollbars-2";
 import MenuContent from "./MenuContent";
 import { onMobileNavToggle } from "../../redux/actions/Theme";
 import LogoAlt from "./LogoAlt";

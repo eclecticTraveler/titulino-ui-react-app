@@ -138,7 +138,7 @@ const SearchInput = props => {
 				option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
 			}
 		>
-			<Input className='searchInput' placeholder="Search..."  prefix={<SearchOutlined className="mr-0" />} />
+			<Input className='search-input-override' placeholder="Search..."  prefix={<SearchOutlined className="mr-0 search-icon-override" />} />
 		</AutoComplete>
 	)
 }

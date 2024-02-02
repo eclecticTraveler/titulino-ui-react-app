@@ -2,7 +2,7 @@ import React from "react";
 import { Layout } from 'antd';
 import { connect } from 'react-redux';
 import { SIDE_NAV_WIDTH, SIDE_NAV_DARK, NAV_TYPE_SIDE } from '../../constants/ThemeConstant';
-import { Scrollbars } from 'react-custom-scrollbars';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 import MenuContent from './MenuContent'
 import Title from '../../components/layout-components/Title';
 import WidgetAction from '../../components/shared-components/WidgetAction';

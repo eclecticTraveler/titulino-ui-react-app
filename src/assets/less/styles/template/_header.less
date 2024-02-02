@@ -259,6 +259,23 @@
 		padding: 0 1px !important;
 	}
 
+	.toggled-search{
+		padding-right: 23px;
+	}
+
+	.close-search{
+		padding-left: 5px;
+		z-index: 1;
+	}
+
+	.search-input-override {
+		height: 52px !important;
+	}
+
+	.search-input-override > .ant-input {
+		margin-top: -10px; /* Attempt to change the Search padding lined for now when .ant-input is either within or directly wrapped by .search-input-override */
+	  }
+
 	.ant-menu-horizontal {
 		> .ant-menu-item {
 			// padding: 0 19px; Distance between upper navigation sections
@@ -325,7 +342,7 @@
 			border: none;
 			background: #D1D1D8; 
 			border-radius: 10px; 
-
+			
 			&:after {
 				content: '';
 				position: absolute; 
