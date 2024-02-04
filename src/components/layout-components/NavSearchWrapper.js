@@ -2,22 +2,23 @@ import React, { useState } from "react";
 import { SearchOutlined,CloseCircleOutlined  } from '@ant-design/icons';
 import { Menu } from "antd";
 import { connect } from "react-redux";
-import { onLocaleChange } from 'redux/actions/Theme'
-import SearchInput from './NavSearch/SearchInput.js'
+import { onLocaleChange, onSearchSelection } from 'redux/actions/Theme';
+import SearchInput from './NavSearch/SearchInput.js';
 
 
-export const NavSearchWrapper = ({ isMobile, mode }) => {
+export const NavSearchWrapper = (props) => {
+	const {isMobile, mode, isSearchVisible, onSearchSelection } = props
 	const [searchVisible, setSearchVisible] = useState(false);
 
 	const experimentalVersion = (
 		<ul className="ant-menu ant-menu-root ant-menu-horizontal menu-right-padding">          
 		{
-			(!isMobile && !searchVisible) ?
-			<li className="ant-menu-item" onClick={() => setSearchVisible(!searchVisible)}>				
+			(!isMobile && !isSearchVisible) ?
+			<li className="ant-menu-item" onClick={() => onSearchSelection(!isSearchVisible)}>				
 				<SearchOutlined className="nav-icon mr-0 menu-right-size"/>
 			</li>
 			:	
-			<li className="ant-menu-item" onClick={() => setSearchVisible(!searchVisible)}>		
+			<li className="ant-menu-item" onClick={() => onSearchSelection(!isSearchVisible)}>		
 				<CloseCircleOutlined className="nav-icon mr-0 menu-right-size"/>
 				<SearchInput mode={mode} isMobile={false} />
 			</li>
@@ -44,11 +45,11 @@ export const NavSearchWrapper = ({ isMobile, mode }) => {
 	const newestVersion = (
 		<div>        
 		{
-			(!isMobile && !searchVisible) ?
+			(!isMobile && !isSearchVisible) ?
 			<Menu mode="horizontal" className="untoggled-search">
 			<Menu.Item className="menu-right-padding">
 				<div>
-					<SearchOutlined className="nav-icon mr-0 menu-right-size" onClick={() => setSearchVisible(!searchVisible)}/>
+					<SearchOutlined className="nav-icon mr-0 menu-right-size" onClick={() => onSearchSelection(!isSearchVisible)}/>
 				</div>
 			</Menu.Item>
 			</Menu>
@@ -57,7 +58,7 @@ export const NavSearchWrapper = ({ isMobile, mode }) => {
 			<Menu.Item className="menu-right-padding">
 				<div>
 					<SearchInput mode={mode} isMobile={false} />
-					<CloseCircleOutlined className="nav-icon mr-0 menu-right-size close-search" onClick={() => setSearchVisible(!searchVisible)}/>
+					<CloseCircleOutlined className="nav-icon mr-0 menu-right-size close-search" onClick={() => onSearchSelection(!isSearchVisible)}/>
 				</div>
 			</Menu.Item>
 			</Menu>	
@@ -72,8 +73,8 @@ export const NavSearchWrapper = ({ isMobile, mode }) => {
 }
 
 const mapStateToProps = ({ theme }) => {
-  const { locale } =  theme;
-  return { locale }
+  const { locale, isSearchVisible } =  theme;
+  return { locale, isSearchVisible }
 };
 
-export default connect(mapStateToProps, {onLocaleChange})(NavSearchWrapper);
+export default connect(mapStateToProps, {onLocaleChange, onSearchSelection})(NavSearchWrapper);

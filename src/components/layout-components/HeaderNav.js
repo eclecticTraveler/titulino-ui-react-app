@@ -130,7 +130,7 @@ export const HeaderNav = props => {
 			</label>
 			}
 
-			{/* TODO This is the lower navigation that we will release feature by feature as its ready*/}
+			{/* Mobile view*/}
 			{ isMobile && 
 				<div className={`app-header-wrapper-alt ${searchVisible ? "active" : ""}`}>
 				<button className="btn-burger" onClick={() => {onToggle()}}>

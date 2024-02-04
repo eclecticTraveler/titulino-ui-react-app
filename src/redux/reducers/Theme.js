@@ -9,16 +9,23 @@ import {
   SWITCH_THEME,
   DIRECTION_CHANGE,
   CHANGE_COURSE,
-  RETRIEVE_THEME
+  RETRIEVE_THEME,
+  SEARCH_SELECTION
 } from '../constants/Theme';
 import { THEME_CONFIG } from '../../configs/AppConfig'
 
 const initTheme = {
-  ...THEME_CONFIG
+  ...THEME_CONFIG,
+  isSearchVisible: false
 };
 
 const theme = (state = initTheme, action) => {
   switch (action.type) {
+    case SEARCH_SELECTION:
+      return {
+        ...state,
+        isSearchVisible: action.isSearchVisible
+      }
     case RETRIEVE_THEME: 
       return {
       ...state,

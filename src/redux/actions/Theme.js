@@ -9,7 +9,8 @@ import {
   SWITCH_THEME,
   DIRECTION_CHANGE,
   CHANGE_COURSE,
-  RETRIEVE_THEME
+  RETRIEVE_THEME,
+  SEARCH_SELECTION
 } from '../constants/Theme';
 import LocalStorageService from "services/LocalStorageService";
 import { THEME_CONFIG } from 'configs/AppConfig';
@@ -110,5 +111,12 @@ export function onDirectionChange(direction) {
   return {
     type: DIRECTION_CHANGE,
     direction
+  };
+}
+
+export function onSearchSelection(isSearchVisible) {
+  return {
+    type: SEARCH_SELECTION,
+    isSearchVisible
   };
 }

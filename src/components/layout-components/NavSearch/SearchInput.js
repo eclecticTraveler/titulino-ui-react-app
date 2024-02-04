@@ -12,13 +12,14 @@ import { Link } from "react-router-dom";
 import { AutoComplete, Input } from 'antd';
 import IntlMessage from '../../../components/util-components/IntlMessage';
 import { connect } from "react-redux";
+import { COURSE_COLOR_CONFIG } from 'configs/CourseThemeConfig';
+import { onSearchSelection } from 'redux/actions/Theme';
 
 const SearchInput = props => {
-	const { active, close, isMobile, mode, dynamicUpperMainNavigation, locale } = props
+	const { active, close, isMobile, mode, dynamicUpperMainNavigation, locale, onSearchSelection } = props
 	const [value, setValue] = useState('');
 	const [options, setOptions] = useState([])
 	const inputRef = useRef(null);
-	const isLocaleOn = true;
 
 	function getOptionList (navigationTree, optionTree) {
 		optionTree = optionTree ? optionTree : [];
@@ -42,23 +43,36 @@ const SearchInput = props => {
 	const optionList = getOptionList(dynamicUpperMainNavigation)
 	
 	
-	
+	const getLevelColor = (level) => {
+		 
+		switch (level) {
+			case "1":
+				return COURSE_COLOR_CONFIG.lowerBeginner;
+			case "2":
+				return COURSE_COLOR_CONFIG.midBeginner;
+			case "3":
+				return COURSE_COLOR_CONFIG.upperBeginner;
+			default:
+				return "text-primary";
+		}
+	}
 
-	const getCategoryIcon = category => {
+
+	const getCategoryIcon = (category, level) => {
 		 
 		switch (category) {
 			case 'play':
-				return <DashboardOutlined className="text-danger"/>;
+				return <DashboardOutlined style={{ color: getLevelColor(level) }}/>;
 			case 'resources':
-				return <AppstoreAddOutlined className="text-danger"/>;
+				return <AppstoreAddOutlined style={{ color: getLevelColor(level) }}/>;
 			case 'test':
-				return <BookOutlined className="text-success"/>;
+				return <BookOutlined style={{ color: getLevelColor(level) }}/>;
 			case 'class':
-				return <PlayCircleOutlined className="text-success" />;
+				return <PlayCircleOutlined style={{ color: getLevelColor(level) }} />;
 			case 'spell':
-				return <EditOutlined className="text-warning"/>;
+				return <EditOutlined style={{ color: getLevelColor(level) }}/>;
 			case 'listening':
-				return <CustomerServiceOutlined className="text-success"/>
+				return <CustomerServiceOutlined style={{ color: getLevelColor(level) }}/>
 			default:
 				return null;
 		}
@@ -78,7 +92,7 @@ const SearchInput = props => {
 				<Link to={item.path}>
 					<div className="search-list-item">
 						<div className="icon">
-							{getCategoryIcon(category)}
+							{getCategoryIcon(category, level)}
 						</div>
 						<div>
 							<div className="font-weight-semibold">{localeLevel}-{level} | {localeChapter}-{module}</div>
@@ -91,10 +105,11 @@ const SearchInput = props => {
 	});
 
 	const onSelect = () => {
-		setValue('')
-		setOptions([])
+		onSearchSelection(false);
+		setValue('');
+		setOptions([]);
 		if(close) {
-			close()
+			close();
 		}
   	};
 
@@ -149,4 +164,4 @@ const mapStateToProps = ({ theme, lrn}) => {
 	return { headerNavColor, dynamicUpperMainNavigation, locale }
   };
   
-  export default connect(mapStateToProps, {})(SearchInput)
+  export default connect(mapStateToProps, {onSearchSelection})(SearchInput)
