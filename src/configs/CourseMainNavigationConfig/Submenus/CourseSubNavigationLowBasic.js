@@ -1,10 +1,30 @@
 import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 import { getCoursePracticeInnerSubMenu } from './CoursePracticeInnerSubMenu';
-import { 
-	ProfileOutlined
-  } from '@ant-design/icons';
-// TITULINO: Submenu keys must be unique and you are repeating them in submenu many times
+import { faSchool,
+		 faEarthAmericas,
+		 faCalendar,
+		 faBiking,
+		 faHiking,
+		 faPeopleArrows,
+		 faBaby,
+		 faPencilRuler,
+		 faTShirt,
+		 faClock,
+		 faCloudSunRain,		 
+		 faUserTie,
+		 faHammer,
+		 faUtensilSpoon,
+		 faHamburger,
+		 faDrumstickBite,
+		 faMoneyBill1Wave,
+		 faHouseUser,
+		 faShapes,
+		 faPlaceOfWorship,
+		 faUserInjured,
+		 faUserMd,		
+		} from '@fortawesome/free-solid-svg-icons';
+import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
 export const getCourseSubNavigationLowBasic = (lang) => {
   	return [
@@ -12,8 +32,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-1',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-1`,
 		title: 'sidenav.low.basic.chapter.1',
-		icon: ProfileOutlined,
-		iconAlt:'/img/sidebar/school-solid.svg',
+		icon: faSchool,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 1)
@@ -23,8 +43,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-2',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-2`,
 		title: 'sidenav.low.basic.chapter.2',
-		icon: '',
-		iconAlt:'/img/sidebar/globe-americas-solid.svg',
+		icon: faEarthAmericas,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 2)
@@ -34,8 +54,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-3',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-3`,
 		title: 'sidenav.low.basic.chapter.3',
-		icon: '',
-		iconAlt:'/img/sidebar/calendar-regular.svg',
+		icon: faCalendar,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 3)
@@ -45,8 +65,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-4',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-4`,
 		title: 'sidenav.low.basic.chapter.4',
-		icon: '',
-		iconAlt:'/img/sidebar/biking-solid.svg',
+		icon: faBiking,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 4)
@@ -56,8 +76,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-5',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-5`,
 		title: 'sidenav.low.basic.chapter.5',
-		icon: '',
-		iconAlt:'/img/sidebar/hiking-solid.svg',
+		icon: faHiking,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 5)
@@ -67,8 +87,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-6',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-6`,
 		title: 'sidenav.low.basic.chapter.6',
-		icon: '',
-		iconAlt:'/img/sidebar/people-arrows-solid.svg',
+		icon: faPeopleArrows,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 6)
@@ -78,8 +98,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-7',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-7`,
 		title: 'sidenav.low.basic.chapter.7',
-		icon: '',
-		iconAlt:'/img/sidebar/baby-solid.svg',
+		icon: faBaby,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 7)
@@ -89,8 +109,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-8',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-8`,
 		title: 'sidenav.low.basic.chapter.8',
-		icon: '',
-		iconAlt:'/img/sidebar/pencil-ruler-solid.svg',
+		icon: faPencilRuler,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 8)
@@ -100,8 +120,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-9',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-9`,
 		title: 'sidenav.low.basic.chapter.9',
-		icon: '',
-		iconAlt:'/img/sidebar/tshirt-solid.svg',
+		icon: faTShirt,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 9)
@@ -111,8 +131,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-10',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-10`,
 		title: 'sidenav.low.basic.chapter.10',
-		icon: '',
-		iconAlt:'/img/sidebar/clock-solid.svg',
+		icon: faClock,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 10)
@@ -122,8 +142,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-11',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-11`,
 		title: 'sidenav.low.basic.chapter.11',
-		icon: '',
-		iconAlt:'/img/sidebar/school-solid.svg',
+		icon: faSchool,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 11)
@@ -133,8 +153,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-12',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-12`,
 		title: 'sidenav.low.basic.chapter.12',
-		icon: '',
-		iconAlt:'/img/sidebar/calendar-alt-regular.svg',
+		icon: faCalendar,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 12)
@@ -144,8 +164,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-13',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-13`,
 		title: 'sidenav.low.basic.chapter.13',
-		icon: '',
-		iconAlt:'/img/sidebar/cloud-sun-rain-solid.svg',
+		icon: faCloudSunRain,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 13)
@@ -155,8 +175,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-14',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-14`,
 		title: 'sidenav.low.basic.chapter.14',
-		icon: '',
-		iconAlt:'/img/sidebar/user-tie-solid.svg',
+		icon: faUserTie,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 14)
@@ -166,8 +186,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-15',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-15`,
 		title: 'sidenav.low.basic.chapter.15',
-		icon: '',
-		iconAlt:'/img/sidebar/hammer-solid.svg',
+		icon: faHammer,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 15)
@@ -177,8 +197,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-16',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-16`,
 		title: 'sidenav.low.basic.chapter.16',
-		icon: '',
-		iconAlt:'/img/sidebar/utensils-solid.svg',
+		icon: faUtensilSpoon,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 16)
@@ -188,8 +208,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-17',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-17`,
 		title: 'sidenav.low.basic.chapter.17',
-		icon: '',
-		iconAlt:'/img/sidebar/hamburger-solid.svg',
+		icon: faHamburger,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 17)
@@ -199,8 +219,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-18',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-18`,
 		title: 'sidenav.low.basic.chapter.18',
-		icon: '',
-		iconAlt:'/img/sidebar/drumstick-bite-solid.svg',
+		icon: faDrumstickBite,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 18)
@@ -210,8 +230,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-19',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-19`,
 		title: 'sidenav.low.basic.chapter.19',
-		icon: '',
-		iconAlt:'/img/sidebar/money-bill-wave-solid.svg',
+		icon: faMoneyBill1Wave,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 19)
@@ -221,8 +241,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-20',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-20`,
 		title: 'sidenav.low.basic.chapter.20',
-		icon: '',
-		iconAlt:'/img/sidebar/house-user-solid.svg',
+		icon: faHouseUser,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 20)
@@ -232,8 +252,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-21',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-21`,
 		title: 'sidenav.low.basic.chapter.21',
-		icon: '',
-		iconAlt:'/img/sidebar/shapes-solid.svg',
+		icon: faShapes,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 21)
@@ -243,8 +263,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-22',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-22`,
 		title: 'sidenav.low.basic.chapter.22',
-		icon: '',
-		iconAlt:'/img/sidebar/place-of-worship-solid.svg',
+		icon: faPlaceOfWorship,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 22)
@@ -254,8 +274,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-23',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-23`,
 		title: 'sidenav.low.basic.chapter.23',
-		icon: '',
-		iconAlt:'/img/sidebar/user-injured-solid.svg',
+		icon: faUserInjured,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 23)
@@ -265,8 +285,8 @@ export const getCourseSubNavigationLowBasic = (lang) => {
 		key: 'chapter-sidenav-low-basic-24',
 		path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}-24`,
 		title: 'sidenav.low.basic.chapter.24',
-		icon: '',
-		iconAlt:'/img/sidebar/user-md-solid.svg',
+		icon: faUserMd,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 		breadcrumb: false,
 		submenu: [
 			...getCoursePracticeInnerSubMenu(lang, 1, 24)

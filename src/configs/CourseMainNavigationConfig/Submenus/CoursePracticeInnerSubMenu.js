@@ -1,5 +1,14 @@
 import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
+import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
+import {
+	faChalkboardUser,	
+	faEarListen,
+	faBrain,
+	faGamepad,
+	faBookReader,
+	faKeyboard,
+   } from '@fortawesome/free-solid-svg-icons';
 
 const uuidv4 = () => {
 	return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -13,8 +22,8 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.class}`,
 			title: 'sidenav.class',
-			icon: '',
-			iconAlt:'/img/sidebar/chalkboard-teacher-solid.svg',
+			icon: faChalkboardUser,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			isRootMenuItem: false,				
 			submenu: []
@@ -23,8 +32,8 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			key: `module-listening-${levelNo}-${chapterNo}-${uuidv4()}`,
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.listening}`,
 			title: 'sidenav.listening',
-			icon: '',
-			iconAlt:'/img/sidebar/practice/ear-listen-solid.svg',
+			icon: faEarListen,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			isRootMenuItem: false,				
 			submenu: []
@@ -33,8 +42,8 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			key: `module-resources-${levelNo}-${chapterNo}-${uuidv4()}`,
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.resources}`,
 			title: 'sidenav.resources',
-			icon: '',
-			iconAlt:'/img/sidebar/practice/brain-solid.svg',
+			icon: faBrain,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			isRootMenuItem: false,				
 			submenu: []
@@ -43,8 +52,8 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			key: `module-play-${levelNo}-${chapterNo}-${uuidv4()}`,	
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.play}`,
 			title: 'sidenav.match',
-			icon: '',
-			iconAlt:'/img/sidebar/practice/gamepad-solid.svg',
+			icon: faGamepad,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			isRootMenuItem: false,				
 			submenu: []
@@ -53,8 +62,8 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			key: `module-spell-${levelNo}-${chapterNo}-${uuidv4()}`,
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.spell}`,
 			title: 'sidenav.spell',
-			icon: '',
-			iconAlt:'/img/sidebar/practice/typewriter-solid.svg',
+			icon: faKeyboard,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			isRootMenuItem: false,				
 			submenu: []
@@ -63,8 +72,8 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 			key: `module-test-${levelNo}-${chapterNo}-${uuidv4()}`,
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.test}`,
 			title: 'sidenav.test',
-			icon: '',
-			iconAlt:'/img/sidebar/practice/book-reader-solid.svg',
+			icon: faBookReader,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			isRootMenuItem: false,				
 			submenu: []

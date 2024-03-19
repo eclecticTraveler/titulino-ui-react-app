@@ -2,8 +2,8 @@ import { APP_PREFIX_PATH, SELECTED_COURSE_PATH, AUTH_PREFIX_PATH } from '../../A
 import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic' 
 import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
 import { getCourseSubNavigationHighBasic } from '../Submenus/CourseSubNavigationHighBasic';
-import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from '../../../configs/CourseThemeConfig'
-import {GoogleSVG} from '../../../assets/svg/icon'
+import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from 'configs/CourseThemeConfig';
+import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
 const dashBoardNavTree = [
 	{
@@ -11,14 +11,13 @@ const dashBoardNavTree = [
 		path: `${APP_PREFIX_PATH}/eng/level-1`,
 		title: 'main.upper.nav.level.1',
 		sideTitle: 'Lower Beginner',
-		icon: '',
-		iconAlt: COURSE_ICON_CONFIG.default,
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
 		color: COURSE_COLOR_CONFIG.lowerBeginner,
 		current: true,
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
-		isSubmenuCorpType: false,
 		isFree: true,
 		course: "English",
 		submenu: [
@@ -30,14 +29,13 @@ const dashBoardNavTree = [
 		path: `${APP_PREFIX_PATH}/eng/level-2`,
 		title: 'main.upper.nav.level.2',
 		sideTitle: 'Mid Beginner',
-		icon: '',
-		iconAlt: COURSE_ICON_CONFIG.default,
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
 		color: COURSE_COLOR_CONFIG.midBeginner,
 		current: false,
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
-		isSubmenuCorpType: false,
 		isFree: true,
 		course: "English",
 		submenu: [
@@ -49,14 +47,13 @@ const dashBoardNavTree = [
 		path: `${APP_PREFIX_PATH}/eng/level-3`,
 		title: 'main.upper.nav.level.3',
 		sideTitle: 'Upper Beginner',
-		icon: '',
-		iconAlt: COURSE_ICON_CONFIG.default,
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
 		color: COURSE_COLOR_CONFIG.upperBeginner,
 		current: false,
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
-		isSubmenuCorpType: false,
 		isFree: false,
 		course: "English",
 		submenu: [

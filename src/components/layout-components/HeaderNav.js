@@ -10,7 +10,8 @@ import NavSearchWrapper from './NavSearchWrapper';
 import NavPanel from './NavPanel';
 import MenuContentTop  from './MenuContentTop';
 import NavLanguage from './NavLanguage';
-import IconFallback from "../util-components/IconFallback";
+import IconAdapter from "components/util-components/IconAdapter";
+import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import Toggle from 'react-toggle';
 import "react-toggle/style.css";
 import { env } from "../../configs/EnvironmentConfig";
@@ -142,7 +143,7 @@ export const HeaderNav = props => {
 				</button>
 
 				<button className="btn-search" onClick={() => setSearchVisible(!searchVisible)}>					
-					<IconFallback path={"/img/others/ico-search.png"} />
+					<IconAdapter icon={"/img/others/ico-search.png"} iconType={ICON_LIBRARY_TYPE_CONFIG.hostedSvg} />
 				</button>
 
 				<NavSearch active={searchActive} close={onSearchClose}/>

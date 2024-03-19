@@ -74,6 +74,7 @@
     ]
   },
   "devDependencies": {
+    "@types/react-router-dom": "^5.3.3",
     "autoprefixer": "^10.4.2",
     "gulp-csso": "^4.0.1",
     "gulp-debug": "^3.2.0",

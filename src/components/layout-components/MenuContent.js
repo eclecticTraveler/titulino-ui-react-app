@@ -2,9 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Menu, Grid } from "antd";
 import IntlMessage from "../util-components/IntlMessage";
-import Icon from "../util-components/Icon";
-import IconFallback from "../util-components/IconFallback";
-import mainNavigationConfig from "../../configs/MainNavigationConfig";
+import IconAdapter from "components/util-components/IconAdapter";
 import { connect } from "react-redux";
 import { SIDE_NAV_LIGHT, NAV_TYPE_SIDE } from "../../constants/ThemeConstant";
 import utils from '../../utils'
@@ -56,12 +54,8 @@ const SideNavContent = (props) => {
 				(					
 					<SubMenu
 						key={menu.key}
-						title={setLocale(localization, menu.title)}
-						icon={
-							menu.icon ? (
-								<Icon type={menu?.icon} />
-							) :<span><IconFallback path={menu?.iconAlt} /></span> 
-						}
+						title={(!navCollapsed) ? <span>{setLocale(localization, menu.title)}</span> : null}
+						icon={<IconAdapter icon={menu.icon} iconType={menu.iconType} />}
 					>
 						{menu.submenu.map((subMenuFirst) =>
 							subMenuFirst?.submenu.length > 0 ? (							
@@ -83,7 +77,7 @@ const SideNavContent = (props) => {
 								</SubMenu>
 							) : (
 								<Menu.Item key={subMenuFirst.key} >
-									{subMenuFirst.icon ? <Icon type={subMenuFirst.icon} /> : <IconFallback path={subMenuFirst.iconAlt} />}
+									<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} />
 									<span>{setLocale(localization, subMenuFirst.title)}</span>
 									<Link onClick={() => closeMobileNav()} to={subMenuFirst.path} />
 								</Menu.Item>
@@ -93,8 +87,7 @@ const SideNavContent = (props) => {
 					</SubMenu>
 				) : (
 					<Menu.Item key={menu.key}>
-						{menu.icon ? <Icon type={menu?.icon} /> : null}
-						{menu.iconAlt ? <IconFallback path={menu?.iconAlt}/> : null}
+						{<IconAdapter icon={menu.icon} iconType={menu.iconType} />}
 						{(!navCollapsed) ? <span>{setLocale(localization, menu?.title)}</span> : null}
 						{menu.path ? <Link onClick={() => closeMobileNav()} to={menu.path} /> : null}
 					</Menu.Item>
@@ -104,7 +97,7 @@ const SideNavContent = (props) => {
 	);
 };
 
-// This is if the submenu should be place on top
+
 const TopNavContent = (props) => {
 	const { topNavColor, localization, currentRoute } = props;
 	
@@ -117,8 +110,8 @@ const TopNavContent = (props) => {
 						popupClassName="top-nav-menu"
 						title={
 							<span>
-								{menu.icon ? <Icon type={menu?.icon} /> : <span><IconFallback path={menu?.iconAlt}  iconPosition={'upperNav'}/></span>}
-								<span>{setLocale(localization, menu.title)}</span>
+								{<IconAdapter icon={menu.icon} iconType={menu.iconType} iconPosition={'upperNav'}/>}
+								<span className="side-nav--alt">{setLocale(localization, menu.title)}</span>
 							</span>
 						}
 					>
@@ -126,11 +119,7 @@ const TopNavContent = (props) => {
 							subMenuFirst.submenu.length > 0 ? (
 								<SubMenu
 									key={subMenuFirst.key}
-									icon={
-										subMenuFirst.icon ? (
-											<Icon type={subMenuFirst?.icon} />
-										) : <span><IconFallback path={menu?.iconAlt} iconPosition={'upperNav'} /></span>
-									}
+									icon={<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} iconPosition={'upperNav'}/>}
 									title={setLocale(localization, subMenuFirst.title)}
 								>
 									{subMenuFirst.submenu.map((subMenuSecond) => (
@@ -144,9 +133,7 @@ const TopNavContent = (props) => {
 								</SubMenu>
 							) : (
 								<Menu.Item key={subMenuFirst.key}>
-									{subMenuFirst.icon ? (
-										<Icon type={subMenuFirst?.icon} />
-									) : <span><IconFallback path={subMenuFirst?.iconAlt} iconPosition={'upperNav'}/></span>}
+									<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} iconPosition={'upperNav'}/>
 									<span>{setLocale(localization, subMenuFirst.title)}</span>
 									<Link to={subMenuFirst.path} />
 								</Menu.Item>
@@ -155,9 +142,9 @@ const TopNavContent = (props) => {
 					</SubMenu>
 				) : (
 					<Menu.Item key={menu.key}>
-						{menu.icon ? <Icon type={menu?.icon} /> : <span><IconFallback path={menu?.iconAlt} iconPosition={'upperNav'} /></span>}
+						<IconAdapter icon={menu.icon} iconType={menu.iconType} iconPosition={'upperNav'}/>
 						<span>{setLocale(localization, menu?.title)}</span>
-						{menu.path ? <Link to={menu.path} /> : <span><IconFallback path={menu?.iconAlt} iconPosition={'upperNav'}/></span>}
+						{menu.path ? <Link to={menu.path} /> : <span><IconAdapter icon={menu?.icon} iconPosition={'upperNav'}/></span>}
 					</Menu.Item>
 				)
 			)}

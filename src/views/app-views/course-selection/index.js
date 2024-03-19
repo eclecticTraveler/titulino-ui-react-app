@@ -1,14 +1,15 @@
 import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
-import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage}  from '../../../redux/actions/Lrn';
-import IconFallback from "../../../components/util-components/IconFallback";
+import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage}  from 'redux/actions/Lrn';
+import IconAdapter from 'components/util-components/IconAdapter';
 import { withRouter } from "react-router-dom";
-import { onLocaleChange, onCourseChange } from '../../../redux/actions/Theme'
-import IntlMessage from "../../../components/util-components/IntlMessage";
+import { onLocaleChange, onCourseChange } from 'redux/actions/Theme'
+import IntlMessage from "components/util-components/IntlMessage";
 import { 
 	ArrowRightOutlined
 } from '@ant-design/icons';
+import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
 class CourseSelection extends Component {
 
@@ -89,7 +90,7 @@ class CourseSelection extends Component {
 			<div>
 				<div className="single-web-account-modal">
 				<div className="single-web-account-modal-content">
-				<IconFallback path={"/img/titulino-logo-1.png"} />
+				<IconAdapter icon={"/img/titulino-logo-1.png"} iconType={ICON_LIBRARY_TYPE_CONFIG.hostedSvg}/>
 					<div>
 						{
 							(!this.props.nativeLanguage) && 

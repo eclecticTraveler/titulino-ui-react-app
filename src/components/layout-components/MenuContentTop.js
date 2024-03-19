@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Menu } from "antd";
 import IntlMessage from "../util-components/IntlMessage";
-import IconFallback from "../util-components/IconFallback";
+import IconAdapter from "components/util-components/IconAdapter";
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {getUpperNavigationBasedOnUserConfig, toggleUpperNavigationLevelSelection, toggleSelectedUpperNavigationTabOnLoad} from '../../redux/actions/Lrn';
@@ -27,7 +27,7 @@ const MenuContentTop = (props) => {
 		<Menu mode="horizontal" style={{ backgroundColor: topNavColor }}>
 			{dynamicUpperMainNavigation?.map((menu, index) =>
 				<Menu.Item key={menu.key} className={menu.current ? 'current' : null } onClick={() => toggleUpperNavigationLevelSelection(menu)}>
-					<IconFallback path={menu.iconAlt} iconPosition={menu.iconPosition}/>
+					<IconAdapter icon={menu.icon} iconPosition={menu.iconPosition}/>
 					<span>{setLocale(localization, menu?.title)}</span>
 					{/* TODO: TITULINO Keycloak FEATURE  */}
 					{env.KC_ENABLED_FEATURE ? 

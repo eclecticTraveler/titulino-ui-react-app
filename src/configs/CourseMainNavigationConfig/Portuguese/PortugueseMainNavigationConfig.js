@@ -1,22 +1,22 @@
-import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from '../../AppConfig'
-import {GoogleSVG} from '../../../assets/svg/icon'
-import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic' 
-import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic'
-import { COURSE_COLOR_CONFIG } from '../../../configs/CourseThemeConfig'
+import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from '../../AppConfig';
+import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic';
+import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
+import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from '../../../configs/CourseThemeConfig';
+import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
+
 const dashBoardNavTree = [
 	{
 		key: 'level-1-por',
 		path: `${APP_PREFIX_PATH}/por/nivel-1`,
 		title: 'main.upper.nav.level.1',
 		sideTitle: 'Iniciante Basico',
-		icon: '',
-		iconAlt:'/img/mainnav/Experience.svg',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
 		color: COURSE_COLOR_CONFIG.lowerBeginner,
 		current: true,
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
-		isSubmenuCorpType: false,
 		isFree: true,
 		course: "Português",
 		submenu: [
@@ -28,14 +28,13 @@ const dashBoardNavTree = [
 		path: `${APP_PREFIX_PATH}/por/nivel-2`,
 		title: 'main.upper.nav.level.2',
 		sideTitle: 'Iniciante Inter',
-		icon: '',
-		iconAlt:'/img/mainnav/Training.svg',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
 		color: COURSE_COLOR_CONFIG.midBeginner,
 		current: false,
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
-		isSubmenuCorpType: false,
 		isFree: true,
 		course: "Português",
 		submenu: [
@@ -47,14 +46,13 @@ const dashBoardNavTree = [
 		path: `${APP_PREFIX_PATH}/por/nivel-3`,
 		title: 'main.upper.nav.level.3',
 		sideTitle: 'Iniciante Superior',
-		icon: '',
-		iconAlt:'/img/mainnav/ReviewManager.svg',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
 		color: COURSE_COLOR_CONFIG.upperBeginner,
 		current: false,
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
-		isSubmenuCorpType: false,
 		isFree: true,
 		course: "Português",
 		submenu: [
