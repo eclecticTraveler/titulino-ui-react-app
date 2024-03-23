@@ -26,6 +26,9 @@ env:
   ENV_INPUT: ${{ inputs.env }}
   CI: false
 
+permissions:
+  contents: write
+
 jobs:
   build:
 
