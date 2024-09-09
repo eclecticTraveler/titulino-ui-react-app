@@ -2,6 +2,7 @@ import { APP_PREFIX_PATH, SELECTED_COURSE_PATH, AUTH_PREFIX_PATH } from '../../A
 import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic' 
 import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
 import { getCourseSubNavigationHighBasic } from '../Submenus/CourseSubNavigationHighBasic';
+import { CourseSubNavigationSupermarketTheme } from '../Submenus/CourseSubNavigationSupermarketTheme';
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from 'configs/CourseThemeConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
@@ -18,6 +19,7 @@ const dashBoardNavTree = [
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: true,
 		isFree: true,
 		course: "English",
 		submenu: [
@@ -36,6 +38,7 @@ const dashBoardNavTree = [
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: true,
 		isFree: true,
 		course: "English",
 		submenu: [
@@ -54,10 +57,30 @@ const dashBoardNavTree = [
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: false,
 		isFree: false,
 		course: "English",
 		submenu: [
 			...getCourseSubNavigationHighBasic("eng")
+		]
+	},
+	{
+		key: 'level-supermarket-eng',
+		path: `${APP_PREFIX_PATH}/eng/level-supermarket`,
+		title: 'main.upper.nav.theme.level.pilot',
+		sideTitle: 'Supermarket',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
+		color: COURSE_COLOR_CONFIG.superMarketTheme,
+		current: false,
+		isRootMenuItem: true,
+		iconPosition: "upperNav",
+		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: true,
+		isFree: false,
+		course: "English",
+		submenu: [
+			...CourseSubNavigationSupermarketTheme("eng")
 		]
 	}
 ]

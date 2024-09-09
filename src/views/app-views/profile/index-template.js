@@ -9,7 +9,6 @@ import { onLocaleChange, onCourseChange } from '../../../redux/actions/Theme'
 import Flex from '../../../components/shared-components/Flex'
 import IntlMessage from "../../../components/util-components/IntlMessage";
 import Accordion from 'react-bootstrap/Accordion';
-import RenderOnlyOnAuthenticated from "../../../components/RenderOnlyOnAuthenticated"
 import { 
 	UserAddOutlined, 
 	FileExcelOutlined, 

@@ -10,10 +10,12 @@
 	"sidenav.class":"Classe",
 	"profile.donate":"Faça uma doação",
 	"sidenav.listening": "Compreensão",
+	"sidenav.review": "Revisão",
 	"sidenav.spell": "Escreve",
 	"sidenav.test":"Teste",
 	"sidenav.match":"Juego",
 	"sidenav.resources":"Recursos",
+	"sidenav.quizlet":"Quizlet",
 	"sidenave.practice": "Pratica",
 	"sidenave.play":"Joga",	
 	"sidenav.login": "Entrar",
@@ -121,6 +123,9 @@
 
 	"main.upper.nav.level.1": "Nível 1",
 	"main.upper.nav.level.2": "Nível 2",
-	"main.upper.nav.level.3": "Nível 3"
+	"main.upper.nav.level.3": "Nível 3",
+
+	"main.upper.nav.theme.level.piloto": "Piloto",
+	"sidenav.book": "Livro"
 
 }

@@ -1,5 +1,5 @@
 const dev = {
-  KC_ENABLED_FEATURE: true,
+  KC_ENABLED_FEATURE: false,
   KC_ENDPOINT_URL: '',
   KC_REALM:'titulino',
   HOME_URL: '',
