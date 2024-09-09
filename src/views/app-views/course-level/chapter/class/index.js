@@ -11,7 +11,6 @@ import utils from '../../../../../utils';
 class VideoClass extends Component {
 
     loadUrl = () => {
-        alert("ddd");
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
         this.props.getVideoClassUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
     }
