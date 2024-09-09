@@ -16,8 +16,8 @@ const setLocale = (isLocaleOn, localeKey) =>
 const MenuContentTop = (props) => {
 	const [expanded, setExpanded] = useState(false);
 	const {dynamicUpperMainNavigation, topNavColor, localization, toggleUpperNavigationLevelSelection, getUpperNavigationBasedOnUserConfig} = props;
-	const { keycloak } = useKeycloak();
-	const isLoggedIn = keycloak.authenticated;
+	// const { keycloak } = useKeycloak();
+	// const isLoggedIn = keycloak.authenticated;
 	getUpperNavigationBasedOnUserConfig();
 	toggleSelectedUpperNavigationTabOnLoad(useLocation()?.pathname, dynamicUpperMainNavigation);
 	// TITULINO: Verify that menu is loading well and see if there is a need to do a version of load on tab like in line 21 but in lrn redux
@@ -30,11 +30,12 @@ const MenuContentTop = (props) => {
 					<IconAdapter icon={menu.icon} iconPosition={menu.iconPosition}/>
 					<span>{setLocale(localization, menu?.title)}</span>
 					{/* TODO: TITULINO Keycloak FEATURE  */}
-					{env.KC_ENABLED_FEATURE ? 
+					{(menu.path ? <NavLink to={menu.path}/> : null)}
+					{/* {env.KC_ENABLED_FEATURE ? 
 						(!menu.isFree & !isLoggedIn) ? <Link onClick={() => keycloak.login()}/> : (menu.path ? <NavLink to={menu.path}/> : null)
 						:
 						(menu.path ? <NavLink to={menu.path}/> : null)
-					}						
+					}						 */}
 				</Menu.Item>
 			)}
 		</Menu>

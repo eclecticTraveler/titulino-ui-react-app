@@ -10,20 +10,19 @@ export class IconAdapter extends Component {
 		switch (iconType) {
 			case ICON_LIBRARY_TYPE_CONFIG.fontAwesome:
 				return (
-					<span class="titulino-fontawesome side-nav-icon-adapter"><FontAwesomeIcon icon={icon} /></span>
+					<span className="titulino-fontawesome side-nav-icon-adapter"><FontAwesomeIcon icon={icon} /></span>
 				)
 			case ICON_LIBRARY_TYPE_CONFIG.antd:
 				return (
-					<span class="titulino-antd side-nav-icon-adapter"><Icon type={icon} className={className} /></span>
+					<span className="titulino-antd side-nav-icon-adapter"><Icon type={icon} className={className} /></span>
 				)
 			case ICON_LIBRARY_TYPE_CONFIG.hostedSvg:
 			default:
 				return (
-					<span class="titulino-hostedsvg side-nav-icon-adapter"><IconFallback path={icon} iconPosition={iconPosition}/></span>
+					<span className="titulino-hostedsvg side-nav-icon-adapter"><IconFallback path={icon} iconPosition={iconPosition}/></span>
 				)
-
 		}
 	}
 }
 
-export default IconAdapter
+export default IconAdapter;

@@ -12,7 +12,6 @@ import {
   CURRENT_ROUTE_INFO,
   GET_QUIZLET_URL,
   GET_VIDEO_CLASS_URL,
-  ON_KC_AUTHENTICATION,
   ON_SHIPPING_TAB_CHANGE,
   ON_EDIT_ADDRESS_CHANGE,
   ON_EDIT_USER_PROFILE_CHANGE,
@@ -79,11 +78,6 @@ const lrn = (state = initState, action) => {
       return {
         ...state,
         shippingTabKey: action.shippingTabKey
-      }
-    case ON_KC_AUTHENTICATION:
-      return {
-        ...state,
-        keycloakRedux: action.keycloakRedux
       }
     case GET_VIDEO_CLASS_URL:
       return {

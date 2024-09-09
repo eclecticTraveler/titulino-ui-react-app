@@ -9,7 +9,6 @@
       })(window,document,'script','dataLayer','GTM-KSC754V');
     </script>
   <!-- End Google Tag Manager -->
-  <script type = "text/javascript" src = "script.js?$version" > </script> 
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/img/titulino-logo-1.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -51,19 +50,5 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
-    <script>
-         //get the date and time
-        var currentDate = (new Date()).getTime();  
-        
-        //create new script element
-        var newScriptElement = document.createElement("script");  
-        newScriptElement.type = "text/javascript";  
-        
-        // add current date to URL as a query parameter
-        newScriptElement.src = "script.js?" + currentDate;  
-        
-        // append new script element to body.
-        document.body.appendChild(newScriptElement); 
-    </script>
   </body>
 </html>

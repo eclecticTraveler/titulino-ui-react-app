@@ -72,7 +72,7 @@ const configureMenuItems = () => {
 
 export const NavProfile = (props, {signOut}) => {
   const { course } = props;
-  const { keycloak } = useKeycloak();
+  // const { keycloak } = useKeycloak();
   const menuItems = configureMenuItems();
   const profileImg = "/img/avatars/tempProfile-2.png";
   const profileMenu = (
@@ -81,8 +81,8 @@ export const NavProfile = (props, {signOut}) => {
           <div className="d-flex">
             <Avatar size={50} src={profileImg} />
             <div className="pl-3">
-              <h4 className="mb-0">{keycloak.tokenParsed?.name}</h4>
-              <span className="text-muted">{keycloak.tokenParsed?.preferred_username}</span>
+              {/* <h4 className="mb-0">{keycloak.tokenParsed?.name}</h4>
+              <span className="text-muted">{keycloak.tokenParsed?.preferred_username}</span> */}
             </div>
           </div>
         </div>
@@ -98,12 +98,12 @@ export const NavProfile = (props, {signOut}) => {
                 </Menu.Item>
               );
             })}
-            <Menu.Item key={menuItems?.length + 1} onClick={() => keycloak.logout()}>
+            {/* <Menu.Item key={menuItems?.length + 1} onClick={() => keycloak.logout()}>
               <span>
                 <LogoutOutlined className="mr-3 profile-accomdation"/>
                 <span className="font-weight-normal">{setLocale(locale, "profile.sign.out")}</span>
               </span>
-            </Menu.Item>
+            </Menu.Item> */}
           </Menu>
         </div>
       </div>

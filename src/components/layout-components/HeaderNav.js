@@ -35,7 +35,7 @@ export const HeaderNav = props => {
 	const setLocale = (isLocaleOn, localeKey) =>{		
 		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
 	  }
-	const { keycloak } = useKeycloak();
+	// const { keycloak } = useKeycloak();
 	const locale = true;
 
 	const isToogleToBeDisplayedToUser =  false;
@@ -99,17 +99,16 @@ export const HeaderNav = props => {
 					<NavSearchWrapper isMobile={false} mode={mode}/>
 					<NavLanguage/>
 					<NavPanel direction={direction} />
-					{env.KC_ENABLED_FEATURE && 
-					!keycloak.authenticated && (
+					{/* {env.KC_ENABLED_FEATURE && (
 						<Button
 						onClick={() => keycloak.login()}
 						>
 						{setLocale(locale, "sidenav.login")}
 						</Button>
 						)
-					}
+					} */}
 
-					{!!keycloak.authenticated && (<NavProfile />)}
+					{/* {!!keycloak.authenticated && (<NavProfile />)} */}
          		 </div>
 			</div>			
 			

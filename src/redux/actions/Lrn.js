@@ -27,7 +27,6 @@ import {
   CURRENT_ROUTE_INFO,
   GET_QUIZLET_URL,
   GET_VIDEO_CLASS_URL,
-  ON_KC_AUTHENTICATION,
   ON_SHIPPING_TAB_CHANGE,
   ON_EDIT_ADDRESS_CHANGE,
   ON_EDIT_USER_PROFILE_CHANGE,
@@ -83,13 +82,6 @@ export const onShippingKeyTabChange = async(key) => {
   return {
     type: ON_SHIPPING_TAB_CHANGE,
     shippingTabKey: key
-  }
-}
-
-export const onKeycloakAuthentication = async (kc) => {
-  return {
-    type: ON_KC_AUTHENTICATION,
-    keycloakRedux: kc
   }
 }
 

@@ -10,7 +10,7 @@ import AuthLayout from '../layouts/auth-layout';
 import AppLayout from "../layouts/app-layout";
 import RenderOnAuthenticated from '../components/RenderOnAuthenticated';
 import CourseSelection from './app-views/course-selection';
-import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage, onKeycloakAuthentication}  from '../redux/actions/Lrn';
+import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage }  from '../redux/actions/Lrn';
 import { onLocaleChange, onCourseChange, onLoadingUserSelectedTheme } from '../redux/actions/Theme'
 import RenderOnlyOnAuthenticated from "../components/RenderOnlyOnAuthenticated";
 import { useKeycloak, KeycloakProvider } from "@react-keycloak/web";
@@ -18,16 +18,13 @@ import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
   
 export const Views = (props) => { 
-	const { locale, location, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, onKeycloakAuthentication,
+	const { locale, location, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage,
             wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, subNavPosition } = props;
     const localization = locale ? locale : 'en';
     const currentAppLocale = AppLocale[localization];
-    const { keycloak } = useKeycloak();
     const { switcher, themes } = useThemeSwitcher();
  
     useBodyClass(`dir-${direction}`);
-
-    onKeycloakAuthentication(keycloak);
 
     // Load user selected theme
     onLoadingUserSelectedTheme();
@@ -88,7 +85,6 @@ function mapDispatchToProps(dispatch){
         onCourseChange: onCourseChange,
         getUserNativeLanguage: getUserNativeLanguage,
         onLocaleChange: onLocaleChange,
-        onKeycloakAuthentication: onKeycloakAuthentication,
         onLoadingUserSelectedTheme: onLoadingUserSelectedTheme
 	}, dispatch)
 }
