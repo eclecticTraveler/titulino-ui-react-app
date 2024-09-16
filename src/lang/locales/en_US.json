@@ -1,7 +1,7 @@
 {
 	"select.course.go.back": "Change Native Language",
-	"select.course.modal.title": "Select Course",
-	"select.course.modal.subtitle": "I would like to learn:",
+	"select.course.modal.title": "Select Language course you would like to take",
+	"select.course.modal.subtitle": "Select the flag below.",
 	"select.course.footer.question":"Need more help?",
 	"select.course.footer.find.us":"or find us in",
 	"profile.help.center":"Help Center",

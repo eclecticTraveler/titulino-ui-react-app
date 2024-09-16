@@ -2,6 +2,7 @@
   {
     "id":"001",
     "level":1,
+    "theme":"english-connect-1",
     "nativeLanguage":"es",
     "course":"eng",    
     "chapters": [
@@ -106,6 +107,7 @@
   {
     "id":"002",
     "level":2,
+    "theme":"english-connect-2",
     "nativeLanguage":"es",
     "course":"eng",    
     "chapters": [
@@ -205,6 +207,19 @@
         "chapter":24,
         "url":"https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Ftitulinoingles%2Fvideos%2F395956545559900%2F&show_text=false&width=560&t=0"
       }      
+    ]
+  },
+  {
+    "id":"003",
+    "level": 4,
+    "theme":"supermarket",
+    "nativeLanguage":"es",
+    "course":"eng",    
+    "chapters": [
+      {
+        "chapter":1,
+        "url":"https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Ftitulinoingles%2Fvideos%2F480927598096702%2F&show_text=false&width=560&t=972"
+      }    
     ]
   }
 ]

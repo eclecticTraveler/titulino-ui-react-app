@@ -93,6 +93,16 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 		  return [
 			{
 				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.book}`,
+				title: 'sidenav.book',
+				icon: faBookReader,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			},
+			{
+				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
 				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.class}`,
 				title: 'sidenav.class',
 				icon: faChalkboard,

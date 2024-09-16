@@ -17,6 +17,7 @@ const dashBoardNavTree = [
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: true,
 		isFree: true,
 		course: "Português",
 		submenu: [
@@ -35,6 +36,7 @@ const dashBoardNavTree = [
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: true,
 		isFree: true,
 		course: "Português",
 		submenu: [
@@ -51,6 +53,7 @@ const dashBoardNavTree = [
 		color: COURSE_COLOR_CONFIG.upperBeginner,
 		current: false,
 		isRootMenuItem: true,
+		isToDisplayInNavigation: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
 		isFree: true,

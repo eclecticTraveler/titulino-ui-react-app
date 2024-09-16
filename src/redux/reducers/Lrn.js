@@ -21,7 +21,8 @@ import {
   ON_SELECTING_CORRECTION_MODAL,
   ON_SELECTING_CORRECTION_RECORD,
   ON_LOADING_LANDING_DASHBOARD,
-  ON_LOADING_LANDING_PAGE
+  ON_LOADING_LANDING_PAGE,
+  GET_BOOK_CHAPTER_URL
 } from "../constants/Lrn";
 
 const initState = {
@@ -78,6 +79,11 @@ const lrn = (state = initState, action) => {
       return {
         ...state,
         shippingTabKey: action.shippingTabKey
+      }
+    case GET_BOOK_CHAPTER_URL:
+      return {
+        ...state,
+        bookChapterUrl: action.bookChapterUrl
       }
     case GET_VIDEO_CLASS_URL:
       return {

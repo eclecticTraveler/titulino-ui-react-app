@@ -1,25 +1,14 @@
 import quizletPracticeData from '../assets/data/quizlet-pratice-data.json';
+import CentralCourseThemeService from 'services/CentralCourseThemeService';
 
 const loadQuizletData = async() => {
   const quizletData = quizletPracticeData;
   return quizletData;
 }
 
-// Create a mapping for theme based courses
-const levelMapping = {
-  "supermarket": 4
-};
-
-const getLevelNo = (level) => {
-  if (levelMapping[level]) {
-    return levelMapping[level]; // Return mapped level if it exists
-  }
-  return parseInt(level, 10); // Fallback to parsing it as a number
-};
-
 const loadRequestedModule = async(levelNo, nativeLanguage, course) => {
   const rawQuizletData = await loadQuizletData();
-  const rawRequestedModule = rawQuizletData?.folders.find(q => (q.level === getLevelNo(levelNo) && q.nativeLanguage === nativeLanguage && q.course === course ));
+  const rawRequestedModule = rawQuizletData?.folders.find(q => (q.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && q.nativeLanguage === nativeLanguage && q.course === course ));
   return rawRequestedModule;
 }
 

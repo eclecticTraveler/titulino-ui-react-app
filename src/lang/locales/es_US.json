@@ -1,7 +1,7 @@
 {
 	"select.course.go.back": "Cambiar idioma nativo",
-	"select.course.modal.title": "Seleccionar curso",
-	"select.course.modal.subtitle": "Me gustaría aprender:",
+	"select.course.modal.title": "Seleccione el curso del idioma que le gustaría tomar",
+	"select.course.modal.subtitle": "Seleccione la bandera a abajo",
 	"select.course.footer.question":"¿Necesita mas ayuda?",
 	"select.course.footer.find.us":"o encuéntranos en",
 	"profile.help.center":"Centro de ayuda",
@@ -119,7 +119,7 @@
 	"module.spell":"Redacción",
 	"module.play":"Juego",
 
-	"main.upper.nav.level.1": "Nivel  1",
+	"main.upper.nav.level.1": "Nivel 1",
 	"main.upper.nav.level.2": "Nivel 2",
 	"main.upper.nav.level.3": "Nivel 3",
 

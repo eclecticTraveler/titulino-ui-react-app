@@ -25,21 +25,22 @@ const MenuContentTop = (props) => {
 	// redux, to use.
 	return (						
 		<Menu mode="horizontal" style={{ backgroundColor: topNavColor }}>
-			{dynamicUpperMainNavigation?.map((menu, index) =>
+			{dynamicUpperMainNavigation?.filter(menu => menu.isToDisplayInNavigation).map((menu, index) =>
 				<Menu.Item key={menu.key} className={menu.current ? 'current' : null } onClick={() => toggleUpperNavigationLevelSelection(menu)}>
-					<IconAdapter icon={menu.icon} iconPosition={menu.iconPosition}/>
+					<IconAdapter icon={menu.icon} iconPosition={menu.iconPosition} />
 					<span>{setLocale(localization, menu?.title)}</span>
-					{/* TODO: TITULINO Keycloak FEATURE  */}
-					{(menu.path ? <NavLink to={menu.path}/> : null)}
+					{/* TODO: TITULINO Keycloak FEATURE */}
+					{menu.path ? <NavLink to={menu.path} /> : null}
 					{/* {env.KC_ENABLED_FEATURE ? 
 						(!menu.isFree & !isLoggedIn) ? <Link onClick={() => keycloak.login()}/> : (menu.path ? <NavLink to={menu.path}/> : null)
 						:
 						(menu.path ? <NavLink to={menu.path}/> : null)
-					}						 */}
+					} */}
 				</Menu.Item>
 			)}
 		</Menu>
 	);
+	
 	
 };
 

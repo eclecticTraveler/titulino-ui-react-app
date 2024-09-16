@@ -8,6 +8,7 @@ import LandingWidgetsService from "../../services/LandingWidgetsService";
 import ProfileService from "../../services/ProfileService";
 import dummyData from "../../assets/data/dummyDW.json";
 import GraphService from "../../services/Charting/Admin/GraphService";
+import BookChapterService from "services/BookChapterService";
 import $ from 'jquery'; 
 
 import axios from 'axios';
@@ -36,7 +37,8 @@ import {
   ON_SELECTING_CORRECTION_MODAL,
   ON_LOADING_LANDING_DASHBOARD,
   ON_LOADING_LANDING_PAGE,
-  ON_LOADING_FIVE_MIN_LESSON
+  ON_LOADING_FIVE_MIN_LESSON,
+  GET_BOOK_CHAPTER_URL
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -109,6 +111,15 @@ const url = await VideoClassService.getVideoClassUrl(levelNo, chapterNo, nativeL
     videoClass: url
   }
 }
+
+
+export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, course) => {
+  const url = await BookChapterService.getBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course);
+    return {
+      type: GET_BOOK_CHAPTER_URL,
+      bookChapterUrl: url
+    }
+  }
 
 export const onLoadingFiveMinLesson = async (levelNo, nativeLanguage, course, isToRetrieveByNewDate) => {
   const fiveMinuteLesson = await LandingWidgetsService.getFiveMinuteRandomLesson(levelNo, nativeLanguage, course);

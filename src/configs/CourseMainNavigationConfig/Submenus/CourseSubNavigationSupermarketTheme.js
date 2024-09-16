@@ -20,15 +20,6 @@ import {
 export const CourseSubNavigationSupermarketTheme = (lang) => {			
 	return [
 		{
-			key: 'chapter-sidenav-theme-supermarket-0',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-0`,
-			title: 'sidenav.book',
-			icon: faBookReader,
-			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-			breadcrumb: false,
-			submenu: []
-		},
-		{
 			key: 'chapter-sidenav-theme-supermarket-1',
 			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-1`,
 			title: 'sidenav.chapter.1',
