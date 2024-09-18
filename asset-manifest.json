@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/titulino-ui-react-app/static/css/main.1a163c33.css",
-    "main.js": "/titulino-ui-react-app/static/js/main.6e7cc413.js",
-    "static/js/373.d5e3a323.chunk.js": "/titulino-ui-react-app/static/js/373.d5e3a323.chunk.js",
+    "main.js": "/titulino-ui-react-app/static/js/main.ab58a157.js",
+    "static/js/373.30d6d32c.chunk.js": "/titulino-ui-react-app/static/js/373.30d6d32c.chunk.js",
     "static/js/105.89a25f66.chunk.js": "/titulino-ui-react-app/static/js/105.89a25f66.chunk.js",
     "static/js/912.6afa7370.chunk.js": "/titulino-ui-react-app/static/js/912.6afa7370.chunk.js",
     "static/js/740.c9b2d81b.chunk.js": "/titulino-ui-react-app/static/js/740.c9b2d81b.chunk.js",
@@ -11,10 +11,11 @@
     "static/js/744.13ca5d54.chunk.js": "/titulino-ui-react-app/static/js/744.13ca5d54.chunk.js",
     "static/js/245.c2ed818a.chunk.js": "/titulino-ui-react-app/static/js/245.c2ed818a.chunk.js",
     "static/js/589.fcd61dd2.chunk.js": "/titulino-ui-react-app/static/js/589.fcd61dd2.chunk.js",
-    "static/js/38.d7d5a880.chunk.js": "/titulino-ui-react-app/static/js/38.d7d5a880.chunk.js",
-    "static/js/500.6bb54c87.chunk.js": "/titulino-ui-react-app/static/js/500.6bb54c87.chunk.js",
-    "static/js/2.9fda9e11.chunk.js": "/titulino-ui-react-app/static/js/2.9fda9e11.chunk.js",
-    "static/js/242.38bde83e.chunk.js": "/titulino-ui-react-app/static/js/242.38bde83e.chunk.js",
+    "static/js/38.6f1ecc47.chunk.js": "/titulino-ui-react-app/static/js/38.6f1ecc47.chunk.js",
+    "static/js/971.7b2b77b1.chunk.js": "/titulino-ui-react-app/static/js/971.7b2b77b1.chunk.js",
+    "static/js/500.721747cf.chunk.js": "/titulino-ui-react-app/static/js/500.721747cf.chunk.js",
+    "static/js/2.62541ed5.chunk.js": "/titulino-ui-react-app/static/js/2.62541ed5.chunk.js",
+    "static/js/242.d532ab1f.chunk.js": "/titulino-ui-react-app/static/js/242.d532ab1f.chunk.js",
     "static/js/54.85507d3c.chunk.js": "/titulino-ui-react-app/static/js/54.85507d3c.chunk.js",
     "static/js/685.1c49642f.chunk.js": "/titulino-ui-react-app/static/js/685.1c49642f.chunk.js",
     "static/js/560.345d85f6.chunk.js": "/titulino-ui-react-app/static/js/560.345d85f6.chunk.js",
@@ -23,8 +24,8 @@
     "static/js/402.84fb2974.chunk.js": "/titulino-ui-react-app/static/js/402.84fb2974.chunk.js",
     "index.html": "/titulino-ui-react-app/index.html",
     "main.1a163c33.css.map": "/titulino-ui-react-app/static/css/main.1a163c33.css.map",
-    "main.6e7cc413.js.map": "/titulino-ui-react-app/static/js/main.6e7cc413.js.map",
-    "373.d5e3a323.chunk.js.map": "/titulino-ui-react-app/static/js/373.d5e3a323.chunk.js.map",
+    "main.ab58a157.js.map": "/titulino-ui-react-app/static/js/main.ab58a157.js.map",
+    "373.30d6d32c.chunk.js.map": "/titulino-ui-react-app/static/js/373.30d6d32c.chunk.js.map",
     "105.89a25f66.chunk.js.map": "/titulino-ui-react-app/static/js/105.89a25f66.chunk.js.map",
     "912.6afa7370.chunk.js.map": "/titulino-ui-react-app/static/js/912.6afa7370.chunk.js.map",
     "740.c9b2d81b.chunk.js.map": "/titulino-ui-react-app/static/js/740.c9b2d81b.chunk.js.map",
@@ -33,10 +34,11 @@
     "744.13ca5d54.chunk.js.map": "/titulino-ui-react-app/static/js/744.13ca5d54.chunk.js.map",
     "245.c2ed818a.chunk.js.map": "/titulino-ui-react-app/static/js/245.c2ed818a.chunk.js.map",
     "589.fcd61dd2.chunk.js.map": "/titulino-ui-react-app/static/js/589.fcd61dd2.chunk.js.map",
-    "38.d7d5a880.chunk.js.map": "/titulino-ui-react-app/static/js/38.d7d5a880.chunk.js.map",
-    "500.6bb54c87.chunk.js.map": "/titulino-ui-react-app/static/js/500.6bb54c87.chunk.js.map",
-    "2.9fda9e11.chunk.js.map": "/titulino-ui-react-app/static/js/2.9fda9e11.chunk.js.map",
-    "242.38bde83e.chunk.js.map": "/titulino-ui-react-app/static/js/242.38bde83e.chunk.js.map",
+    "38.6f1ecc47.chunk.js.map": "/titulino-ui-react-app/static/js/38.6f1ecc47.chunk.js.map",
+    "971.7b2b77b1.chunk.js.map": "/titulino-ui-react-app/static/js/971.7b2b77b1.chunk.js.map",
+    "500.721747cf.chunk.js.map": "/titulino-ui-react-app/static/js/500.721747cf.chunk.js.map",
+    "2.62541ed5.chunk.js.map": "/titulino-ui-react-app/static/js/2.62541ed5.chunk.js.map",
+    "242.d532ab1f.chunk.js.map": "/titulino-ui-react-app/static/js/242.d532ab1f.chunk.js.map",
     "54.85507d3c.chunk.js.map": "/titulino-ui-react-app/static/js/54.85507d3c.chunk.js.map",
     "685.1c49642f.chunk.js.map": "/titulino-ui-react-app/static/js/685.1c49642f.chunk.js.map",
     "560.345d85f6.chunk.js.map": "/titulino-ui-react-app/static/js/560.345d85f6.chunk.js.map",
@@ -46,6 +48,6 @@
   },
   "entrypoints": [
     "static/css/main.1a163c33.css",
-    "static/js/main.6e7cc413.js"
+    "static/js/main.ab58a157.js"
   ]
 }
