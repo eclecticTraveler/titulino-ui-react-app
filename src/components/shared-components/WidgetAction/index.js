@@ -16,7 +16,7 @@ export const WidgetAction = ({isCollapsed}) => {
 
 
 	const doAction = () => {
-		alert("Do Action");
+		window.open(env.DONATION_CENTER_URL, '_blank').focus();
 	}
 
 	if(!isCollapsed){
