@@ -27,6 +27,7 @@ export const Views = (props) => {
     // Effect to load user selected theme and locale
     useEffect(() => {
         onLoadingUserSelectedTheme();
+        getWasUserConfigSetFlag();
 
         if (currentTheme) {
             switcher({ theme: themes[currentTheme] });
@@ -43,12 +44,8 @@ export const Views = (props) => {
                 onCourseChange(selectedCourse?.courseAbbreviation);
             }
         }
-    }, [wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);
+    }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);
 
-    // Effect to fetch user config flag
-    useEffect(() => {
-        getWasUserConfigSetFlag();
-    }, [getWasUserConfigSetFlag]);
 
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
