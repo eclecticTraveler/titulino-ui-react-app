@@ -8,47 +8,44 @@ import utils from '../../../utils';
 import { connect } from "react-redux";
 
 // export const WidgetAction = props => {
-export const WidgetAction = ({isCollapsed}) => {
+export const WidgetAction = ({ isCollapsed }) => {
 	const locale = true;
-	const setLocale = (isLocaleOn, localeKey) =>{		
+	const setLocale = (isLocaleOn, localeKey) => {
 		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-	}	
-
+	}
 
 	const doAction = () => {
 		window.open(env.DONATION_CENTER_URL, '_blank').focus();
 	}
 
-	if(!isCollapsed){
+	if (!isCollapsed) {
 		return (
-			<div className="widget-action">		
-				<p className="help-center-wrapper">			
-				{/* TITULINO ENABLE ONCE THIS PAGE IS DONE */}
-				{/* <Link to={`${APP_PREFIX_PATH}/help-center`}>
-					<img className="help-center" src="/img/others/Side-Nave-Life-Ring-Light.svg" alt="" />{setLocale(locale, "profile.help.center")}
-				</Link>					 */}
+			<div className="widget-action">
+				<p className="help-center-wrapper">
+					{/* TITULINO ENABLE ONCE THIS PAGE IS DONE */}
+					{/* <Link to={`${APP_PREFIX_PATH}/help-center`}>
+						<img className="help-center" src="/img/others/Side-Nave-Life-Ring-Light.svg" alt="" />
+						{setLocale(locale, "profile.help.center")}
+					</Link> */}
 				</p>
-				<Link onClick={()=> doAction()}>
-					<Button>{setLocale(locale, "profile.donate")}</Button>
-				</Link>			
+				<Button onClick={doAction}>
+					{setLocale(locale, "profile.donate")}
+				</Button>
 			</div>
-		)
-	}else{
+		);
+	} else {
 		return (
-			<div className="widget-action-collapsed">		
-				<p className="help-center-wrapper">			
-				{/* TITULINO ENABLE ONCE THIS PAGE IS DONE */}
-				{/* <Link to={`${APP_PREFIX_PATH}/help-center`}>
-					<img className="help-center" src="/img/others/Side-Nave-Life-Ring-Light.svg" alt="" />
-				</Link>					 */}
+			<div className="widget-action-collapsed">
+				<p className="help-center-wrapper">
+					{/* TITULINO ENABLE ONCE THIS PAGE IS DONE */}
+					{/* <Link to={`${APP_PREFIX_PATH}/help-center`}>
+						<img className="help-center" src="/img/others/Side-Nave-Life-Ring-Light.svg" alt="" />
+					</Link> */}
 				</p>
-				<Link onClick={()=> doAction()}>
-					<img className="help-center" src="/img/others/angle-double-left-solid.svg" alt="" />
-				</Link>			
+				<Button onClick={doAction} type="link" icon={<img className="help-center" src="/img/others/angle-double-left-solid.svg" alt="" />} />
 			</div>
-		)
+		);
 	}
-	
 }
 
 export default WidgetAction;
