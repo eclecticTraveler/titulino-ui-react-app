@@ -47,7 +47,7 @@ export const NavSearchWrapper = (props) => {
 		{
 			(!isMobile && !isSearchVisible) ?
 			<Menu mode="horizontal" className="untoggled-search">
-			<Menu.Item className="menu-right-padding">
+			<Menu.Item key="1" className="menu-right-padding">
 				<div>
 					<SearchOutlined className="nav-icon mr-0 menu-right-size" onClick={() => onSearchSelection(!isSearchVisible)}/>
 				</div>
@@ -55,7 +55,7 @@ export const NavSearchWrapper = (props) => {
 			</Menu>
 			:
 			<Menu mode="horizontal" className="toggled-search">
-			<Menu.Item className="menu-right-padding">
+			<Menu.Item key="1" className="menu-right-padding">
 				<div>
 					<SearchInput mode={mode} isMobile={false} />
 					<CloseCircleOutlined className="nav-icon mr-0 menu-right-size close-search" onClick={() => onSearchSelection(!isSearchVisible)}/>
