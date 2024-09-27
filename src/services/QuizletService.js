@@ -1,4 +1,5 @@
 import quizletPracticeData from '../assets/data/quizlet-pratice-data.json';
+import CentralCourseThemeService from 'services/CentralCourseThemeService';
 
 const loadQuizletData = async() => {
   const quizletData = quizletPracticeData;
@@ -7,9 +8,7 @@ const loadQuizletData = async() => {
 
 const loadRequestedModule = async(levelNo, nativeLanguage, course) => {
   const rawQuizletData = await loadQuizletData();
-  console.log(rawQuizletData)
-  const rawRequestedModule = rawQuizletData?.folders.find(q => (q.level === parseInt(levelNo, 10) && q.nativeLanguage === nativeLanguage && q.course === course ));
-  console.log(rawRequestedModule)
+  const rawRequestedModule = rawQuizletData?.folders.find(q => (q.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && q.nativeLanguage === nativeLanguage && q.course === course ));
   return rawRequestedModule;
 }
 
@@ -26,7 +25,10 @@ const getQuizletKeyWord = async(keyword) => {
         return "match";
       case "listening":
       case "comprensión":	
-      case "compreensão":		
+      case "compreensão":
+      case "review":
+      case "revisão":
+      case "repaso":
         return "learn";
       case "spell":
       case "escreve":
@@ -34,6 +36,7 @@ const getQuizletKeyWord = async(keyword) => {
         return "spell";
       case "resources":
       case "recursos":
+      case "quizlet":
         return "flashcards";
       case "test":
       case "teste":

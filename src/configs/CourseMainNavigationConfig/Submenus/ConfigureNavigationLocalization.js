@@ -11,7 +11,10 @@ export const getLocalizedConfig = (lang) => {
 		practice: "practice",
 		play:"play",
 		modality: "modality",
-		module: "module"
+		module: "module",
+		review: "review",
+		quizlet: "quizlet",
+		book: "book"
 
 	}
 
@@ -30,6 +33,9 @@ export const getLocalizedConfig = (lang) => {
 			localization.spell = "escreve";
 			localization.modality = "modalidade";
 			localization.module = "módulo";
+			localization.review = "revisão";
+			localization.quizlet = "quizlet";
+			localization.book = "libro";
 			return localization;
 		case "spa":
 			localization.chapter = "capitulo";
@@ -43,6 +49,9 @@ export const getLocalizedConfig = (lang) => {
 			localization.spell = "redacta";
 			localization.modality = "modalidad";
 			localization.module = "módulo";
+			localization.review = "repaso";
+			localization.quizlet = "quizlet";
+			localization.book = "livro";
 			return localization;        
 		default:
 			return localization;

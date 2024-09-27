@@ -1,12 +1,12 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage, getVideoClassUrl}  from '../../../../../redux/actions/Lrn';
+import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage, getVideoClassUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { env } from '../../../../../configs/EnvironmentConfig';
 import Loading from '../../../../../components/shared-components/Loading';
 import InternalIFrame from '../../../../../components/layout-components/InternalIFrame';
 import UnderConstruccion from '../../../../../components/layout-components/UnderConstruccion';
-import utils from '../../../../../utils';
+import utils from 'utils';
 
 class VideoClass extends Component {
 
@@ -16,15 +16,16 @@ class VideoClass extends Component {
     }
     
     componentDidMount() {                
-
-    }
-
-    componentDidUpdate(){
         this.loadUrl();
     }
+
+    componentDidUpdate(prevProps) {       
+        if (prevProps?.location?.pathname !== this.props.location?.pathname) {
+            this.loadUrl();
+        }
+      }
 
     render() {  
-        this.loadUrl();
         if(!this.props.videoClass) {
             return (
                 <div>

@@ -1,21 +1,21 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage, getQuizletUrl}  from 'redux/actions/Lrn';
+import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage, getBookChapterUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
-import { env } from 'configs/EnvironmentConfig';
-import Loading from 'components/shared-components/Loading';
-import InternalIFrame from 'components/layout-components/InternalIFrame';
-import UnderConstruccion from 'components/layout-components/UnderConstruccion';
+import { env } from '../../../../../configs/EnvironmentConfig';
+import Loading from '../../../../../components/shared-components/Loading';
+import InternalIFrame from '../../../../../components/layout-components/InternalIFrame';
+import UnderConstruccion from '../../../../../components/layout-components/UnderConstruccion';
 import utils from 'utils';
 
-class QuizletPractice extends Component {
+class BookSection extends Component {
 
     loadUrl = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
-        this.props.getQuizletUrl(pathInfo?.modality, pathInfo?.chapterNo, pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course);
+        this.props.getBookChapterUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
     }
-
-    componentDidMount() {        
+    
+    componentDidMount() {                
         this.loadUrl();
     }
 
@@ -26,7 +26,7 @@ class QuizletPractice extends Component {
       }
 
     render() {  
-        if(!this.props.quizletUrl) {
+        if(!this.props.bookChapterUrl) {
             return (
                 <div>
                     <div>
@@ -38,13 +38,10 @@ class QuizletPractice extends Component {
         }else{
             return (
                 <div>
-                    <div>
-                        <Loading cover="content"/>
-                    </div>
-                    <InternalIFrame iFrameUrl={`${this.props.quizletUrl}`}/>                    
+                    <InternalIFrame iFrameUrl={`${this.props.bookChapterUrl}`}/>                    
                 </div>
             )
-        }
+        }    
     }
 }
 
@@ -54,14 +51,14 @@ function mapDispatchToProps(dispatch){
         getWasUserConfigSetFlag: getWasUserConfigSetFlag, 
         getUserSelectedCourse: getUserSelectedCourse,
         getUserNativeLanguage: getUserNativeLanguage,
-        getQuizletUrl: getQuizletUrl
+        getBookChapterUrl: getBookChapterUrl
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { wasUserConfigSet, selectedCourse, nativeLanguage, quizletUrl } = lrn;
+	const { wasUserConfigSet, selectedCourse, nativeLanguage, bookChapterUrl } = lrn;
     const { locale, direction, course } =  theme;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, quizletUrl }
+	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, bookChapterUrl }
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(QuizletPractice);
+export default connect(mapStateToProps, mapDispatchToProps)(BookSection);

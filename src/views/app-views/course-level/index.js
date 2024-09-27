@@ -1,24 +1,36 @@
 import React, {Component, Suspense} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
+import InternalIFrame from 'components/layout-components/InternalIFrame';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 class CourseLevel extends Component {
 
-    componentDidMount() {            
+    componentDidMount() {
+
     }
      
     componentDidUpdate() {
-        // Add here modules that change with the course
+
 	}
 
     render() {
-                 
-        return (
-            <div id="unathenticated-landing-page-margin">
-                 <LandingWrapper course={this.props?.match?.params?.level} coursePath={this.props?.location.pathname}/>              
-            </div>
-        )             
+        const searchTerm = "supermarket";
+        // This has to be refactor as its too weak for an approach
+        if(!this.props.location?.pathname?.includes(searchTerm)) {
+            return (
+                <div id="unathenticated-landing-page-margin">
+                     <LandingWrapper course={this.props?.match?.params?.level} coursePath={this.props?.location.pathname}/>              
+                </div>
+            ) 
+        }else{
+            return (
+                <div id="unathenticated-landing-page-margin">
+                     <InternalIFrame iFrameUrl={`https://heyzine.com/flip-book/9d89c42ef1.html`}/>                 
+                </div>
+            ) 
+        }
+            
     }
 }
 

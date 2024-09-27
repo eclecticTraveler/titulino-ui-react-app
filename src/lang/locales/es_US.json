@@ -1,7 +1,7 @@
 {
 	"select.course.go.back": "Cambiar idioma nativo",
-	"select.course.modal.title": "Seleccionar curso",
-	"select.course.modal.subtitle": "Me gustaría aprender:",
+	"select.course.modal.title": "Seleccione el curso del idioma que le gustaría tomar",
+	"select.course.modal.subtitle": "Seleccione la bandera abajo",
 	"select.course.footer.question":"¿Necesita mas ayuda?",
 	"select.course.footer.find.us":"o encuéntranos en",
 	"profile.help.center":"Centro de ayuda",
@@ -9,10 +9,12 @@
 	"profile.sign.out":"Salir",
 	"sidenav.class":"Clase",
 	"sidenav.listening": "Comprensión",
+	"sidenav.review": "Repaso",
 	"sidenav.spell": "Redactar",
 	"sidenav.test":"Examen",
 	"sidenav.match":"Juego",
 	"sidenav.resources":"Recursos",
+	"sidenav.quizlet":"Quizlet",
 	"sidenav.login": "Acessar",
 	"profile.donate":"Haz una donacion",
 	"under.construction.title":"Bajo construcción, proximanente",
@@ -117,7 +119,10 @@
 	"module.spell":"Redacción",
 	"module.play":"Juego",
 
-	"main.upper.nav.level.1": "Nivel  1",
+	"main.upper.nav.level.1": "Nivel 1",
 	"main.upper.nav.level.2": "Nivel 2",
-	"main.upper.nav.level.3": "Nivel 3"
+	"main.upper.nav.level.3": "Nivel 3",
+
+	"main.upper.nav.theme.level.pilot": "Piloto",
+	"sidenav.book": "Libro"
 }

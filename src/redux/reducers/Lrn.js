@@ -12,7 +12,6 @@ import {
   CURRENT_ROUTE_INFO,
   GET_QUIZLET_URL,
   GET_VIDEO_CLASS_URL,
-  ON_KC_AUTHENTICATION,
   ON_SHIPPING_TAB_CHANGE,
   ON_EDIT_ADDRESS_CHANGE,
   ON_EDIT_USER_PROFILE_CHANGE,
@@ -22,7 +21,8 @@ import {
   ON_SELECTING_CORRECTION_MODAL,
   ON_SELECTING_CORRECTION_RECORD,
   ON_LOADING_LANDING_DASHBOARD,
-  ON_LOADING_LANDING_PAGE
+  ON_LOADING_LANDING_PAGE,
+  GET_BOOK_CHAPTER_URL
 } from "../constants/Lrn";
 
 const initState = {
@@ -80,10 +80,10 @@ const lrn = (state = initState, action) => {
         ...state,
         shippingTabKey: action.shippingTabKey
       }
-    case ON_KC_AUTHENTICATION:
+    case GET_BOOK_CHAPTER_URL:
       return {
         ...state,
-        keycloakRedux: action.keycloakRedux
+        bookChapterUrl: action.bookChapterUrl
       }
     case GET_VIDEO_CLASS_URL:
       return {

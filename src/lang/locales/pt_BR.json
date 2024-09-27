@@ -1,7 +1,7 @@
 {
 	"select.course.go.back": "Mudar idioma nativo",
-	"select.course.modal.title": "Selecione um curso",
-	"select.course.modal.subtitle": "Eu gostaria de aprender:",
+	"select.course.modal.title": "Selecione o curso do idioma que você gostaria de aprender",
+	"select.course.modal.subtitle": "Selecione a bandeira abaixo.",
 	"select.course.footer.question":"Você precisa de mais ajuda?",
 	"select.course.footer.find.us":"ou encontre-nos em",
 	"profile.help.center":"Centro de ajuda",
@@ -10,10 +10,12 @@
 	"sidenav.class":"Classe",
 	"profile.donate":"Faça uma doação",
 	"sidenav.listening": "Compreensão",
+	"sidenav.review": "Revisão",
 	"sidenav.spell": "Escreve",
 	"sidenav.test":"Teste",
 	"sidenav.match":"Juego",
 	"sidenav.resources":"Recursos",
+	"sidenav.quizlet":"Quizlet",
 	"sidenave.practice": "Pratica",
 	"sidenave.play":"Joga",	
 	"sidenav.login": "Entrar",
@@ -121,6 +123,9 @@
 
 	"main.upper.nav.level.1": "Nível 1",
 	"main.upper.nav.level.2": "Nível 2",
-	"main.upper.nav.level.3": "Nível 3"
+	"main.upper.nav.level.3": "Nível 3",
+
+	"main.upper.nav.theme.level.pilot": "Piloto",
+	"sidenav.book": "Livro"
 
 }

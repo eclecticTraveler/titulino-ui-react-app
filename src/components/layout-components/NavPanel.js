@@ -29,7 +29,7 @@ export class NavPanel extends Component {
 		return (
       <>
         <Menu mode="horizontal">
-          <Menu.Item onClick={this.showDrawer } className="menu-right-padding">
+          <Menu.Item key="1" onClick={this.showDrawer } className="menu-right-padding">
             <SettingOutlined className="nav-icon mr-0 menu-right-size" />
           </Menu.Item>
         </Menu>

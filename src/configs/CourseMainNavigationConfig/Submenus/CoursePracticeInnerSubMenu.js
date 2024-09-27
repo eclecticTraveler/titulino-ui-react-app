@@ -8,6 +8,12 @@ import {
 	faGamepad,
 	faBookReader,
 	faKeyboard,
+	faClone,
+	faFileLines,
+	faDice,
+	faUserClock,
+	faPencilAlt,
+	faChalkboard
    } from '@fortawesome/free-solid-svg-icons';
 
 const uuidv4 = () => {
@@ -81,4 +87,81 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 	]
 
 }
+
+export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
+	// spell  || flashcards -> Resources || Match || Learn --> pratica|| Test
+		  return [
+			{
+				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.book}`,
+				title: 'sidenav.book',
+				icon: faBookReader,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			},
+			{
+				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.class}`,
+				title: 'sidenav.class',
+				icon: faChalkboard,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			},
+			{
+				key: `module-quizlet-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.quizlet}`,
+				title: 'sidenav.quizlet',
+				icon: faClone,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			},
+			{
+				key: `module-review-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.review}`,
+				title: 'sidenav.review',
+				icon: faFileLines,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			},
+			{
+				key: `module-play-${levelNo}-${chapterNo}-${uuidv4()}`,	
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.play}`,
+				title: 'sidenav.match',
+				icon: faDice,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			},
+			{
+				key: `module-spell-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.spell}`,
+				title: 'sidenav.spell',
+				icon: faPencilAlt,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			},
+			{
+				key: `module-test-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.test}`,
+				title: 'sidenav.test',
+				icon: faUserClock,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			}
+		]
+	
+	}
 

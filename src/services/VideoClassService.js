@@ -1,4 +1,5 @@
 import videoClassesData from '../assets/data/chapter-class-data.json';
+import CentralCourseThemeService from 'services/CentralCourseThemeService';
 
 const loadVideoClassData = async() => {
   const rawData = videoClassesData;
@@ -7,7 +8,7 @@ const loadVideoClassData = async() => {
 
 const loadRequestedClassUrl = async(levelNo, chapterNo, nativeLanguage, course) => {  
   const rawClassData = await loadVideoClassData();
-  const rawCourseData = rawClassData?.find(c => (c.level === parseInt(levelNo, 10) && c.course === course && c.nativeLanguage === nativeLanguage))
+  const rawCourseData = rawClassData?.find(c => (c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && c.course === course && c.nativeLanguage === nativeLanguage));
   const rawRequestedModule = rawCourseData?.chapters.find(ch => ch.chapter === parseInt(chapterNo, 10));
   return rawRequestedModule?.url;
 }

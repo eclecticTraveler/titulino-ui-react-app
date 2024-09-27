@@ -21,11 +21,11 @@ class CourseSelection extends Component {
 		this.props.getAllLanguageCourses();
 	}
 
-	processSelectedCourse = (course) => {		
+	processSelectedCourse = (course) => {	
+
 		if(this.props.nativeLanguage){		
 			this.props.onCourseChange(course?.courseAbbreviation);
 			this.props.setUserSelectedCourse(course);
-			this.props.history.push('/');
 		}
 					
 	}
@@ -63,10 +63,10 @@ class CourseSelection extends Component {
 			)	
 
 			if(this.props.nativeLanguage){	
-				listOfCoursesBySelectedNativeLanguage =  this.props.nativeLanguage?.courses?.map((course, i) => 
+				listOfCoursesBySelectedNativeLanguage =  this.props.nativeLanguage?.courses?.map((course, j) => 
 				{
 					return course?.isAvailable && (
-						<div key={i} className="single-web-account" onClick={() => this.processSelectedCourse(course)}>
+						<div key={j} className="single-web-account" onClick={() => this.processSelectedCourse(course)}>
 							<div>
 								<div className='antd-icon-arrow'>
 									<ArrowRightOutlined />
@@ -96,8 +96,8 @@ class CourseSelection extends Component {
 							(!this.props.nativeLanguage) && 
 							<div id="course-selection-section">
 								<div className="information">
-									<h2>Select your native language below TESTING5</h2>
-									<p>Seleccione abajo su idioma nativo / Selecione embaixo o seu idioma nativo</p>
+									<h2>Seleccione abajo su idioma nativo / Selecione embaixo o seu idioma nativo</h2>
+									<p>Select your native language below</p>
 								</div>
 								<div>
 								{listOfBasedLanguages}

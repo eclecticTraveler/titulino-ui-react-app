@@ -1,5 +1,5 @@
-import { SIDE_NAV_LIGHT, NAV_TYPE_SIDE, DIR_LTR, SIDE_NAV_DARK } from '../constants/ThemeConstant';
-import { env } from './EnvironmentConfig'
+import { SIDE_NAV_LIGHT, NAV_TYPE_SIDE, DIR_LTR } from 'constants/ThemeConstant';
+import { env } from 'configs/EnvironmentConfig';
 
 export const APP_NAME = 'LRN';
 export const API_BASE_URL = env.KC_ENDPOINT_URL

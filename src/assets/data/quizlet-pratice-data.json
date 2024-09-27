@@ -1294,6 +1294,60 @@
             "title": "The Human Body - La Cara - Part 3"
           }
         ]
+      },
+      {
+        "id":14,
+        "courseTitle":"titulino-supermarket",
+        "level": 4,
+        "resourceName": "Titulino Theme Supermarket",
+        "nativeLanguage": "es",
+        "course": "eng",
+        "courses" : [
+          {
+            "id":"933562855",
+            "title": "Food - Vegetables: Part 1"
+          },
+          {
+            "id":"933564905",
+            "title": "Food - Vegetables: Part 2"
+          },
+          {
+            "id":"934566668",
+            "title": "Food - Fruits: Part 1"
+          },
+          {
+            "id":"934568741",
+            "title": "Food - Fruits: Part 2"
+          },
+          {
+            "id":"935018766",
+            "title": "Food - Meat"
+          },
+          {
+            "id":"935895872",
+            "title": "Food - Poultry, and Seafood"
+          },
+          {
+            "id":"935901452",
+            "title": "Food - Containers: Part 1"
+          },
+          {
+            "id":"935903259",
+            "title": "Food - Containers: Part 2"
+          },
+          {
+            "id":"935911152",
+            "title": "Food - Supermarket: Part 1"
+          },
+          {
+            "id":"935917938",
+            "title": "Food - Supermarket: Part 2"
+          },
+          {
+            "id":"935980964",
+            "title": "All 150+ Core Words Supermarket Items"
+          }
+        ]
       }
     ]
   }

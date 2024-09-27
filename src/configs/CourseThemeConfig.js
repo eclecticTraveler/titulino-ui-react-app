@@ -4,6 +4,7 @@ export const COURSE_COLOR_CONFIG = {
 	lowerBeginner:"#bf4b1f",
 	midBeginner:"#37aab5",
 	upperBeginner: "#d19715",
+	superMarketTheme:"#255c0a",
 	defaultBlueBasic:"#3CA292",
 	defaultRedBasic: "#C4745F",
 	defaultYellowBasic: "#C89736"

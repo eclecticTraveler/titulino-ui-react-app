@@ -55,7 +55,7 @@ export const NavLanguage = ({ locale, configDisplay, onLocaleChange }) => {
 				:
 				(
 					<Menu mode="horizontal" className="menu-right-padding">
-						<Menu.Item className="menu-right-padding">
+						<Menu.Item key="1" className="menu-right-padding">
 							<a href="#/" onClick={e => e.preventDefault()}>
 								<GlobalOutlined className="nav-icon mr-0 menu-right-size" />
 							</a>
