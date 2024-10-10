@@ -54,8 +54,8 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-4',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-5`,
-			title: 'sidenav.chapter.5',
+			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-4`,
+			title: 'sidenav.chapter.4',
 			icon: faLemon,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,

@@ -25,11 +25,23 @@
 		line-height: 36px; 
 		padding: 0 5px;
 
+		& when (@theme = dark) {
+			color: #fafafa;
+			border-color: #fafafa; 
+		} 
+		
+
 		&:hover {
-			background-color:#ff008c;// #0E1F43 !important; 
-			border-color: #0E1F43 !important; 
-			color: #fff !important; 
+			background-color:#0E1F43;// #0E1F43 !important; 
+			border-color: #0E1F43; 
+			color: #fff; 
+
+			& when (@theme = dark) {
+				color: #fafafa;
+				border-color: #fafafa; 
+			} 
 		}
+
 	}
 }
 
