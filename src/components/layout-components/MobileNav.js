@@ -8,6 +8,7 @@ import { onMobileNavToggle } from "../../redux/actions/Theme";
 import LogoAlt from "./LogoAlt";
 import Flex from "../../components/shared-components/Flex";
 import { ArrowLeftOutlined } from "@ant-design/icons";
+import WidgetAction from 'components/shared-components/WidgetAction';
 
 export const MobileNav = ({
 	sideNavTheme,
@@ -26,30 +27,33 @@ export const MobileNav = ({
 	
 	return (
 		<Drawer
-			placement="left"
-			closable={false}
-			onClose={onClose}
-			visible={mobileNav}
-			bodyStyle={{ padding: 5 }}
-		>
-			<Flex flexDirection="column" className="h-100">
-				<div className="mobile-logo">
-					<Flex justifyContent="between" alignItems="center">
-						<LogoAlt/>
+		placement="left"
+		closable={false}
+		onClose={onClose}
+		visible={mobileNav}
+		bodyStyle={{ padding: 5 }}
+	>
+		<Flex flexDirection="column" className="h-100">
+			<div className="mobile-logo">
+				<Flex justifyContent="between" alignItems="center">
+					<LogoAlt/>
 
-						<div className="nav-close" onClick={() => onClose()}>
-							<ArrowLeftOutlined />
-						</div>
-					</Flex>
-				</div>
+					<div className="nav-close" onClick={() => onClose()}>
+						<ArrowLeftOutlined />
+					</div>
+				</Flex>
+			</div>
 
-				<div className="mobile-nav-menu">
-					<Scrollbars autoHide>
-						<MenuContent type={NAV_TYPE_SIDE} {...props} />
-					</Scrollbars>
-				</div>
-			</Flex>
-		</Drawer>
+			<div className="mobile-nav-menu">
+				<Scrollbars autoHide>
+					<MenuContent type={NAV_TYPE_SIDE} {...props} />
+				</Scrollbars>
+			</div>
+			<div className="mobile-donate">
+				<WidgetAction />			
+			</div>
+		</Flex>
+	</Drawer>
 	);
 };
 

@@ -22,7 +22,8 @@ import {
   ON_SELECTING_CORRECTION_RECORD,
   ON_LOADING_LANDING_DASHBOARD,
   ON_LOADING_LANDING_PAGE,
-  GET_BOOK_CHAPTER_URL
+  GET_BOOK_CHAPTER_URL,
+  GET_PDF_PATH_URL
 } from "../constants/Lrn";
 
 const initState = {
@@ -79,6 +80,11 @@ const lrn = (state = initState, action) => {
       return {
         ...state,
         shippingTabKey: action.shippingTabKey
+      }
+    case GET_PDF_PATH_URL:
+      return {
+        ...state,
+        pdfPathUrl: action.pdfPathUrl
       }
     case GET_BOOK_CHAPTER_URL:
       return {

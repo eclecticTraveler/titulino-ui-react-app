@@ -13,7 +13,9 @@ import {
 	faDice,
 	faUserClock,
 	faPencilAlt,
-	faChalkboard
+	faChalkboard,
+	faArrowUp,
+	faFilePdf
    } from '@fortawesome/free-solid-svg-icons';
 
 const uuidv4 = () => {
@@ -122,6 +124,16 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 				submenu: []
 			},
 			{
+				key: `module-quizlet-pdf-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.quizletpdf}`,
+				title: 'sidenav.quizletpdf',
+				icon: faFilePdf,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			},
+			{
 				key: `module-review-${levelNo}-${chapterNo}-${uuidv4()}`,
 				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.review}`,
 				title: 'sidenav.review',
@@ -163,5 +175,21 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 			}
 		]
 	
-	}
+}
+
+export const getCoursePracticeResourcesInnerSubMenu = (lang, levelNo, chapter) => {
+		  return [
+			{
+				key: `module-class-${levelNo}-${chapter}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.resources}/${getLocalizedConfig(lang)?.progress}`,
+				title: 'sidenav.progress',
+				icon: faArrowUp,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			}
+		]
+	
+}
 

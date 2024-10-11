@@ -96,7 +96,7 @@ export const HeaderNav = props => {
 					{/* TODO: TITULINO PROFILE NAVIGATION */}
 					{/* titulino fix the nav notification Menu Item issue to ellipsis */}
 					{/* <NavNotification /> */}
-					<NavSearchWrapper isMobile={false} mode={mode}/>
+					{!isMobile && <NavSearchWrapper isMobile={false} mode={mode}/>}
 					<NavLanguage/>
 					<NavPanel direction={direction} />
 					{/* {env.KC_ENABLED_FEATURE && (

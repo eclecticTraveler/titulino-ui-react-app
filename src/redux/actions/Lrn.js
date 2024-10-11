@@ -9,6 +9,7 @@ import ProfileService from "../../services/ProfileService";
 import dummyData from "../../assets/data/dummyDW.json";
 import GraphService from "../../services/Charting/Admin/GraphService";
 import BookChapterService from "services/BookChapterService";
+import PdfFileService from "services/PdfFileService";
 import $ from 'jquery'; 
 
 import axios from 'axios';
@@ -38,7 +39,8 @@ import {
   ON_LOADING_LANDING_DASHBOARD,
   ON_LOADING_LANDING_PAGE,
   ON_LOADING_FIVE_MIN_LESSON,
-  GET_BOOK_CHAPTER_URL
+  GET_BOOK_CHAPTER_URL,
+  GET_PDF_PATH_URL
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -118,6 +120,14 @@ export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, c
     return {
       type: GET_BOOK_CHAPTER_URL,
       bookChapterUrl: url
+    }
+  }
+
+export const getPdfPathUrl = async (levelTheme, chapterNo, nativeLanguage, course) => {
+  const url = await PdfFileService.getPdfPathUrl(levelTheme, chapterNo, nativeLanguage, course);
+    return {
+      type: GET_PDF_PATH_URL,
+      pdfPathUrl: url
     }
   }
 
