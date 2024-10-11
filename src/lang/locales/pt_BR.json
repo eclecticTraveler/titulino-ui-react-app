@@ -126,6 +126,8 @@
 	"main.upper.nav.level.3": "Nível 3",
 
 	"main.upper.nav.theme.level.pilot": "Piloto",
-	"sidenav.book": "Livro"
+	"sidenav.book": "Livro",
+	"sidenav.progress": "Progresso",
+	"sidenav.quizletpdf": "Quizlet Pdf"
 
 }

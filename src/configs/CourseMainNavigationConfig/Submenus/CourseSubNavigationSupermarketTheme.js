@@ -1,6 +1,6 @@
 import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
-import { getCoursePracticeInnerSubMenuV2 } from './CoursePracticeInnerSubMenu';
+import { getCoursePracticeInnerSubMenuV2, getCoursePracticeResourcesInnerSubMenu } from './CoursePracticeInnerSubMenu';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
 	faCarrot,
@@ -14,7 +14,8 @@ import {
 	faArchive,
 	faMoneyBill,
 	faBreadSlice,
-	faHotdog
+	faHotdog,
+	faBoxes
    } from '@fortawesome/free-solid-svg-icons';
 
 export const CourseSubNavigationSupermarketTheme = (lang) => {			
@@ -138,6 +139,17 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 			breadcrumb: false,
 			submenu: [
 				...getCoursePracticeInnerSubMenuV2(lang, 'supermarket', 11)
+			]
+		},
+		{
+			key: 'chapter-sidenav-theme-supermarket-resources',
+			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.resources}`,
+			title: 'module.resources',
+			icon: faBoxes,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+			breadcrumb: false,
+			submenu: [
+				...getCoursePracticeResourcesInnerSubMenu(lang, 'supermarket', 'resources')
 			]
 		}
 	]

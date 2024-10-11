@@ -14,8 +14,10 @@ export const getLocalizedConfig = (lang) => {
 		module: "module",
 		review: "review",
 		quizlet: "quizlet",
-		book: "book"
-
+		book: "book",
+		progress: "progress",
+		document: "document",
+		quizletpdf: "quizlet-pdf"
 	}
 
 	switch (lang) {
@@ -36,6 +38,9 @@ export const getLocalizedConfig = (lang) => {
 			localization.review = "revisão";
 			localization.quizlet = "quizlet";
 			localization.book = "libro";
+			localization.progress = "progresso";
+			localization.document = "documento";
+			localization.quizletpdf = "quizlet-pdf";
 			return localization;
 		case "spa":
 			localization.chapter = "capitulo";
@@ -52,6 +57,9 @@ export const getLocalizedConfig = (lang) => {
 			localization.review = "repaso";
 			localization.quizlet = "quizlet";
 			localization.book = "livro";
+			localization.progress= "progreso";
+			localization.document = "documento";
+			localization.quizletpdf = "quizlet-pdf";
 			return localization;        
 		default:
 			return localization;
