@@ -51,7 +51,7 @@ export const getEmbeddableUrl = async(modality, chapterNo, levelNo, nativeLangua
   const rawRequestedModule = await loadRequestedModule(levelNo, nativeLanguage, course);
   const chapter = await loadChapter(rawRequestedModule, chapterNo);
   const mod = await getQuizletKeyWord(modality);
-  const embeddableUrl = (chapter.id && rawRequestedModule) ? `https://quizlet.com/${chapter?.id}/${mod}/embed?${quizletPracticeData?.generalId}` : ""; 
+  const embeddableUrl = (chapter?.id && rawRequestedModule) ? `https://quizlet.com/${chapter?.id}/${mod}/embed?${quizletPracticeData?.generalId}` : ""; 
 
   return embeddableUrl;
 }

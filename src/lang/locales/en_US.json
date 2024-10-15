@@ -126,7 +126,23 @@
 	"main.upper.nav.theme.level.pilot": "Pilot",
 	"sidenav.book": "Book",
 	"sidenav.progress": "Progress",
-	"sidenav.quizletpdf": "Quizlet Pdf"
+	"sidenav.quizletpdf": "Quizlet Pdf",
 
+	"profile.login.accountyet":"Don't have an account yet?",
+	"profile.login.signup":"Sign Up",
+	"profile.login.connectwith":"connect with",
+	"profile.login.recommended":"Recommended",
+	"profile.login.traditional":"or use traditional method.",
+	"profile.login.email":"Email",
+	"profile.login.password":"Password",
+	"profile.login.signIn":"Sign In",
+	"profile.login.inputPassword":"Please input your password",
+	"profile.login.forgetPassword":"Forget Password?",
+	"profile.login.inputEmail":"Please input your email",
+	"profile.login.validEmail":"Please enter a validate email!",
+	"profile.login.createAccount": "Create a new account",
+	"profile.login.pleaseConfirmPassword": "Please confirm your password!",
+	"profile.login.confirmPassword": "Confirm Password",
+	"profile.login.signUp": "Sign Up"
 
 }

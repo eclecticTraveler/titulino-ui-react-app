@@ -85,8 +85,8 @@ const dashBoardNavTree = [
 	}
 ]
 
-const englishMainNavigationConfig = [
+const englishCourseMainNavigationConfig = [
   ...dashBoardNavTree
 ]
 
-export default englishMainNavigationConfig;
+export default englishCourseMainNavigationConfig;

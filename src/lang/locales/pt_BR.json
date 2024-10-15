@@ -18,7 +18,7 @@
 	"sidenav.quizlet":"Quizlet",
 	"sidenave.practice": "Pratica",
 	"sidenave.play":"Joga",	
-	"sidenav.login": "Entrar",
+	"sidenav.login": "Entrar no Titulino",
 	"under.construction.title":"Em construção, proximanente",
 	"under.construction.subtitle":"Avisaremos quando estiver disponível para você",
 	"under.construction.gratitute":"Obrigado pelo seu apoio",
@@ -109,7 +109,7 @@
 	"settings.menu.sub.title.1.navcollapse": "Recolher navegação lateral:",
 	"settings.menu.sub.title.1.darktheme": "Tema escuro:",
 	"settings.menu.sub.title.2": "Local",
-	"settings.menu.sub.title.2.language": "Idioma"	,
+	"settings.menu.sub.title.2.language": "Idioma",
 	"local.level":"Nível",
 	"local.chapter":"Capítulo",
 	"local.module":"Módulo",
@@ -128,6 +128,25 @@
 	"main.upper.nav.theme.level.pilot": "Piloto",
 	"sidenav.book": "Livro",
 	"sidenav.progress": "Progresso",
-	"sidenav.quizletpdf": "Quizlet Pdf"
+	"sidenav.quizletpdf": "Quizlet Pdf",
+
+	"profile.login.accountyet":"Ainda não tem uma conta?",
+	"profile.login.signup":"Cadastre-se",
+	"profile.login.connectwith":"se conectar com",
+	"profile.login.recommended":"Recomendado",
+	"profile.login.traditional":"ou use o método tradicional.",
+	"profile.login.email":"E-mail",
+	"profile.login.password":"Senha",
+	"profile.login.signIn":"Entrar",
+	"profile.login.inputPassword":"Por favor insira sua senha",
+	"profile.login.forgetPassword":"Esqueceu a senha?",
+	"profile.login.inputEmail":"Por favor insira seu e-mail",
+	"profile.login.validEmail":"Por favor insira um e-mail válido!",
+	"profile.login.createAccount": "Criar uma nova conta",
+	"profile.login.pleaseConfirmPassword": "Por favor, confirme sua senha!",
+	"profile.login.confirmPassword": "Confirmar senha",
+	"profile.login.signUp": "Cadastre-se"
+
+	
 
 }

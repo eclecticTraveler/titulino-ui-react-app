@@ -4,7 +4,7 @@ import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
 import { IntlProvider } from "react-intl";
 import { ConfigProvider } from "antd";
-import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH } from "../configs/AppConfig";
+import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH, AUTH_PREFIX_PATH } from "../configs/AppConfig";
 import { Route, Switch, Redirect, withRouter } from "react-router-dom";
 import AuthLayout from '../layouts/auth-layout';
 import AppLayout from "../layouts/app-layout";
@@ -14,12 +14,33 @@ import { onLocaleChange, onCourseChange, onLoadingUserSelectedTheme } from '../r
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
 
-export const Views = (props) => { 
-    const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage,
-        wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, subNavPosition } = props;
+function RouteInterceptor({ children, isAuthenticated, ...rest }) {
+    const loginPath = `${AUTH_PREFIX_PATH}/test`; /// LOGIN
+    console.log("INTER", isAuthenticated);
+    // If isAuthenticated then render components passed if not then redirect to pathname or login page
+    return (
+      <Route
+        {...rest}
+        render={({ location }) =>
+          isAuthenticated ? (
+            children
+          ) : (
+            <Redirect
+              to={{
+                pathname: loginPath,
+                state: { from: location }
+              }}
+            />
+          )
+        }
+      />
+    );
+  }
 
-    const localization = locale ? locale : 'en';
-    const currentAppLocale = AppLocale[localization];
+export const Views = (props) => { 
+    const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token,
+        wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, subNavPosition } = props;
+    const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
 
     useBodyClass(`dir-${direction}`);
@@ -44,7 +65,10 @@ export const Views = (props) => {
                 onCourseChange(selectedCourse?.courseAbbreviation);
             }
         }
+
     }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);
+
+    console.log("tokensito",token);
 
 
     return (
@@ -52,12 +76,18 @@ export const Views = (props) => {
             <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
                 <Switch>
                     {!wasUserConfigSet && <CourseSelection />}
-                    <Route exact path="/">
-                        <Redirect to={APP_PREFIX_PATH ? APP_PREFIX_PATH : DEFAULT_PREFIX_VIEW} />
+                    <Route exact path={DEFAULT_PREFIX_VIEW}>
+                        <Redirect to={token ? AUTH_PREFIX_PATH : APP_PREFIX_PATH} />
                     </Route>
-                    <Route path={APP_PREFIX_PATH ? APP_PREFIX_PATH : DEFAULT_PREFIX_VIEW}>
-                        <AppLayout direction={direction} location={props.location} />
+                    <Route path={APP_PREFIX_PATH}>
+                        <AppLayout direction={direction} location={location} />
                     </Route>
+                    {/* <Route path={AUTH_PREFIX_PATH}>
+                        <AuthLayout direction={direction} location={location}/>
+                    </Route> */}
+                    <RouteInterceptor path={AUTH_PREFIX_PATH} isAuthenticated={token}>
+                        <AuthLayout direction={direction} location={location}/>
+                    </RouteInterceptor>
                 </Switch>                            
             </ConfigProvider>
         </IntlProvider>  
@@ -75,10 +105,11 @@ function mapDispatchToProps(dispatch) {
     }, dispatch);
 }
 
-const mapStateToProps = ({ theme, lrn }) => {
+const mapStateToProps = ({ theme, lrn, auth }) => {
     const { wasUserConfigSet, selectedCourse, nativeLanguage } = lrn;
     const { locale, direction, course, currentTheme, subNavPosition } = theme;
-    return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, currentTheme, subNavPosition };
+    const { token } = auth;
+    return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, currentTheme, subNavPosition, token };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Views));

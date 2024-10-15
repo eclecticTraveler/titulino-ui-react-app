@@ -57,7 +57,7 @@
     "abbreviation":"por",
     "localizationId": "pt",
     "flag": "https://d2eaaub12s77xu.cloudfront.net/br.png",
-    "isAvailable": false,
+    "isAvailable": true,
     "courses":[
       {
         "id":1,
@@ -65,7 +65,7 @@
         "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/us.png",
         "courseAbbreviation": "eng",
         "localizationId": "en",
-        "isAvailable": false
+        "isAvailable": true
       },
       {
         "id":2,

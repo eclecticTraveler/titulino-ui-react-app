@@ -117,6 +117,7 @@ const url = await VideoClassService.getVideoClassUrl(levelNo, chapterNo, nativeL
 
 export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, course) => {
   const url = await BookChapterService.getBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course);
+  console.log("HEI", url);
     return {
       type: GET_BOOK_CHAPTER_URL,
       bookChapterUrl: url

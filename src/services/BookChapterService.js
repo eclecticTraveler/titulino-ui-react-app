@@ -9,7 +9,7 @@ const loadRequestedBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage,
   const rawBookData = await loadBookData();
   const filteredBookData = rawBookData?.books?.find(c => (c.theme === levelTheme && c.course === course && c.nativeLanguage === nativeLanguage))
   const ebookChapter = filteredBookData?.chapters.find(ch => ch.chapter === parseInt(chapterNo, 10)) || filteredBookData?.chapters[filteredBookData?.chapters.length - 1];
-  const embeddableUrl = `https://heyzine.com/flip-book/${filteredBookData?.id}.html#page/${ebookChapter?.page}`; 
+  const embeddableUrl = filteredBookData?.id ? `https://heyzine.com/flip-book/${filteredBookData?.id}.html#page/${ebookChapter?.page}` : null; 
   return embeddableUrl;
 }
 

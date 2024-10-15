@@ -15,7 +15,7 @@
 	"sidenav.match":"Juego",
 	"sidenav.resources":"Recursos",
 	"sidenav.quizlet":"Quizlet",
-	"sidenav.login": "Acessar",
+	"sidenav.login": "Iniciar Sesion",
 	"profile.donate":"Haz una donacion",
 	"under.construction.title":"Bajo construcción, proximanente",
 	"under.construction.subtitle":"Le avisaremos cuando esté disponible para usted",
@@ -126,5 +126,22 @@
 	"main.upper.nav.theme.level.pilot": "Piloto",
 	"sidenav.book": "Libro",
 	"sidenav.progress": "Progreso",
-	"sidenav.quizletpdf": "Quizlet Pdf"
+	"sidenav.quizletpdf": "Quizlet Pdf",
+	
+	"profile.login.accountyet":"¿Aún no tienes una cuenta?",
+	"profile.login.signup":"Registrarse",
+	"profile.login.connectwith":"conectarse con",
+	"profile.login.recommended": "Recomendado",
+	"profile.login.traditional":"o usar el método tradicional.",
+	"profile.login.email":"Correo electrónico",
+	"profile.login.password":"Contraseña",
+	"profile.login.signIn":"Iniciar sesión",
+	"profile.login.inputPassword":"Por favor ingrese su contraseña",
+	"profile.login.forgetPassword": "¿Olvidaste tu contraseña?",
+	"profile.login.inputEmail":"Por favor ingrese su correo electrónico",
+	"profile.login.validEmail":"¡Ingrese un correo electrónico valido!",
+	"profile.login.createAccount": "Crear una cuenta nueva",
+	"profile.login.pleaseConfirmPassword": "¡Confirme su contraseña!",
+	"profile.login.confirmPassword": "Confirmar contraseña",
+	"profile.login.signUp": "Registrarse"
 }

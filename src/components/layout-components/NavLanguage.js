@@ -25,10 +25,11 @@ export const NavLanguage = ({ locale, configDisplay, onLocaleChange }) => {
 	const languageOption = (
 		<Menu>
 			{
-				lang.map((elm, i) => {return (
+				lang.map((elm, i) => {
+					return (
 					<Menu.Item 
 						key={i} 
-						className={locale === elm.langId? 'ant-dropdown-menu-item-active': ''} 
+						className={locale === elm.langId ? 'ant-dropdown-menu-item-active': ''} 
 						onClick={() => onLocaleChange(elm.langId)}
 					>
 						<span className="d-flex justify-content-between align-items-center" >

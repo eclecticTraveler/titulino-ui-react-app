@@ -96,6 +96,15 @@ export const ThemeConfigurator = ({
 	return (
 		<>
 			<div className="mb-5">
+				<h4 className="mb-3 font-weight-bold">{setLocale(locale, 'settings.menu.sub.title.2')}</h4>
+				<ListOption 
+					name={setLocale(locale, 'settings.menu.sub.title.2.language')}
+					selector={
+						<NavLanguage configDisplay/>
+					}
+				/>
+			</div>
+			<div className="mb-5">
 			<h4 className="mb-3 font-weight-bold">{setLocale(locale, 'settings.menu.sub.title.1')}</h4>
 				<ListOption 
 					name={setLocale(locale, 'settings.menu.sub.title.1.navtype')}
@@ -129,16 +138,6 @@ export const ThemeConfigurator = ({
 					}
 				/>
 			</div>
-			<div className="mb-5">
-				<h4 className="mb-3 font-weight-bold">{setLocale(locale, 'settings.menu.sub.title.2')}</h4>
-				<ListOption 
-					name={setLocale(locale, 'settings.menu.sub.title.2.language')}
-					selector={
-						<NavLanguage configDisplay/>
-					}
-				/>
-			</div>
-
 		</>
 	)
 }
