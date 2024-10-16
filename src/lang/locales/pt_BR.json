@@ -129,6 +129,7 @@
 	"sidenav.book": "Livro",
 	"sidenav.progress": "Progresso",
 	"sidenav.quizletpdf": "Quizlet Pdf",
+	"sidenav.findMyprogress": "Meu progresso",
 
 	"profile.login.accountyet":"Ainda não tem uma conta?",
 	"profile.login.signup":"Cadastre-se",
@@ -145,7 +146,28 @@
 	"profile.login.createAccount": "Criar uma nova conta",
 	"profile.login.pleaseConfirmPassword": "Por favor, confirme sua senha!",
 	"profile.login.confirmPassword": "Confirmar senha",
-	"profile.login.signUp": "Cadastre-se"
+	"profile.login.signUp": "Cadastre-se",
+
+	"resources.myprogress.enterEmail": "Por favor insira um endereço de e-mail",
+	"resources.myprogress.noRecordsFound":"Nenhum registro encontrado.",
+	"resources.myprogress.requirements":"Você precisará de 8 aulas de gramática e 8 reuniões de Terças feiras ou gravação geral",
+	"resources.myprogress.participation":"Participação",
+	"resources.myprogress.date":"Data",
+	"resources.myprogress.email":"E-mail",
+	"resources.myprogress.recordsFound":"registros encontrados",
+	"resources.myprogress.search":"Procurar",
+	"resources.myprogress.inputEmail":"Insira o e-mail",
+	"resources.myprogress.title":"Progresso da pesquisa por e-mail",
+	"resources.myprogress.reset":"Redefinir",
+	"resources.myprogress.participationcert":"% concluída para certificado de participação",
+	"resources.myprogress.goldencert":"% concluída para o Golden Certificate",
+	"resources.myprogress.requirementsTitle":"Requisitos",
+	"resources.myprogress.tuesdayGatherings":"Reuniões de terça-feira (ao vivo/gravadas)",
+	"resources.myprogress.watchedGrammarClasses":"Aulas de gramática assistidas",
+	"resources.myprogress.finalExam":"Prova Final",
+	"resources.myprogress.recordProgress":"Registre seu progresso",
+	"resources.myprogress.here":"Aqui",
+	"resources.myprogress.searchYourEmail":"Pesquise usando o seu e-mail"
 
 	
 

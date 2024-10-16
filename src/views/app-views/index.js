@@ -3,7 +3,7 @@ import { Switch, Route, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { bindActionCreators } from 'redux';
 import Loading from '../../components/shared-components/Loading';
-import { APP_PREFIX_PATH } from '../../configs/AppConfig';
+import { APP_PREFIX_PATH, DEFAULT_LANDING_COURSE } from '../../configs/AppConfig';
 import { onCurrentRouteInfo } from '../../redux/actions/Lrn';
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import { retry } from '../../helpers/index';
@@ -25,9 +25,9 @@ export const AppViews = (props) => {
 			<Route exact path={`${APP_PREFIX_PATH}/logout`} component={lazy(() => import(`./logout`))} />
 			<Route exact path={`${APP_PREFIX_PATH}/login`} component={lazy(() => import(`./user/redirect-login`))} />
 			<Route exact path={`${APP_PREFIX_PATH}/signup`} component={lazy(() => import(`./user/redirect-signup`))} />
-			{/* // Default to level 1 for any course until they are authorized to save where their progress was and land them there	*/}
-			<Redirect from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-1`} />
-			<Redirect from={`${APP_PREFIX_PATH}/`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-1`} />
+			{/* // Default to level 1 for any course until they are authorized to save where their progress was and land them there	*/}			
+			<Redirect from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
+			<Redirect from={`${APP_PREFIX_PATH}/`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
 		</Switch>
 	</Suspense>
 	</>

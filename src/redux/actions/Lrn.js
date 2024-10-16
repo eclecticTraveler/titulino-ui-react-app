@@ -10,6 +10,8 @@ import dummyData from "../../assets/data/dummyDW.json";
 import GraphService from "../../services/Charting/Admin/GraphService";
 import BookChapterService from "services/BookChapterService";
 import PdfFileService from "services/PdfFileService";
+import GoogleSpreadsheetsService from "services/GoogleSpreadsheetsService";
+import StudentProgress from "lob/StudenProgress";
 import $ from 'jquery'; 
 
 import axios from 'axios';
@@ -40,7 +42,8 @@ import {
   ON_LOADING_LANDING_PAGE,
   ON_LOADING_FIVE_MIN_LESSON,
   GET_BOOK_CHAPTER_URL,
-  GET_PDF_PATH_URL
+  GET_PDF_PATH_URL,
+  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -117,7 +120,6 @@ const url = await VideoClassService.getVideoClassUrl(levelNo, chapterNo, nativeL
 
 export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, course) => {
   const url = await BookChapterService.getBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course);
-  console.log("HEI", url);
     return {
       type: GET_BOOK_CHAPTER_URL,
       bookChapterUrl: url
@@ -129,6 +131,19 @@ export const getPdfPathUrl = async (levelTheme, chapterNo, nativeLanguage, cours
     return {
       type: GET_PDF_PATH_URL,
       pdfPathUrl: url
+    }
+  }
+
+
+export const onSearchingForProgressByEmailId = async (email) => {
+  const registeredProgressById = await GoogleSpreadsheetsService.getProgressByEmailId(email, "onSearchingForProgressByEmailId");
+  const studentPercentagesForCourse = await StudentProgress.calculatePercentageForSupermarketCertificates(registeredProgressById);
+  const studentCategoriesCompletedForCourse = await StudentProgress.getCategoriesObtainedByEmailForSupermarketCourse(registeredProgressById)
+    return {
+      type: ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
+      registeredProgressByEmailId: registeredProgressById,
+      studentPercentagesForCourse: studentPercentagesForCourse,
+      studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse
     }
   }
 

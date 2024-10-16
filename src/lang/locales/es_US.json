@@ -127,6 +127,7 @@
 	"sidenav.book": "Libro",
 	"sidenav.progress": "Progreso",
 	"sidenav.quizletpdf": "Quizlet Pdf",
+	"sidenav.findMyprogress": "Mi Progreso",
 	
 	"profile.login.accountyet":"¿Aún no tienes una cuenta?",
 	"profile.login.signup":"Registrarse",
@@ -143,5 +144,26 @@
 	"profile.login.createAccount": "Crear una cuenta nueva",
 	"profile.login.pleaseConfirmPassword": "¡Confirme su contraseña!",
 	"profile.login.confirmPassword": "Confirmar contraseña",
-	"profile.login.signUp": "Registrarse"
+	"profile.login.signUp": "Registrarse",
+
+	"resources.myprogress.enterEmail": "Por favor ingresa una dirección de correo electrónico",
+	"resources.myprogress.noRecordsFound":"No se encontraron registros.",
+	"resources.myprogress.requirements":"Necesitarás 8 clases de gramática y 8 reuniones de los Martes o de grabación general",
+	"resources.myprogress.participation":"Participación",
+	"resources.myprogress.date":"Fecha",
+	"resources.myprogress.email":"Correo electrónico",
+	"resources.myprogress.recordsFound": "registros encontrados",
+	"resources.myprogress.search":"Buscar",
+	"resources.myprogress.inputEmail":"Ingrese el e-mail",
+	"resources.myprogress.title":"Buscar progreso por correo electrónico",
+	"resources.myprogress.reset":"Restablecer",
+	"resources.myprogress.participationcert":"% completado para el certificado de participación",
+	"resources.myprogress.goldencert":"% completado para el Certificado Dorado",
+	"resources.myprogress.requirementsTitle":"Requisitos",
+	"resources.myprogress.tuesdayGatherings":"Reuniones de los martes (en vivo/grabadas)",
+	"resources.myprogress.watchedGrammarClasses":"Clases de gramática observadas",
+	"resources.myprogress.finalExam":"Examen final",
+	"resources.myprogress.recordProgress":"Registra tu progreso",
+	"resources.myprogress.here":"Aquí",
+	"resources.myprogress.searchYourEmail":"Busca con correo electrónico"
 }

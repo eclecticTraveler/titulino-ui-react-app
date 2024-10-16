@@ -127,6 +127,7 @@
 	"sidenav.book": "Book",
 	"sidenav.progress": "Progress",
 	"sidenav.quizletpdf": "Quizlet Pdf",
+	"sidenav.findMyprogress": "My Progress",
 
 	"profile.login.accountyet":"Don't have an account yet?",
 	"profile.login.signup":"Sign Up",
@@ -143,6 +144,28 @@
 	"profile.login.createAccount": "Create a new account",
 	"profile.login.pleaseConfirmPassword": "Please confirm your password!",
 	"profile.login.confirmPassword": "Confirm Password",
-	"profile.login.signUp": "Sign Up"
+	"profile.login.signUp": "Sign Up",
+
+	"resources.myprogress.enterEmail": "Please enter an email address",
+	"resources.myprogress.noRecordsFound":"No records found.",
+	"resources.myprogress.requirements":"You will need 8 Grammar classes and 8 Tuesday or Recording General gatherings",
+	"resources.myprogress.participation":"Participation",
+	"resources.myprogress.date":"Date",
+	"resources.myprogress.email":"Email",
+	"resources.myprogress.recordsFound":"records found",
+	"resources.myprogress.search":"Search",
+	"resources.myprogress.inputEmail":"Enter email",
+	"resources.myprogress.title":"Search Progress by Email",
+	"resources.myprogress.reset":"Reset",
+	"resources.myprogress.participationcert":"Completed % for Participation Certificate",
+	"resources.myprogress.goldencert":"Completed % for Golden Certificate",
+	"resources.myprogress.requirementsTitle":"Requirements",
+	"resources.myprogress.tuesdayGatherings":"Tuesday Gatherings (Live/Recorded)",
+	"resources.myprogress.watchedGrammarClasses":"Watched Grammar Classes",
+	"resources.myprogress.finalExam":"Final Exam",
+	"resources.myprogress.recordProgress":"Record your progress",
+	"resources.myprogress.here":"Here",
+	"resources.myprogress.searchYourEmail":"Search with your email"
+
 
 }

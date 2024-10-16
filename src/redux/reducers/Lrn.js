@@ -23,7 +23,8 @@ import {
   ON_LOADING_LANDING_DASHBOARD,
   ON_LOADING_LANDING_PAGE,
   GET_BOOK_CHAPTER_URL,
-  GET_PDF_PATH_URL
+  GET_PDF_PATH_URL,
+  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID
 } from "../constants/Lrn";
 
 const initState = {
@@ -35,6 +36,13 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID:
+      return {
+        ...state,
+        registeredProgressByEmailId: action.registeredProgressByEmailId,
+        studentPercentagesForCourse: action.studentPercentagesForCourse,
+        studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse
+      }
     case ON_LOADING_LANDING_PAGE:
       return {
         ...state,

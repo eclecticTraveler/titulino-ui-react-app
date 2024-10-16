@@ -69,7 +69,23 @@ class Utils {
 		}
 	  }
 
+	/**
+	 * getCourseSectionInfoFromUrl
+	 * @param {String} path - Location path you looking for e.g '/app/dashboards/analytic'
+	 * @return {Object} object that contained the course info string
+	 */
+	static getCourseSectionInfoFromUrl(url){
+		const pathArray = url.split('/');
+		const levelNo = pathArray[3];
+		const chaptNo = pathArray[4];	
+		const rawmod = pathArray[5];
 
+		return{
+			levelNo: levelNo,			
+			chapterNo: chaptNo,
+			modality: rawmod
+		}
+	}
 
 	/**
 	 * Get Last part of window URL
