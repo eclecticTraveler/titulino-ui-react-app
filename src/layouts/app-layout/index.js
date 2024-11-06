@@ -7,6 +7,7 @@ import Loading from '../../components/shared-components/Loading';
 import MobileNav from '../../components/layout-components/MobileNav'
 import HeaderNav from '../../components/layout-components/HeaderNav';
 import PageHeader from '../../components/layout-components/PageHeader';
+import Footer from 'components/layout-components/Footer';
 import AppViews from '../../views/app-views';
 import {
   Layout,
@@ -84,9 +85,9 @@ export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicU
 							<AppViews />
 						</Content>
 					</div>
+          <Footer />
 				</Layout>
 			</Layout>
-
 			{isMobile && <MobileNav routeInfo={currentRouteInfo} />}
 		</Layout>
   )

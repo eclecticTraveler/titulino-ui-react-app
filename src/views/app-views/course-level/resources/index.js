@@ -1,85 +1,108 @@
-import React, {Component} from 'react'
-import {connect} from 'react-redux';
-import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage}  from 'redux/actions/Lrn';
+import React, { useEffect, useCallback, useState } from 'react';
+import { connect } from 'react-redux';
+import { getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
-import { env } from 'configs/EnvironmentConfig';
 import Loading from 'components/shared-components/Loading';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import UnderConstruccion from 'components/layout-components/UnderConstruccion';
 import utils from 'utils';
 import ProgressDashboardByEmail from 'components/layout-components/ProgressDashboardByEmail';
+import CountdownDisplay from 'components/layout-components/CountdownDisplay';
+import Countdown from 'react-countdown';
 
-class ExternalFormSection extends Component {
+const ExternalFormSection = (props) => {
+    const { location, nativeLanguage, course } = props;
+    const [countdownComplete, setCountdownComplete] = useState(false);
 
-    loadResources = () => {
-        // const pathInfo = utils.getCourseSectionInfoFromUrl(this.props.location?.pathname); 
-        // console.log("pathInfo", this.props.location?.pathname)
-        // if(pathInfo?.modality === "my-progress"){
+    const loadResources = useCallback(() => {
+        // Example function, currently unused
+        // const pathInfo = utils.getCourseSectionInfoFromUrl(location?.pathname); 
+        // props.getBookChapterUrl(pathInfo?.levelNo, pathInfo?.chapterNo, nativeLanguage?.localizationId, course);
+    }, [location, nativeLanguage, course]);
+
+    const getNextThursday = () => {
+        const now = new Date();
+        const currentDay = now.getDay(); // We want to know how many days it takes to get to Thursday (represented as 4, since Sunday is 0). 
+        const daysUntilThursday = (4 - currentDay + 7) % 7 || 7; // (4 - currentDay + 7) % 7 calculates the difference between the current day and Thursday:
+        const targetDate = new Date(); 
+        targetDate.setDate(now.getDate() + daysUntilThursday);
+        targetDate.setHours(0, 0, 0, 0); // sets the time of targetDate to midnight (00:00:00), so only the date part is relevant.
+        return targetDate;
+    };
+
+    const getNextMinute = () => {
+        const now = new Date();
+        const targetDate = new Date(now);
+        targetDate.setSeconds(0, 0);  // Set seconds and milliseconds to zero
+        targetDate.setMinutes(now.getMinutes() + 1); // Increment minutes by 1
+        return targetDate;
+    };
     
-        // }
-        // this.props.getBookChapterUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
-    }
+    const getThursday7th2024 = () => {
+        const now = new Date();
+        const currentDay = now.getDay(); // Get the current day of the week (0-6)
+        
+        // Define the specific date (November 7th, 2024)
+        const specificDate = new Date("2024-11-07");
     
-    componentDidMount() {                
-        this.loadResources();
-    }
-
-    componentDidUpdate(prevProps) {       
-        if (prevProps?.location?.pathname !== this.props.location?.pathname) {
-            this.loadResources();
+        // If today's date is after the specific date (i.e., November 7th), don't show the countdown
+        if (now > specificDate) {
+            return null;  // Return null to indicate no countdown
         }
-      }
-
-    render() { 
-
-        const pathInfo = utils.getCourseSectionInfoFromUrl(this.props.location?.pathname);
-        if(pathInfo?.modality === "my-progress"){
-            return (
-                <div>
-                    <ProgressDashboardByEmail/>
-                </div>
-            )
-        }else{
-            return (
-                <div>
-                    <InternalIFrame iFrameUrl={`https://docs.google.com/forms/d/e/1FAIpQLSdBZq_Debn07RWOG1gTF2NVzKrv6iVkO8L7p6-q4twzZ91lTg/viewform`}/>                    
-                </div>
-            )
+    
+        // If the current day is before November 7th, calculate days until the target date (November 7th)
+        const daysUntilTarget = Math.max(0, Math.floor((specificDate - now) / (1000 * 60 * 60 * 24)));
+    
+        if (daysUntilTarget > 0) {
+            return specificDate;  // If the target date is in the future, return the target date
         }
+    
+        return specificDate; // If it's the target date, return the target date itself
+    };
+    
 
+    useEffect(() => {
+        loadResources();
+    }, [loadResources]);
 
-        // if(!this.props.bookChapterUrl) {
-        //     return (
-        //         <div>
-        //             <div>
-        //                 <Loading cover="content"/>
-        //             </div>
-        //             <UnderConstruccion/>                
-        //         </div>
-        //     )
-        // }else{
-        //     return (
-        //         <div>
-        //             <InternalIFrame iFrameUrl={`https://docs.google.com/forms/d/e/1FAIpQLSdBZq_Debn07RWOG1gTF2NVzKrv6iVkO8L7p6-q4twzZ91lTg/viewform`}/>                    
-        //         </div>
-        //     )
-        // }    
+    const pathInfo = utils.getCourseSectionInfoFromUrl(location?.pathname);
+
+    if (pathInfo?.modality === "my-progress") {
+        return <ProgressDashboardByEmail />;
+    } else if (pathInfo?.modality === "test") {
+        return (
+            <>
+                {!countdownComplete && (
+                    <>
+                    <CountdownDisplay
+                        countdownDate={getThursday7th2024()}
+                        onComplete={() => setCountdownComplete(true)} // Update state when countdown completes
+                    />
+                    <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSfVR9lA1OISsTgs4mvrHrMfqYOGtk7uiK60u8SQY2vfpQamQw/viewform" />
+                    </>
+                )}
+                {countdownComplete && (
+                    <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSfVR9lA1OISsTgs4mvrHrMfqYOGtk7uiK60u8SQY2vfpQamQw/viewform" />
+                )}
+            </>
+        );
+    } else {
+        return (
+            <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSdBZq_Debn07RWOG1gTF2NVzKrv6iVkO8L7p6-q4twzZ91lTg/viewform" />
+        );
     }
-}
+};
 
+const mapDispatchToProps = (dispatch) => bindActionCreators({
+    getWasUserConfigSetFlag,
+    getUserSelectedCourse,
+    getUserNativeLanguage
+}, dispatch);
 
-function mapDispatchToProps(dispatch){
-	return bindActionCreators({
-        getWasUserConfigSetFlag: getWasUserConfigSetFlag, 
-        getUserSelectedCourse: getUserSelectedCourse,
-        getUserNativeLanguage: getUserNativeLanguage
-	}, dispatch)
-}
-
-const mapStateToProps = ({lrn, theme}) => {
-	const { wasUserConfigSet, selectedCourse, nativeLanguage } = lrn;
-    const { locale, direction, course } =  theme;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage }
+const mapStateToProps = ({ lrn, theme }) => {
+    const { wasUserConfigSet, selectedCourse, nativeLanguage } = lrn;
+    const { locale, direction, course } = theme;
+    return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ExternalFormSection);

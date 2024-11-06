@@ -11,6 +11,7 @@ import GraphService from "../../services/Charting/Admin/GraphService";
 import BookChapterService from "services/BookChapterService";
 import PdfFileService from "services/PdfFileService";
 import GoogleSpreadsheetsService from "services/GoogleSpreadsheetsService";
+import TitulinoRestService from "services/TitulinoRestService";
 import StudentProgress from "lob/StudenProgress";
 import $ from 'jquery'; 
 
@@ -43,7 +44,9 @@ import {
   ON_LOADING_FIVE_MIN_LESSON,
   GET_BOOK_CHAPTER_URL,
   GET_PDF_PATH_URL,
-  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID
+  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
+  ON_RENDERING_COURSE_REGISTRATION,
+  ON_REQUESTING_GEOGRAPHICAL_DIVISION
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -131,6 +134,32 @@ export const getPdfPathUrl = async (levelTheme, chapterNo, nativeLanguage, cours
     return {
       type: GET_PDF_PATH_URL,
       pdfPathUrl: url
+    }
+  }
+
+  
+export const onRenderingCourseRegistration = async () => {
+  // Since they dont depend on each other lets call them at the same time
+  const [countries, availableCourses, selfLanguageLevel] = await Promise.all([
+    TitulinoRestService.getCountries("onRenderingCourseRegistration"),
+    TitulinoRestService.getCurrentAvailableCourses(null, "onRenderingCourseRegistration"),
+    TitulinoRestService.getSelfDeterminedLanguageLevelCriteria("onRenderingCourseRegistration")
+  ]);
+
+    return {
+      type: ON_RENDERING_COURSE_REGISTRATION,
+      countries: countries,
+      availableCourses: availableCourses,
+      selfLanguageLevel: selfLanguageLevel
+    }
+  }
+
+
+export const onRequestingGeographicalDivision = async (countryId) => {
+  const countryDivisions = await TitulinoRestService.getCountryDivisionByCountryId(countryId);
+    return {
+      type: ON_REQUESTING_GEOGRAPHICAL_DIVISION,
+      countryDivisions: countryDivisions
     }
   }
 
@@ -270,6 +299,7 @@ export const onSelectingCorrectionToEdit = async(record) => {
     selectedCorrectionRecord: record,
   }
 }
+
 
 
 

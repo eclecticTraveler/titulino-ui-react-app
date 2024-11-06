@@ -5,12 +5,14 @@
     "abbreviation":"spa",
     "localizationId": "es",
     "flag": "https://d2eaaub12s77xu.cloudfront.net/es.png",
+    "flagCodeName": "MX", 
     "isAvailable": true,
     "courses" : [
       {
         "id":1,
         "courseTitle": "Inglés",
         "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/us.png",
+        "courseFlagCodeName": "US",
         "courseAbbreviation": "eng",
         "localizationId": "en",
         "isAvailable": true
@@ -19,6 +21,7 @@
         "id":2,
         "courseTitle": "Portugues",
         "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/br.png",
+        "courseFlagCodeName": "BR",
         "courseAbbreviation": "por",
         "localizationId": "pt",
         "isAvailable": false
@@ -31,12 +34,14 @@
     "abbreviation":"eng",
     "localizationId": "en",
     "flag": "https://d2eaaub12s77xu.cloudfront.net/us.png",
+    "flagCodeName": "US", 
     "isAvailable": false,
     "courses" : [
         {
           "id":1,
           "courseTitle": "Spanish",
           "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/es.png",
+          "courseFlagCodeName": "ES",
           "courseAbbreviation": "spa",
           "localizationId": "es",
           "isAvailable": false
@@ -45,6 +50,7 @@
           "id":2,
           "courseTitle": "Portuguese",
           "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/br.png",
+          "courseFlagCodeName": "BR",
           "courseAbbreviation": "por",
           "localizationId": "pt",
           "isAvailable": false
@@ -57,12 +63,14 @@
     "abbreviation":"por",
     "localizationId": "pt",
     "flag": "https://d2eaaub12s77xu.cloudfront.net/br.png",
+    "flagCodeName": "BR", 
     "isAvailable": true,
     "courses":[
       {
         "id":1,
         "courseTitle": "Inglês",
         "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/us.png",
+        "courseFlagCodeName": "US",
         "courseAbbreviation": "eng",
         "localizationId": "en",
         "isAvailable": true
@@ -71,6 +79,7 @@
         "id":2,
         "courseTitle": "Espanhol",
         "courseFlag": "https://d2eaaub12s77xu.cloudfront.net/es.png",
+        "courseFlagCodeName": "ES",
         "courseAbbreviation": "spa",
         "localizationId": "es",
         "isAvailable": false

@@ -24,7 +24,9 @@ import {
   ON_LOADING_LANDING_PAGE,
   GET_BOOK_CHAPTER_URL,
   GET_PDF_PATH_URL,
-  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID
+  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
+  ON_RENDERING_COURSE_REGISTRATION,
+  ON_REQUESTING_GEOGRAPHICAL_DIVISION
 } from "../constants/Lrn";
 
 const initState = {
@@ -36,6 +38,18 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_REQUESTING_GEOGRAPHICAL_DIVISION:
+      return {
+        ...state,
+        countryDivisions: action.countryDivisions
+      }
+    case ON_RENDERING_COURSE_REGISTRATION:
+      return {
+        ...state,
+        countries: action.countries,
+        availableCourses: action.availableCourses,
+        selfLanguageLevel: action.selfLanguageLevel
+      }
     case ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID:
       return {
         ...state,

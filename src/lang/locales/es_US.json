@@ -16,6 +16,8 @@
 	"sidenav.resources":"Recursos",
 	"sidenav.quizlet":"Quizlet",
 	"sidenav.login": "Iniciar Sesion",
+	"profile.enroll": "Inscripción",
+	"sidenav.finaltest": "Prueba Final",
 	"profile.donate":"Haz una donacion",
 	"under.construction.title":"Bajo construcción, proximanente",
 	"under.construction.subtitle":"Le avisaremos cuando esté disponible para usted",
@@ -128,6 +130,13 @@
 	"sidenav.progress": "Progreso",
 	"sidenav.quizletpdf": "Quizlet Pdf",
 	"sidenav.findMyprogress": "Mi Progreso",
+	
+
+	"countdown.title":"Página disponible en...",
+	"countdown.subtitle":"regreso por:",
+	"countdown.gratitute":"¡Gracias!",
+	"countdown.explanation":"Este módulo estará disponible pronto",
+
 	
 	"profile.login.accountyet":"¿Aún no tienes una cuenta?",
 	"profile.login.signup":"Registrarse",

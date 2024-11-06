@@ -10,19 +10,20 @@ import {
   CloudUploadOutlined,
   SwapOutlined,
   LoginOutlined,
-  GlobalOutlined
+  GlobalOutlined,
+  UsergroupAddOutlined
 } from '@ant-design/icons';
 import Icon from '../../components/util-components/Icon';
 import { signOut } from 'redux/actions/Auth';
 import { APP_PREFIX_PATH } from '../../configs/AppConfig';
 import { Link } from "react-router-dom";
 import IntlMessage from "../../components/util-components/IntlMessage";
-import { useKeycloak } from "@react-keycloak/web";
 import ProfileNavPanelConfig from './ProfileNavPanelConfig';
 import ThemeConfigurator from './ThemeConfigurator';
 import { DIR_RTL } from 'constants/ThemeConstant';
 import NavSearchWrapper from './NavSearchWrapper';
 import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
+import { env } from "configs/EnvironmentConfig";
 
 const locale = true;
 const setLocale = (isLocaleOn, localeKey) =>{		
@@ -52,8 +53,18 @@ const configureMenuItems = () => {
     //   icon: SwapOutlined,
     //   path: "switch-course"
     // }
+    
   ];
 
+  if(env.IS_ENROLLMENT_FEAT_ON){
+    menuLinks.push(
+      {
+        title: setLocale(locale,"profile.enroll"),
+        icon: UsergroupAddOutlined ,
+        path: "enroll"
+      }
+    )
+  }
 
   const authorized = false;
   if(authorized){

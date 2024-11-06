@@ -7,7 +7,6 @@ import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {getUpperNavigationBasedOnUserConfig, toggleUpperNavigationLevelSelection, toggleSelectedUpperNavigationTabOnLoad} from '../../redux/actions/Lrn';
 import { useLocation } from 'react-router-dom';
-import { useKeycloak } from "@react-keycloak/web";
 import { env } from '../../configs/EnvironmentConfig';
 
 const setLocale = (isLocaleOn, localeKey) =>

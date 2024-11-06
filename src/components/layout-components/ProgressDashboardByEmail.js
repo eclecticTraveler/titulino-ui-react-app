@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { onSearchingForProgressByEmailId } from 'redux/actions/Lrn';
+import { onSearchingForProgressByEmailId, onRenderingCourseRegistration } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message } from 'antd';
@@ -11,7 +11,7 @@ import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/
 
 
 export const ProgressDashboardByEmail = (props) => {
-  const { onSearchingForProgressByEmailId, registeredProgressByEmailId, nativeLanguage,
+  const { onSearchingForProgressByEmailId, registeredProgressByEmailId, nativeLanguage, onRenderingCourseRegistration,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, course } = props;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,9 +29,21 @@ export const ProgressDashboardByEmail = (props) => {
       message.warning(messageToDisplay);
       return;
     }
+
+    let sanitizedEmail = email?.trim()?.toLowerCase();
+
+      // Basic email format validation (optional, you can use a more strict validation)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!sanitizedEmail || !emailRegex.test(sanitizedEmail)) {
+      const messageToDisplay = "Bad Email";
+      message.warning(messageToDisplay);
+      return;
+    }
     
     setLoading(true);
-    onSearchingForProgressByEmailId(email);  // Dispatch Redux action
+    onSearchingForProgressByEmailId(sanitizedEmail);  // Dispatch Redux action
+    onRenderingCourseRegistration();
   };
 
   // Handle Reset functionality
@@ -175,7 +187,8 @@ export const ProgressDashboardByEmail = (props) => {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
-    onSearchingForProgressByEmailId: onSearchingForProgressByEmailId
+    onSearchingForProgressByEmailId: onSearchingForProgressByEmailId,
+    onRenderingCourseRegistration: onRenderingCourseRegistration
   }, dispatch);
 }
 

@@ -19,12 +19,13 @@
 	"sidenave.practice": "Pratica",
 	"sidenave.play":"Joga",	
 	"sidenav.login": "Entrar no Titulino",
+	"profile.enroll": "Inscrição",
 	"under.construction.title":"Em construção, proximanente",
 	"under.construction.subtitle":"Avisaremos quando estiver disponível para você",
 	"under.construction.gratitute":"Obrigado pelo seu apoio",
 	"under.construction.explanation":"Estamos trabalhando para deixar este e outros recursos prontos para você",
 	"profile.edit.profile":"Modificar Perfil",
-
+	"sidenav.finaltest": "Prova Final",
 	
 	"sidenav.low.basic.chapter.1": "Capítulo 1",
 	"sidenav.low.basic.chapter.2": "Capítulo 2",
@@ -129,7 +130,12 @@
 	"sidenav.book": "Livro",
 	"sidenav.progress": "Progresso",
 	"sidenav.quizletpdf": "Quizlet Pdf",
-	"sidenav.findMyprogress": "Meu progresso",
+	"sidenav.findMyprogress": "Meu Progresso",
+
+	"countdown.title":"Página disponível em...",
+	"countdown.subtitle":"retorno por:",
+	"countdown.gratitute":"Obrigado!",
+	"countdown.explanation":"Este módulo estará disponível em breve",
 
 	"profile.login.accountyet":"Ainda não tem uma conta?",
 	"profile.login.signup":"Cadastre-se",

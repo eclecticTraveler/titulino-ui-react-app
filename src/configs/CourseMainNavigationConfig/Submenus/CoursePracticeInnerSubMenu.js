@@ -199,6 +199,16 @@ export const getCoursePracticeResourcesInnerSubMenu = (lang, levelNo, chapter) =
 				breadcrumb: false,
 				isRootMenuItem: false,				
 				submenu: []
+			},
+			{
+				key: `module-class-${levelNo}-${chapter}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.resources}/${getLocalizedConfig(lang)?.test}`,
+				title: 'sidenav.finaltest',
+				icon: faUserClock,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
 			}
 		]
 	
