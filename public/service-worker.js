@@ -1,6 +1,6 @@
-const CACHE_NAME = 'v1.1';
+const CACHE_NAME = 'v1.2';
 const CACHE_ASSETS = [
-  '/', // Only cache the root and main page initially
+  // '/', // Only cache the root and main page initially
   '/index.html',
 ];
 

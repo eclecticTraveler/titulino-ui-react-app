@@ -67,7 +67,7 @@ const dashBoardNavTree = [
 	{
 		key: 'level-supermarket-eng',
 		path: `${APP_PREFIX_PATH}/eng/level-supermarket`,
-		title: 'main.upper.nav.theme.level.pilot',
+		title: 'main.upper.nav.theme.level.supermarket',
 		sideTitle: 'Supermarket',
 		icon: COURSE_ICON_CONFIG.default,
 		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import IntlMessage from '../util-components/IntlMessage';
 import Countdown from 'react-countdown';
 
-const CountdownDisplay = ({ countdownDate, onComplete  }) => {
+const CountdownDisplay = ({ countdownDate, completionComponent }) => {
 
     const setLocale = (isLocaleOn, localeKey) => (
         isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString()
@@ -10,8 +10,7 @@ const CountdownDisplay = ({ countdownDate, onComplete  }) => {
 
     const countdownRenderer = ({ days, hours, minutes, seconds, completed }) => {
         if (completed) {
-            onComplete(); // Notify that countdown is complete
-            return null;
+            return completionComponent; // Display the passed component when countdown completes
         } else {
             return (
                 <h1>
@@ -21,11 +20,6 @@ const CountdownDisplay = ({ countdownDate, onComplete  }) => {
         }
     };
 
-    useEffect(() => {
-        return () => {
-            onComplete(false); // Cleanup function if needed
-        };
-    }, [onComplete]);
     
     return (
         <div className="titulino-modal">

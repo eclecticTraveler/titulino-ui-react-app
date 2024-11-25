@@ -3,7 +3,8 @@ import { CheckOutlined, GlobalOutlined, DownOutlined  } from '@ant-design/icons'
 import { Menu, Dropdown } from "antd";
 import lang from "assets/data/language.data.json";
 import { connect } from "react-redux";
-import { onLocaleChange } from 'redux/actions/Theme'
+import { onLocaleChange } from 'redux/actions/Theme';
+import Flag from "react-world-flags";
 
 function getLanguageDetail (locale) {
 	const data = lang.filter(elm => (elm.langId === locale))
@@ -15,7 +16,10 @@ const SelectedLanguage = ({ locale }) => {
 	const {langName, icon} = language
 	return (
 		<div className="d-flex align-items-center">
-			<img style={{maxWidth: '20px'}}  src={`/img/flags/${icon}.png`} alt={langName}/>
+			{/* <img style={{maxWidth: '20px'}}  src={`/img/flags/${icon}.png`} alt={langName}/> */}
+			<div className="course-flag course-selection-flag">
+				<Flag code={icon} />
+			</div>
 			<span className="font-weight-semibold ml-2">{langName} <DownOutlined className="font-size-xs"/></span>
 		</div>
 	)
@@ -32,8 +36,10 @@ const ProfileNavLanguagePanelConfig = ({ locale, onLocaleChange }) => {
 			  onClick={() => onLocaleChange(elm.langId)}
 			>
 			  <span className="d-flex justify-content-between align-items-center">
-				<div>
-				  <img style={{ maxWidth: '20px' }} src={`/img/flags/${elm.icon}.png`} alt={elm.langName} />
+				<div>				 
+				  	<div className="course-flag course-selection-flag">
+						<Flag code={elm.icon} />
+					</div>
 				  <span className="font-weight-normal ml-2">{elm.langName}</span>
 				</div>
 				{locale === elm.langId ? <CheckOutlined className="text-success" /> : null}

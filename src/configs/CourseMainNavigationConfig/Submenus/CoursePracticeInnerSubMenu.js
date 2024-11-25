@@ -16,7 +16,8 @@ import {
 	faChalkboard,
 	faArrowUp,
 	faFilePdf,
-	faRoad
+	faRoad,
+	faChartSimple
    } from '@fortawesome/free-solid-svg-icons';
 
 const uuidv4 = () => {
@@ -182,19 +183,9 @@ export const getCoursePracticeResourcesInnerSubMenu = (lang, levelNo, chapter) =
 		  return [
 			{
 				key: `module-class-${levelNo}-${chapter}-${uuidv4()}`,
-				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.resources}/${getLocalizedConfig(lang)?.progress}`,
-				title: 'sidenav.progress',
-				icon: faArrowUp,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: []
-			},
-			{
-				key: `module-class-${levelNo}-${chapter}-${uuidv4()}`,
 				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.resources}/${getLocalizedConfig(lang)?.myProgress}`,
 				title: 'sidenav.findMyprogress',
-				icon: faRoad,
+				icon: faChartSimple,
 				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 				breadcrumb: false,
 				isRootMenuItem: false,				

@@ -12,7 +12,7 @@ import BookChapterService from "services/BookChapterService";
 import PdfFileService from "services/PdfFileService";
 import GoogleSpreadsheetsService from "services/GoogleSpreadsheetsService";
 import TitulinoRestService from "services/TitulinoRestService";
-import StudentProgress from "lob/StudenProgress";
+import StudentProgress from "lob/StudentProgress";
 import $ from 'jquery'; 
 
 import axios from 'axios';
@@ -46,7 +46,12 @@ import {
   GET_PDF_PATH_URL,
   ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
   ON_RENDERING_COURSE_REGISTRATION,
-  ON_REQUESTING_GEOGRAPHICAL_DIVISION
+  ON_REQUESTING_GEOGRAPHICAL_DIVISION,
+  ON_SEARCHING_FOR_ALREADY_ENROLLED_CONTACT,
+  ON_SELECTING_ENROLLMENT_COURSES,
+  ON_REQUESTING_COURSE_PROGRESS_STRUCTURE,
+  ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
+  ON_SUBMITTING_USER_COURSE_PROGRESS,
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -137,12 +142,19 @@ export const getPdfPathUrl = async (levelTheme, chapterNo, nativeLanguage, cours
     }
   }
 
+
+export const onSelectingEnrollmentCourses = async (selectedCourses) => {
+    return {
+      type: ON_SELECTING_ENROLLMENT_COURSES,
+      selectedCoursesToEnroll: selectedCourses
+    }
+  }   
   
 export const onRenderingCourseRegistration = async () => {
   // Since they dont depend on each other lets call them at the same time
   const [countries, availableCourses, selfLanguageLevel] = await Promise.all([
     TitulinoRestService.getCountries("onRenderingCourseRegistration"),
-    TitulinoRestService.getCurrentAvailableCourses(null, "onRenderingCourseRegistration"),
+    TitulinoRestService.getAvailableCourses(null, "onRenderingCourseRegistration"),
     TitulinoRestService.getSelfDeterminedLanguageLevelCriteria("onRenderingCourseRegistration")
   ]);
 
@@ -154,6 +166,14 @@ export const onRenderingCourseRegistration = async () => {
     }
   }
 
+  export const onSearchingForAlreadyEnrolledContact = async (email, year) => {
+    const returningEnrolleeCountryDivisionInfo = email ? await TitulinoRestService.getQuickEnrolleeCountryDivisionInfo(email, year, "onSearchingForAlreadyEnrolledContact") : [];
+    console.log("ANUMAL", returningEnrolleeCountryDivisionInfo)
+    return {
+      type: ON_SEARCHING_FOR_ALREADY_ENROLLED_CONTACT,
+      returningEnrollee: returningEnrolleeCountryDivisionInfo
+    }
+  }
 
 export const onRequestingGeographicalDivision = async (countryId) => {
   const countryDivisions = await TitulinoRestService.getCountryDivisionByCountryId(countryId);
@@ -163,18 +183,75 @@ export const onRequestingGeographicalDivision = async (countryId) => {
     }
   }
 
+export const onSubmittingUserCourseProgress = async (email, courseProgress) => {
+  const submittedUserCourseProgress = await TitulinoRestService.upsertUnauthenticatedUserCourseProgress(email, courseProgress, "onSubmittingUserCourseProgress");
+  let wasSuccessful = false;
+  if(email === submittedUserCourseProgress[0]?.email){
+    wasSuccessful = true;
+  }
+  
+  return {
+    type: ON_SUBMITTING_USER_COURSE_PROGRESS,
+    submittedUserCourseProgress: wasSuccessful ? submittedUserCourseProgress : [],
+    wasSubmittingUserCourseProgress: wasSuccessful
+  }
+}
+
+export const onRequestingCourseProgressStructure = async (nativeLanguage, course, courseCodeId ) => {
+  const courseStructure = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
+    return {
+      type: ON_REQUESTING_COURSE_PROGRESS_STRUCTURE,
+    }
+  }
+
+  
 
 export const onSearchingForProgressByEmailId = async (email) => {
   const registeredProgressById = await GoogleSpreadsheetsService.getProgressByEmailId(email, "onSearchingForProgressByEmailId");
-  const studentPercentagesForCourse = await StudentProgress.calculatePercentageForSupermarketCertificates(registeredProgressById);
-  const studentCategoriesCompletedForCourse = await StudentProgress.getCategoriesObtainedByEmailForSupermarketCourse(registeredProgressById)
-    return {
-      type: ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
-      registeredProgressByEmailId: registeredProgressById,
-      studentPercentagesForCourse: studentPercentagesForCourse,
-      studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse
-    }
+  // const studentPercentagesForCourse = await StudentProgress.calculatePercentageForSupermarketCertificates(registeredProgressById);
+  // const studentCategoriesCompletedForCourse = await StudentProgress.getCategoriesObtainedByEmailForSupermarketCourse(registeredProgressById);
+
+  const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
+    StudentProgress.calculatePercentageForSupermarketCertificates(registeredProgressById),
+    StudentProgress.getCategoriesObtainedByEmailForSupermarketCourse(registeredProgressById)
+  ]);
+  
+  return {
+    type: ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
+    registeredProgressByEmailId: registeredProgressById,
+    studentPercentagesForCourse: studentPercentagesForCourse,
+    studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse
   }
+}
+
+export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLanguage, course) => {
+
+  // Get courseId in Factory
+ const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
+ const courseConfiguration = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
+
+  return {
+    type: ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
+    currentCourseCodeId: courseCodeId,
+    courseConfiguration: courseConfiguration
+  }
+}
+
+export const onSearchingForProgressByEmailIdAndCourseCodeId = async (email, courseCodeId, courseLanguageId) => {
+  // Get courseId in Factory
+  const registeredProgress = await TitulinoRestService.getCourseProgressByEmailAndCourseCodeId(email, courseCodeId, courseLanguageId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
+    StudentProgress.calculateUserCourseProgressPercentageForCertificates(registeredProgress),
+    StudentProgress.getUserCourseProgressCategories(registeredProgress)
+  ]);
+
+  return {
+    type: ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
+    registeredProgressByEmailId: registeredProgress,
+    studentPercentagesForCourse: studentPercentagesForCourse,
+    studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse
+  }
+}
 
 export const onLoadingFiveMinLesson = async (levelNo, nativeLanguage, course, isToRetrieveByNewDate) => {
   const fiveMinuteLesson = await LandingWidgetsService.getFiveMinuteRandomLesson(levelNo, nativeLanguage, course);

@@ -24,6 +24,7 @@ import { DIR_RTL } from 'constants/ThemeConstant';
 import NavSearchWrapper from './NavSearchWrapper';
 import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
 import { env } from "configs/EnvironmentConfig";
+import { setUserNativeLanguage } from 'redux/actions/Lrn'
 
 const locale = true;
 const setLocale = (isLocaleOn, localeKey) =>{		
@@ -95,7 +96,7 @@ const configureMenuItems = () => {
 }
 
 export const NavProfile = (props, {signOut}) => {  
-  const { course, direction, mode, isMobile } = props;
+  const { course, direction, mode, isMobile, setUserNativeLanguage } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
 
   const showDrawer = () => {
@@ -105,6 +106,10 @@ export const NavProfile = (props, {signOut}) => {
   const onClose = () => {
     setVisible(false);
   };
+
+  const resetBaseCourseLanguage = () => {
+    setUserNativeLanguage(null);
+  }
 
   // const { keycloak } = useKeycloak();
   const menuItems = configureMenuItems();
@@ -132,6 +137,12 @@ export const NavProfile = (props, {signOut}) => {
                 </Menu.Item>
               );
             })}
+            <Menu.Item key={menuItems?.length + 2}  onClick={resetBaseCourseLanguage}>
+              <span>
+                <SwapOutlined className="mr-3 profile-accomdation" />
+                <span className="font-weight-normal">  {setLocale(locale, "profile.switch.course")}</span>
+              </span>
+            </Menu.Item>
             <Menu.SubMenu
               key="language"
               title={
@@ -143,7 +154,7 @@ export const NavProfile = (props, {signOut}) => {
             >
               <ProfileNavLanguagePanelConfig />
             </Menu.SubMenu>
-            <Menu.Item key={menuItems?.length + 2}  onClick={showDrawer}>
+            <Menu.Item key={menuItems?.length + 3}  onClick={showDrawer}>
               <span>
                 <SettingOutlined className="mr-3 profile-accomdation" />
                 <span className="font-weight-normal">  {setLocale(locale, "settings.menu.main.title")}</span>
@@ -187,4 +198,4 @@ const mapStateToProps = ({ theme }) => {
 	return { course }
 };
 
-export default connect(mapStateToProps, {signOut})(NavProfile)
+export default connect(mapStateToProps, {signOut, setUserNativeLanguage})(NavProfile)

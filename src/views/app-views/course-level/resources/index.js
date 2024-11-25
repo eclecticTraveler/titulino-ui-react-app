@@ -1,24 +1,26 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { connect } from 'react-redux';
-import { getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage } from 'redux/actions/Lrn';
+import { getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage, onLoadingUserResourcesByCourseTheme  } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import Loading from 'components/shared-components/Loading';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import UnderConstruccion from 'components/layout-components/UnderConstruccion';
 import utils from 'utils';
 import ProgressDashboardByEmail from 'components/layout-components/ProgressDashboardByEmail';
+import ProgressDashboardByEmailV2 from 'components/layout-components/ProgressDashboardByEmailV2';
+import EnrolleeCourseProgressTrackingByEmail from 'components/layout-components/EnrolleeCourseProgressTrackingByEmail';
 import CountdownDisplay from 'components/layout-components/CountdownDisplay';
 import Countdown from 'react-countdown';
+import { env } from 'configs/EnvironmentConfig';
 
 const ExternalFormSection = (props) => {
-    const { location, nativeLanguage, course } = props;
+    const { location, nativeLanguage, course, onLoadingUserResourcesByCourseTheme, currentCourseCodeId } = props;
     const [countdownComplete, setCountdownComplete] = useState(false);
 
-    const loadResources = useCallback(() => {
-        // Example function, currently unused
-        // const pathInfo = utils.getCourseSectionInfoFromUrl(location?.pathname); 
-        // props.getBookChapterUrl(pathInfo?.levelNo, pathInfo?.chapterNo, nativeLanguage?.localizationId, course);
-    }, [location, nativeLanguage, course]);
+    const loadResources = useCallback(() => {        
+        const pathInfo = utils.getThemeCourseInfoFromUrl(location?.pathname); 
+        onLoadingUserResourcesByCourseTheme(pathInfo?.courseTheme, nativeLanguage?.localizationId, course)
+    }, [location, nativeLanguage, course, currentCourseCodeId]);
 
     const getNextThursday = () => {
         const now = new Date();
@@ -68,41 +70,48 @@ const ExternalFormSection = (props) => {
     const pathInfo = utils.getCourseSectionInfoFromUrl(location?.pathname);
 
     if (pathInfo?.modality === "my-progress") {
-        return <ProgressDashboardByEmail />;
+        if(env.IS_NEW_PROGRESS_APP_ON){
+            return <ProgressDashboardByEmailV2 />; 
+        }else{
+            return <ProgressDashboardByEmail />;
+        }
+
     } else if (pathInfo?.modality === "test") {
         return (
             <>
-                {!countdownComplete && (
-                    <>
-                    <CountdownDisplay
-                        countdownDate={getThursday7th2024()}
-                        onComplete={() => setCountdownComplete(true)} // Update state when countdown completes
-                    />
-                    <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSfVR9lA1OISsTgs4mvrHrMfqYOGtk7uiK60u8SQY2vfpQamQw/viewform" />
-                    </>
-                )}
-                {countdownComplete && (
-                    <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSfVR9lA1OISsTgs4mvrHrMfqYOGtk7uiK60u8SQY2vfpQamQw/viewform" />
-                )}
+                {/* <CountdownDisplay
+                countdownDate={getThursday7th2024()}
+                completionComponent={<InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSfVR9lA1OISsTgs4mvrHrMfqYOGtk7uiK60u8SQY2vfpQamQw/viewform" />}
+                /> */}
+                <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSfVR9lA1OISsTgs4mvrHrMfqYOGtk7uiK60u8SQY2vfpQamQw/viewform" />
             </>
+
         );
     } else {
-        return (
-            <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSdBZq_Debn07RWOG1gTF2NVzKrv6iVkO8L7p6-q4twzZ91lTg/viewform" />
-        );
+        if(env.IS_NEW_PROGRESS_APP_ON){
+            return (
+                <EnrolleeCourseProgressTrackingByEmail/>
+            );
+        }else{
+            return (
+                <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSdBZq_Debn07RWOG1gTF2NVzKrv6iVkO8L7p6-q4twzZ91lTg/viewform" />
+            ); 
+        }
+
     }
 };
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
     getWasUserConfigSetFlag,
     getUserSelectedCourse,
-    getUserNativeLanguage
+    getUserNativeLanguage,
+    onLoadingUserResourcesByCourseTheme
 }, dispatch);
 
 const mapStateToProps = ({ lrn, theme }) => {
-    const { wasUserConfigSet, selectedCourse, nativeLanguage } = lrn;
+    const { wasUserConfigSet, selectedCourse, nativeLanguage, currentCourseCodeId } = lrn;
     const { locale, direction, course } = theme;
-    return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage };
+    return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, currentCourseCodeId };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ExternalFormSection);

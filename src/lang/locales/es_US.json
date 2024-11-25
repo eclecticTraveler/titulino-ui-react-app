@@ -126,6 +126,7 @@
 	"main.upper.nav.level.3": "Nivel 3",
 
 	"main.upper.nav.theme.level.pilot": "Piloto",
+	"main.upper.nav.theme.level.supermarket": "Supermercado",
 	"sidenav.book": "Libro",
 	"sidenav.progress": "Progreso",
 	"sidenav.quizletpdf": "Quizlet Pdf",
@@ -174,5 +175,32 @@
 	"resources.myprogress.finalExam":"Examen final",
 	"resources.myprogress.recordProgress":"Registra tu progreso",
 	"resources.myprogress.here":"Aquí",
-	"resources.myprogress.searchYourEmail":"Busca con correo electrónico"
+	"resources.myprogress.searchYourEmail":"Busqueda con correo electrónico",
+
+	"resources.myprogress.generalDashboard": "Progreso general",
+	"resources.myprogress.brokenDown":"Progreso del curso desglosado",
+	"resources.myprogress.submitSelections":"Enviar selecciones",
+	"resources.myprogress.progress&Tracking": "Progreso y seguimiento",
+	"resources.myprogress.generalView": "Vista general",
+	"resources.userProgress.title": "Título",
+	"resources.userProgress.class":"Clase",
+	"resources.userProgress.details":"Detalles",
+	"resources.userProgress.noDescription":"No hay descripción disponible",
+	"resources.userProgress.selectOptions":"Seleccione entre las opciones siguientes",
+	"resources.userProgress.participation":"Participación",
+	"nav.live":"En vivo",
+	"nav.recorded":"Grabado",
+	"nav.notApplicable":"No aplicable",
+	"resources.userProgress.availableAfter":"Disponible",
+	"resources.userProgress.select":"Seleccionar",
+	"resources.userProgress.recordedOn": "Registrado en",
+	"resources.userProgress.completed": "Completado",
+	"resources.userProgress.readyForTracking":"Listo para el seguimiento",
+
+	"resources.myprogress.progressFor":"Progreso para",
+	"resources.myprogress.dashboardInnerTitle":"Panel de progreso del curso",
+	"resources.myprogress.submittingInProgress":"Envío en progreso...",
+	"resources.myprogress.submittingSuccesful": "¡Envío exitoso!",
+	"resources.myprogress.selectAparticipationType":"Seleccione un tipo de participación para todas las categorías requeridas.",
+	"resources.userProgress.participationType": "Tipo de participación"
 }

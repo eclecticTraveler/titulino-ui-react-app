@@ -130,6 +130,7 @@
 	"main.upper.nav.level.3": "Level 3",
 
 	"main.upper.nav.theme.level.pilot": "Pilot",
+	"main.upper.nav.theme.level.supermarket": "Supermarket",
 	"sidenav.book": "Book",
 	"sidenav.progress": "Progress",
 	"sidenav.quizletpdf": "Quizlet Pdf",
@@ -172,7 +173,34 @@
 	"resources.myprogress.finalExam":"Final Exam",
 	"resources.myprogress.recordProgress":"Record your progress",
 	"resources.myprogress.here":"Here",
-	"resources.myprogress.searchYourEmail":"Search with your email"
+	"resources.myprogress.searchYourEmail":"Search with your email",
+
+	"resources.myprogress.generalDashboard":"General Progress",
+	"resources.myprogress.brokenDown":"Broken-down Course Progress",
+	"resources.myprogress.submitSelections":"Submit Selections",
+	"resources.myprogress.progress&Tracking":"Progress & Tracking",
+	"resources.myprogress.generalView":"General View",
+	"resources.userProgress.title":"Title",
+	"resources.userProgress.class":"Class",
+	"resources.userProgress.details":"Details",
+	"resources.userProgress.noDescription":"No description available",
+	"resources.userProgress.selectOptions":"Please select from the options below",
+	"resources.userProgress.participation":"Participation",
+	"nav.live":"Live",
+	"nav.recorded":"Recorded",
+	"nav.notApplicable":"Not Applicable",
+	"resources.userProgress.availableAfter":"Available After",
+	"resources.userProgress.select":"Select",
+	"resources.userProgress.recordedOn":"Recorded On",
+	"resources.userProgress.completed":"Completed",
+	"resources.userProgress.readyForTracking":"Ready For Tracking",
+
+	"resources.myprogress.progressFor":"Progress for",
+	"resources.myprogress.dashboardInnerTitle":"Course Progress Dashboard",
+	"resources.myprogress.submittingInProgress":"Submitting in progress...",
+	"resources.myprogress.submittingSuccesful":"Submission successful!",
+	"resources.myprogress.selectAparticipationType":"Please select a participation type for all required categories.",
+	"resources.userProgress.participationType":"Participation Type"
 
 
 }

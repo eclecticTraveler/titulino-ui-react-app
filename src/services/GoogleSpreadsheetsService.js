@@ -1,6 +1,6 @@
 import { env } from '../configs/EnvironmentConfig';
 
-const courseProgressApi = `https://script.google.com/macros/s/AKfycbwx6NF3UhQ_f5ZeXE-QwdyZwZDb_wTUXE0IGB7Jxw_vdruuzE50AMJtNyCwK0DT_VUf/exec`;
+const courseProgressApi = `https://script.google.com/macros/s/AKfycbzUE5iJHp2peLS1eZmm0ED14ihoYv5chFxoU53rgKcGyVjLku8l7CT_5ZsoUf3oOa2u/exec`;
 
 let _results = [];
 
@@ -35,8 +35,8 @@ export const getProgressByEmailId = async (email, whoCalledMe) => {
   return _results;
 };
 
-const VantageService = {
+const GoogleSpreadsheetsService = {
   getProgressByEmailId
 };
 
-export default VantageService;
+export default GoogleSpreadsheetsService;

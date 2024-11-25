@@ -26,18 +26,50 @@ import {
   GET_PDF_PATH_URL,
   ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
   ON_RENDERING_COURSE_REGISTRATION,
-  ON_REQUESTING_GEOGRAPHICAL_DIVISION
+  ON_REQUESTING_GEOGRAPHICAL_DIVISION,
+  ON_SEARCHING_FOR_ALREADY_ENROLLED_CONTACT,
+  ON_SELECTING_ENROLLMENT_COURSES,
+  ON_REQUESTING_COURSE_PROGRESS_STRUCTURE,
+  ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
+  ON_SUBMITTING_USER_COURSE_PROGRESS
 } from "../constants/Lrn";
 
 const initState = {
   shippingTabKey: 'mailing',
   isToEditShippingAddress: false,
   isToEditUserProfile: false,
-  isCorrectionModalOpened: false
+  isCorrectionModalOpened: false,
+  selectedCoursesToEnroll: []
 };
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_SUBMITTING_USER_COURSE_PROGRESS:
+      return{
+        ...state,
+        submittedUserCourseProgress: action.submittedUserCourseProgress,
+        wasSubmittingUserCourseProgress: action.wasSubmittingUserCourseProgress
+      }
+    case ON_LOADING_USER_RESOURCES_BY_COURSE_THEME:
+      return {
+        ...state,
+        currentCourseCodeId: action.currentCourseCodeId,
+        courseConfiguration: action.courseConfiguration
+      }
+    case ON_REQUESTING_COURSE_PROGRESS_STRUCTURE:
+      return {
+        ...state
+      }
+    case ON_SELECTING_ENROLLMENT_COURSES:
+      return {
+        ...state,
+        selectedCoursesToEnroll: action.selectedCoursesToEnroll
+      }
+    case ON_SEARCHING_FOR_ALREADY_ENROLLED_CONTACT:
+      return {
+        ...state,
+        returningEnrollee: action.returningEnrollee
+      }
     case ON_REQUESTING_GEOGRAPHICAL_DIVISION:
       return {
         ...state,

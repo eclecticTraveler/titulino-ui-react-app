@@ -127,6 +127,7 @@
 	"main.upper.nav.level.3": "Nível 3",
 
 	"main.upper.nav.theme.level.pilot": "Piloto",
+	"main.upper.nav.theme.level.supermarket": "Supermercado",
 	"sidenav.book": "Livro",
 	"sidenav.progress": "Progresso",
 	"sidenav.quizletpdf": "Quizlet Pdf",
@@ -173,7 +174,34 @@
 	"resources.myprogress.finalExam":"Prova Final",
 	"resources.myprogress.recordProgress":"Registre seu progresso",
 	"resources.myprogress.here":"Aqui",
-	"resources.myprogress.searchYourEmail":"Pesquise usando o seu e-mail"
+	"resources.myprogress.searchYourEmail":"Pesquise usando o seu e-mail",
+
+	"resources.myprogress.generalDashboard":"Progresso Geral",
+	"resources.myprogress.brokenDown":"Progresso detalhado do curso",
+	"resources.myprogress.submitSelections":"Enviar seleções",
+	"resources.myprogress.progress&Tracking":"Progresso e rastreamento",
+	"resources.myprogress.generalView":"Visão Geral",
+	"resources.userProgress.title":"Título",
+	"resources.userProgress.class":"Classe",
+	"resources.userProgress.details":"Detalhes",
+	"resources.userProgress.noDescription":"Nenhuma descrição disponível",
+	"resources.userProgress.selectOptions":"Selecione uma das opções abaixo",
+	"resources.userProgress.participation":"Participação",
+	"nav.live":"Ao vivo",
+	"nav.recorded":"Gravado",
+	"nav.notApplicable":"Não aplicável",
+	"resources.userProgress.availableAfter":"Disponível após",
+	"resources.userProgress.select":"Selecionar",
+	"resources.userProgress.recordedOn":"Registrado no dia",
+	"resources.userProgress.completed":"Concluído",
+	"resources.userProgress.readyForTracking":"Pronto para rastreamento",
+
+	"resources.myprogress.progressFor":"Progresso para",
+	"resources.myprogress.dashboardInnerTitle":"Painel de progresso do curso",
+	"resources.myprogress.submitingInProgress":"'Envio em andamento...",
+	"resources.myprogress.submittingSuccesful":"Envio bem-sucedido!",
+	"resources.myprogress.selectAparticipationType":"Selecione um tipo de participação para todas as categorias obrigatórias.",
+	"resources.userProgress.participationType":"Tipo de participação"
 
 	
 
