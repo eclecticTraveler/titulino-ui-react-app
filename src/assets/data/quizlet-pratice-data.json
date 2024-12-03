@@ -1348,6 +1348,60 @@
             "title": "All 150+ Core Words Supermarket Items"
           }
         ]
+      },
+      {
+        "id":14,
+        "courseTitle":"titulino-household-items-part-1",
+        "level": 5,
+        "resourceName": "Titulino Theme Household Items Part 1",
+        "nativeLanguage": "es",
+        "course": "eng",
+        "courses" : [
+          {
+            "id":"966543063",
+            "title": "Household Items - Houses - Part 1"
+          },
+          {
+            "id":"966546383",
+            "title": "Household Items - Houses - Part "
+          },
+          {
+            "id":"966548015",
+            "title": "Household Items - Living Room - Part 1"
+          },
+          {
+            "id":"966549218",
+            "title": "Household Items - Living Room - Part 2"
+          },
+          {
+            "id":"966550228",
+            "title": "Household Items - Dining Room - Part 1"
+          },
+          {
+            "id":"966551379",
+            "title": "Household Items - Dining Room - Part 2"
+          },
+          {
+            "id":"966553107",
+            "title": "Household Items - Kitchen - Part 1"
+          },
+          {
+            "id":"966553962",
+            "title": "Household Items - Kitchen - Part 2"
+          },
+          {
+            "id":"966555037",
+            "title": "Household Items - Kitchen Action Verbs - Part 1"
+          },
+          {
+            "id":"966556253",
+            "title": "Household Items - Kitchen Action Verbs - Part 2"
+          },
+          {
+            "id":"967114095",
+            "title": "Household all 150+ Terms"
+          }
+        ]
       }
     ]
   }

@@ -18,7 +18,8 @@ export const getLocalizedConfig = (lang) => {
 		progress: "progress",
 		document: "document",
 		quizletpdf: "quizlet-pdf",
-		myProgress: "my-progress"
+		myProgress: "my-progress",
+		household:"household-items"
 	}
 
 	switch (lang) {
@@ -42,7 +43,8 @@ export const getLocalizedConfig = (lang) => {
 			localization.progress = "progresso";
 			localization.document = "documento";
 			localization.quizletpdf = "quizlet-pdf";
-			localization.myProgress = " meu-progresso";
+			localization.myProgress = "meu-progresso";
+			localization.household = "artículos-do-lar";
 			return localization;
 		case "spa":
 			localization.chapter = "capitulo";
@@ -63,6 +65,7 @@ export const getLocalizedConfig = (lang) => {
 			localization.document = "documento";
 			localization.quizletpdf = "quizlet-pdf";
 			localization.myProgress = "mi-progresso";
+			localization.household = "artículos-del-hogar";
 			return localization;        
 		default:
 			return localization;

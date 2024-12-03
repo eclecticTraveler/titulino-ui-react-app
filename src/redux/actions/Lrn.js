@@ -10,7 +10,7 @@ import dummyData from "../../assets/data/dummyDW.json";
 import GraphService from "../../services/Charting/Admin/GraphService";
 import BookChapterService from "services/BookChapterService";
 import PdfFileService from "services/PdfFileService";
-import GoogleSpreadsheetsService from "services/GoogleSpreadsheetsService";
+import GoogleService from "services/GoogleService";
 import TitulinoRestService from "services/TitulinoRestService";
 import StudentProgress from "lob/StudentProgress";
 import $ from 'jquery'; 
@@ -52,6 +52,9 @@ import {
   ON_REQUESTING_COURSE_PROGRESS_STRUCTURE,
   ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
   ON_SUBMITTING_USER_COURSE_PROGRESS,
+  ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
+  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
+  ON_LOADING_EBOOK_URL
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -134,6 +137,16 @@ export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, c
     }
   }
 
+
+export const geteBookUrl = async (levelTheme, nativeLanguage, course) => {
+  const url = await BookChapterService.getBookBaseUrl(levelTheme, nativeLanguage, course);
+  console.log("urlurl", url)
+    return {
+      type: ON_LOADING_EBOOK_URL,
+      ebookUrl: url
+    }
+  }
+
 export const getPdfPathUrl = async (levelTheme, chapterNo, nativeLanguage, course) => {
   const url = await PdfFileService.getPdfPathUrl(levelTheme, chapterNo, nativeLanguage, course);
     return {
@@ -207,7 +220,7 @@ export const onRequestingCourseProgressStructure = async (nativeLanguage, course
   
 
 export const onSearchingForProgressByEmailId = async (email) => {
-  const registeredProgressById = await GoogleSpreadsheetsService.getProgressByEmailId(email, "onSearchingForProgressByEmailId");
+  const registeredProgressById = await GoogleService.getProgressByEmailId(email, "onSearchingForProgressByEmailId");
   // const studentPercentagesForCourse = await StudentProgress.calculatePercentageForSupermarketCertificates(registeredProgressById);
   // const studentCategoriesCompletedForCourse = await StudentProgress.getCategoriesObtainedByEmailForSupermarketCourse(registeredProgressById);
 
@@ -239,17 +252,36 @@ export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLan
 
 export const onSearchingForProgressByEmailIdAndCourseCodeId = async (email, courseCodeId, courseLanguageId) => {
   // Get courseId in Factory
-  const registeredProgress = await TitulinoRestService.getCourseProgressByEmailAndCourseCodeId(email, courseCodeId, courseLanguageId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  const isUserEmailRegisteredForCourse = await TitulinoRestService.isUserEmailRegisteredForGivenCourse(email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  let registeredProgress = [];
+  if(isUserEmailRegisteredForCourse){
+    // Get records for registered unauthenticated users
+    registeredProgress = await TitulinoRestService.getCourseProgressByEmailCourseCodeIdAndLanguageId(email, courseCodeId, courseLanguageId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  }else{
+    // Get records for unregistered users
+    registeredProgress = await TitulinoRestService.getCourseProgressByEmailAndCourseCodeId(email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  }
+
   const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
     StudentProgress.calculateUserCourseProgressPercentageForCertificates(registeredProgress),
     StudentProgress.getUserCourseProgressCategories(registeredProgress)
   ]);
 
   return {
-    type: ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
+    type: ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
     registeredProgressByEmailId: registeredProgress,
     studentPercentagesForCourse: studentPercentagesForCourse,
-    studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse
+    studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse,
+    isUserEmailRegisteredForCourse: isUserEmailRegisteredForCourse
+  }
+}
+
+export const onResetingProgressByEmailIdAndCourseCodeId = async () => {  
+  return {
+    type: ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
+    registeredProgressByEmailId: null,
+    studentPercentagesForCourse: null,
+    studentCategoriesCompletedForCourse: null
   }
 }
 
@@ -328,6 +360,7 @@ export const getUpperNavigationBasedOnUserConfig = async () => {
 }
 
 export const onCurrentRouteInfo = async (route) => {
+  console.log("route-> ", route)
   return{
     type: CURRENT_ROUTE_INFO,
     route:route

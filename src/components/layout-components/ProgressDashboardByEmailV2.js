@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { onSearchingForProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseProgress } from 'redux/actions/Lrn';
+import { onSearchingForProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs } from 'antd';
@@ -19,9 +19,9 @@ import ConfettiExplosion from 'react-confetti-explosion';
 
 export const ProgressDashboardByEmailV2 = (props) => {
   const { onSearchingForProgressByEmailIdAndCourseCodeId, registeredProgressByEmailId, submittedUserCourseProgress,
-     nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress,
+     nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse } = props;
-console.log("->registeredProgressByEmailId", registeredProgressByEmailId)
+
   const [selectedLessonsForSubmission, setSelectedLessonsForSubmission] = useState({});
   const [selectedLessons, setSelectedLessons] = useState({});
   const [handleUserProgressSubmit, setHandleUserProgressSubmit] = useState(null); // To hold the child's submit function
@@ -39,6 +39,20 @@ console.log("->registeredProgressByEmailId", registeredProgressByEmailId)
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   };
 
+  const resetState = () => {
+    //Local
+    setSelectedLessonsForSubmission({});
+    setSelectedLessons({});
+    setHandleUserProgressSubmit(null)
+    setEmail("");
+    setIsMassiveConfettiVisible(false);
+    setIsSmallConfettiVisible(false);
+    setLoading(false); 
+
+    // Global
+    onResetingProgressByEmailIdAndCourseCodeId();
+
+  }
 
   // Trigger the search and set loading to true
   const handleSearch = () => {
@@ -70,11 +84,13 @@ console.log("->registeredProgressByEmailId", registeredProgressByEmailId)
   const handleReset = () => {
     setEmail(""); 
     setLoading(false); 
+    resetState();
   };
 
   const handleEmailChange = (email) => {
-    const emailValue = email;
+    const emailValue = email?.trim()?.toLowerCase(); // Trim spaces and convert to lowercase to user input
     setEmail(emailValue);
+    
     const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
     setIsEmailValid(emailRegex.test(emailValue));
   };
@@ -118,9 +134,7 @@ useEffect(() => {
 
 // Handle progress updates and UI effects
 useEffect(() => {
-  if (
-    studentPercentagesForCourse?.goldenCertificatePercentage * 100 === 100
-  ) {
+  if (studentPercentagesForCourse?.goldenCertificatePercentage * 100 === 100) {
     setIsMassiveConfettiVisible(true);
   }
 
@@ -156,7 +170,7 @@ useEffect(() => {
           <LiquidCirclePercent percent={studentPercentagesForCourse?.participationCertificatePercentage} />
           <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
           <ul>
-          <li>{setLocale(locale, "resources.myprogress.tuesdayGatherings")}: {studentCategoriesCompletedForCourse?.category1Total ?? 0}/8</li>
+          <li>{setLocale(locale, "resources.myprogress.generalGatherings")}: {studentCategoriesCompletedForCourse?.category1Total ?? 0}/8</li>
         </ul> 
         </Card>
       </Col>
@@ -166,7 +180,7 @@ useEffect(() => {
           <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />
           <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
           <ul>
-            <li>{setLocale(locale, "resources.myprogress.tuesdayGatherings")}: {studentCategoriesCompletedForCourse?.category1Total ?? 0}/8</li>
+            <li>{setLocale(locale, "resources.myprogress.generalGatherings")}: {studentCategoriesCompletedForCourse?.category1Total ?? 0}/8</li>
             <li>{setLocale(locale, "resources.myprogress.watchedGrammarClasses")}: {studentCategoriesCompletedForCourse?.category2Total ?? 0}/8</li>
             <li>{setLocale(locale, "resources.myprogress.finalExam")}: {studentCategoriesCompletedForCourse?.category4Total ?? 0}/1:</li>
           </ul>  
@@ -216,31 +230,40 @@ useEffect(() => {
   
   const hasSelections = Object.keys(selectedLessons).length > 0;
 
+  const renderUpsertUserProgressBottom = () => {
+    return (
+      <>
+        <Row justify="center">
+          <Col xs={24} sm={24} lg={8}>
+            <Button
+              type="primary"
+              onClick={() => {
+                if (handleUserProgressSubmit) {
+                  handleUserProgressSubmit(); // Trigger the child's submit function
+                } else {
+                  message.error('Submit function is not available');
+                }
+              }}
+              style={{ marginBottom: 15, width: "100%" }}
+              disabled={!hasSelections || !isEmailValid}
+            >
+              {setLocale(locale, "resources.myprogress.submitSelections")}
+            </Button>
+          </Col>
+        </Row>
+      </>
+    );
+  };
   
+  const renderUpserUserProgressBottom = () => {
+    if (activeKey === '2' && email) {
+      return renderUpsertUserProgressBottom()
+    }
+  }
+
   const renderButtons = () => {
     if (activeKey === '2' && email) {
-      return (
-        <>
-          <Row justify="center">
-            <Col xs={24} sm={24} lg={8}>
-              <Button
-                type="primary"
-                onClick={() => {
-                  if (handleUserProgressSubmit) {
-                    handleUserProgressSubmit(); // Trigger the child's submit function
-                  } else {
-                    message.error('Submit function is not available');
-                  }
-                }}
-                style={{ marginBottom: 15, width: "100%" }}
-                disabled={!hasSelections || !isEmailValid}
-              >
-                {setLocale(locale, "resources.myprogress.submitSelections")}
-              </Button>
-            </Col>
-          </Row>
-        </>
-      );
+      return renderUpsertUserProgressBottom()
     } else {
       return (
         <>
@@ -321,7 +344,7 @@ useEffect(() => {
                   onChange={(e) => handleEmailChange(e.target.value)}
                   placeholder="Enter email"
                   style={{ marginBottom: 10 }}
-                  status={!isEmailValid ? 'error' : ''}
+                  status={!isEmailValid ? 'error email not valid' : ''}
                 />
               </Form.Item>                           
             {renderButtons()}
@@ -356,6 +379,7 @@ useEffect(() => {
         {renderProgressTracking()}
       </TabPane>
     </Tabs>
+    {renderUpserUserProgressBottom()}
     </div>
   );
 };
@@ -363,7 +387,8 @@ useEffect(() => {
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     onSearchingForProgressByEmailIdAndCourseCodeId: onSearchingForProgressByEmailIdAndCourseCodeId,
-    onSubmittingUserCourseProgress: onSubmittingUserCourseProgress
+    onSubmittingUserCourseProgress: onSubmittingUserCourseProgress,
+    onResetingProgressByEmailIdAndCourseCodeId: onResetingProgressByEmailIdAndCourseCodeId
   }, dispatch);
 }
 

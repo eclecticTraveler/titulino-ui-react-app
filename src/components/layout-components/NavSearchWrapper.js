@@ -43,7 +43,7 @@ export const NavSearchWrapper = (props) => {
 
 
 	const newestVersion = (
-		<div>        
+		<div className="nav-search-wrapper">        
 		{
 			(!isMobile && !isSearchVisible) ?
 			<Menu mode="horizontal" className="untoggled-search">

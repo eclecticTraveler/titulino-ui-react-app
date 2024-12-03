@@ -178,7 +178,7 @@ export const upsertUnauthenticatedUserCourseProgress = async (email, progressRec
   }
 }
 
-export const getCourseProgressByEmailAndCourseCodeId = async (email, courseCodeId, courseLanguageId, whoCalledMe) => {
+export const getCourseProgressByEmailCourseCodeIdAndLanguageId = async (email, courseCodeId, courseLanguageId, whoCalledMe) => {
 
   if(email && courseCodeId && courseLanguageId){
     console.log("courseLanguageId", courseLanguageId)
@@ -189,6 +189,37 @@ export const getCourseProgressByEmailAndCourseCodeId = async (email, courseCodeI
        "p_email": email,
        "p_course_code": courseCodeId,
        "p_language_id": courseLanguageId
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(courseProgressByEmailUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult?.length > 0 ? apiResult : _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getCourseProgressByEmailCourseCodeIdAndLanguageId: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
+
+export const getCourseProgressByEmailAndCourseCodeId = async (email, courseCodeId, whoCalledMe) => {
+
+  if(email && courseCodeId){
+     // Base URL
+     const courseProgressByEmailUrl = `${SupabaseConfig.baseApiUrl}/GetUnauthenticatedEnrolleeCourseProgress`;
+
+     const raw = JSON.stringify({
+       "email": email,
+       "coursecodeid": courseCodeId
      })
 
      const requestOptions = {
@@ -270,6 +301,37 @@ export const getCourseProgressStructure = async(nativeLanguage, course, courseCo
   return structure ?? [];
 }
 
+export const isUserEmailRegisteredForGivenCourse = async (email, courseCodeId, whoCalledMe) => {
+
+  if(email && courseCodeId){
+     // Base URL
+     const IsEmailRegisteredToCourseUrl = `${SupabaseConfig.baseApiUrl}/IsEmailRegisteredToCourse`;
+
+     const raw = JSON.stringify({
+       "email": email,
+       "coursecodeid": courseCodeId
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(IsEmailRegisteredToCourseUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? false;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in isUserEmailRegisteredForGivenCourse: from ${whoCalledMe}`);
+      console.error(error);
+      return false;
+    }
+
+  }
+}
+
 const TitulinoRestService = {
   getCountries,
   getAvailableCourses,
@@ -278,7 +340,9 @@ const TitulinoRestService = {
   getQuickEnrolleeCountryDivisionInfo,
   getCourseProgressStructure,
   getCourseProgressByEmailAndCourseCodeId,
-  upsertUnauthenticatedUserCourseProgress
+  upsertUnauthenticatedUserCourseProgress,
+  isUserEmailRegisteredForGivenCourse,
+  getCourseProgressByEmailCourseCodeIdAndLanguageId
 };
 
 export default TitulinoRestService;

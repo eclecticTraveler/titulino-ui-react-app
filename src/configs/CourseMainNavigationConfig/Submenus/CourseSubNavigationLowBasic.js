@@ -27,6 +27,7 @@ import { faSchool,
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
 export const getCourseSubNavigationLowBasic = (lang) => {
+	console.log("lang", lang)
   	return [
 	{
 		key: 'chapter-sidenav-low-basic-1',

@@ -98,9 +98,9 @@ export const getUserCourseProgressCategories = async(userProgressByEmailId) => {
   const category4Progress = userProgress?.filter(record => record?.CategoryId === 4); // Examination
 
   // Get unique classes for each category
-  const uniqueClassesCategory1 = new Set(category1Progress.map(record => record?.ClassNumber));
-  const uniqueClassesCategory2 = new Set(category2Progress.map(record => record?.ClassNumber));
-  const category4Completed = category4Progress.length >= 1 ? 1 : 0; // Either 0 or 1
+  const uniqueClassesCategory1 = new Set(category1Progress?.map(record => record?.ClassNumber));
+  const uniqueClassesCategory2 = new Set(category2Progress?.map(record => record?.ClassNumber));
+  const category4Completed = category4Progress?.length >= 1 ? 1 : 0; // Either 0 or 1
 
   return {
     category1Total: uniqueClassesCategory1?.size,
@@ -129,7 +129,7 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
     case 'supermarket':
       return 'SUPERMARKET_SEP_2024_COURSE_01';
     case 'household':
-      return 'HOUSEHOLD_JAN_2025_COURSE_01';
+      return 'HOUSEHOLD_PART_1_JAN_2025_COURSE_01';
     // Add more cases as needed
     case 'electronics':
       return 'ELECTRONICS_MAR_2025_COURSE_01';

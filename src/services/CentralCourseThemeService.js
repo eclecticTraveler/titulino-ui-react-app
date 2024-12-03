@@ -1,6 +1,7 @@
 // Create a mapping for theme based courses
 const levelMapping = {
-  "supermarket": 4
+  "supermarket": 4,
+  "household":5
 };
 
 export const getThemeMappedLevelNo = (level) => {

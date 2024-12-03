@@ -31,6 +31,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   };
 
+  console.log("progressData->", progressData)
 
   const success = () => {
     // Show loading message
@@ -75,7 +76,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
     const missingSelections = Object.values(selectedLessons).some(
       (item) =>
         item.participationTypeId === null &&
-        categories?.find((cat) => cat.categoryId === item.categoryId)
+        categories?.find((cat) => cat?.categoryId === item?.categoryId)
           .participationIds.length > 1
     );
 
@@ -93,7 +94,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
         categoryId,
         participationTypeId:
           participationTypeId ||
-          categories?.find((cat) => cat.categoryId === categoryId)
+          categories?.find((cat) => cat?.categoryId === categoryId)
             .participationIds[0].participationTypeId,
         createdAt: new Date().toISOString(),
         courseCodeId,
@@ -141,7 +142,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
       // For categories with "level", check if it matches ContactLanguageProficiencyLevelOrder
       return progressData?.some(
         (progress) =>
-          progress?.ContactLanguageProficiencyLevelOrder === category?.level
+          (progress?.ContactLanguageProficiencyLevelOrder || 1) === category?.level // default to basic aka 1 if it does not have any to display for categories
       );
     })
     ?.map((category) => {
@@ -150,9 +151,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
         ?.filter(
           (progress) =>
             progress?.CategoryId === category?.categoryId &&
-            (!category?.level ||
-              progress?.ContactLanguageProficiencyLevelOrder ===
-                category?.level)
+            (!category?.level || (progress?.ContactLanguageProficiencyLevelOrder ?? 1) === category?.level) // if an unenrolled person then default to level 1 so their progress is displayed
         )
         ?.map((progress) => ({
           classNumber: progress?.ClassNumber,
@@ -166,10 +165,10 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
 
       return {
         ...category,
-        lessons: [...category?.lessons].sort(
-          (a, b) => a?.classNumber - b?.classNumber
-        ), // Order by ascending class
-        progressLessons: progressLessons, // Map progressLessons to category
+        lessons: category?.lessons
+          ? [...category?.lessons].sort((a, b) => a?.classNumber - b?.classNumber) // Order by ascending class
+          : [],
+        progressLessons, // Map progressLessons to category
       };
     });
 
@@ -291,12 +290,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
                                     <img
                                       alt={title}
                                       src={imageUrl}
-                                      style={{
-                                        width: '250px',
-                                        height: '200px',
-                                        objectFit: 'cover',
-                                        borderRadius: 5,
-                                      }}
+                                      className="responsive-image"
                                     />
                                   )}
                                 </Col>
@@ -480,7 +474,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
                                   />
                                   {requiresDropdown && isSelected && (
                                     <>
-                                    <div style={{color:'blue'}}>{setLocale(locale, "resources.userProgress.selectOptions")}:</div>
+                                    <div style={{color:'red'}}>{setLocale(locale, "resources.userProgress.selectOptions")}:</div>
                                     <Select
                                       placeholder={setLocale(locale, "resources.userProgress.participationType")}
                                       onChange={(value) =>

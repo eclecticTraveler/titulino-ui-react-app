@@ -36,6 +36,7 @@ export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicU
   // Here we figure out the proper general submenu based on the url location we are hitting
   let currentRouteInfo;
   dynamicUpperMainNavigation?.forEach(singleFullMenu => {
+    console.log("singleFullMenu", singleFullMenu)
     // if(singleFullMenu?.path === location?.pathname){
     if(location?.pathname.includes(singleFullMenu?.path)){
       currentRouteInfo = singleFullMenu;

@@ -80,6 +80,7 @@
 	"sidenav.mid.basic.chapter.23": "Chapter 23",
 	"sidenav.mid.basic.chapter.24": "Chapter 24",
 
+	"sidenav.chapter.intro":"Intro",
 	"sidenav.chapter.1": "Chapter 1",
 	"sidenav.chapter.2": "Chapter 2",
 	"sidenav.chapter.3": "Chapter 3",
@@ -131,6 +132,8 @@
 
 	"main.upper.nav.theme.level.pilot": "Pilot",
 	"main.upper.nav.theme.level.supermarket": "Supermarket",
+	"main.upper.nav.theme.level.household": "Household Items",
+	"main.upper.nav.theme.level.ec": "EC",
 	"sidenav.book": "Book",
 	"sidenav.progress": "Progress",
 	"sidenav.quizletpdf": "Quizlet Pdf",
@@ -156,7 +159,7 @@
 
 	"resources.myprogress.enterEmail": "Please enter an email address",
 	"resources.myprogress.noRecordsFound":"No records found.",
-	"resources.myprogress.requirements":"You will need 8 Grammar classes and 8 Tuesday or Recording General gatherings",
+	"resources.myprogress.requirements":"You will need 8 Grammar classes and 8 Live or Recording General gatherings",
 	"resources.myprogress.participation":"Participation",
 	"resources.myprogress.date":"Date",
 	"resources.myprogress.email":"Email",
@@ -168,7 +171,7 @@
 	"resources.myprogress.participationcert":"Completed % for Participation Certificate",
 	"resources.myprogress.goldencert":"Completed % for Golden Certificate",
 	"resources.myprogress.requirementsTitle":"Requirements",
-	"resources.myprogress.tuesdayGatherings":"Tuesday Gatherings (Live/Recorded)",
+	"resources.myprogress.generalGatherings":"General Gatherings (Live/Recorded)",
 	"resources.myprogress.watchedGrammarClasses":"Watched Grammar Classes",
 	"resources.myprogress.finalExam":"Final Exam",
 	"resources.myprogress.recordProgress":"Record your progress",

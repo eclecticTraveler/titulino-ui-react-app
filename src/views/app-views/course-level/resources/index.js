@@ -88,16 +88,9 @@ const ExternalFormSection = (props) => {
 
         );
     } else {
-        if(env.IS_NEW_PROGRESS_APP_ON){
-            return (
-                <EnrolleeCourseProgressTrackingByEmail/>
-            );
-        }else{
-            return (
-                <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSdBZq_Debn07RWOG1gTF2NVzKrv6iVkO8L7p6-q4twzZ91lTg/viewform" />
-            ); 
-        }
-
+        return (
+            <>Error</>
+        )
     }
 };
 

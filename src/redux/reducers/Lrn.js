@@ -31,7 +31,10 @@ import {
   ON_SELECTING_ENROLLMENT_COURSES,
   ON_REQUESTING_COURSE_PROGRESS_STRUCTURE,
   ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
-  ON_SUBMITTING_USER_COURSE_PROGRESS
+  ON_SUBMITTING_USER_COURSE_PROGRESS,
+  ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
+  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
+  ON_LOADING_EBOOK_URL
 } from "../constants/Lrn";
 
 const initState = {
@@ -44,6 +47,26 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_LOADING_EBOOK_URL:
+      return {
+        ...state,
+        ebookUrl: action.ebookUrl
+      }
+    case ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID:
+      return {
+        ...state,
+        registeredProgressByEmailId: action.registeredProgressByEmailId,
+        studentPercentagesForCourse: action.studentPercentagesForCourse,
+        studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse,
+        isUserEmailRegisteredForCourse: action.isUserEmailRegisteredForCourse
+      }
+    case ON_RESETING_USER_PROGRESS_BY_EMAIL_ID:
+      return{
+        ...state,
+        registeredProgressByEmailId: action.registeredProgressByEmailId,
+        studentPercentagesForCourse: action.studentPercentagesForCourse,
+        studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse
+      }
     case ON_SUBMITTING_USER_COURSE_PROGRESS:
       return{
         ...state,
