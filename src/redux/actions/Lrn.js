@@ -10,6 +10,9 @@ import dummyData from "../../assets/data/dummyDW.json";
 import GraphService from "../../services/Charting/Admin/GraphService";
 import BookChapterService from "services/BookChapterService";
 import PdfFileService from "services/PdfFileService";
+import GoogleService from "services/GoogleService";
+import TitulinoRestService from "services/TitulinoRestService";
+import StudentProgress from "lob/StudentProgress";
 import $ from 'jquery'; 
 
 import axios from 'axios';
@@ -40,7 +43,18 @@ import {
   ON_LOADING_LANDING_PAGE,
   ON_LOADING_FIVE_MIN_LESSON,
   GET_BOOK_CHAPTER_URL,
-  GET_PDF_PATH_URL
+  GET_PDF_PATH_URL,
+  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
+  ON_RENDERING_COURSE_REGISTRATION,
+  ON_REQUESTING_GEOGRAPHICAL_DIVISION,
+  ON_SEARCHING_FOR_ALREADY_ENROLLED_CONTACT,
+  ON_SELECTING_ENROLLMENT_COURSES,
+  ON_REQUESTING_COURSE_PROGRESS_STRUCTURE,
+  ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
+  ON_SUBMITTING_USER_COURSE_PROGRESS,
+  ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
+  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
+  ON_LOADING_EBOOK_URL
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -123,6 +137,16 @@ export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, c
     }
   }
 
+
+export const geteBookUrl = async (levelTheme, nativeLanguage, course) => {
+  const url = await BookChapterService.getBookBaseUrl(levelTheme, nativeLanguage, course);
+  console.log("urlurl", url)
+    return {
+      type: ON_LOADING_EBOOK_URL,
+      ebookUrl: url
+    }
+  }
+
 export const getPdfPathUrl = async (levelTheme, chapterNo, nativeLanguage, course) => {
   const url = await PdfFileService.getPdfPathUrl(levelTheme, chapterNo, nativeLanguage, course);
     return {
@@ -130,6 +154,136 @@ export const getPdfPathUrl = async (levelTheme, chapterNo, nativeLanguage, cours
       pdfPathUrl: url
     }
   }
+
+
+export const onSelectingEnrollmentCourses = async (selectedCourses) => {
+    return {
+      type: ON_SELECTING_ENROLLMENT_COURSES,
+      selectedCoursesToEnroll: selectedCourses
+    }
+  }   
+  
+export const onRenderingCourseRegistration = async () => {
+  // Since they dont depend on each other lets call them at the same time
+  const [countries, availableCourses, selfLanguageLevel] = await Promise.all([
+    TitulinoRestService.getCountries("onRenderingCourseRegistration"),
+    TitulinoRestService.getAvailableCourses(null, "onRenderingCourseRegistration"),
+    TitulinoRestService.getSelfDeterminedLanguageLevelCriteria("onRenderingCourseRegistration")
+  ]);
+
+    return {
+      type: ON_RENDERING_COURSE_REGISTRATION,
+      countries: countries,
+      availableCourses: availableCourses,
+      selfLanguageLevel: selfLanguageLevel
+    }
+  }
+
+  export const onSearchingForAlreadyEnrolledContact = async (email, year) => {
+    const returningEnrolleeCountryDivisionInfo = email ? await TitulinoRestService.getQuickEnrolleeCountryDivisionInfo(email, year, "onSearchingForAlreadyEnrolledContact") : [];
+    return {
+      type: ON_SEARCHING_FOR_ALREADY_ENROLLED_CONTACT,
+      returningEnrollee: returningEnrolleeCountryDivisionInfo
+    }
+  }
+
+export const onRequestingGeographicalDivision = async (countryId) => {
+  const countryDivisions = await TitulinoRestService.getCountryDivisionByCountryId(countryId);
+    return {
+      type: ON_REQUESTING_GEOGRAPHICAL_DIVISION,
+      countryDivisions: countryDivisions
+    }
+  }
+
+export const onSubmittingUserCourseProgress = async (email, courseProgress) => {
+  const submittedUserCourseProgress = await TitulinoRestService.upsertUnauthenticatedUserCourseProgress(email, courseProgress, "onSubmittingUserCourseProgress");
+  let wasSuccessful = false;
+  if(email === submittedUserCourseProgress[0]?.email){
+    wasSuccessful = true;
+  }
+  
+  return {
+    type: ON_SUBMITTING_USER_COURSE_PROGRESS,
+    submittedUserCourseProgress: wasSuccessful ? submittedUserCourseProgress : [],
+    wasSubmittingUserCourseProgress: wasSuccessful
+  }
+}
+
+export const onRequestingCourseProgressStructure = async (nativeLanguage, course, courseCodeId ) => {
+  const courseStructure = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
+    return {
+      type: ON_REQUESTING_COURSE_PROGRESS_STRUCTURE,
+    }
+  }
+
+  
+
+export const onSearchingForProgressByEmailId = async (email) => {
+  const registeredProgressById = await GoogleService.getProgressByEmailId(email, "onSearchingForProgressByEmailId");
+  // const studentPercentagesForCourse = await StudentProgress.calculatePercentageForSupermarketCertificates(registeredProgressById);
+  // const studentCategoriesCompletedForCourse = await StudentProgress.getCategoriesObtainedByEmailForSupermarketCourse(registeredProgressById);
+
+  const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
+    StudentProgress.calculatePercentageForSupermarketCertificates(registeredProgressById),
+    StudentProgress.getCategoriesObtainedByEmailForSupermarketCourse(registeredProgressById)
+  ]);
+  
+  return {
+    type: ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
+    registeredProgressByEmailId: registeredProgressById,
+    studentPercentagesForCourse: studentPercentagesForCourse,
+    studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse
+  }
+}
+
+export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLanguage, course) => {
+
+  // Get courseId in Factory
+ const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
+ const courseConfiguration = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
+
+  return {
+    type: ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
+    currentCourseCodeId: courseCodeId,
+    courseConfiguration: courseConfiguration
+  }
+}
+
+export const onSearchingForProgressByEmailIdAndCourseCodeId = async (email, courseCodeId, courseLanguageId) => {
+  // Get courseId in Factory
+  const isUserEmailRegisteredForCourse = await TitulinoRestService.isUserEmailRegisteredForGivenCourse(email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  let registeredProgress = [];
+  if(isUserEmailRegisteredForCourse){
+    // Get records for registered unauthenticated users
+    registeredProgress = await TitulinoRestService.getCourseProgressByEmailCourseCodeIdAndLanguageId(email, courseCodeId, courseLanguageId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  }else{
+    // Get records for unregistered users
+    registeredProgress = await TitulinoRestService.getCourseProgressByEmailAndCourseCodeId(email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  }
+  console.log("isUserEmailRegisteredForCourse", isUserEmailRegisteredForCourse);
+  console.log("registeredProgress", registeredProgress)
+  const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
+    StudentProgress.calculateUserCourseProgressPercentageForCertificates(registeredProgress),
+    StudentProgress.getUserCourseProgressCategories(registeredProgress)
+  ]);
+
+  return {
+    type: ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
+    registeredProgressByEmailId: registeredProgress,
+    studentPercentagesForCourse: studentPercentagesForCourse,
+    studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse,
+    isUserEmailRegisteredForCourse: isUserEmailRegisteredForCourse
+  }
+}
+
+export const onResetingProgressByEmailIdAndCourseCodeId = async () => {  
+  return {
+    type: ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
+    registeredProgressByEmailId: null,
+    studentPercentagesForCourse: null,
+    studentCategoriesCompletedForCourse: null
+  }
+}
 
 export const onLoadingFiveMinLesson = async (levelNo, nativeLanguage, course, isToRetrieveByNewDate) => {
   const fiveMinuteLesson = await LandingWidgetsService.getFiveMinuteRandomLesson(levelNo, nativeLanguage, course);
@@ -254,137 +408,3 @@ export const onSelectingCorrectionToEdit = async(record) => {
     selectedCorrectionRecord: record,
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-// export const getLanguageCoursesAvailableByNativeLanguage = async (lang) => {
-
-// }
-
-// export const getNativeLanguagesAvailableBySelectedCourse = async (course) => {
-
-// }
-
-// export const setUserNativeLanguage = async (lang) => {
-//   // Set the language
-// }
-
-// export const setUserSelectedCourse = async (course) => {
-//   // Set Course
-// }
-
-// export const getUserNativeLanguage = async (lang) => {
-//   // Get the language
-// }
-
-
-
-// export const setUserBasicConfigurationFlag = async (flag) => {
-//   // Set the Flag
-// }
-
-// export const getUserBasicConfigurationFlag = async () => {
-//   // Get Flag
-// }
-
-// export const setExperienceToogleFlagStatus = async (isNewExperienceRequested) => { 
-//   UserService.setExagoExperienceFlagStatus(isNewExperienceRequested);
-//   return {
-//     type: SET_EXPERIENCE_TOOGLE_FLAG
-//   }
-// }
-
-// export const getExperienceToogleFlagStatus = async () => {   
-//   let cachedFlag = await UserService.getExagoExperienceFlagStatus();
-//   if(cachedFlag == null){
-//     cachedFlag = env.IS_NEW_EXPERIENCE_VIEW_ON ?? EXAGO_EXPERIENCE_DEFAULT;
-//   }
-
-//   return {
-//     type: GET_EXPERIENCE_TOOGLE_FLAG,
-//     exagoRequestedFlag: cachedFlag
-//   }
-// }
-
-
-// export const isServiceAvailableForUser = async(serviceName) => {  
-//   let mainNav = mainNavigationConfig;
-//   let isServiceAvailable = false;
-//   mainNav.forEach(function(service){      
-//     if(service.key === serviceName){
-//       isServiceAvailable = service.isServiceAvailableForUser;
-//       if(isServiceAvailable){
-//         //setVantageAgency();
-//       }
-//     }
-//   });
-
-//   return {
-//     type: IS_SERVICE_AVAILABLE_FOR_USER,
-//     isSubscribedToService: isServiceAvailable
-//   }
-// };
-
-
-
-// export const toggleSelectedUpperNavigationTabOnLoad = async(path) => {
-//   const pathArray = path.split('/');
-//   const serviceOnLoad = pathArray[2];
-
-//   if(serviceOnLoad){
-//     mainNavigationConfig.forEach(function(mainNavMenu){
-//       if(mainNavMenu.current === true ){
-//         mainNavMenu.current = false;
-//       }
-//       if(mainNavMenu.key === serviceOnLoad && mainNavMenu.current === false){
-//         mainNavMenu.current = true;
-//       }
-//     })
-//   }
-  
-//   return {
-//     type: GET_SELECTED_SERVICE_FROM_UPPER_NAV_ON_LOAD,
-//     serviceOnLoad:serviceOnLoad
-//   }
-// }
-
-
-// export const displayLanguageConfigModal = async(isToDisplay) => {
-//   return {
-//     type: DISPLAY_TRAINING_LOGIN,
-//     isTodisplayTrainingLoging: isToDisplay
-//   }
-// }
-
-// export const dummyMethod = async(username, password) => {
-//   let wasMappedSuccesfully = false;
-//   let haveCredentialsbeenSubmited = false;
-//   let responseServerMessage = "";
-
-//   if(username && password){
-
-//     const endpointResponse = await mapTrainingCredentials(username, password, UserService.getToken(), "redux call");
-
-//     wasMappedSuccesfully = (endpointResponse?.wasMappedSuccesfully) ? true : false;
-//     responseServerMessage = endpointResponse?.responseMessage;
-//     haveCredentialsbeenSubmited = true;
-//   }
-
-//   return{
-//     type: SUBMIT_TRAINING_CREDENTIALS,
-//     areCredentialsMappedSuccesfully: wasMappedSuccesfully,
-//     haveCredentialsbeenSubmited: haveCredentialsbeenSubmited,
-//     responseServerMessage: responseServerMessage
-//   }
-//}
-
-
-

@@ -32,13 +32,23 @@
 .ant-card-bordered {
     border: 1px solid @border-color-base;
     
-    & when (@theme = dark) {
-        border-color: transparent;
-    }
+    // & when (@theme = dark) {
+    //     border-color: transparent;
+    //     background: @border-color-dark-upper;
+    // }
 }
 
 .ant-card-meta-title {
     font-weight: @font-weight-bold;
+}
+
+.ant-card-meta-detail-progress{
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+.card-completed-meta {
+    color: #ffffff !important;
 }
 
 .ant-card-type-inner {
@@ -47,5 +57,24 @@
         & when (@theme = light) {
             background: @gray-lightest;
         }
+
+        & when (@theme = dark) {       
+            background: @border-color-dark-upper;
+        }
     }
 }
+
+.responsive-image {
+    width: 'auto';
+    max-width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+  
+  @media (max-width: 480px) {
+    .responsive-image {
+      max-width: 150px; /* Example for smaller screens */
+    }
+  }
+  

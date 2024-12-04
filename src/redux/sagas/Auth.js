@@ -16,97 +16,104 @@ import {
 	signInWithFacebookAuthenticated
 } from "../actions/Auth";
 
-import FirebaseService from '../../services/FirebaseService'
+import SupabaseService from 'services/SupabaseService';
 
-export function* signInWithFBEmail() {
+// Sign in with email and password
+export function* signInWithEmail() {
+	console.log("SAGAAAA")
   yield takeEvery(SIGNIN, function* ({payload}) {
-		const {email, password} = payload;
-		try {
-			const user = yield call(FirebaseService.signInEmailRequest, email, password);
-			if (user.message) {
-				yield put(showAuthMessage(user.message));
-			} else {
-				localStorage.setItem(AUTH_TOKEN, user.user.uid);
-				yield put(authenticated(user.user.uid));
-			}
-		} catch (err) {
-			yield put(showAuthMessage(err));
-		}
-	});
+    const {email, password} = payload;
+    try {
+      const {user, error} = yield call(SupabaseService.signInEmailRequest, email, password);
+      if (error) {
+        yield put(showAuthMessage(error.message));
+      } else {
+        localStorage.setItem(AUTH_TOKEN, user.id);
+        yield put(authenticated(user.id));
+      }
+    } catch (err) {
+      yield put(showAuthMessage(err));
+    }
+  });
 }
 
+// Sign out
 export function* signOut() {
   yield takeEvery(SIGNOUT, function* () {
-		try {
-			const signOutUser = yield call(FirebaseService.signOutRequest);
-			if (signOutUser === undefined) {
-				localStorage.removeItem(AUTH_TOKEN);
-				yield put(signOutSuccess(signOutUser));
-			} else {
-				yield put(showAuthMessage(signOutUser.message));
-			}
-		} catch (err) {
-			yield put(showAuthMessage(err));
-		}
-	});
+    try {
+      const { error } = yield call(SupabaseService.signOutRequest);
+      if (!error) {
+        localStorage.removeItem(AUTH_TOKEN);
+        yield put(signOutSuccess());
+      } else {
+        yield put(showAuthMessage(error.message));
+      }
+    } catch (err) {
+      yield put(showAuthMessage(err));
+    }
+  });
 }
 
-export function* signUpWithFBEmail() {
-  yield takeEvery(SIGNUP, function* ({payload}) {
-		const {email, password} = payload;
-		try {
-			const user = yield call(FirebaseService.signUpEmailRequest, email, password);
-			if (user.message) {
-				yield put(showAuthMessage(user.message));
-			} else {
-				localStorage.setItem(AUTH_TOKEN, user.user.uid);
-				yield put(signUpSuccess(user.user.uid));
-			}
-		} catch (error) {
-			yield put(showAuthMessage(error));
-		}
-	}
-	);
+// Sign up with email and password
+export function* signUpWithEmail() {
+	console.log("SAGAAA FacebookA")
+  yield takeEvery(SIGNUP, function* ({ payload }) {
+    const { email, password } = payload;
+    try {
+      const { user, error } = yield call(SupabaseService.signUpEmailRequest, email, password);
+      if (error) {
+        yield put(showAuthMessage(error.message));
+      } else {
+        localStorage.setItem(AUTH_TOKEN, user.id);
+        yield put(signUpSuccess(user.id));
+      }
+    } catch (error) {
+      yield put(showAuthMessage(error));
+    }
+  });
 }
 
-export function* signInWithFBGoogle() {
+// Sign in with Google
+export function* signInWithGoogle() {
   yield takeEvery(SIGNIN_WITH_GOOGLE, function* () {
-		try {
-			const user = yield call(FirebaseService.signInGoogleRequest);
-			if (user.message) {
-				yield put(showAuthMessage(user.message));
-			} else {
-				localStorage.setItem(AUTH_TOKEN, user.user.uid);
-				yield put(signInWithGoogleAuthenticated(user.user.uid));
-			}
-		} catch (error) {
-			yield put(showAuthMessage(error));
-		}
-	});
+    try {
+      const { user, error } = yield call(SupabaseService.signInGoogleRequest);
+      if (error) {
+        yield put(showAuthMessage(error.message));
+      } else {
+        localStorage.setItem(AUTH_TOKEN, user.id);
+        yield put(signInWithGoogleAuthenticated(user.id));
+      }
+    } catch (error) {
+      yield put(showAuthMessage(error));
+    }
+  });
 }
 
+// Sign in with Facebook
 export function* signInWithFacebook() {
   yield takeEvery(SIGNIN_WITH_FACEBOOK, function* () {
-		try {
-			const user = yield call(FirebaseService.signInFacebookRequest);
-			if (user.message) {
-				yield put(showAuthMessage(user.message));
-			} else {
-				localStorage.setItem(AUTH_TOKEN, user.user.uid);
-				yield put(signInWithFacebookAuthenticated(user.user.uid));
-			}
-		} catch (error) {
-			yield put(showAuthMessage(error));
-		}
-	});
+    try {
+      const { user, error } = yield call(SupabaseService.signInFacebookRequest);
+      if (error) {
+        yield put(showAuthMessage(error.message));
+      } else {
+        localStorage.setItem(AUTH_TOKEN, user.id);
+        yield put(signInWithFacebookAuthenticated(user.id));
+      }
+    } catch (error) {
+      yield put(showAuthMessage(error));
+    }
+  });
 }
 
+// Root saga to run all sagas
 export default function* rootSaga() {
   yield all([
-		// fork(signInWithFBEmail),
-		// fork(signOut),
-		// fork(signUpWithFBEmail),
-		// fork(signInWithFBGoogle),
-		// fork(signInWithFacebook)
+    fork(signInWithEmail),
+    fork(signOut),
+    fork(signUpWithEmail),
+    fork(signInWithGoogle),
+    fork(signInWithFacebook),
   ]);
 }

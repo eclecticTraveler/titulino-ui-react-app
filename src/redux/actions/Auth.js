@@ -22,6 +22,7 @@ export const signIn = (user) => {
 };
 
 export const authenticated = (token) => {
+  console.log("AUTN actions", token);
   return {
     type: AUTHENTICATED,
     token

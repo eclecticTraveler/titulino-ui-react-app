@@ -1,7 +1,10 @@
 import React from 'react'
-import RegisterForm from '../../components/RegisterForm'
+import RegisterForm from '../../components/RegisterForm';
 import { Card, Row, Col } from "antd";
-import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux';
+import IntlMessage from "components/util-components/IntlMessage";
+import IconAdapter from 'components/util-components/IconAdapter';
+import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
 const backgroundStyle = {
 	backgroundImage: 'url(/img/others/img-17.jpg)',
@@ -9,7 +12,11 @@ const backgroundStyle = {
 	backgroundSize: 'cover'
 }
 
+const setLocale = (isLocaleOn, localeKey) =>
+	isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+
 const RegisterOne = props => {
+	const localization = true;
 	const theme = useSelector(state => state.theme.currentTheme)
 	return (
 		<div className="h-100" style={backgroundStyle}>
@@ -19,8 +26,9 @@ const RegisterOne = props => {
 						<Card>
 							<div className="my-2">
 								<div className="text-center">
-								<img className="img-fluid" src={`/img/${theme === 'light' ? 'logo.png': 'logo-white.png'}`} alt="" />
-									<p className="text-muted">Create a new account:</p>
+
+								<IconAdapter icon={"/img/titulino-logo-1.png"} iconType={ICON_LIBRARY_TYPE_CONFIG.hostedSvg}/>									
+									<p className="text-muted">{setLocale(localization, "profile.login.createAccount")}:</p>
 								</div>
 								<Row justify="center">
 									<Col xs={24} sm={24} md={20} lg={20}>

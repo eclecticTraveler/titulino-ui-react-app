@@ -83,7 +83,7 @@ export const HeaderNav = props => {
 		if(!isMobile) {
 			onSearchClose()
 		}
-	})
+	}, []);
 			
 	return (		
 		<Header className="app-header app-header--primary">
@@ -96,9 +96,7 @@ export const HeaderNav = props => {
 					{/* TODO: TITULINO PROFILE NAVIGATION */}
 					{/* titulino fix the nav notification Menu Item issue to ellipsis */}
 					{/* <NavNotification /> */}
-					{!isMobile && <NavSearchWrapper isMobile={false} mode={mode}/>}
-					<NavLanguage/>
-					<NavPanel direction={direction} />
+					<NavProfile direction={direction} isMobile={isMobile} mode={mode}/>
 					{/* {env.KC_ENABLED_FEATURE && (
 						<Button
 						onClick={() => keycloak.login()}

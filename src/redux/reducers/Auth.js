@@ -12,7 +12,7 @@ import {
 
 const initState = {
   loading: false,
-  message: 'TEST',
+  message: '',
   showMessage: false,
   redirect: '',
   token: localStorage.getItem(AUTH_TOKEN),
@@ -21,6 +21,7 @@ const initState = {
 const auth = (state = initState, action) => {
 	switch (action.type) {
 		case AUTHENTICATED:
+			console.log("AUTN reducers", state);
 			return {
 				...state,
 				loading: false,

@@ -29,7 +29,7 @@ const setDefaultOpen = (key) => {
 	return keyList;
 };
 
-
+	
 const SideNavContent = (props) => {
 	const { sideNavTheme, routeInfo, hideGroupTitle, localization, onMobileNavToggle, currentRoute, navCollapsed } = props;
 	const isMobile = !utils.getBreakPoint(useBreakpoint()).includes('lg')
@@ -76,7 +76,7 @@ const SideNavContent = (props) => {
 									}
 								</SubMenu>
 							) : (
-								<Menu.Item key={subMenuFirst.key} >
+								<Menu.Item key={subMenuFirst.key} className="number223">
 									<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} />
 									<span>{setLocale(localization, subMenuFirst.title)}</span>
 									<Link onClick={() => closeMobileNav()} to={subMenuFirst.path} />
@@ -89,7 +89,7 @@ const SideNavContent = (props) => {
 					<Menu.Item key={menu.key}>
 						{<IconAdapter icon={menu.icon} iconType={menu.iconType} />}
 						{(!navCollapsed) ? <span>{setLocale(localization, menu?.title)}</span> : null}
-						{menu.path ? <Link onClick={() => closeMobileNav()} to={menu.path} /> : null}
+						{menu.path ? <span><Link onClick={() => closeMobileNav()} to={menu.path} /></span> : null}
 					</Menu.Item>
 				)
 			)}

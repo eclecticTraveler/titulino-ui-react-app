@@ -10,6 +10,7 @@ import {
 	ArrowRightOutlined
 } from '@ant-design/icons';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
+import Flag from "react-world-flags";
 
 class CourseSelection extends Component {
 
@@ -53,7 +54,9 @@ class CourseSelection extends Component {
 							<ArrowRightOutlined />
 						</div>
 						<div className="course">
-							<img className="course-flag" src={language.flag} alt={language.flag}/>
+							<div className="course-flag course-selection-flag">
+								<Flag code={language.flagCodeName} />
+							</div>
 							<h5 className="course-name">{language.basedlanguage}</h5>
 						</div>
 					</div>
@@ -72,7 +75,9 @@ class CourseSelection extends Component {
 									<ArrowRightOutlined />
 								</div>
 								<div className="course">
-									<img  className="course-flag" src={course.courseFlag} alt={course.courseFlag}/>
+									<div className="course-flag course-selection-flag">
+										<Flag code={course.courseFlagCodeName} />
+									</div>
 									<h5 className="course-name">{course.courseTitle}</h5>
 								</div>
 							</div>

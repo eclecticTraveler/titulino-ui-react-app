@@ -1,5 +1,5 @@
-import React from "react";
-import { Menu, Dropdown, Avatar } from "antd";
+import React, { useState } from 'react';
+import { Menu, Dropdown, Avatar, Drawer } from "antd";
 import { connect } from 'react-redux'
 import { 
   EditOutlined, 
@@ -8,14 +8,23 @@ import {
   QuestionCircleOutlined, 
   LogoutOutlined,
   CloudUploadOutlined,
-  SwapOutlined
+  SwapOutlined,
+  LoginOutlined,
+  GlobalOutlined,
+  UsergroupAddOutlined
 } from '@ant-design/icons';
 import Icon from '../../components/util-components/Icon';
 import { signOut } from 'redux/actions/Auth';
 import { APP_PREFIX_PATH } from '../../configs/AppConfig';
 import { Link } from "react-router-dom";
 import IntlMessage from "../../components/util-components/IntlMessage";
-import { useKeycloak } from "@react-keycloak/web";
+import ProfileNavPanelConfig from './ProfileNavPanelConfig';
+import ThemeConfigurator from './ThemeConfigurator';
+import { DIR_RTL } from 'constants/ThemeConstant';
+import NavSearchWrapper from './NavSearchWrapper';
+import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
+import { env } from "configs/EnvironmentConfig";
+import { setUserNativeLanguage } from 'redux/actions/Lrn'
 
 const locale = true;
 const setLocale = (isLocaleOn, localeKey) =>{		
@@ -23,24 +32,40 @@ const setLocale = (isLocaleOn, localeKey) =>{
 }
 
 const configureMenuItems = () => {
+
   const menuLinks = [
-    {
-    title: setLocale(locale,"profile.edit.profile"),
-    icon: EditOutlined ,
-    path: "profile/edit-profile"
-    },
-    {
-      title: setLocale(locale, "profile.help.center"),
-      icon: QuestionCircleOutlined,
-      path: ""
-    },
-    {
-      title: setLocale(locale, "profile.switch.course"),
-      icon: SwapOutlined,
-      path: "switch-course"
-    }
+    // {
+    //   title: setLocale(locale,"sidenav.login"),
+    //   icon: LoginOutlined ,
+    //   path: "login"
+    //   },
+    // {
+    // title: setLocale(locale,"profile.edit.profile"),
+    // icon: EditOutlined ,
+    // path: "edit-profile"
+    // },
+    // {
+    //   title: setLocale(locale, "profile.help.center"),
+    //   icon: QuestionCircleOutlined,
+    //   path: ""
+    // },
+    // {
+    //   title: setLocale(locale, "profile.switch.course"),
+    //   icon: SwapOutlined,
+    //   path: "switch-course"
+    // }
+    
   ];
 
+  if(env.IS_ENROLLMENT_FEAT_ON){
+    menuLinks.push(
+      {
+        title: setLocale(locale,"profile.enroll"),
+        icon: UsergroupAddOutlined ,
+        path: "enroll"
+      }
+    )
+  }
 
   const authorized = false;
   if(authorized){
@@ -70,8 +95,22 @@ const configureMenuItems = () => {
   return menuLinks;
 }
 
-export const NavProfile = (props, {signOut}) => {
-  const { course } = props;
+export const NavProfile = (props, {signOut}) => {  
+  const { course, direction, mode, isMobile, setUserNativeLanguage } = props;
+  const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
+
+  const showDrawer = () => {
+    setVisible(true);
+  };
+
+  const onClose = () => {
+    setVisible(false);
+  };
+
+  const resetBaseCourseLanguage = () => {
+    setUserNativeLanguage(null);
+  }
+
   // const { keycloak } = useKeycloak();
   const menuItems = configureMenuItems();
   const profileImg = "/img/avatars/tempProfile-2.png";
@@ -98,7 +137,30 @@ export const NavProfile = (props, {signOut}) => {
                 </Menu.Item>
               );
             })}
-            {/* <Menu.Item key={menuItems?.length + 1} onClick={() => keycloak.logout()}>
+            <Menu.Item key={menuItems?.length + 2}  onClick={resetBaseCourseLanguage}>
+              <span>
+                <SwapOutlined className="mr-3 profile-accomdation" />
+                <span className="font-weight-normal">  {setLocale(locale, "profile.switch.course")}</span>
+              </span>
+            </Menu.Item>
+            <Menu.SubMenu
+              key="language"
+              title={
+                <span>
+                  <GlobalOutlined className="mr-3 profile-accommodation profile-submenu-accomodation" />
+                  <span className="font-weight-normal">{setLocale(locale, "settings.menu.sub.title.2.language")}</span>
+                </span>
+              }
+            >
+              <ProfileNavLanguagePanelConfig />
+            </Menu.SubMenu>
+            <Menu.Item key={menuItems?.length + 3}  onClick={showDrawer}>
+              <span>
+                <SettingOutlined className="mr-3 profile-accomdation" />
+                <span className="font-weight-normal">  {setLocale(locale, "settings.menu.main.title")}</span>
+              </span>
+            </Menu.Item>
+            {/* <Menu.Item key={menuItems?.length + 3} onClick={() => alert("dd")}>
               <span>
                 <LogoutOutlined className="mr-3 profile-accomdation"/>
                 <span className="font-weight-normal">{setLocale(locale, "profile.sign.out")}</span>
@@ -109,11 +171,25 @@ export const NavProfile = (props, {signOut}) => {
       </div>
   );
   return (
-    <Dropdown placement="bottomRight" overlay={profileMenu} trigger={["click"]}>
-      <div className="avatar-menu d-flex align-items-center" mode="horizontal">
-        <Avatar size={40} src={profileImg} />
-      </div>
-    </Dropdown>
+    <>
+   
+      
+
+      <Dropdown placement="bottomRight" overlay={profileMenu} trigger={["click"]}>
+        <div className="avatar-menu d-flex align-items-center" mode="horizontal">
+          <Avatar size={40} src={profileImg} />
+        </div>
+      </Dropdown>
+
+      <ProfileNavPanelConfig
+        visible={visible}
+        onClose={onClose}
+        title='settings.menu.main.title' // Adjust the title key as needed
+        direction={direction}
+      />
+
+      {!isMobile && <NavSearchWrapper isMobile={false} mode={mode}/>}
+    </>
   );
 }
 
@@ -122,4 +198,4 @@ const mapStateToProps = ({ theme }) => {
 	return { course }
 };
 
-export default connect(mapStateToProps, {signOut})(NavProfile)
+export default connect(mapStateToProps, {signOut, setUserNativeLanguage})(NavProfile)

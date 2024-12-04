@@ -3,7 +3,7 @@ import { Switch, Route, Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { bindActionCreators } from 'redux';
 import Loading from '../../components/shared-components/Loading';
-import { APP_PREFIX_PATH } from '../../configs/AppConfig';
+import { APP_PREFIX_PATH, DEFAULT_LANDING_COURSE } from '../../configs/AppConfig';
 import { onCurrentRouteInfo } from '../../redux/actions/Lrn';
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import { retry } from '../../helpers/index';
@@ -20,13 +20,15 @@ export const AppViews = (props) => {
 			<Route path={`${APP_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.class}`} component={lazy(() => retry(() => import(`./course-level/chapter/class`)))} />
 			<Route path={`${APP_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.quizletpdf}`} component={lazy(() => retry(() => import(`./course-level/chapter/pdf-render`)))} />		
 			<Route path={`${APP_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`./course-level/chapter/practice`)))} />			
+			<Route exact path={`${APP_PREFIX_PATH}/enroll`} component={lazy(() => import(`./user/enrollment`))} />
 			<Route exact path={`${APP_PREFIX_PATH}/switch-course`} component={lazy(() => retry(() => import(`./course-selection`)))} />	
 			<Route exact path={`${APP_PREFIX_PATH}/profile/edit-profile`} component={lazy(() => retry(() => import(`./profile/index`)))} />				
 			<Route exact path={`${APP_PREFIX_PATH}/logout`} component={lazy(() => import(`./logout`))} />
-			<Route exact path={`${APP_PREFIX_PATH}/login`} component={lazy(() => import(`./login`))} />
-			{/* // Default to level 1 for any course until they are authorized to save where their progress was and land them there	*/}
-			<Redirect from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-1`} />
-			<Redirect from={`${APP_PREFIX_PATH}/`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-1`} />
+			<Route exact path={`${APP_PREFIX_PATH}/login`} component={lazy(() => import(`./user/redirect-login`))} />
+			<Route exact path={`${APP_PREFIX_PATH}/signup`} component={lazy(() => import(`./user/redirect-signup`))} />
+			{/* // Default to level 1 for any course until they are authorized to save where their progress was and land them there	*/}			
+			<Redirect from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
+			<Redirect from={`${APP_PREFIX_PATH}/`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
 		</Switch>
 	</Suspense>
 	</>

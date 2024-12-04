@@ -69,7 +69,41 @@ class Utils {
 		}
 	  }
 
+	  	/**
+	 * getCourseInfoFromUrl
+	 * @param {String} path - Location path you looking for e.g '/app/dashboards/analytic'
+	 * @return {Object} object that contained the course info string
+	 */
+		  static getThemeCourseInfoFromUrl(url){
+			const pathArray = url.split('/');
+			const levelNo = pathArray[3]?.substring(pathArray[3]?.indexOf('-')+1);
+			const chaptNo = pathArray[4]?.substring(pathArray[4]?.indexOf('-')+1);	
+			const rawmod = pathArray[5]?.substring(pathArray[5]?.indexOf('-')+1);
+	
+			return{
+				courseTheme: levelNo ?? "",			
+				section: chaptNo ?? "",
+				modality: rawmod ?? ""
+			}
+		  }
 
+	/**
+	 * getCourseSectionInfoFromUrl
+	 * @param {String} path - Location path you looking for e.g '/app/dashboards/analytic'
+	 * @return {Object} object that contained the course info string
+	 */
+	static getCourseSectionInfoFromUrl(url){
+		const pathArray = url.split('/');
+		const levelNo = pathArray[3];
+		const chaptNo = pathArray[4];	
+		const rawmod = pathArray[5];
+
+		return{
+			levelNo: levelNo,			
+			chapterNo: chaptNo,
+			modality: rawmod
+		}
+	}
 
 	/**
 	 * Get Last part of window URL

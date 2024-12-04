@@ -1,7 +1,7 @@
 .side-nav {
     height: calc(100vh - @header-height); 
     position: fixed;
-    top: @header-height;
+    top: 67px; // @header-height;
     box-shadow: @side-nav-box-shadow;
     z-index: @zindex-modal - 1;
     direction: ltr;
@@ -22,6 +22,10 @@
         .ant-menu-item-group-title {
             display: none;
         }
+    }
+
+    .ant-menu-item {
+        padding-left: 20px !important // Unable to find the inline style of 48px that pushes the menu item for now
     }
 }
 

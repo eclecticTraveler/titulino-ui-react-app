@@ -1,7 +1,7 @@
 import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from '../../AppConfig'
 import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic' 
 import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic'
-import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from '../../../configs/CourseThemeConfig';
+import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from '../../CourseThemeConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
 const dashBoardNavTree = [
@@ -62,8 +62,8 @@ const dashBoardNavTree = [
 	}
 ]
 
-const spanishMainNavigationConfig = [
+const spanishCourseMainNavigationConfig = [
   ...dashBoardNavTree
 ]
 
-export default spanishMainNavigationConfig;
+export default spanishCourseMainNavigationConfig;

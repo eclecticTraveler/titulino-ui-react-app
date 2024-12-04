@@ -1,9 +1,19 @@
 import React from 'react'
-import LoginOne from '../login-1'
+import SupabaseLogin from '../supabase-login';
 
 const Login = () => {
+	alert("HELLO WORLD")
 	return (
-		<LoginOne allowRedirect={true} />
+		// <SupabaseLogin allowRedirect={true} />
+		<header>
+		{/* <Auth
+		supabaseClient={supabase}
+		appearance={{theme: ThemeSupa }}
+		theme="dark"
+		providers={["facebook", "google"]}
+		/> */}
+		<div>Hello kkk</div>
+	</header>
 	)
 }
 

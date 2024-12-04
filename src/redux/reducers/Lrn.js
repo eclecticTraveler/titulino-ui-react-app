@@ -23,18 +23,95 @@ import {
   ON_LOADING_LANDING_DASHBOARD,
   ON_LOADING_LANDING_PAGE,
   GET_BOOK_CHAPTER_URL,
-  GET_PDF_PATH_URL
+  GET_PDF_PATH_URL,
+  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID,
+  ON_RENDERING_COURSE_REGISTRATION,
+  ON_REQUESTING_GEOGRAPHICAL_DIVISION,
+  ON_SEARCHING_FOR_ALREADY_ENROLLED_CONTACT,
+  ON_SELECTING_ENROLLMENT_COURSES,
+  ON_REQUESTING_COURSE_PROGRESS_STRUCTURE,
+  ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
+  ON_SUBMITTING_USER_COURSE_PROGRESS,
+  ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
+  ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
+  ON_LOADING_EBOOK_URL
 } from "../constants/Lrn";
 
 const initState = {
   shippingTabKey: 'mailing',
   isToEditShippingAddress: false,
   isToEditUserProfile: false,
-  isCorrectionModalOpened: false
+  isCorrectionModalOpened: false,
+  selectedCoursesToEnroll: []
 };
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_LOADING_EBOOK_URL:
+      return {
+        ...state,
+        ebookUrl: action.ebookUrl
+      }
+    case ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID:
+      return {
+        ...state,
+        registeredProgressByEmailId: action.registeredProgressByEmailId,
+        studentPercentagesForCourse: action.studentPercentagesForCourse,
+        studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse,
+        isUserEmailRegisteredForCourse: action.isUserEmailRegisteredForCourse
+      }
+    case ON_RESETING_USER_PROGRESS_BY_EMAIL_ID:
+      return{
+        ...state,
+        registeredProgressByEmailId: action.registeredProgressByEmailId,
+        studentPercentagesForCourse: action.studentPercentagesForCourse,
+        studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse
+      }
+    case ON_SUBMITTING_USER_COURSE_PROGRESS:
+      return{
+        ...state,
+        submittedUserCourseProgress: action.submittedUserCourseProgress,
+        wasSubmittingUserCourseProgress: action.wasSubmittingUserCourseProgress
+      }
+    case ON_LOADING_USER_RESOURCES_BY_COURSE_THEME:
+      return {
+        ...state,
+        currentCourseCodeId: action.currentCourseCodeId,
+        courseConfiguration: action.courseConfiguration
+      }
+    case ON_REQUESTING_COURSE_PROGRESS_STRUCTURE:
+      return {
+        ...state
+      }
+    case ON_SELECTING_ENROLLMENT_COURSES:
+      return {
+        ...state,
+        selectedCoursesToEnroll: action.selectedCoursesToEnroll
+      }
+    case ON_SEARCHING_FOR_ALREADY_ENROLLED_CONTACT:
+      return {
+        ...state,
+        returningEnrollee: action.returningEnrollee
+      }
+    case ON_REQUESTING_GEOGRAPHICAL_DIVISION:
+      return {
+        ...state,
+        countryDivisions: action.countryDivisions
+      }
+    case ON_RENDERING_COURSE_REGISTRATION:
+      return {
+        ...state,
+        countries: action.countries,
+        availableCourses: action.availableCourses,
+        selfLanguageLevel: action.selfLanguageLevel
+      }
+    case ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID:
+      return {
+        ...state,
+        registeredProgressByEmailId: action.registeredProgressByEmailId,
+        studentPercentagesForCourse: action.studentPercentagesForCourse,
+        studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse
+      }
     case ON_LOADING_LANDING_PAGE:
       return {
         ...state,

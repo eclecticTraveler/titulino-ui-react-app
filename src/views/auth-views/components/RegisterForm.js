@@ -5,17 +5,23 @@ import { Button, Form, Input, Alert } from "antd";
 import { showAuthMessage, showLoading, hideAuthMessage, authenticated } from 'redux/actions/Auth';
 import { useHistory } from "react-router-dom";
 import { motion } from "framer-motion"
-import JwtAuthService from 'services/JwtAuthService'
+import JwtAuthService from 'services/JwtAuthService';
+import IntlMessage from "components/util-components/IntlMessage";
+
+const setLocale = (isLocaleOn, localeKey) =>
+	isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+
+const localization = true;
 
 const rules = {
 	email: [
 		{ 
 			required: true,
-			message: 'Please input your email address'
+			message: setLocale(localization, "profile.login.inputEmail")
 		},
 		{ 
 			type: 'email',
-			message: 'Please enter a validate email!'
+			message: setLocale(localization, "profile.login.validEmail")
 		}
 	],
 	password: [
@@ -50,26 +56,38 @@ export const RegisterForm = (props) => {
     	form.validateFields().then(values => {
 			showLoading()
 			const fakeToken = 'fakeToken'
-			JwtAuthService.signUp(values).then(resp => {
-				authenticated(fakeToken)
-			}).then(e => {
-				showAuthMessage(e)
-			})
+			console.log("FORM", values)
+			// JwtAuthService.signUp(values).then(resp => {
+			// 	authenticated(fakeToken)
+			// }).then(e => {
+			// 	showAuthMessage(e)
+			// })
+			authenticated(fakeToken)
 		}).catch(info => {
 			console.log('Validate Failed:', info);
 		});
 	}
 
 	useEffect(() => {
-    	if (token !== null && allowRedirect) {
-			history.push(redirect)
+		if (token && allowRedirect) {
+			history.push(redirect);
 		}
-		if(showMessage) {
-				setTimeout(() => {
+	
+		let timeoutId;
+		
+		if (showMessage) {
+			timeoutId = setTimeout(() => {
 				hideAuthMessage();
 			}, 3000);
 		}
-  });
+	
+		// Cleanup on unmount
+		return () => {
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
+		};
+  }, [token, redirect, showMessage]);
 	
 	return (
 		<>
@@ -84,7 +102,7 @@ export const RegisterForm = (props) => {
 			<Form form={form} layout="vertical" name="register-form" onFinish={onSignUp}>
 				<Form.Item 
 					name="email" 
-					label="Email" 
+					label={setLocale(localization, "profile.login.email")} 
 					rules={rules.email}
 					hasFeedback
 				>
@@ -92,7 +110,7 @@ export const RegisterForm = (props) => {
 				</Form.Item>
 				<Form.Item 
 					name="password" 
-					label="Password" 
+					label={setLocale(localization, "profile.login.password")}
 					rules={rules.password}
 					hasFeedback
 				>
@@ -100,7 +118,7 @@ export const RegisterForm = (props) => {
 				</Form.Item>
 				<Form.Item 
 					name="confirm" 
-					label="ConfirmPassword" 
+					label={setLocale(localization, "profile.login.confirmPassword")}
 					rules={rules.confirm}
 					hasFeedback
 				>
@@ -108,7 +126,7 @@ export const RegisterForm = (props) => {
 				</Form.Item>
 				<Form.Item>
 					<Button type="primary" htmlType="submit" block loading={loading}>
-						Sign Up
+						{setLocale(localization, "profile.login.signup")}
 					</Button>
 				</Form.Item>
 			</Form>

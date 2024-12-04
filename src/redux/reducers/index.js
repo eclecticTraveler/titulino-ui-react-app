@@ -5,7 +5,7 @@ import Lrn from './Lrn';
 
 const reducers = combineReducers({
     theme: Theme,
-    // auth: Auth,
+    auth: Auth,
     lrn: Lrn
 });
 
