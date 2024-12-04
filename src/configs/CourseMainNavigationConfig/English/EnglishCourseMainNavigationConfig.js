@@ -90,26 +90,6 @@ const dashBoardNavTree = [
 		submenu: []
 	},
 	{
-		key: 'level-supermarket-eng',
-		path: `${APP_PREFIX_PATH}/eng/level-supermarket`,
-		title: 'main.upper.nav.theme.level.supermarket',
-		sideTitle: 'Supermarket',
-		icon: COURSE_ICON_CONFIG.default,
-		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
-		color: COURSE_COLOR_CONFIG.superMarketTheme,
-		current: true,
-		isRootMenuItem: true,
-		iconPosition: "upperNav",
-		isServiceAvailableForUser: false,
-		isToDisplayInNavigation: true,
-		isFree: false,
-		course: "English",
-		topSubmenu: [],
-		submenu: [
-			...CourseSubNavigationSupermarketTheme("eng")
-		]
-	},
-	{
 		key: 'level-household-part-eng',
 		path: `${APP_PREFIX_PATH}/eng/level-household`,
 		title: 'main.upper.nav.theme.level.household',
@@ -127,6 +107,26 @@ const dashBoardNavTree = [
 		topSubmenu: [],
 		submenu: [
 			...CourseSubNavigationHouseholdTheme("eng")
+		]
+	},
+	{
+		key: 'level-supermarket-eng',
+		path: `${APP_PREFIX_PATH}/eng/level-supermarket`,
+		title: 'main.upper.nav.theme.level.supermarket',
+		sideTitle: 'Supermarket',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
+		color: COURSE_COLOR_CONFIG.superMarketTheme,
+		current: true,
+		isRootMenuItem: true,
+		iconPosition: "upperNav",
+		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: true,
+		isFree: false,
+		course: "English",
+		topSubmenu: [],
+		submenu: [
+			...CourseSubNavigationSupermarketTheme("eng")
 		]
 	}
 ]

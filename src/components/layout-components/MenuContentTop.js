@@ -17,14 +17,12 @@ const setLocale = (isLocaleOn, localeKey) =>
 const MenuContentTop = (props) => {
 	const [expanded, setExpanded] = useState(false);
 	const {dynamicUpperMainNavigation, topNavColor, localization, toggleUpperNavigationLevelSelection, getUpperNavigationBasedOnUserConfig} = props;
-	// const { keycloak } = useKeycloak();
-	// const isLoggedIn = keycloak.authenticated;
+
 	getUpperNavigationBasedOnUserConfig();
 	toggleSelectedUpperNavigationTabOnLoad(useLocation()?.pathname, dynamicUpperMainNavigation);
 	// TITULINO: Verify that menu is loading well and see if there is a need to do a version of load on tab like in line 21 but in lrn redux
 	// Do spefic content that is only render on log in check linke 30, this was the only way that was smooth, did not cause white page, or infinity loops and updates
 	// redux, to use.
-	console.log("dynamicUpperMainNavigation", dynamicUpperMainNavigation)
 	return (
 		<Menu mode="horizontal" style={{ backgroundColor: topNavColor }}>
 		  {dynamicUpperMainNavigation

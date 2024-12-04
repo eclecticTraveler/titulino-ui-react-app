@@ -149,6 +149,8 @@ useEffect(() => {
   // Cleanup timeout on component unmount
   return () => clearTimeout(timeoutId);
 }, [studentPercentagesForCourse, registeredProgressByEmailId]);
+
+
   const renderMessageResults = () => {
     if (!registeredProgressByEmailId || registeredProgressByEmailId?.length === 0) {
       return <div>{setLocale(locale, "resources.myprogress.noRecordsFound")}</div>;
@@ -311,7 +313,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="container customerName">
+    <div className="container customerName wordBreak">
     {isSmallConfettiVisible && <ConfettiExplosion />}
     {isMassiveConfettiVisible && (
         <Confetti

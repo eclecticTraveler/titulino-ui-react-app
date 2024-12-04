@@ -135,16 +135,17 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
 
   // Combine categories and progress data
   const combinedCategories = categories
-    ?.filter((category) => {
-      // Keep categories without a "level" property
-      if (!category?.level) return true;
-
-      // For categories with "level", check if it matches ContactLanguageProficiencyLevelOrder
-      return progressData?.some(
-        (progress) =>
-          (progress?.ContactLanguageProficiencyLevelOrder || 1) === category?.level // default to basic aka 1 if it does not have any to display for categories
-      );
-    })
+    ?.filter((category) => 
+      // Include categories without a level
+      !category?.level ||
+      // If progressData is null/undefined, include categories with level === 1
+      (!progressData && category?.level === 1) ||
+      // If progressData exists, check if any progress matches the category level
+      progressData?.some((progress) => {
+        const levelOrder = progress?.ContactLanguageProficiencyLevelOrder ?? 1;
+        return levelOrder === category?.level;
+      })
+    )
     ?.map((category) => {
       // Create progressLessons for the category
       const progressLessons = progressData
