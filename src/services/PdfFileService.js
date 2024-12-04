@@ -9,7 +9,7 @@ const loadRequestedPdfPathUrl = async(levelTheme, chapterNo, nativeLanguage, cou
   const rawPdfData = await loadLocalPdfData();
   const filteredPdfData = rawPdfData?.pdfs?.find(c => (c.theme === levelTheme && c.course === course && c.nativeLanguage === nativeLanguage));
   const pdfChapter = filteredPdfData?.chapters.find(ch => ch.chapter === parseInt(chapterNo, 10)) || filteredPdfData?.chapters[filteredPdfData?.chapters.length - 1];
-  const embeddableUrl = pdfChapter?.urlPath ? `https://d2eaaub12s77xu.cloudfront.net${pdfChapter?.urlPath}` : null;
+  const embeddableUrl = pdfChapter?.urlPath ? `https://storage.googleapis.com/titulino-bucket${pdfChapter?.urlPath}` : null;
   return embeddableUrl;
 }
 

@@ -97,16 +97,6 @@ export const HeaderNav = props => {
 					{/* titulino fix the nav notification Menu Item issue to ellipsis */}
 					{/* <NavNotification /> */}
 					<NavProfile direction={direction} isMobile={isMobile} mode={mode}/>
-					{/* {env.KC_ENABLED_FEATURE && (
-						<Button
-						onClick={() => keycloak.login()}
-						>
-						{setLocale(locale, "sidenav.login")}
-						</Button>
-						)
-					} */}
-
-					{/* {!!keycloak.authenticated && (<NavProfile />)} */}
          		 </div>
 			</div>			
 			
