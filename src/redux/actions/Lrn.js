@@ -245,7 +245,8 @@ export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLan
   return {
     type: ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
     currentCourseCodeId: courseCodeId,
-    courseConfiguration: courseConfiguration
+    courseConfiguration: courseConfiguration,
+    courseTheme: courseTheme
   }
 }
 

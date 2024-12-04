@@ -77,7 +77,8 @@ const lrn = (state = initState, action) => {
       return {
         ...state,
         currentCourseCodeId: action.currentCourseCodeId,
-        courseConfiguration: action.courseConfiguration
+        courseConfiguration: action.courseConfiguration,
+        courseTheme: action.courseTheme
       }
     case ON_REQUESTING_COURSE_PROGRESS_STRUCTURE:
       return {
