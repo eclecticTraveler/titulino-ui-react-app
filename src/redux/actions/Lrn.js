@@ -54,7 +54,8 @@ import {
   ON_SUBMITTING_USER_COURSE_PROGRESS,
   ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
   ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
-  ON_LOADING_EBOOK_URL
+  ON_LOADING_EBOOK_URL,
+  ON_SUBMITTING_ENROLLEE
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -206,6 +207,24 @@ export const onSubmittingUserCourseProgress = async (email, courseProgress) => {
     type: ON_SUBMITTING_USER_COURSE_PROGRESS,
     submittedUserCourseProgress: wasSuccessful ? submittedUserCourseProgress : [],
     wasSubmittingUserCourseProgress: wasSuccessful
+  }
+}
+
+export const onSubmittingEnrollee = async (enrollee, isFullEnrollment) => {
+  let submittedEnrollee = [];
+  if(!isFullEnrollment){
+    submittedEnrollee = await TitulinoRestService.upsertQuickEnrollment(enrollee, "onSubmittingEnrollee");
+  }else{
+    submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollee, "onSubmittingEnrollee");
+  }
+  
+  let wasSuccessful = false;
+  if(submittedEnrollee?.length > 0){
+    wasSuccessful = true;
+  }
+  return {
+    type: ON_SUBMITTING_ENROLLEE,
+    wasSubmittingEnrolleeSucessful: wasSuccessful
   }
 }
 

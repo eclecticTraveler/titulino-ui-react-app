@@ -332,6 +332,66 @@ export const isUserEmailRegisteredForGivenCourse = async (email, courseCodeId, w
   }
 }
 
+export const upsertQuickEnrollment = async (enrolle, whoCalledMe) => {
+  const recordsToSubmit = enrolle ? [...enrolle] : [];
+  if(recordsToSubmit?.length > 0){
+     // Base URL
+     const upsertEnrolleeUrl = `${SupabaseConfig.baseApiUrl}/UpsertEnrollee`;
+
+     const raw = JSON.stringify({
+       "enrollees": recordsToSubmit
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(upsertEnrolleeUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult?.length > 0 ? apiResult : _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in upsertUnauthenticatedUserCourseProgress: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
+
+export const upsertFullEnrollment = async (enrolle, whoCalledMe) => {
+  const recordsToSubmit = enrolle ? [...enrolle] : [];
+  if(recordsToSubmit?.length > 0){
+     // Base URL
+     const upsertEnrolleeUrl = `${SupabaseConfig.baseApiUrl}/UpsertEnrollee`;
+
+     const raw = JSON.stringify({
+       "enrollees": recordsToSubmit
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(upsertEnrolleeUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult?.length > 0 ? apiResult : _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in upsertUnauthenticatedUserCourseProgress: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
+
 const TitulinoRestService = {
   getCountries,
   getAvailableCourses,
@@ -342,7 +402,9 @@ const TitulinoRestService = {
   getCourseProgressByEmailAndCourseCodeId,
   upsertUnauthenticatedUserCourseProgress,
   isUserEmailRegisteredForGivenCourse,
-  getCourseProgressByEmailCourseCodeIdAndLanguageId
+  getCourseProgressByEmailCourseCodeIdAndLanguageId,
+  upsertQuickEnrollment,
+  upsertFullEnrollment
 };
 
 export default TitulinoRestService;

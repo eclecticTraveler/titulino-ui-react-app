@@ -7,7 +7,7 @@ import {toggleCollapsedNav, onMobileNavToggle} from 'redux/actions/Theme';
 import { onRenderingCourseRegistration } from "redux/actions/Lrn";
 import Loading from "components/shared-components/Loading";
 import CourseSelection from "./CourseSelection";
-import QuickEnrollment from "./QuickEnrollment";
+import QuickToFullEnrollment from "./QuickToFullEnrollment";
 
 // [
 //     {
@@ -105,7 +105,7 @@ export const EnrollmentWrapper = (props) => {
             return (
                 <div>
                     
-                    {/* <QuickEnrollment/> */}
+                    {/* <QuickToFullEnrollment/> */}
                      <CourseSelection/>
                      {/* <ContactEnrollment /> */}
                 </div>
@@ -113,7 +113,7 @@ export const EnrollmentWrapper = (props) => {
         }else{
             return (
                 <div>
-                     <QuickEnrollment/>
+                     <QuickToFullEnrollment/>
                 </div>
             );
         }
