@@ -34,7 +34,10 @@ import {
   ON_SUBMITTING_USER_COURSE_PROGRESS,
   ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
   ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
-  ON_LOADING_EBOOK_URL
+  ON_LOADING_EBOOK_URL,
+  ON_SUBMITTING_ENROLLEE,
+  ON_LOGIN_FOR_ENROLLMENT,
+  ON_UPSERTING_ENROLLMENT_FOR_QUEUE
 } from "../constants/Lrn";
 
 const initState = {
@@ -47,6 +50,20 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_UPSERTING_ENROLLMENT_FOR_QUEUE:
+      return {
+        ...state
+      }
+    case ON_LOGIN_FOR_ENROLLMENT:
+      return {
+        ...state,
+        apiToken: action.apiToken
+      }
+    case ON_SUBMITTING_ENROLLEE:
+      return {
+        ...state,
+        wasSubmittingEnrolleeSucessful: action.wasSubmittingEnrolleeSucessful
+      }
     case ON_LOADING_EBOOK_URL:
       return {
         ...state,
@@ -77,7 +94,8 @@ const lrn = (state = initState, action) => {
       return {
         ...state,
         currentCourseCodeId: action.currentCourseCodeId,
-        courseConfiguration: action.courseConfiguration
+        courseConfiguration: action.courseConfiguration,
+        courseTheme: action.courseTheme
       }
     case ON_REQUESTING_COURSE_PROGRESS_STRUCTURE:
       return {

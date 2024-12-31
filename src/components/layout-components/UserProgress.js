@@ -135,18 +135,21 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
 
   // Combine categories and progress data
   const combinedCategories = categories
-    ?.filter((category) => 
-      // Include categories without a level
-      !category?.level ||
-      // If progressData is null/undefined, include categories with level === 1
-      (!progressData && category?.level === 1) ||
-      // If progressData exists, check if any progress matches the category level
-      progressData?.some((progress) => {
-        const levelOrder = progress?.ContactLanguageProficiencyLevelOrder ?? 1;
-        return levelOrder === category?.level;
-      })
-    )
-    ?.map((category) => {
+  ?.filter((category) => {
+    // If no level, include category
+    if (!category?.level) return true;
+    console.log("progressData", progressData);
+    // Check if progressData is a non-empty array
+    const isProgressDataValid = Array.isArray(progressData) && progressData.length > 0;
+    // If progressData is not valid, include categories with level === 1
+    return isProgressDataValid
+      ? progressData.some((progress) => {
+          const levelOrder = progress?.ContactLanguageProficiencyLevelOrder ?? 1; // Default to 1
+          return levelOrder === category?.level;
+        })
+      : category.level === 1; // Default to lowest level (1) when progressData is missing or empty
+  })
+  ?.map((category) => {
       // Create progressLessons for the category
       const progressLessons = progressData
         ?.filter(

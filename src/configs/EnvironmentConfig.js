@@ -6,7 +6,8 @@ const dev = {
   IS_KC_FEATURE_ON: false,
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
   IS_ENROLLMENT_FEAT_ON: true,
-  IS_NEW_PROGRESS_APP_ON: false,
+  IS_NEW_PROGRESS_APP_ON: true,
+  TITULINO_NET_API: 'https://api.titulino.com',
   ENVIROMENT: 'dev',  
 };
 
@@ -19,6 +20,7 @@ const prod = {
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
   IS_ENROLLMENT_FEAT_ON: true,
   IS_NEW_PROGRESS_APP_ON: true,
+  TITULINO_NET_API: 'https://api.titulino.com',
   ENVIROMENT: 'prod'
 };
 
@@ -31,6 +33,7 @@ const local = {
   IS_KC_FEATURE_ON: false,
   IS_ENROLLMENT_FEAT_ON: true,
   IS_NEW_PROGRESS_APP_ON: true,
+  TITULINO_NET_API: 'https://api.titulino.com',
   ENVIROMENT: 'local'
 };
 

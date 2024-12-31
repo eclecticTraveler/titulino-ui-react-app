@@ -1,38 +1,58 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef  } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onRequestingGeographicalDivision } from "redux/actions/Lrn";
 import { Form, Input, Radio, Select, DatePicker, Checkbox, Button, Card, Divider, Row, Col, Space  } from "antd";
 import Flag from "react-world-flags"; // Correct import for flags
 import moment from "moment";
-
+import IntlMessage from "components/util-components/IntlMessage";
+import getLocaleText from "components/util-components/IntString";
 const { Option } = Select;
 
 export const ContactEnrollment = (props) => {
-  const { countries, selfLanguageLevel, onRequestingGeographicalDivision } = props;
-
-  const [form] = Form.useForm();
+  const { countries, selfLanguageLevel, onRequestingGeographicalDivision, selectedEmail, selectedYearOfBirth,
+     onEmailChange, onFormSubmit, form, setResetChildStates, enrollmentStyle } = props;
   const [selectedCountryOfResidence, setSelectedCountryOfResidence] = useState(null);
   const [selectedBirthCountry, setSelectedBirthCountry] = useState(null);
   const [divisions, setDivisions] = useState([]);
   const [birthDivisions, setBirthDivisions] = useState([]);
+  const locale = true;
+    
+  const setLocale = (isLocaleOn, localeKey) => {
+    return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+  };
+ 
+  const setLocaleString = (isLocaleOn, localeKey, defaultMessage = "") => {
+    return isLocaleOn
+      ? getLocaleText(localeKey, defaultMessage) // Uses the new function
+      : localeKey.toString(); // Falls back to the key if localization is off
+  };
 
-    useEffect(() => {
-  
-    }, []);
+  // Reset function for the child states
+  const resetChildStates = () => {
+    setSelectedCountryOfResidence(null);
+    setSelectedBirthCountry(null);
+    setDivisions([]);
+    setBirthDivisions([]);
+  };
 
+  // Register the reset function with the parent
+  useEffect(() => {
+    if (setResetChildStates) {
+      setResetChildStates(() => resetChildStates); // Pass the resetChildStates function to the parent
+    }
+  }, [setResetChildStates]);
 
  // Fetch divisions for country of residence
  useEffect(() => {
-    if (selectedCountryOfResidence) {
-      const fetchDivisions = async () => {
-        const divisions = await onRequestingGeographicalDivision(selectedCountryOfResidence);
-        setDivisions(Array.isArray(divisions?.countryDivisions) ? divisions?.countryDivisions : []); // Ensure it's an array
-      };
-      fetchDivisions();
-    }
-  }, [selectedCountryOfResidence]);
-
+  if (selectedCountryOfResidence) {
+    const fetchDivisions = async () => {
+      const divisions = await onRequestingGeographicalDivision(selectedCountryOfResidence);
+      setDivisions(Array.isArray(divisions?.countryDivisions) ? divisions?.countryDivisions : []); // Ensure it's an array
+    };
+    fetchDivisions();
+  }
+}, [selectedCountryOfResidence]);
 
   // Fetch divisions for country of birth
   useEffect(() => {
@@ -47,6 +67,11 @@ export const ContactEnrollment = (props) => {
   }, [selectedBirthCountry]);
 
 
+  useEffect(() => {
+    form.setFieldsValue({ emailAddress: selectedEmail });
+  }, [selectedEmail]);
+  
+
   const filterOption = (input, option) => {
     const children = option.children; // Get children from the option
     // Check if children is a string or an array
@@ -55,69 +80,78 @@ export const ContactEnrollment = (props) => {
   };
 
   const onFinish = (values) => {
-    console.log("Form values:", values);
+    console.log("Child form values:", values);
+    onFormSubmit(values); // Pass the values back to the parent for further processing
   };
 
   return (
     <div className="container customerName" >
-    <Form form={form} onFinish={onFinish} layout="vertical">
-    <Row gutter={24}>
-      <Col lg={24}>
-
-      <Card  style={{ maxWidth: 600, margin: "0 auto", padding: "20px" }} title="Full Enrollment Form" bordered={true}>
-              <h1>Supermarket</h1>
-      </Card>
-
-      <Card  style={{ maxWidth: 600, margin: "0 auto", padding: "20px" }} title="Contact Email" bordered={true}>
+      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} bordered={true}>
         <Form.Item
-            name="emailAddress"
-            rules={[{ required: true, type: "email" }]}
-          >
-          <Input placeholder="Enter your contact email" />
+          name="emailAddress"
+          rules={[
+            { required: true, message: setLocaleString(locale, "profile.login.validEmail") },
+            { type: "email", message: setLocaleString(locale, "enrollment.invalidEmail") },
+          ]}
+        >
+          <Input
+            placeholder="Enter your contact email"
+            value={selectedEmail} // Use the processed value from the parent
+            onChange={(e) => onEmailChange(e.target.value)} // Delegate to the parent handler
+          />
         </Form.Item>
       </Card>
 
-      <Card  style={{ maxWidth: 600, margin: "0 auto", padding: "20px" }} title="Language Level" bordered={true}>
-      <Form.Item name="languageLevelAbbreviation" rules={[{ required: true }]}>
+
+      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.languageLevel")} bordered={true}>
+      <Form.Item name="languageLevelAbbreviation" 
+      rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectLanguageLevelForCourse") }]}
+      >
           <Radio.Group>
-          <Space direction="vertical">
-            {selfLanguageLevel?.map((level) => (
-              <Radio key={level.LevelAbbreviation} value={level.LevelAbbreviation}>
-                {level.LanguageLevelDescription}
-              </Radio>
-            ))}
+            <Space direction="vertical">
+              {selfLanguageLevel?.map((level) => (
+                <Radio key={level?.LevelAbbreviation} value={level?.LevelAbbreviation}>
+                  {setLocale(locale, level.LocalizationKey)}
+                </Radio>
+              ))}
             </Space>
-          </Radio.Group>          
+          </Radio.Group>        
         </Form.Item>
       </Card>
 
-      <Card  style={{ maxWidth: 600, margin: "0 auto", padding: "20px" }} title="Personal Info" bordered={true}>
-        <Form.Item name="names" label="Names" rules={[{ required: true }]}>
+      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.personalInfo")} bordered={true}>
+          <Form.Item name="lastNames" label={setLocale(locale, "enrollment.form.lastNames")} 
+          rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.enterLastNames") }]}>
+            <Input placeholder="Enter your last names" />
+          </Form.Item>
+
+          <Form.Item name="names" label={setLocale(locale, "enrollment.form.names")} 
+          rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.enterFirstMiddleName") }]}>
             <Input placeholder="Enter your first and/or middle name" />
           </Form.Item>
 
-          <Form.Item name="lastNames" label="Last Name" rules={[{ required: true }]}>
-            <Input placeholder="Enter your last name" />
-          </Form.Item>
-
-          <Form.Item name="dateOfBirth" label="Date of Birth" rules={[{ required: true }]}>
+          <Form.Item name="dateOfBirth" label={setLocale(locale, "enrollment.form.dateOfBirth")} 
+            rules={[{ required: true, message: setLocaleString(locale, "enrollment.selectDateOfBirth") }]}>
           <DatePicker
             style={{ width: "100%" }}
             disabledDate={(current) => current && current > moment().endOf("day")}
+            defaultPickerValue={moment(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")} // Opens on selected year from parent component by default
           />
         </Form.Item>
 
-        <Form.Item name="sex" label="Gender" rules={[{ required: true }]}>
-          <Radio.Group style={{ display: 'flex', flexDirection: 'column' }}>
-            <Radio value="M">Male</Radio>
-            <Radio value="F">Female</Radio>
+        <Form.Item name="sex" label={setLocale(locale, "enrollment.form.gender")} 
+        rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectGender") }]} >
+          <Radio.Group>
+            <Radio value="M">{setLocale(locale, "enrollment.form.male")}</Radio>
+            <Radio value="F">{setLocale(locale, "enrollment.form.female")}</Radio>
           </Radio.Group>
         </Form.Item>
       </Card>
 
 
-      <Card style={{ maxWidth: 600, margin: "0 auto", padding: "20px" }} title="Geography" bordered={true}>
-         <Form.Item name="countryOfResidence" label="Country of Residency" rules={[{ required: true }]}>
+      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.geography")} bordered={true}>
+         <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
+         rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}>
           <Select
             showSearch
             placeholder="Select your country of residence"
@@ -139,7 +173,8 @@ export const ContactEnrollment = (props) => {
         </Form.Item>
 
         {selectedCountryOfResidence && (
-        <Form.Item name="countryDivisionOfResidence" label="State/Region" rules={[{ required: true }]}>
+        <Form.Item name="countryDivisionOfResidence" label={setLocale(locale, "enrollment.form.stateOrRegion")} 
+        rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegion") }]}>
             <Select
             showSearch
             placeholder="Select a state/region where you currently live"
@@ -155,7 +190,8 @@ export const ContactEnrollment = (props) => {
         </Form.Item>
         )}
       
-        <Form.Item name="countryOfBirth" label="Country of Nationality of Birth" rules={[{ required: true }]}>
+        <Form.Item name="countryOfBirth" label={setLocale(locale, "enrollment.form.countryOfNationalityOfBirth")} 
+        rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfBirth") }]}>
           <Select
             showSearch
             placeholder="Select country of nationality of birth"
@@ -177,7 +213,8 @@ export const ContactEnrollment = (props) => {
         </Form.Item>
 
         {selectedBirthCountry && (
-        <Form.Item name="countryDivisionOfBirth" label="State/Region of Birth" rules={[{ required: true }]}>
+        <Form.Item name="countryDivisionOfBirth" label={setLocale(locale, "enrollment.form.stateOrRegionOfBirth")} 
+        rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegionOfBirth") }]}>
             <Select
             showSearch
             placeholder="Select state/region of nationality of birth"
@@ -193,19 +230,7 @@ export const ContactEnrollment = (props) => {
         </Form.Item>
         )}
 
-
-        <Divider />
-
-        <p>By proceeding you agree to our <a href="#">Terms and Conditions</a> of Use and acknowledge and our Privacy Policy.</p>
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
-
-    </Card>
-
-      </Col>
-    </Row>
-    </Form>
+       </Card>
   </div>
 
 

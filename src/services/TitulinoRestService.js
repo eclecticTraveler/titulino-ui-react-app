@@ -243,15 +243,15 @@ export const getCourseProgressByEmailAndCourseCodeId = async (email, courseCodeI
 }
 
 export const getQuickEnrolleeCountryDivisionInfo = async (email, year, whoCalledMe) => {      
-
-  if (email && year > 0) {
+  const yearNumber = parseInt(year, 10); // Base 10 conversion
+  if (email && yearNumber > 0) {
  
     // Base URL
     const enrolledContactInfoByYearUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolledContactCountryInfoByYear`;
 
     const raw = JSON.stringify({
       "email": email,
-      "dobyear": year
+      "dobyear": yearNumber
     });
     
     const requestOptions = {
@@ -260,27 +260,6 @@ export const getQuickEnrolleeCountryDivisionInfo = async (email, year, whoCalled
       body: raw,
       redirect: "follow"
     };
-
-    // const temp = [
-    //   {
-    //     "sex": "M",
-    //     "email": "largo1019@gmail.com",
-    //     "countryOfBirthId": "MX",
-    //     "countryOfBirthName": "Mexico",
-    //     "countryOfBirthAlpha3": "MEX",
-    //     "countryOfResidencyId": "MX",
-    //     "countryDivisionIdBirth": null,
-    //     "countryOfResidencyName": "Mexico",
-    //     "countryDivisionBirthName": null,
-    //     "countryOfBirthNativeName": "México",
-    //     "countryOfResidencyAlpha3": "MEX",
-    //     "personalCommunicationName": "Christian Alberto",
-    //     "countryDivisionIdResidency": null,
-    //     "countryDivisionResidencyName": null,
-    //     "countryOfResidencyNativeName": "México"
-    //   }
-    // ]
-
 
     try {
       const response = await fetch(enrolledContactInfoByYearUrl, requestOptions);
@@ -332,6 +311,66 @@ export const isUserEmailRegisteredForGivenCourse = async (email, courseCodeId, w
   }
 }
 
+export const upsertQuickEnrollment = async (enrolle, whoCalledMe) => {
+  const recordsToSubmit = enrolle ? [...enrolle] : [];
+  if(recordsToSubmit?.length > 0){
+     // Base URL
+     const upsertEnrolleeUrl = `${SupabaseConfig.baseApiUrl}/UpsertEnrollee`;
+
+     const raw = JSON.stringify({
+       "enrollees": recordsToSubmit
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(upsertEnrolleeUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult?.length > 0 ? apiResult : _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in upsertUnauthenticatedUserCourseProgress: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
+
+export const upsertFullEnrollment = async (enrolle, whoCalledMe) => {
+  const recordsToSubmit = enrolle ? [...enrolle] : [];
+  if(recordsToSubmit?.length > 0){
+     // Base URL
+     const upsertEnrolleeUrl = `${SupabaseConfig.baseApiUrl}/UpsertEnrollee`;
+
+     const raw = JSON.stringify({
+       "enrollees": recordsToSubmit
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(upsertEnrolleeUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult?.length > 0 ? apiResult : _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in upsertUnauthenticatedUserCourseProgress: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
+
 const TitulinoRestService = {
   getCountries,
   getAvailableCourses,
@@ -342,7 +381,9 @@ const TitulinoRestService = {
   getCourseProgressByEmailAndCourseCodeId,
   upsertUnauthenticatedUserCourseProgress,
   isUserEmailRegisteredForGivenCourse,
-  getCourseProgressByEmailCourseCodeIdAndLanguageId
+  getCourseProgressByEmailCourseCodeIdAndLanguageId,
+  upsertQuickEnrollment,
+  upsertFullEnrollment
 };
 
 export default TitulinoRestService;

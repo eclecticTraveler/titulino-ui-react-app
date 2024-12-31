@@ -12,6 +12,7 @@ import BookChapterService from "services/BookChapterService";
 import PdfFileService from "services/PdfFileService";
 import GoogleService from "services/GoogleService";
 import TitulinoRestService from "services/TitulinoRestService";
+import TitulinoNetService from "services/TitulinoNetService";
 import StudentProgress from "lob/StudentProgress";
 import $ from 'jquery'; 
 
@@ -54,7 +55,10 @@ import {
   ON_SUBMITTING_USER_COURSE_PROGRESS,
   ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
   ON_SEARCHING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
-  ON_LOADING_EBOOK_URL
+  ON_LOADING_EBOOK_URL,
+  ON_SUBMITTING_ENROLLEE,
+  ON_LOGIN_FOR_ENROLLMENT,
+  ON_UPSERTING_ENROLLMENT_FOR_QUEUE
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -187,6 +191,21 @@ export const onRenderingCourseRegistration = async () => {
     }
   }
 
+export const onLoginForEnrollment = async () => {
+  const token = await TitulinoNetService.getRegistrationToken("onLoginEnrolleeContact");
+  return {
+    type: ON_LOGIN_FOR_ENROLLMENT,
+    apiToken: token
+  }
+}
+
+export const onUpsertingEnrollment = async (apiToken, enrolle) => {
+  const enrollee = await TitulinoNetService.upsertEnrollment(apiToken, enrolle, onUpsertingEnrollment)
+  return {
+    type: ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
+  }
+}
+
 export const onRequestingGeographicalDivision = async (countryId) => {
   const countryDivisions = await TitulinoRestService.getCountryDivisionByCountryId(countryId);
     return {
@@ -209,6 +228,29 @@ export const onSubmittingUserCourseProgress = async (email, courseProgress) => {
   }
 }
 
+export const onSubmittingEnrollee = async (enrollees, isFullEnrollment) => {
+  let submittedEnrollee = [];
+  const token = await TitulinoNetService.getRegistrationToken("onLoginEnrolleeContact");
+  submittedEnrollee = await TitulinoNetService.upsertEnrollment(token, enrollees, "onSubmittingEnrollee")
+  
+  let wasSuccessful = false;
+  if(submittedEnrollee?.length > 0){
+    wasSuccessful = true;
+  }else{
+    // Backup
+    submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
+    if(submittedEnrollee?.length > 0){
+      wasSuccessful = true;
+    }else{
+      wasSuccessful = false;
+    }
+  }
+  return {
+    type: ON_SUBMITTING_ENROLLEE,
+    wasSubmittingEnrolleeSucessful: wasSuccessful
+  }
+}
+
 export const onRequestingCourseProgressStructure = async (nativeLanguage, course, courseCodeId ) => {
   const courseStructure = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
     return {
@@ -220,9 +262,6 @@ export const onRequestingCourseProgressStructure = async (nativeLanguage, course
 
 export const onSearchingForProgressByEmailId = async (email) => {
   const registeredProgressById = await GoogleService.getProgressByEmailId(email, "onSearchingForProgressByEmailId");
-  // const studentPercentagesForCourse = await StudentProgress.calculatePercentageForSupermarketCertificates(registeredProgressById);
-  // const studentCategoriesCompletedForCourse = await StudentProgress.getCategoriesObtainedByEmailForSupermarketCourse(registeredProgressById);
-
   const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
     StudentProgress.calculatePercentageForSupermarketCertificates(registeredProgressById),
     StudentProgress.getCategoriesObtainedByEmailForSupermarketCourse(registeredProgressById)
@@ -245,7 +284,8 @@ export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLan
   return {
     type: ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
     currentCourseCodeId: courseCodeId,
-    courseConfiguration: courseConfiguration
+    courseConfiguration: courseConfiguration,
+    courseTheme: courseTheme
   }
 }
 
@@ -260,8 +300,7 @@ export const onSearchingForProgressByEmailIdAndCourseCodeId = async (email, cour
     // Get records for unregistered users
     registeredProgress = await TitulinoRestService.getCourseProgressByEmailAndCourseCodeId(email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
   }
-  console.log("isUserEmailRegisteredForCourse", isUserEmailRegisteredForCourse);
-  console.log("registeredProgress", registeredProgress)
+
   const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
     StudentProgress.calculateUserCourseProgressPercentageForCertificates(registeredProgress),
     StudentProgress.getUserCourseProgressCategories(registeredProgress)

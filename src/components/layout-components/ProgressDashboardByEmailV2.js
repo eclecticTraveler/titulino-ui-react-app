@@ -20,7 +20,7 @@ import ConfettiExplosion from 'react-confetti-explosion';
 export const ProgressDashboardByEmailV2 = (props) => {
   const { onSearchingForProgressByEmailIdAndCourseCodeId, registeredProgressByEmailId, submittedUserCourseProgress,
      nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId,
-     studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse } = props;
+     studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme } = props;
 
   const [selectedLessonsForSubmission, setSelectedLessonsForSubmission] = useState({});
   const [selectedLessons, setSelectedLessons] = useState({});
@@ -300,6 +300,10 @@ useEffect(() => {
     }
     return null; // Default if no active key
   };
+
+  const capitalizeFirstLetter = (str) => {
+    return str?.charAt(0)?.toUpperCase() + str?.slice(1);
+  };
   
   const renderDashboardTitle = () => {
     if (email) {
@@ -309,7 +313,7 @@ useEffect(() => {
         </>
       );
     }
-    return setLocale(locale, "resources.myprogress.dashboardInnerTitle");
+    return <>{setLocale(locale, "resources.myprogress.dashboardInnerTitle")}: {capitalizeFirstLetter(courseTheme)}</>;
   };
 
   return (
@@ -396,8 +400,8 @@ function mapDispatchToProps(dispatch) {
 
 const mapStateToProps = ({ lrn, theme }) => {
   const { course } =  theme;
-  const { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, currentCourseCodeId, courseConfiguration, selectedCourse, submittedUserCourseProgress } = lrn;
-  return { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, currentCourseCodeId, courseConfiguration, selectedCourse, submittedUserCourseProgress };
+  const { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, currentCourseCodeId, courseConfiguration, selectedCourse, submittedUserCourseProgress, courseTheme } = lrn;
+  return { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, currentCourseCodeId, courseConfiguration, selectedCourse, submittedUserCourseProgress, courseTheme };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProgressDashboardByEmailV2));
