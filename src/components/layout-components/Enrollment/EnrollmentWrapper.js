@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import { Row, Col } from 'antd';
 import ContactEnrollment from './ContactEnrollment';
 import {toggleCollapsedNav, onMobileNavToggle} from 'redux/actions/Theme';
-import { onRenderingCourseRegistration } from "redux/actions/Lrn";
+import { onRenderingCourseRegistration, onLoginForEnrollment } from "redux/actions/Lrn";
 import Loading from "components/shared-components/Loading";
 import CourseSelection from "./CourseSelection";
 import QuickToFullEnrollment from "./QuickToFullEnrollment";
@@ -27,15 +27,6 @@ import QuickToFullEnrollment from "./QuickToFullEnrollment";
 //       }
 //     }
 //   ]
-
-
-// FROM QUICK ENROLLMENT
-// countryDivisionOfBirth :"MX-BCN"
-// countryDivisionOfResidence :  "MX-BCN"
-// countryOfBirth : {value: null, label: {…}}
-// countryOfResidence : {value: 'MEX', label: {…}}
-// dateOfBirth : Moment {_isAMomentObject: true, _isUTC: false, _pf: {…}, _locale: Locale, _d: Wed Nov 06 2024 10:50:01 GMT-0700 (Mountain Standard Time), …}
-// emailAddress :"xl_189@yahoo.com.mx"
 
 
 // FULL ENROLLMENT
@@ -84,15 +75,13 @@ import QuickToFullEnrollment from "./QuickToFullEnrollment";
   //        <Option key={country.CountryId} value={country.CountryName}> does not work for now if I dont pass CountryId
  
 export const EnrollmentWrapper = (props) => {
-	const { mobileNav, onMobileNavToggle, toggleCollapsedNav, navCollapsed, onRenderingCourseRegistration, availableCourses } = props;
+	const { mobileNav, onMobileNavToggle, toggleCollapsedNav, navCollapsed, onRenderingCourseRegistration, availableCourses, onLoginForEnrollment, apiToken } = props;
     // If you need componentDidMount/componentDidUpdate-like behavior, you can use useEffect:
     useEffect(() => {
         // This runs once on mount (componentDidMount)
         // If you have code that should run on component update, add dependencies to the array.
-        onRenderingCourseRegistration()
+        onRenderingCourseRegistration();
     }, []); // Empty array ensures this runs only once, similar to componentDidMount.
-
-
 
     if(!availableCourses){
         return (
@@ -124,14 +113,15 @@ function mapDispatchToProps(dispatch){
 	return bindActionCreators({
 		toggleCollapsedNav: toggleCollapsedNav,
 		onMobileNavToggle: onMobileNavToggle,
-        onRenderingCourseRegistration: onRenderingCourseRegistration
+        onRenderingCourseRegistration: onRenderingCourseRegistration,
+        onLoginForEnrollment: onLoginForEnrollment
 	}, dispatch)
 }
 
 const mapStateToProps = ({ theme, lrn }) => {
-	const {currentRoute, availableCourses} = lrn;
+	const {currentRoute, availableCourses, apiToken} = lrn;
 	const { sideNavTheme, topNavColor, navCollapsed } = theme;
-	return { sideNavTheme, topNavColor, currentRoute, navCollapsed, availableCourses };
+	return { sideNavTheme, topNavColor, currentRoute, navCollapsed, availableCourses, apiToken };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EnrollmentWrapper);

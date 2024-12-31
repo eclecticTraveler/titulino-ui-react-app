@@ -243,15 +243,15 @@ export const getCourseProgressByEmailAndCourseCodeId = async (email, courseCodeI
 }
 
 export const getQuickEnrolleeCountryDivisionInfo = async (email, year, whoCalledMe) => {      
-
-  if (email && year > 0) {
+  const yearNumber = parseInt(year, 10); // Base 10 conversion
+  if (email && yearNumber > 0) {
  
     // Base URL
     const enrolledContactInfoByYearUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolledContactCountryInfoByYear`;
 
     const raw = JSON.stringify({
       "email": email,
-      "dobyear": year
+      "dobyear": yearNumber
     });
     
     const requestOptions = {
@@ -260,27 +260,6 @@ export const getQuickEnrolleeCountryDivisionInfo = async (email, year, whoCalled
       body: raw,
       redirect: "follow"
     };
-
-    // const temp = [
-    //   {
-    //     "sex": "M",
-    //     "email": "largo1019@gmail.com",
-    //     "countryOfBirthId": "MX",
-    //     "countryOfBirthName": "Mexico",
-    //     "countryOfBirthAlpha3": "MEX",
-    //     "countryOfResidencyId": "MX",
-    //     "countryDivisionIdBirth": null,
-    //     "countryOfResidencyName": "Mexico",
-    //     "countryDivisionBirthName": null,
-    //     "countryOfBirthNativeName": "México",
-    //     "countryOfResidencyAlpha3": "MEX",
-    //     "personalCommunicationName": "Christian Alberto",
-    //     "countryDivisionIdResidency": null,
-    //     "countryDivisionResidencyName": null,
-    //     "countryOfResidencyNativeName": "México"
-    //   }
-    // ]
-
 
     try {
       const response = await fetch(enrolledContactInfoByYearUrl, requestOptions);
