@@ -53,7 +53,8 @@ export const QuickToFullEnrollment = (props) => {
     };  
     
     useEffect(() => {
-      if (submittedRecords) {
+      if (submittedRecords?.length > 0) {
+        console.log("submittedRecords", submittedRecords)
         const upsertFormattedData = async () => {
           // onSubmittingEnrollee(formattedDatatoSubmit, isToProceedToFullEnrollment);
           const upsertedRecords = await onSubmittingEnrollee(submittedRecords, null);
@@ -66,8 +67,6 @@ export const QuickToFullEnrollment = (props) => {
           }
         };
         upsertFormattedData();
-      } else {
-        setSubmittingRecords([]); // Reset if no country is selected
       }
     }, [submittedRecords]);
     
