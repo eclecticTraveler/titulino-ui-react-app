@@ -38,10 +38,9 @@ export const QuickToFullEnrollment = (props) => {
   const [enrolleeResidencyDivision, setEnrolleeResidencyDivision] = useState("");
   const [enrolleeBirthDivision, setEnrolleeBirthDivision] = useState("");
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
+console.log("wasSubmittingEnrolleeSucessful", wasSubmittingEnrolleeSucessful)
   const locale = true;
-  console.log("wasSubmittingEnrolleeSucessful", wasSubmittingEnrolleeSucessful)
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
     };
@@ -50,16 +49,7 @@ export const QuickToFullEnrollment = (props) => {
       return isLocaleOn
         ? getLocaleText(localeKey, defaultMessage) // Uses the new function
         : localeKey.toString(); // Falls back to the key if localization is off
-    };
-
-    useEffect(() => {
-      // If the submission was successful, we reset form or show success message
-      if (wasSubmittingEnrolleeSucessful) {
-        // Handle the success logic here, like resetting the form or showing a success message
-        console.log("Form submitted successfully!");
-      }
-    }, [wasSubmittingEnrolleeSucessful]); // Only re-run if `wasSubmittingEnrolleeSucessful` changes
-    
+    };  
     
     // Trigger modal visibility when enrollment submission is successful
     useEffect(() => {
@@ -280,11 +270,6 @@ useEffect(() => {
   };
   
   const onFormSubmit = async (values) => {
-
-    if (wasSubmittingEnrolleeSucessful) {
-      return; // Prevent form submission if already successful
-    }
-
     try {
       // Trigger validation for the form during submit
       await form.validateFields(); // Ensure all fields are valid before proceeding
@@ -296,6 +281,7 @@ useEffect(() => {
       }, !isToProceedToFullEnrollment, returningEnrolleeCountryDivisionInfo);
 
       onSubmittingEnrollee(formattedDatatoSubmit, isToProceedToFullEnrollment)
+      console.log("ON SUBMITTING", formattedDatatoSubmit);
 
     } catch (error) {
       // Handle validation failure
@@ -369,6 +355,7 @@ useEffect(() => {
         wasSubmittingEnrolleeSucessful={wasSubmittingEnrolleeSucessful} 
         closeEnrollmentModal={handleCloseModal}
         visible={isEnrollmentModalVisible} // Pass the modal visibility
+        courses={availableCourses}
       />
       <Form
           form={form}
@@ -635,7 +622,7 @@ useEffect(() => {
                 type="primary"
                 htmlType="submit"
                 disabled={!isSubmitEnabled}
-                onClick={() => form.submit()} // This will trigger the child form submission
+                // onClick={() => form.submit()} // This will trigger the child form submission
               >
                 {setLocale(locale, "enrollment.form.submit")}
               </Button>
