@@ -315,7 +315,7 @@ export const upsertQuickEnrollment = async (enrolle, whoCalledMe) => {
   const recordsToSubmit = enrolle ? [...enrolle] : [];
   if(recordsToSubmit?.length > 0){
      // Base URL
-     const upsertEnrolleeUrl = `${SupabaseConfig.baseApiUrl}/UpsertEnrollee`;
+     const upsertEnrolleeUrl = `${SupabaseConfig.baseApiUrl}/UpsertEnrolleeList`;
 
      const raw = JSON.stringify({
        "enrollees": recordsToSubmit
@@ -345,7 +345,7 @@ export const upsertFullEnrollment = async (enrolle, whoCalledMe) => {
   const recordsToSubmit = enrolle ? [...enrolle] : [];
   if(recordsToSubmit?.length > 0){
      // Base URL
-     const upsertEnrolleeUrl = `${SupabaseConfig.baseApiUrl}/UpsertEnrollee`;
+     const upsertEnrolleeUrl = `${SupabaseConfig.baseApiUrl}/UpsertEnrolleeList`;
 
      const raw = JSON.stringify({
        "enrollees": recordsToSubmit

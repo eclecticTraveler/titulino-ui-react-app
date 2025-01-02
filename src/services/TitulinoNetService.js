@@ -40,37 +40,49 @@ const requestOptions = {
   }
 }
 
-export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
+const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
   const recordsToSubmit = enrolle ? [...enrolle] : [];
-  if(recordsToSubmit?.length > 0 && token){
-    
-     // Base URL
-     const upsertEnrolleeUrl = `${titulinoNetApiUri}/enrollees`;
+  if (recordsToSubmit?.length > 0 && token) {
+    // Base URL
+    const upsertEnrolleeUrl = `${titulinoNetApiUri}/enrollees`;
 
-     const raw = JSON.stringify({
-       recordsToSubmit
-     })
+    const raw = JSON.stringify(
+      recordsToSubmit,
+    );
 
-     const requestOptions = {
+    const requestOptions = {
       method: "POST",
       headers: getHeaders(token),
       body: raw,
-      redirect: "follow"
+      redirect: "follow",
     };
 
     try {
       const response = await fetch(upsertEnrolleeUrl, requestOptions);
-      const apiResult = await response.json();
-      return apiResult?.length > 0 ? apiResult : _results;      
+
+      // Check if the response is successful and has valid JSON
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.statusText}`);
+      }
+
+      // Check if the response body is not empty
+      const text = await response.text();
+      if (!text) {
+        throw new Error("Received empty response");
+      }
+
+      // Attempt to parse JSON only if the response is not empty
+      const apiResult = JSON.parse(text);
+      return apiResult ? apiResult : _results;
     } catch (error) {
       console.log(`Error Retrieving API payload in upsertEnrollment: from ${whoCalledMe}`);
       console.error(error);
       return _results;
     }
-
   }
-  return "ERROR no valid Token or Array Empty"
-}
+  return "ERROR no valid Token or Array Empty";
+};
+
 
 
 const TitulinoNetService = {
