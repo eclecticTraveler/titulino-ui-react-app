@@ -54,7 +54,7 @@ export const QuickToFullEnrollment = (props) => {
     
     useEffect(() => {
       if (submittedRecords?.length > 0) {
-        console.log("submittedRecords", submittedRecords)
+        
         const upsertFormattedData = async () => {
           // onSubmittingEnrollee(formattedDatatoSubmit, isToProceedToFullEnrollment);
           const upsertedRecords = await onSubmittingEnrollee(submittedRecords, null);
@@ -396,29 +396,41 @@ useEffect(() => {
               }
             >
               <h1 style={{ marginBottom: "10px", textAlign: "left" }}>
-                {titleOfEnrollment}
+                {titleOfEnrollment} - (v1.0)
               </h1>
             </Card>
 
             {availableCourses?.map((course, index) => (
                 <Card
-                key={index}
-                style={quickEnrollmentStyle}
-                bordered
-                title={setLocale(locale, "enrollment.courseDetails")}
-                loading={submittingLoading}
+                  style={quickEnrollmentStyle}
+                  bordered
+                  title={setLocale(locale, "enrollment.courseDetails")}
+                  loading={submittingLoading}
                 >
-                <div style={{ display: "flex", alignItems: "center", padding: "10px" }}>
-                  <div style={{ display: "flex", justifyContent: "center", paddingRight: "10px" }}>
-                    <img
-                      src={course?.CourseDetails?.imageUrl || process.env.PUBLIC_URL + '/img/avatars/tempProfile.jpg'}
-                      alt={`${course?.CourseDetails?.course} profile`}
-                      style={{ width: 200, height: 200, borderRadius: '5%', marginRight:"20px" }}
-                    />
-                  </div>
-                  <CourseDetails course={course} />
-                </div>
-              </Card>
+                     <Row gutter={[16,16]}>
+                    {/* Image Column */}
+                    <Col xs={24} sm={24} lg={12}>
+                      <img
+                        src={
+                          course?.CourseDetails?.imageUrl ||
+                          process.env.PUBLIC_URL + '/img/avatars/tempProfile.jpg'
+                        }
+                        alt={`${course?.CourseDetails?.course} profile`}
+                        style={{
+                          width: 200,
+                          height: 200,
+                          borderRadius: '5%',
+                          marginBottom: '10px',
+                        }}
+                      />
+                    </Col>
+
+                    {/* Course Details Column */}
+                    <Col xs={24} sm={24} lg={12} >
+                      <CourseDetails course={course} />
+                    </Col>
+                    </Row>
+                </Card>
             ))}
  
             {!isToProceedToFullEnrollment && (
@@ -643,7 +655,7 @@ useEffect(() => {
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
               <p>
-                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}{" "}
+                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}{" (1.02) "}
                 <TermsModal />{" "}
                 {setLocale(locale, "enrollment.form.ofUseAndPrivacyPolicy")}
               </p>

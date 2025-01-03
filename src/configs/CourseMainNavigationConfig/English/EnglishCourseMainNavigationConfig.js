@@ -70,26 +70,6 @@ const dashBoardNavTree = [
 		]
 	},
 	{
-		key: 'level-connect-eng-general',
-		path: `${APP_PREFIX_PATH}/eng/level-general`,
-		title: 'main.upper.nav.theme.level.ec',
-		sideTitle: 'Connect',
-		icon: COURSE_ICON_CONFIG.default,
-		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
-		color: COURSE_COLOR_CONFIG.superMarketTheme,
-		current: true,
-		isRootMenuItem: true,
-		iconPosition: "upperNav",
-		isServiceAvailableForUser: false,
-		isToDisplayInNavigation: true,
-		isFree: false,
-		course: "English",
-		topSubmenu:[
-			...getTopSubmenuForEnglishConnect("eng")
-		],
-		submenu: []
-	},
-	{
 		key: 'level-household-part-eng',
 		path: `${APP_PREFIX_PATH}/eng/level-household`,
 		title: 'main.upper.nav.theme.level.household',
@@ -128,7 +108,27 @@ const dashBoardNavTree = [
 		submenu: [
 			...CourseSubNavigationSupermarketTheme("eng")
 		]
-	}
+	},
+	{
+		key: 'level-connect-eng-general',
+		path: `${APP_PREFIX_PATH}/eng/level-general`,
+		title: 'main.upper.nav.theme.level.ec',
+		sideTitle: 'Connect',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
+		color: COURSE_COLOR_CONFIG.superMarketTheme,
+		current: true,
+		isRootMenuItem: true,
+		iconPosition: "upperNav",
+		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: true,
+		isFree: false,
+		course: "English",
+		topSubmenu:[
+			...getTopSubmenuForEnglishConnect("eng")
+		],
+		submenu: []
+	},
 ]
 
 const englishCourseMainNavigationConfig = [

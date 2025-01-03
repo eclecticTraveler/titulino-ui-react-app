@@ -9,70 +9,6 @@ import Loading from "components/shared-components/Loading";
 import CourseSelection from "./CourseSelection";
 import QuickToFullEnrollment from "./QuickToFullEnrollment";
 
-// [
-//     {
-//       "EndDate": "2025-03-10T00:00:00",
-//       "StartDate": "2024-12-09T00:00:00",
-//       "HasStarted": false,
-//       "CourseCodeId": "DUMMY_TEST_DEC_2024_COURSE_01",
-//       "CourseDetails": {
-//         "course": "Dummy",
-//         "teacher": "Arellano",
-//         "location": "Rexburg, Idaho",
-//         "gatheringDay": "Tuesdays",
-//         "gatheringTime": "7:00 pm",
-//         "courseWeeksLength": 14,
-//         "gatheringStartingDate": "December 9, 2024",
-//         "targetAudienceNativeLanguage": "Portuguese"
-//       }
-//     }
-//   ]
-
-
-// FULL ENROLLMENT
-
-// birthDivision : "CO-BOL"
-// country : "MX"
-// countryOfBirth :  "CO"
-// division : "MX-CHP"
-// dob : Moment {_isAMomentObject: true, _isUTC: false, _pf: {…}, _locale: Locale, _d: Tue Nov 05 2024 09:37:16 GMT-0700 (Mountain Standard Time), …}
-// email : "xl_189@yahoo.com.mx"
-// gender : "F"
-// languageLevel : "na"
-// lastName : "Arellano"
-// names : "Alberto"
-
-// IDEAL
-// {
-//     "contactExternalId": null,
-//     "emailAddress": "marthacaballerod@gmail.com",
-//     "lastNames": "CABALLERO",
-//     "names": "MARTHA",
-//     "sex": "F",
-//     "dateOfBirth": "11/30/1965",
-//     "countryOfResidence": "Colombia",
-//     "countryDivisionOfResidence": null,
-//     "countryOfBirth": "Colombia",
-//     "countryDivisionOfBirth": null,
-//     "termsVersion": "0.5",
-//     "coursesCodeIds": [
-//         {
-//             "courseCodeId": "SUPERMARKET_SEP_2024_COURSE_01"
-//         }
-//     ],
-//     "languageProficiencies": [
-//         {
-//             "languageId": "es",  
-//             "languageLevelAbbreviation": "na"
-//         },
-//         {
-//             "languageId": "en",  
-//             "languageLevelAbbreviation": "in"
-//         }
-//     ]
-// }
-
-  //        <Option key={country.CountryId} value={country.CountryName}> does not work for now if I dont pass CountryId
  
 export const EnrollmentWrapper = (props) => {
 	const { mobileNav, onMobileNavToggle, toggleCollapsedNav, navCollapsed, onRenderingCourseRegistration, availableCourses, onLoginForEnrollment, apiToken } = props;
@@ -90,22 +26,27 @@ export const EnrollmentWrapper = (props) => {
             </div>
         )
     }else{
-        if(availableCourses?.length > 1){
-            return (
-                <div>
+        // if(availableCourses?.length > 1){
+        //     return (
+        //         <div>
                     
-                    {/* <QuickToFullEnrollment/> */}
-                     <CourseSelection/>
-                     {/* <ContactEnrollment /> */}
-                </div>
-            );
-        }else{
-            return (
-                <div>
-                     <QuickToFullEnrollment/>
-                </div>
-            );
-        }
+        //             {/* <QuickToFullEnrollment/> */}
+        //              <CourseSelection/>
+        //              {/* <ContactEnrollment /> */}
+        //         </div>
+        //     );
+        // }else{
+        //     return (
+        //         <div>
+        //              <QuickToFullEnrollment/>
+        //         </div>
+        //     );
+        // }
+        return (
+            <div>
+                 <QuickToFullEnrollment/>
+            </div>
+        );
     }
 }
 
