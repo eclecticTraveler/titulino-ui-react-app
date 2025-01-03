@@ -11,7 +11,7 @@ const { Option } = Select;
 
 export const ContactEnrollment = (props) => {
   const { countries, selfLanguageLevel, onRequestingGeographicalDivision, selectedEmail, selectedYearOfBirth,
-     onEmailChange, onFormSubmit, form, setResetChildStates, enrollmentStyle } = props;
+     onEmailChange, onFormSubmit, form, setResetChildStates, enrollmentStyle, submittingLoading } = props;
   const [selectedCountryOfResidence, setSelectedCountryOfResidence] = useState(null);
   const [selectedBirthCountry, setSelectedBirthCountry] = useState(null);
   const [divisions, setDivisions] = useState([]);
@@ -86,7 +86,7 @@ export const ContactEnrollment = (props) => {
 
   return (
     <div className="container customerName" >
-      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} bordered={true}>
+      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} loading={submittingLoading} bordered={true}>
         <Form.Item
           name="emailAddress"
           rules={[
@@ -103,7 +103,7 @@ export const ContactEnrollment = (props) => {
       </Card>
 
 
-      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.languageLevel")} bordered={true}>
+      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.languageLevel")} loading={submittingLoading} bordered={true}>
       <Form.Item name="languageLevelAbbreviation" 
       rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectLanguageLevelForCourse") }]}
       >
@@ -119,7 +119,7 @@ export const ContactEnrollment = (props) => {
         </Form.Item>
       </Card>
 
-      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.personalInfo")} bordered={true}>
+      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.personalInfo")} loading={submittingLoading} bordered={true}>
           <Form.Item name="lastNames" label={setLocale(locale, "enrollment.form.lastNames")} 
           rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.enterLastNames") }]}>
             <Input placeholder="Enter your last names" />
@@ -149,7 +149,7 @@ export const ContactEnrollment = (props) => {
       </Card>
 
 
-      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.geography")} bordered={true}>
+      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.geography")} loading={submittingLoading} bordered={true}>
          <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
          rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}>
           <Select

@@ -58,7 +58,8 @@ import {
   ON_LOADING_EBOOK_URL,
   ON_SUBMITTING_ENROLLEE,
   ON_LOGIN_FOR_ENROLLMENT,
-  ON_UPSERTING_ENROLLMENT_FOR_QUEUE
+  ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
+  ON_RESET_SUBMITTING_ENROLLEE
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -230,16 +231,27 @@ export const onSubmittingUserCourseProgress = async (email, courseProgress) => {
 
 export const onSubmittingEnrollee = async (enrollees, isFullEnrollment) => {
   let submittedEnrollee = [];
-  const token = await TitulinoNetService.getRegistrationToken("onLoginEnrolleeContact");
-  submittedEnrollee = await TitulinoNetService.upsertEnrollment(token, enrollees, "onSubmittingEnrollee")
-  
   let wasSuccessful = false;
-  if(submittedEnrollee?.length > 0){
-    wasSuccessful = true;
-  }else{
-    // Backup
-    submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
+  const token = await TitulinoNetService.getRegistrationToken("onLoginEnrolleeContact");
+  if(token){
+    submittedEnrollee = await TitulinoNetService.upsertEnrollment(token, enrollees, "onSubmittingEnrollee");
+    console.log("submittedEnrollee Net", submittedEnrollee?.length > 0);
     if(submittedEnrollee?.length > 0){
+      wasSuccessful = true;
+    }else{
+      // Backup
+      submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
+      console.log("submittedEnrollee DW");
+      if(submittedEnrollee?.length > 0){
+        wasSuccessful = true;
+      }else{
+        wasSuccessful = false;
+      }
+    }
+  }else{
+    submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
+    console.log("submittedEnrollee 2nd DW");
+    if(submittedEnrollee){
       wasSuccessful = true;
     }else{
       wasSuccessful = false;
@@ -248,6 +260,13 @@ export const onSubmittingEnrollee = async (enrollees, isFullEnrollment) => {
   return {
     type: ON_SUBMITTING_ENROLLEE,
     wasSubmittingEnrolleeSucessful: wasSuccessful
+  }
+}
+
+export const onResetSubmittingEnrollee = async (resetValue) => {
+  return {
+    type: ON_RESET_SUBMITTING_ENROLLEE,
+    wasSubmittingEnrolleeSucessful: resetValue
   }
 }
 

@@ -39,9 +39,9 @@ const local = {
 
 const getEnv = () => {
   // const enviroment = process.env.NODE_ENV
-  // const enviroment = "production";
+  const enviroment = "production";
   // const enviroment = "development";
-  const enviroment = "local";
+  // const enviroment = "local";
 	switch (enviroment) {
 		case 'development':
 			return dev

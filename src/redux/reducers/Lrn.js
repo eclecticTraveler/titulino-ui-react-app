@@ -37,7 +37,8 @@ import {
   ON_LOADING_EBOOK_URL,
   ON_SUBMITTING_ENROLLEE,
   ON_LOGIN_FOR_ENROLLMENT,
-  ON_UPSERTING_ENROLLMENT_FOR_QUEUE
+  ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
+  ON_RESET_SUBMITTING_ENROLLEE
 } from "../constants/Lrn";
 
 const initState = {
@@ -58,6 +59,11 @@ const lrn = (state = initState, action) => {
       return {
         ...state,
         apiToken: action.apiToken
+      }
+    case ON_RESET_SUBMITTING_ENROLLEE:
+      return {
+        ...state,
+        wasSubmittingEnrolleeSucessful: action.wasSubmittingEnrolleeSucessful
       }
     case ON_SUBMITTING_ENROLLEE:
       return {

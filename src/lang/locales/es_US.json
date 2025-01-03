@@ -273,7 +273,9 @@
 	"enrollment.form.termsAndConditionsTitle": "Contenido de términos y condiciones (versión 1.0)",
 	"enrollment.form.termsAndConditionsContent": "# Bienvenido a Titulino Languages\nAl utilizar nuestros servicios, acepta los siguientes Términos y condiciones. Léalos atentamente.\n\n### **1. Propiedad de los datos y privacidad* *\nLos datos que proporciona durante el uso de nuestra plataforma son propiedad de **Titulino Languages**. Recopilamos estos datos para servir mejor a nuestros estudiantes y mejorar nuestras ofertas.\n\n- **Intercambio de datos**: lo hacemos. no compartir sus datos con terceros a menos que lo exija explícitamente la ley o sea necesario para la prestación del servicio.\n- **Privacidad**: estamos comprometidos a mantener su privacidad y mejorar nuestras medidas de seguridad con cada iteración. Sin embargo, como startup, lo reconocemos. que existen riesgos inherentes a la protección de datos, y no asumimos responsabilidad por cualquier pérdida de datos que pueda ocurrir.",
 	"enrollment.form.enrollmentCompleted":"Registro Completo!",
-	"enrollment.form.enrollmentCompletedMessage": "¡¡Recibirás un correo electrónico con todos los detalles!!"
+	"enrollment.form.enrollmentCompletedMessage": "¡¡Recibirás un correo electrónico con todos los detalles!!",
+	"enrollment.form.enrollmentWhatsApp":"¡Únase a nuestro grupo de WhatsApp haciendo clic en el enlace a continuación!",
+	"enrollment.form.whatsAppLinks":"Enlaces:"
 	
 }
 

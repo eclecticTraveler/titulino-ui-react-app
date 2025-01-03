@@ -271,7 +271,9 @@
 	"enrollment.form.termsAndConditionsTitle": "Terms and Conditions Content (Version 1.0)",
 	"enrollment.form.termsAndConditionsContent": "# Welcome to Titulino Languages\nBy using our services, you agree to the following Terms and Conditions. Please read them carefully.\n\n### **1. Data Ownership & Privacy**\nThe data you provide during your use of our platform is owned by **Titulino Languages**. We collect this data to better serve our students and improve our offerings.\n\n- **Data Sharing**: We do not share your data with any third parties unless explicitly required by law or necessary for service provision.\n- **Privacy**: We are committed to maintaining your privacy and improving our security measures with every iteration. However, as a startup, we acknowledge that there are inherent risks in data protection, and we do not assume responsibility for any data loss that might occur.",
 	"enrollment.form.enrollmentCompleted":"Enrollment Completed!",
-	"enrollment.form.enrollmentCompletedMessage":"You will be getting an email with all the details!!"
+	"enrollment.form.enrollmentCompletedMessage":"You will be getting an email with all the details!!",
+	"enrollment.form.enrollmentWhatsApp":"Join our WhatsApp Group by clicking on the link below!!",
+	"enrollment.form.whatsAppLinks":"Links:"
 	
 	
 }
