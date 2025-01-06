@@ -9,6 +9,7 @@ import ProfileService from "../../services/ProfileService";
 import dummyData from "../../assets/data/dummyDW.json";
 import GraphService from "../../services/Charting/Admin/GraphService";
 import BookChapterService from "services/BookChapterService";
+import SpeakingPracticeService from "services/SpeakingPracticeService";
 import PdfFileService from "services/PdfFileService";
 import GoogleService from "services/GoogleService";
 import TitulinoRestService from "services/TitulinoRestService";
@@ -59,7 +60,8 @@ import {
   ON_SUBMITTING_ENROLLEE,
   ON_LOGIN_FOR_ENROLLMENT,
   ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
-  ON_RESET_SUBMITTING_ENROLLEE
+  ON_RESET_SUBMITTING_ENROLLEE,
+  GET_LISTENING_PRACTICE_MODULE
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -141,6 +143,15 @@ export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, c
       bookChapterUrl: url
     }
   }
+
+
+export const getSpeakingPracticeModule = async (levelTheme, chapterNo, nativeLanguage, course) => {
+  const module = await SpeakingPracticeService.getSpeakingChapterModule(levelTheme, chapterNo, nativeLanguage, course);
+    return {
+      type: GET_LISTENING_PRACTICE_MODULE,
+      speakingChapterModule: module
+    }
+  }  
 
 
 export const geteBookUrl = async (levelTheme, nativeLanguage, course) => {

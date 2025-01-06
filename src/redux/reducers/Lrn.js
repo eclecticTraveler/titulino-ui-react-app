@@ -38,7 +38,8 @@ import {
   ON_SUBMITTING_ENROLLEE,
   ON_LOGIN_FOR_ENROLLMENT,
   ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
-  ON_RESET_SUBMITTING_ENROLLEE
+  ON_RESET_SUBMITTING_ENROLLEE,
+  GET_LISTENING_PRACTICE_MODULE
 } from "../constants/Lrn";
 
 const initState = {
@@ -51,6 +52,11 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case GET_LISTENING_PRACTICE_MODULE:
+      return {
+        ...state,
+        speakingChapterModule: action.speakingChapterModule
+      }
     case ON_UPSERTING_ENROLLMENT_FOR_QUEUE:
       return {
         ...state

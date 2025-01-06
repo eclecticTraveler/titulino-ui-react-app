@@ -8,6 +8,7 @@
 	"profile.switch.course":"Mudar de curso",
 	"profile.sign.out":"Sair",
 	"sidenav.class":"Classe",
+	"sidenav.speaking":"Pronúncia",
 	"profile.donate":"Faça uma doação",
 	"sidenav.listening": "Compreensão",
 	"sidenav.review": "Revisão",
@@ -276,6 +277,10 @@
 	"enrollment.form.enrollmentCompleted":"Cadastro Completo!",
 	"enrollment.form.enrollmentCompletedMessage":"Você receberá um e-mail com todos os detalhes!!",
 	"enrollment.form.enrollmentWhatsApp":"Entre no nosso grupo de WhatsApp clicando no link abaixo!!",
-	"enrollment.form.whatsAppLinks":"Links:"
+	"enrollment.form.whatsAppLinks":"Links:",
+	"speech.practice":"Prática",
+	"speech.playWord":"Jogar palavra",
+	"speech.correct":"Correto!!",
+	"speech.tryAgain":"Tente novamente ou passe para a próxima"
 
 }

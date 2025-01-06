@@ -8,6 +8,7 @@
 	"profile.switch.course":"Cambiar de curso",
 	"profile.sign.out":"Salir",
 	"sidenav.class":"Clase",
+	"sidenav.speaking":"Pronunciación",
 	"sidenav.listening": "Comprensión",
 	"sidenav.review": "Repaso",
 	"sidenav.spell": "Redactar",
@@ -275,7 +276,11 @@
 	"enrollment.form.enrollmentCompleted":"Registro Completo!",
 	"enrollment.form.enrollmentCompletedMessage": "¡¡Recibirás un correo electrónico con todos los detalles!!",
 	"enrollment.form.enrollmentWhatsApp":"¡Únase a nuestro grupo de WhatsApp haciendo clic en el enlace a continuación!",
-	"enrollment.form.whatsAppLinks":"Enlaces:"
+	"enrollment.form.whatsAppLinks":"Enlaces:",
+	"speech.practice":"Practica",
+	"speech.playWord":"Reproducir Palabra",
+	"speech.correct":"¡¡Correcto!!",
+	"speech.tryAgain":"Inténtalo de nuevo o pasa al siguiente"
 	
 }
 

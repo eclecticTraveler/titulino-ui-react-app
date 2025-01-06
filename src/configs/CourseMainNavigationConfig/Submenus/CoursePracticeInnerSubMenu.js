@@ -17,7 +17,8 @@ import {
 	faArrowUp,
 	faFilePdf,
 	faRoad,
-	faChartSimple
+	faChartSimple,
+	faMicrophone
    } from '@fortawesome/free-solid-svg-icons';
 
 const uuidv4 = () => {
@@ -115,6 +116,19 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 				isRootMenuItem: false,				
 				submenu: []
 			},
+			...(levelNo === "household"
+				? [			{
+					key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
+					path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.speaking}`,
+					title: 'sidenav.speaking',
+					icon: faMicrophone,
+					iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+					breadcrumb: false,
+					isRootMenuItem: false,
+					submenu: []
+				}]
+				: []
+			),
 			{
 				key: `module-quizlet-${levelNo}-${chapterNo}-${uuidv4()}`,
 				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.quizlet}`,

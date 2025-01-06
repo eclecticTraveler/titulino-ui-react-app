@@ -38,6 +38,28 @@
     // }
 }
 
+.speech {    
+    margin-bottom: 20px;
+}
+
+.is-correct {
+    background-color: #6ed86e;
+    & when (@theme = dark) {
+        background-color: #143f14;
+    }
+} 
+
+.is-not-correct {
+    background-color: #effa8f;
+    & when (@theme = dark) {
+        background-color: #772b07;
+    }
+}
+
+.speech-result {
+    color: black !important;
+}
+
 .ant-card-meta-title {
     font-weight: @font-weight-bold;
 }
