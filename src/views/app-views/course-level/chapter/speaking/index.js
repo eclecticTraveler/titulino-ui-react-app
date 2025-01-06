@@ -38,7 +38,7 @@ class SpeakingSection extends Component {
         }else{
             return (
                 <div>
-                    <SpeechPractice wordData={this.props.speakingChapterModule}/>                    
+                    <SpeechPractice wordData={this.props.speakingChapterModule} imageUri={this.props.gcBucketUri}/>                    
                 </div>
             )
         }    
@@ -56,9 +56,9 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { wasUserConfigSet, selectedCourse, nativeLanguage, speakingChapterModule } = lrn;
+	const { wasUserConfigSet, selectedCourse, nativeLanguage, speakingChapterModule, gcBucketUri } = lrn;
     const { locale, direction, course } =  theme;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, speakingChapterModule }
+	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, speakingChapterModule, gcBucketUri }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SpeakingSection);

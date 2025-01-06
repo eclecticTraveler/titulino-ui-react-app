@@ -146,10 +146,12 @@ export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, c
 
 
 export const getSpeakingPracticeModule = async (levelTheme, chapterNo, nativeLanguage, course) => {
+  const uri = await GoogleService.getGCUriForImages("getSpeakingPracticeModule", levelTheme); 
   const module = await SpeakingPracticeService.getSpeakingChapterModule(levelTheme, chapterNo, nativeLanguage, course);
     return {
       type: GET_LISTENING_PRACTICE_MODULE,
-      speakingChapterModule: module
+      speakingChapterModule: module,
+      gcBucketUri: uri
     }
   }  
 

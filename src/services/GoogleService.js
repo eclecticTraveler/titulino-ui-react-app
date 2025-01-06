@@ -62,9 +62,17 @@ export const getChapterBookData = async (whoCalledMe) => {
 
 };
 
+export const getGCUriForImages = async(whoCalledMe, theme) => {
+  if(whoCalledMe){
+    let gcUrl = `${gcbucketBaseUrl}/${gcBucketName}/titulino-images/${theme}/`;
+    return gcUrl
+  }
+}
+
 const GoogleService = {
   getProgressByEmailId,
-  getChapterBookData
+  getChapterBookData,
+  getGCUriForImages
 };
 
 export default GoogleService;

@@ -55,7 +55,8 @@ const lrn = (state = initState, action) => {
     case GET_LISTENING_PRACTICE_MODULE:
       return {
         ...state,
-        speakingChapterModule: action.speakingChapterModule
+        speakingChapterModule: action.speakingChapterModule,
+        gcBucketUri: action.gcBucketUri
       }
     case ON_UPSERTING_ENROLLMENT_FOR_QUEUE:
       return {

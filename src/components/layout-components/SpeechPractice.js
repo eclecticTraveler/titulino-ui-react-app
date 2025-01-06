@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import IntlMessage from "components/util-components/IntlMessage";
 
-export const SpeechPractice = ({ wordData }) => {
+export const SpeechPractice = ({ wordData, imageUri }) => {
   const [recognitionResults, setRecognitionResults] = useState({});
   const [listeningState, setListeningState] = useState({}); // New state to track individual word's listening state
 
@@ -130,7 +130,7 @@ export const SpeechPractice = ({ wordData }) => {
               <Col xs={24} sm={24} lg={12}>
                 {data?.image && (
                   <img
-                    src={data?.image}
+                    src={`${imageUri}${data?.image}`}
                     alt={data?.word}
                     onClick={() => startListening(data?.word)}
                     style={{
