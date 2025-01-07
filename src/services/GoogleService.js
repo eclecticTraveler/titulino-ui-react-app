@@ -64,7 +64,7 @@ export const getChapterBookData = async (whoCalledMe) => {
 
 export const getGCUriForImages = async(whoCalledMe, theme) => {
   if(whoCalledMe){
-    let gcUrl = `${gcbucketBaseUrl}/${gcBucketName}/titulino-images/${theme}/`;
+    let gcUrl = `${gcbucketBaseUrl}/titulino-images/${theme}/`;
     return gcUrl
   }
 }
