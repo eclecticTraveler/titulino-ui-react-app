@@ -165,10 +165,6 @@
                 "image": "drainpipe"
               },
               {
-                "word": "screen",
-                "image": "screen"
-              },
-              {
                 "word": "mitt",
                 "image": "mitt"
               },
@@ -202,7 +198,7 @@
               },
               {
                 "word": "toolsheds",
-                "image": "toolsheds"
+                "image": "toolshed"
               },
               {
                 "word": "hedge clippers",
@@ -264,8 +260,8 @@
                 "image": "fire"
               },
               {
-                "word": "log",
-                "image": "log"
+                "word": "logs",
+                "image": "logs"
               },
               {
                 "word": "banister",
@@ -281,7 +277,7 @@
               },
               {
                 "word": "desk",
-                "image": "desk"
+                "image": "desk-2"
               },
               {
                 "word": "wall-to-wall-carpeting",
@@ -357,7 +353,7 @@
             "words": [
               {
                 "word": "china",
-                "image": "china"
+                "image": "china-plates"
               },
               {
                 "word": "china closet",
@@ -431,11 +427,11 @@
               },
               {
                 "word": "coffeepot",
-                "image": "coffeepot"
+                "image": "coffepot"
               },
               {
                 "word": "teapot",
-                "image": "teapot"
+                "image": "tea-pot"
               },
               {
                 "word": "cup",
@@ -509,7 +505,7 @@
               },
               {
                 "word": "colander",
-                "image": "colander"
+                "image": "colader"
               },
               {
                 "word": "saucepan",
@@ -611,20 +607,12 @@
                 "image": "stove"
               },
               {
-                "word": "coffeemaker",
-                "image": "coffeemaker"
-              },
-              {
                 "word": "oven",
                 "image": "oven"
               },
               {
-                "word": "broiler",
-                "image": "broiler"
-              },
-              {
-                "word": "pot holder",
-                "image": "pot-holder"
+                "word": "oven broiler",
+                "image": "oven-broiler"
               }
             ]
 
@@ -663,7 +651,7 @@
               },
               {
                 "word": "beat",
-                "image": "beat"
+                "image": "mix"
               },
               {
                 "word": "cut",
@@ -712,12 +700,12 @@
                 "image": "whisk"
               },
               {
-                "word": "Mash",
-                "image": "mash"
+                "word": "Masher",
+                "image": "masher"
               },
               {
-                "word": "Season",
-                "image": "season"
+                "word": "Seasonings",
+                "image": "seasonings"
               },
               {
                 "word": "Dice",
@@ -757,7 +745,7 @@
               },
               {
                 "word": "Grease",
-                "image": "grease"
+                "image": "greased"
               },
               {
                 "word": "Stuff",
@@ -772,11 +760,11 @@
           },
           {
             "chapter": 11,
-            "title": "Test",
+            "title": "Coming up... Test",
             "words": [
               {
-                "word":"",
-                "image":""
+                "word":null,
+                "image":null
               }
             ]
           }

@@ -1,6 +1,6 @@
 import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
-import { getCoursePracticeInnerSubMenuV2, getCoursePracticeResourcesInnerSubMenu } from './CoursePracticeInnerSubMenu';
+import { getCoursePracticeInnerSubMenuV2, getCoursePracticeResourcesInnerSubMenu, getCoursePracticeInnerSubMenuV2Light } from './CoursePracticeInnerSubMenu';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
 	faCarrot,
@@ -29,7 +29,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 0)
+				...getCoursePracticeInnerSubMenuV2Light(lang, 'household', 0)
 			]
 		},
 		{

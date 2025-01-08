@@ -130,7 +130,7 @@ export const SpeechPractice = ({ wordData, imageUri }) => {
               <Col xs={24} sm={24} lg={12}>
                 {data?.image && (
                   <img
-                    src={`${imageUri}${data?.image}`}
+                    src={`${imageUri}${data?.image}.jpg`}
                     alt={data?.word}
                     onClick={() => startListening(data?.word)}
                     style={{

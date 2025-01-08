@@ -193,6 +193,33 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 	
 }
 
+export const getCoursePracticeInnerSubMenuV2Light = (lang, levelNo, chapterNo) => {
+	// spell  || flashcards -> Resources || Match || Learn --> pratica|| Test
+		  return [
+			{
+				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.book}`,
+				title: 'sidenav.book',
+				icon: faBookReader,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			},
+			{
+				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}/${getLocalizedConfig(lang)?.class}`,
+				title: 'sidenav.class',
+				icon: faChalkboard,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: []
+			}
+		]
+	
+}
+
 export const getCoursePracticeResourcesInnerSubMenu = (lang, levelNo, chapter) => {
 		  return [
 			{
