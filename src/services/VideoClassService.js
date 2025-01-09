@@ -1,10 +1,16 @@
 import videoClassesData from '../assets/data/chapter-class-data.json';
 import CentralCourseThemeService from 'services/CentralCourseThemeService';
+import GoogleService from './GoogleService';
+
 
 const loadVideoClassData = async() => {
-  const rawData = videoClassesData;
+  // const rawData = videoClassesData;
+    const rawData = await GoogleService.getVideoClassData("loadVideoClassData");
+      // console.log("Video DATA", rawVideoData)
   return rawData;
 }
+
+
 
 const loadRequestedClassUrl = async(levelNo, chapterNo, nativeLanguage, course) => {  
   const rawClassData = await loadVideoClassData();

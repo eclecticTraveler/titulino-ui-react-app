@@ -2,6 +2,7 @@ import { env } from '../configs/EnvironmentConfig';
 import SupabaseConfig from '../configs/SupabaseConfig';
 import courseProgressData from '../assets/data/course-progress-data.json';
 import CentralCourseThemeService from 'services/CentralCourseThemeService';
+import GoogleService from './GoogleService';
 
 
 let _results = [];
@@ -18,7 +19,9 @@ const getHeaders = () => {
 };
 
 const loadCourseProgressStructure = async() => {
-  const rawData = courseProgressData;
+  // const rawData = courseProgressData;
+  const rawData = await GoogleService.getCourseProgressData("loadCourseProgressStructure");
+      // console.log("Progress DATA", rawProgressData)
   return rawData;
 }
 

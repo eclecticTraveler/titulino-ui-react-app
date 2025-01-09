@@ -69,10 +69,62 @@ export const getGCUriForImages = async(whoCalledMe, theme) => {
   }
 }
 
+export const getVideoClassData = async (whoCalledMe) => {
+  if (whoCalledMe) {
+    
+    const requestOptions = {
+      method: "GET"
+    };
+  
+      // Base URL
+      let chapterBookDataUrl = `${gcbucketBaseUrl}/${gcBucketName}/chapter-class-data.json`;
+
+    try {
+      const response = await fetch(chapterBookDataUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _objectResults;
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getVideoClassData: from ${whoCalledMe}`);
+      console.error(error);
+      return _objectResults; // Might be better to return a handled response
+    }
+  }
+
+  return _objectResults;
+
+};
+
+export const getCourseProgressData = async (whoCalledMe) => {
+  if (whoCalledMe) {
+    
+    const requestOptions = {
+      method: "GET"
+    };
+  
+      // Base URL
+      let chapterBookDataUrl = `${gcbucketBaseUrl}/${gcBucketName}/course-progress-data.json`;
+
+    try {
+      const response = await fetch(chapterBookDataUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _objectResults;
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getCourseProgressData: from ${whoCalledMe}`);
+      console.error(error);
+      return _objectResults; // Might be better to return a handled response
+    }
+  }
+
+  return _objectResults;
+
+};
+
 const GoogleService = {
   getProgressByEmailId,
   getChapterBookData,
-  getGCUriForImages
+  getGCUriForImages,
+  getVideoClassData,
+  getCourseProgressData
 };
 
 export default GoogleService;
