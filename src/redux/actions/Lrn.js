@@ -61,7 +61,8 @@ import {
   ON_LOGIN_FOR_ENROLLMENT,
   ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
   ON_RESET_SUBMITTING_ENROLLEE,
-  GET_LISTENING_PRACTICE_MODULE
+  GET_LISTENING_PRACTICE_MODULE,
+  ON_LOADING_ENROLEE_BY_REGION
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -290,7 +291,22 @@ export const onRequestingCourseProgressStructure = async (nativeLanguage, course
     }
   }
 
-  
+
+export const onLoadingEnrolleeByRegion = async (courseTheme) => {
+    // Get courseId in Factory
+  const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
+  const countByRegion = await TitulinoRestService.getEnrolleeCountryCountByCourseCodeId(courseCodeId, "onLoadingEnrolleeByRegion");
+  const { transformedArray, totalEnrolleeCount } = StudentProgress.transformEnrolleeGeographycalResidencyData(countByRegion);
+
+console.log('Transformed Array:', transformedArray);
+console.log('Total Enrollee Count:', totalEnrolleeCount);
+
+    return {
+      type: ON_LOADING_ENROLEE_BY_REGION,
+      enrolleeCountByRegion: transformedArray,
+      totalEnrolleeCount: totalEnrolleeCount
+    }
+  }
 
 export const onSearchingForProgressByEmailId = async (email) => {
   const registeredProgressById = await GoogleService.getProgressByEmailId(email, "onSearchingForProgressByEmailId");

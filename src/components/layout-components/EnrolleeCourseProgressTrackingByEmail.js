@@ -5,7 +5,7 @@ import {
   YoutubeOutlined,
   PlayCircleOutlined,
 } from '@ant-design/icons';
-import ConfettiExplosion from 'react-confetti-explosion';
+// import ConfettiExplosion from 'react-confetti-explosion';
 // import Confetti from 'react-confetti';
 // import useWindowSize from 'react-use/lib/useWindowSize';
 import { onRequestingCourseProgressStructure } from 'redux/actions/Lrn';

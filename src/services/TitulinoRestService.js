@@ -371,9 +371,39 @@ export const upsertFullEnrollment = async (enrolle, whoCalledMe) => {
   }
 }
 
+export const getEnrolleeCountryCountByCourseCodeId = async (courseCodeId, whoCalledMe) => {
+
+  if(courseCodeId){
+     // Base URL
+     const enroleeCountryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryCountByCourseCodeId`;
+
+     const raw = JSON.stringify({
+       "p_coursecodeid": courseCodeId
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(enroleeCountryCountUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getEnrolleeCountryCountByCourseCodeId: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
 const TitulinoRestService = {
   getCountries,
   getAvailableCourses,
+  getEnrolleeCountryCountByCourseCodeId,
   getSelfDeterminedLanguageLevelCriteria,
   getCountryDivisionByCountryId,
   getQuickEnrolleeCountryDivisionInfo,

@@ -39,7 +39,8 @@ import {
   ON_LOGIN_FOR_ENROLLMENT,
   ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
   ON_RESET_SUBMITTING_ENROLLEE,
-  GET_LISTENING_PRACTICE_MODULE
+  GET_LISTENING_PRACTICE_MODULE,
+  ON_LOADING_ENROLEE_BY_REGION
 } from "../constants/Lrn";
 
 const initState = {
@@ -52,6 +53,12 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_LOADING_ENROLEE_BY_REGION:
+      return {
+        ...state,
+        enrolleeCountByRegion: action.enrolleeCountByRegion,
+        totalEnrolleeCount: action.totalEnrolleeCount
+      }
     case GET_LISTENING_PRACTICE_MODULE:
       return {
         ...state,

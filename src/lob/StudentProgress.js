@@ -127,9 +127,9 @@ export const getDerivedCategoriesFromCourseStructureData = async (selectedCourse
 export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
   switch (courseTheme.toLowerCase()) {
     case 'supermarket':
-      return 'SUPERMARKET_SEP_2024_COURSE_01';
-    case 'household':
-      return 'HOUSEHOLD_PART_1_JAN_2025_COURSE_01';
+      return 'SUPERMARKET_SEP_2024_COURSE_01';      
+    case 'household':      
+      return 'HOUSEHOLD_ITEMS_PART_1_JAN_2025_COURSE_01'
     // Add more cases as needed
     case 'electronics':
       return 'ELECTRONICS_MAR_2025_COURSE_01';
@@ -138,13 +138,39 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
   }
 };
 
+function transformEnrolleeGeographycalResidencyData(data) {
+  // Define a color palette for unique colors
+  const colorPalette = ['#3e82f7', '#04d182', '#ffc542', '#fa8c16', '#ff6b72', '#a461d8', '#13c2c2', '#eb2f96', '#7cb305'];
+  
+  // Access the Residency property
+  const residencyArray = data?.Residency;
+
+  // Calculate the total EnrolleeCount
+  const totalEnrolleeCount = residencyArray?.reduce((total, item) => total + item.EnrolleeCount, 0);
+
+  // Map the Residency array to the desired format
+  const transformedArray = residencyArray?.map((item, index) => ({
+    color: colorPalette[index % colorPalette?.length], // Rotate through the colors
+    name: item.CountryName, // Map CountryName to name
+    value: `${item.Percentage.toFixed(2)}%`, // Append % to the Percentage
+    nativeName: item?.NativeCountryName, // Append % to the Percentage
+    count: item?.EnrolleeCount
+  }));
+
+  return {
+    transformedArray,
+    totalEnrolleeCount
+  };
+}
+
 const StudentProgress = {
   calculatePercentageForSupermarketCertificates,
   getCategoriesObtainedByEmailForSupermarketCourse,
   calculateUserCourseProgressPercentageForCertificates,
   getUserCourseProgressCategories,
   getDerivedCategoriesFromCourseStructureData,
-  getCourseCodeIdByCourseTheme
+  getCourseCodeIdByCourseTheme,
+  transformEnrolleeGeographycalResidencyData
 };
 
 export default StudentProgress;

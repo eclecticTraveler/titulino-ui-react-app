@@ -57,7 +57,7 @@ class Utils {
 	 * @return {Object} object that contained the course info string
 	 */
 	  static getCourseInfoFromUrl(url){
-		const pathArray = url.split('/');
+		const pathArray = url?.split('/');
 		const levelNo = pathArray[3]?.substring(pathArray[3]?.indexOf('-')+1);
 		const chaptNo = pathArray[4]?.substring(pathArray[4]?.indexOf('-')+1);	
 		const rawmod = pathArray[5]?.substring(pathArray[5]?.indexOf('-')+1);
