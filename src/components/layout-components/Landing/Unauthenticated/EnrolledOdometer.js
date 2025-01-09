@@ -1,6 +1,5 @@
 import React, {Component} from 'react'
 import { Card } from 'antd';
-import Odometer from 'react-odometerjs';
 
 class EnrolledOdometer extends Component {
     componentDidMount() {
