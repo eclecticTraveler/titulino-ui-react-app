@@ -9,6 +9,39 @@ const getLocalStorageObject = async(localStorageKey) => {
   return transformedObj
 }
 
+
+const setLocalStorageObjectWithExpiry = async (objectToStore, localStorageKey, ttlMinutes = 30) => {
+  const now = new Date();
+  const ttlMilliseconds = ttlMinutes * 60 * 1000; // Convert minutes to milliseconds
+
+  const item = {
+    value: objectToStore,
+    expiry: now.getTime() + ttlMilliseconds, // Set expiry timestamp
+  };
+
+  localStorage.setItem(localStorageKey, JSON.stringify(item));
+};
+
+const getLocalStorageObjectWithExpiry = async (localStorageKey) => {
+  const itemStr = localStorage.getItem(localStorageKey);
+
+  if (!itemStr) {
+    return null; // If the item doesn't exist, return null
+  }
+
+  const item = JSON.parse(itemStr);
+  const now = new Date();
+
+  if (now.getTime() > item.expiry) {
+    // If the item has expired, remove it and return null
+    localStorage.removeItem(localStorageKey);
+    return null;
+  }
+
+  return item.value; // Return the stored value if it's not expired
+};
+
+
 const getRandomObjectFromArray = async(objectsArray, storageKey, isToRetrieveByNewDate) => {
 
   const localStorageKey = storageKey;  
@@ -55,6 +88,15 @@ const processRandomObject = async(randomObject, storageKey, isToRetrieveByNewDat
   }
 
   return randomObject;
+}
+
+export const getEnrolleesByCourse = async(key) => {
+  const transformedObj = await getLocalStorageObjectWithExpiry(key);
+  return transformedObj
+}
+
+export const setEnrolleesByCourse = async(enrolleesByCourse, key, ttl) => {
+  setLocalStorageObjectWithExpiry(enrolleesByCourse, key, ttl);
 }
 
 export const getUserSelectedNativeLanguage = async() => {
@@ -135,7 +177,9 @@ const LocalStorageService = {
   setIsCurrentNavCollapsed,
   getIsCurrentNavCollapsed,
   setOnLocale,
-  getOnLocale
+  getOnLocale,
+  getEnrolleesByCourse,
+  setEnrolleesByCourse
 };
 
 export default LocalStorageService;

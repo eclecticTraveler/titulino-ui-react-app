@@ -9,6 +9,7 @@ import {
 import ReactTooltip from 'react-tooltip'
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json'
 import utils from 'utils';
+import Flag from "react-world-flags";
 
 const { useBreakpoint } = Grid;
 const geoUrl = WorldMap;
@@ -46,7 +47,11 @@ const getRegionValue = (name, data) => {
 		for (let i = 0; i < data.length; i++) {
 			const elm = data[i];
 			if(name === elm.name || name === elm.nativeName) {
-				return `${elm.nativeName} — ${elm.count ?? elm.value}`
+				return (
+				<>
+				<Flag code={elm?.countryId} style={{ width: 20, marginRight: 10 }} />
+				{`${elm.nativeName} — ${elm.count ?? elm.value}`}
+				</>)
 			}
 		}
 		return ''
@@ -104,6 +109,7 @@ const renderDataList = data => {
 		<div className="d-flex align-items-center justify-content-between mb-3" key={elm?.name}>
 			<div>
 				<Badge color={elm?.color} />
+				<Flag code={elm?.countryId} style={{ width: 20, marginRight: 10 }} />
 				<span className="text-gray-light">{elm?.nativeName}</span>
 			</div>
 			<span className="font-weight-bold text-dark">{elm?.value}</span>

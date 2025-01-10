@@ -1,5 +1,5 @@
 {
-	"select.course.go.back": "Mudar idioma nativo",
+	"select.course.go.back": "Voltar",
 	"select.course.modal.title": "Selecione o curso do idioma que você gostaria de aprender",
 	"select.course.modal.subtitle": "Selecione a bandeira abaixo.",
 	"select.course.footer.question":"Você precisa de mais ajuda?",
@@ -281,6 +281,10 @@
 	"speech.practice":"Prática",
 	"speech.playWord":"Jogar palavra",
 	"speech.correct":"Correto!!",
-	"speech.tryAgain":"Tente novamente ou passe para a próxima"
+	"speech.tryAgain":"Tente novamente ou passe para a próxima",
+	"unauthenticated.dashboard.welcome":"Bem-vindo ao",
+	"unauthenticated.dashboard.courseOverview":"Visão geral do curso",
+	"unauthenticated.dashboard.totalStudents":"Total de Alunos do Curso",
+	"unauthenticated.dashboard.studentsByRegion":"Nossos alunos por região"
 
 }

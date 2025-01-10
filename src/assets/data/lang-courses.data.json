@@ -1,7 +1,7 @@
 [
   {
     "id":1,
-    "basedlanguage" : "Español",
+    "basedlanguage" : "Español (Castellano)",
     "abbreviation":"spa",
     "localizationId": "es",
     "flag": "https://d2eaaub12s77xu.cloudfront.net/es.png",
@@ -59,7 +59,7 @@
   },
   {
     "id":2,
-    "basedlanguage" : "Português",
+    "basedlanguage" : "Português (Brasileiro)",
     "abbreviation":"por",
     "localizationId": "pt",
     "flag": "https://d2eaaub12s77xu.cloudfront.net/br.png",

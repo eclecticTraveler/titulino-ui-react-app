@@ -1,5 +1,5 @@
 {
-	"select.course.go.back": "Change Native Language",
+	"select.course.go.back": "Go Back",
 	"select.course.modal.title": "Select Language course you would like to take",
 	"select.course.modal.subtitle": "Select the flag below.",
 	"select.course.footer.question":"Need more help?",
@@ -279,7 +279,11 @@
 	"speech.practice":"Practice",
 	"speech.playWord":"Play Word",
 	"speech.correct":"Correct!!",
-	"speech.tryAgain":"Try Again or Move on to the next"
+	"speech.tryAgain":"Try Again or Move on to the next",
+	"unauthenticated.dashboard.welcome":"Welcome to",
+	"unauthenticated.dashboard.courseOverview":"Course Overview",
+	"unauthenticated.dashboard.totalStudents":"Total Students in the Course",
+	"unauthenticated.dashboard.studentsByRegion":"Our Students by Region"
 	
 	
 	

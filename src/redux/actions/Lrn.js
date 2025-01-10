@@ -291,22 +291,48 @@ export const onRequestingCourseProgressStructure = async (nativeLanguage, course
     }
   }
 
-
-export const onLoadingEnrolleeByRegion = async (courseTheme) => {
-    // Get courseId in Factory
-  const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
-  const countByRegion = await TitulinoRestService.getEnrolleeCountryCountByCourseCodeId(courseCodeId, "onLoadingEnrolleeByRegion");
-  const { transformedArray, totalEnrolleeCount } = StudentProgress.transformEnrolleeGeographycalResidencyData(countByRegion);
-
-console.log('Transformed Array:', transformedArray);
-console.log('Total Enrollee Count:', totalEnrolleeCount);
-
+  export const onLoadingEnrolleeByRegion = async (courseTheme) => {
+    //NOTE this will later need to be refactor to get the course via TitulinoNet and 
+    // It will handle the caching through REDIS, but for now its okay
+    
+    // Get `courseCodeId` for the given `courseTheme`
+    const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
+  
+    // Dynamic local storage key based on `courseCodeId`
+    const localStorageKey = `EnrolleesByCourse_${courseCodeId}`;
+    
+    // Check local storage for cached data
+    const cachedData = await LocalStorageService.getEnrolleesByCourse(localStorageKey);
+  
+    if (cachedData) {
+      // Use cached data if available
+      return {
+        type: ON_LOADING_ENROLEE_BY_REGION,
+        enrolleeCountByRegion: cachedData?.transformedArray,
+        totalEnrolleeCount: cachedData?.totalEnrolleeCount,
+      };
+    }
+  
+    // Fetch fresh data if no valid cache exists
+    const countByRegion = await TitulinoRestService.getEnrolleeCountryCountByCourseCodeId(courseCodeId, "onLoadingEnrolleeByRegion");
+    const { transformedArray, totalEnrolleeCount } = StudentProgress.transformEnrolleeGeographycalResidencyData(countByRegion);
+  
+    // Save fetched and transformed data to local storage with expiry (e.g., 60 minutes)
+    await LocalStorageService.setEnrolleesByCourse(
+      { transformedArray, totalEnrolleeCount }, // Save both and set 60 min expiration     
+      localStorageKey,
+      60
+    );
+  
+    // Return fresh data
     return {
       type: ON_LOADING_ENROLEE_BY_REGION,
       enrolleeCountByRegion: transformedArray,
-      totalEnrolleeCount: totalEnrolleeCount
-    }
-  }
+      totalEnrolleeCount: totalEnrolleeCount,
+    };
+  };
+  
+   
 
 export const onSearchingForProgressByEmailId = async (email) => {
   const registeredProgressById = await GoogleService.getProgressByEmailId(email, "onSearchingForProgressByEmailId");
@@ -404,7 +430,7 @@ export const getUserNativeLanguage = async () => {
   }
 }
 
-export const setUserNativeLanguage = async (lang) => {
+export const setUserNativeLanguage = async (lang) => {	
   LocalStorageService.setUserSelectedNativeLanguage(lang);
   return {
     type: SET_USER_NATIVE_LANGUAGE,
@@ -431,6 +457,7 @@ export const getWasUserConfigSetFlag = async () => {
   const nativeLanguage = await LocalStorageService.getUserSelectedNativeLanguage();
   const selectedCourse =  await LocalStorageService.getUserSelectedCourse();
   const wasUserConfigSet = (selectedCourse && nativeLanguage) ? true : false;
+  console.log("SERIEAL", nativeLanguage, selectedCourse, wasUserConfigSet)
   return {
     type: GET_WAS_USER_CONFIG_SET_FLAG,
     wasUserConfigSet: wasUserConfigSet
