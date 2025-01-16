@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import { Row, Col, Card } from 'antd';
 import RegiondataWidget from 'components/shared-components/RegiondataWidget';
 import IntlMessage from "components/util-components/IntlMessage";
+import getLocaleText from "components/util-components/IntString";
 
 const rederRegionTopEntrance = (
 	<div className="mb-4">
@@ -18,6 +19,12 @@ export const EnrolleeByRegionWidget = ({enrolleeRegionData}) => {
 	const setLocale = (isLocaleOn, localeKey) => {
 		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
 	};
+
+	const setLocaleString = (isLocaleOn, localeKey, defaultMessage = "") => {
+		return isLocaleOn
+		  ? getLocaleText(localeKey, defaultMessage) // Uses the new function
+		  : localeKey.toString(); // Falls back to the key if localization is off
+	  };  
 	return (
 	  <>
 		<RegiondataWidget 

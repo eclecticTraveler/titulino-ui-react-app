@@ -5,8 +5,7 @@ import GoogleService from './GoogleService';
 
 const loadVideoClassData = async() => {
   // const rawData = videoClassesData;
-    const rawData = await GoogleService.getVideoClassData("loadVideoClassData");
-      // console.log("Video DATA", rawVideoData)
+  const rawData = await GoogleService.getVideoClassData("loadVideoClassData");    
   return rawData;
 }
 

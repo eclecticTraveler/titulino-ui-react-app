@@ -19,10 +19,10 @@ const getHeaders = () => {
 };
 
 const loadCourseProgressStructure = async() => {
-  // const rawData = courseProgressData;
-  const rawData = await GoogleService.getCourseProgressData("loadCourseProgressStructure");
-      // console.log("Progress DATA", rawProgressData)
-  return rawData;
+  const rawSavedLocalData = courseProgressData;
+  const rawProgressData = await GoogleService.getCourseProgressData("loadCourseProgressStructure");
+  //     console.log("Progress DATA", rawProgressData)
+  return rawProgressData ?? rawSavedLocalData;
 }
 
 const loadRequestedCourseStructure = async(nativeLanguage, course, courseCodeId) => {  

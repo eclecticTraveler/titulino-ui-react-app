@@ -138,7 +138,7 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
   }
 };
 
-function transformEnrolleeGeographycalResidencyData(data) {
+export const transformEnrolleeGeographycalResidencyData = async(data) => {
   // Define a color palette for unique colors
   const colorPalette = [
     '#3e82f7', '#04d182', '#ffc542', '#fa8c16', '#ff6b72', '#a461d8', '#13c2c2', '#eb2f96', '#7cb305', 

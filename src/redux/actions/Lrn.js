@@ -315,7 +315,7 @@ export const onRequestingCourseProgressStructure = async (nativeLanguage, course
   
     // Fetch fresh data if no valid cache exists
     const countByRegion = await TitulinoRestService.getEnrolleeCountryCountByCourseCodeId(courseCodeId, "onLoadingEnrolleeByRegion");
-    const { transformedArray, totalEnrolleeCount } = StudentProgress.transformEnrolleeGeographycalResidencyData(countByRegion);
+    const { transformedArray, totalEnrolleeCount } = await StudentProgress.transformEnrolleeGeographycalResidencyData(countByRegion);
   
     // Save fetched and transformed data to local storage with expiry (e.g., 60 minutes)
     await LocalStorageService.setEnrolleesByCourse(
@@ -457,7 +457,6 @@ export const getWasUserConfigSetFlag = async () => {
   const nativeLanguage = await LocalStorageService.getUserSelectedNativeLanguage();
   const selectedCourse =  await LocalStorageService.getUserSelectedCourse();
   const wasUserConfigSet = (selectedCourse && nativeLanguage) ? true : false;
-  console.log("SERIEAL", nativeLanguage, selectedCourse, wasUserConfigSet)
   return {
     type: GET_WAS_USER_CONFIG_SET_FLAG,
     wasUserConfigSet: wasUserConfigSet
