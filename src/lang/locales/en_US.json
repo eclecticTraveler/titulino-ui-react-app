@@ -161,6 +161,7 @@
 
 	"resources.myprogress.enterEmail": "Please enter an email address",
 	"resources.myprogress.noRecordsFound":"No records found.",
+	"resources.myprogress.readyToRegister":"Ready to record your progress. Please select the Progress & Tracking Tab below",
 	"resources.myprogress.requirements":"You will need 8 Grammar classes and 8 Live or Recording General gatherings",
 	"resources.myprogress.participation":"Participation",
 	"resources.myprogress.date":"Date",

@@ -236,16 +236,12 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
                     const today = new Date();
                     const targetDate = new Date(availableDate);
 
-                    // Truncate time
+                    // Truncate time to UTC
                     const todayDateOnly = new Date(
-                      today.getFullYear(),
-                      today.getMonth(),
-                      today.getDate()
+                      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
                     );
                     const targetDateOnly = new Date(
-                      targetDate.getFullYear(),
-                      targetDate.getMonth(),
-                      targetDate.getDate()
+                      Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate())
                     );
 
                     // Compare the dates

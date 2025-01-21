@@ -153,7 +153,7 @@ useEffect(() => {
 
   const renderMessageResults = () => {
     if (!registeredProgressByEmailId || registeredProgressByEmailId?.length === 0) {
-      return <div>{setLocale(locale, "resources.myprogress.noRecordsFound")}</div>;
+      return <div>{setLocale(locale, "resources.myprogress.readyToRegister")}</div>;
     }
 
     return <div>{registeredProgressByEmailId?.length} {setLocale(locale, "resources.myprogress.recordsFound")}.</div>

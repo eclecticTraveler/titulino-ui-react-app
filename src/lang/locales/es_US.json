@@ -161,6 +161,7 @@
 
 	"resources.myprogress.enterEmail": "Por favor ingresa una dirección de correo electrónico",
 	"resources.myprogress.noRecordsFound":"No se encontraron registros.",
+	"resources.myprogress.readyToRegister":"Listo para registrar tu progreso. Por favor, seleccione la pestaña Progreso y seguimiento abajo",
 	"resources.myprogress.requirements":"Necesitarás 8 clases de gramática y 8 reuniones de los Martes o de grabación general",
 	"resources.myprogress.participation":"Participación",
 	"resources.myprogress.date":"Fecha",

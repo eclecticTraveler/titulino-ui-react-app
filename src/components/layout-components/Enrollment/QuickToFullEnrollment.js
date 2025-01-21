@@ -233,7 +233,7 @@ useEffect(() => {
         // Convert dateOfBirth to year if it's a Moment object
         const submittedYear = yearOfBirth ? yearOfBirth.year() : null;
         const matchedYearOfBirth = matchedInfo?.dateOfBirth 
-        ? new Date(matchedInfo.dateOfBirth).getFullYear()
+        ? new Date(matchedInfo.dateOfBirth).getUTCFullYear()
         : null;
         if(submittedYear === matchedYearOfBirth){
           enrolleeDob = matchedInfo?.dateOfBirth
@@ -263,23 +263,16 @@ useEffect(() => {
       coursesCodeIds: (availableCourses || []).map((course) => ({
         courseCodeId: course?.CourseCodeId || null,
       })),
-      languageProficiencies: isQuickEnrollment
-        ? [
-          {
-            languageId: selectedCourse?.localizationId || null,
-            languageLevelAbbreviation: languageLevelAbbreviation || "ba", // Form-provided or default
-          }
-        ]
-        : [
-            {
-              languageId: nativeLanguage?.localizationId || null,
-              languageLevelAbbreviation: "na", // Default for native language
-            },
-            {
-              languageId: selectedCourse?.localizationId || null,
-              languageLevelAbbreviation: languageLevelAbbreviation || "ba", // Form-provided or default
-            },
-          ],
+      languageProficiencies: [
+        {
+          languageId: nativeLanguage?.localizationId || 'es', // TODO: For now
+          languageLevelAbbreviation: "na", // Default for native language
+        },
+        {
+          languageId: selectedCourse?.localizationId || 'en',
+          languageLevelAbbreviation: languageLevelAbbreviation || "ba", // Form-provided or default
+        },
+      ]
     };
   
     const recordsToSubmit = formattedData ? [formattedData] : [];
@@ -396,7 +389,7 @@ useEffect(() => {
               }
             >
               <h1 style={{ marginBottom: "10px", textAlign: "left" }}>
-                {titleOfEnrollment} - (v1.0)
+                {titleOfEnrollment} - (v1.3)
               </h1>
             </Card>
 
@@ -618,8 +611,7 @@ useEffect(() => {
 
           {returningEnrolleeCountryDivisionInfo?.personalCommunicationName &&
             !isToProceedToFullEnrollment &&
-            enrolleeResidencyDivision &&
-            enrolleeBirthDivision && (
+            isGeographyInfoVisible && (
               <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.languageLevelForCourse")} loading={submittingLoading} bordered={true}>
                 <Form.Item
                   name="languageLevelAbbreviation"
@@ -655,7 +647,7 @@ useEffect(() => {
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
               <p>
-                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}{" (1.02) "}
+                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}{" (1.03) "}
                 <TermsModal />{" "}
                 {setLocale(locale, "enrollment.form.ofUseAndPrivacyPolicy")}
               </p>
