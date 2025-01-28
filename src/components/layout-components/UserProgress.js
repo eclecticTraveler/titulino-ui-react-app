@@ -246,7 +246,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
 
                     // Compare the dates
                     const lessonIsAvailableForUser =
-                      todayDateOnly > targetDateOnly;
+                      todayDateOnly >= targetDateOnly;
 
                     return (
                       <Col key={index}>

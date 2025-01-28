@@ -1,4 +1,5 @@
 import { env } from '../configs/EnvironmentConfig';
+import LocalStorageService from "services/LocalStorageService";
 
 const courseProgressApi = `https://script.google.com/macros/s/AKfycbzUE5iJHp2peLS1eZmm0ED14ihoYv5chFxoU53rgKcGyVjLku8l7CT_5ZsoUf3oOa2u/exec`;
 const gcbucketBaseUrl = `https://storage.googleapis.com/titulino-bucket`;
@@ -39,9 +40,16 @@ export const getProgressByEmailId = async (email, whoCalledMe) => {
 
 export const getChapterBookData = async (whoCalledMe) => {
   if (whoCalledMe) {
-    
+    // TODO: Refactor on new layer called manager
+    // const localStorageKey = `ChapterBookDataKey`;
+    // const cachedData = await LocalStorageService.getChapterClassData(localStorageKey);
+    // if (cachedData) {
+    //   return cachedData;
+    // }
+
     const requestOptions = {
-      method: "GET"
+      method: "GET",
+      redirect: "follow"
     };
   
       // Base URL
@@ -50,6 +58,13 @@ export const getChapterBookData = async (whoCalledMe) => {
     try {
       const response = await fetch(chapterBookDataUrl, requestOptions);
       const apiResult = await response.json();
+
+      // await LocalStorageService.setChapterClassData(
+      //   apiResult,   
+      //   localStorageKey,
+      //   60
+      // );
+
       return apiResult ?? _objectResults;
     } catch (error) {
       console.log(`Error Retrieving API payload in getChapterBookData: from ${whoCalledMe}`);
@@ -71,26 +86,28 @@ export const getGCUriForImages = async(whoCalledMe, theme) => {
 
 export const getVideoClassData = async (whoCalledMe) => {
   if (whoCalledMe) {
-    
+      
     const requestOptions = {
-      method: "GET"
-    };
-  
-      // Base URL
-      let chapterBookDataUrl = `${gcbucketBaseUrl}/${gcBucketName}/chapter-class-data.json`;
+      method: "GET",
+      redirect: "follow"
+    };      
+    
+    // Base URL
+    let chapterBookDataUrl = `${gcbucketBaseUrl}/${gcBucketName}/chapter-class-data.json`;
 
     try {
       const response = await fetch(chapterBookDataUrl, requestOptions);
       const apiResult = await response.json();
-      return apiResult ?? _objectResults;
+      console.log("Videos", apiResult)
+      return apiResult ?? _results;
     } catch (error) {
       console.log(`Error Retrieving API payload in getVideoClassData: from ${whoCalledMe}`);
       console.error(error);
-      return _objectResults; // Might be better to return a handled response
+      return _results; // Might be better to return a handled response
     }
   }
 
-  return _objectResults;
+  return _results;
 
 };
 

@@ -6,6 +6,7 @@ const dev = {
   IS_KC_FEATURE_ON: false,
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
   IS_ENROLLMENT_FEAT_ON: true,
+  IS_ADMIN_DASHBOARD_FEAT_ON: true,
   IS_NEW_PROGRESS_APP_ON: true,
   TITULINO_NET_API: 'https://api.titulino.com',
   ENVIROMENT: 'dev',  
@@ -19,6 +20,7 @@ const prod = {
   IS_KC_FEATURE_ON: false,
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
   IS_ENROLLMENT_FEAT_ON: true,
+  IS_ADMIN_DASHBOARD_FEAT_ON: false,
   IS_NEW_PROGRESS_APP_ON: true,
   TITULINO_NET_API: 'https://api.titulino.com',
   ENVIROMENT: 'prod'
@@ -32,6 +34,7 @@ const local = {
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
   IS_KC_FEATURE_ON: false,
   IS_ENROLLMENT_FEAT_ON: true,
+  IS_ADMIN_DASHBOARD_FEAT_ON: true,
   IS_NEW_PROGRESS_APP_ON: true,
   TITULINO_NET_API: 'https://api.titulino.com',
   ENVIROMENT: 'local'
@@ -39,9 +42,9 @@ const local = {
 
 const getEnv = () => {
   // const enviroment = process.env.NODE_ENV
-  const enviroment = "production";
+  // const enviroment = "production";
   // const enviroment = "development";
-  // const enviroment = "local";
+  const enviroment = "local";
 	switch (enviroment) {
 		case 'development':
 			return dev

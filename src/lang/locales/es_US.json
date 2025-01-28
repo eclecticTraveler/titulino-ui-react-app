@@ -285,7 +285,11 @@
 	"unauthenticated.dashboard.welcome":"Bienvenido al",
 	"unauthenticated.dashboard.courseOverview": "Descripción general del curso",
 	"unauthenticated.dashboard.totalStudents":"Total de estudiantes en el curso",
-	"unauthenticated.dashboard.studentsByRegion":"Nuestros estudiantes por región"
+	"unauthenticated.dashboard.studentsByRegion":"Nuestros estudiantes por región",
+	"admin.dashboard.dropdown.selection.birth":"Nacimiento",
+	"admin.dashboard.dropdown.selection.residency":"Residencia",
+	"admin.dashboard.dropdown.selection.all": "Todos",
+	"admin.dashboard.selections":"Selecciones desplegables"
 	
 }
 

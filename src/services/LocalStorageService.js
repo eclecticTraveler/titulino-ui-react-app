@@ -99,6 +99,15 @@ export const setEnrolleesByCourse = async(enrolleesByCourse, key, ttl) => {
   setLocalStorageObjectWithExpiry(enrolleesByCourse, key, ttl);
 }
 
+export const getChapterClassData = async(key) => {
+  const transformedObj = await getLocalStorageObjectWithExpiry(key);
+  return transformedObj
+}
+
+export const setChapterClassData = async(chapterClassData, key, ttl) => {
+  setLocalStorageObjectWithExpiry(chapterClassData, key, ttl);
+}
+
 export const getUserSelectedNativeLanguage = async() => {
   const transformedObj = await getLocalStorageObject("UserNativeLanguage");
   return transformedObj
@@ -179,7 +188,11 @@ const LocalStorageService = {
   setOnLocale,
   getOnLocale,
   getEnrolleesByCourse,
-  setEnrolleesByCourse
+  setEnrolleesByCourse,
+  getChapterClassData,
+  setChapterClassData,
+  getLocalStorageObjectWithExpiry,
+  setLocalStorageObjectWithExpiry
 };
 
 export default LocalStorageService;

@@ -123,6 +123,33 @@ export const getAvailableCourses = async (currentDateTime, whoCalledMe) => {
     return _results;
 };
 
+export const getAllCourses = async (whoCalledMe) => {      
+
+  if (whoCalledMe) {
+  
+    const requestOptions = {
+      method: "GET",
+      headers: getHeaders(),
+      redirect: "follow"
+    };
+  
+      // Base URL
+      let currentAvailableCoursesUrl = `${SupabaseConfig.baseApiUrl}/GetAllCourses`;
+
+    try {
+      const response = await fetch(currentAvailableCoursesUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult?.length > 0 ? apiResult : _results;
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getAllCourses: from ${whoCalledMe}`);
+      console.error(error);
+      return _results; // Might be better to return a handled response
+    }
+  }
+
+  return _results;
+};
+
 export const getSelfDeterminedLanguageLevelCriteria = async (whoCalledMe) => {      
 
   if (whoCalledMe) {
@@ -403,6 +430,94 @@ export const getEnrolleeCountryCountByCourseCodeId = async (courseCodeId, whoCal
 
   }
 }
+
+export const getLocationTypeCountrySelection = async (courseCodeId, whoCalledMe) => {
+
+  if(courseCodeId){
+     // Base URL
+     const countrySelectionUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCategoriesCountryRepresentation`;
+
+     const raw = JSON.stringify({
+       "p_coursecodeid": courseCodeId
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(countrySelectionUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getLocationTypeCountrySelection: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
+
+export const getLocationTypes = async (whoCalledMe) => {
+
+  if(whoCalledMe){
+     // Base URL
+     const locationCategoriesUrl = `${SupabaseConfig.baseApiUrl}/GetLocationCategories`;
+
+     const requestOptions = {
+      method: "GET",
+      headers: getHeaders(),
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(locationCategoriesUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getLocationTypes: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+  }
+}
+
+// Temp for refactoring
+export const getAdminDashboardDemographicEnrolleeOverview = async (courseCodeId, locationType, countryId, whoCalledMe) => {
+
+  if(locationType && courseCodeId && countryId){
+     // Base URL
+     const IsEmailRegisteredToCourseUrl = `${SupabaseConfig.baseApiUrl}/GetAdminDashboardDemographicEnrolleeOverview`;
+
+     const raw = JSON.stringify({
+      "p_locationtype": locationType,
+      "p_countrynameorid": countryId,
+      "p_coursecodeid": courseCodeId
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(IsEmailRegisteredToCourseUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? false;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in isUserEmailRegisteredForGivenCourse: from ${whoCalledMe}`);
+      console.error(error);
+      return false;
+    }
+
+  }
+}
+
 const TitulinoRestService = {
   getCountries,
   getAvailableCourses,
@@ -416,7 +531,11 @@ const TitulinoRestService = {
   isUserEmailRegisteredForGivenCourse,
   getCourseProgressByEmailCourseCodeIdAndLanguageId,
   upsertQuickEnrollment,
-  upsertFullEnrollment
+  upsertFullEnrollment,
+  getAllCourses,
+  getLocationTypeCountrySelection,
+  getLocationTypes,
+  getAdminDashboardDemographicEnrolleeOverview
 };
 
 export default TitulinoRestService;

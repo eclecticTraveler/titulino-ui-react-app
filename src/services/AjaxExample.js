@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { env } from '../configs/EnvironmentConfig'
 
-const userAccountInfoEndPoint= `${env.DECISIONS_API_ENDPOINT_URL}/Primary/restapi/Flow/33c34e05-e8c7-11eb-91cf-326dddd3e106`;
-const adminIdEndpoint = `${env.DECISIONS_API_ENDPOINT_URL}/Primary/restapi/Flow/77b20400-6376-11ec-91f8-326dddd3e106`;
+const userAccountInfoEndPoint= `${env}/Primary/restapi/Flow/33c346dddd3e106`;
+const adminIdEndpoint = `${env}/Primary/restapi/Flow/77b20400-6d3e106`;
 
 const requestBody = {
   "userid": env.GUESS_ENDPOINT_USER_ID,
@@ -12,7 +12,7 @@ const requestBody = {
 
 let _userAccount = [];
 
-export const setVantageAgency = async(whoCalledMe) => {
+export const setAgency = async(whoCalledMe) => {
   try{
     // Implement if needed
   }catch(err){
@@ -85,7 +85,7 @@ export const getUserAccountsInfo = async(token, username, whoCalledMe) => {
         console.error(error)
       });    
       const apiResult = await results.json();
-      const parsedResult = apiResult["VantageWebUserAccounts"];
+      const parsedResult = apiResult["accounts"];
       
       console.log("userAccountInfoEndPoint");
       console.log(userAccountInfoEndPoint);
@@ -107,10 +107,10 @@ export const getUserAccountsInfo = async(token, username, whoCalledMe) => {
 }
 
 
-const VantageService = {
+const AjaxExample = {
   getUserAccountsInfo,
-  setVantageAgency,
+  setAgency,
   getAdminIdFromUsername
 };
 
-export default VantageService;
+export default AjaxExample;
