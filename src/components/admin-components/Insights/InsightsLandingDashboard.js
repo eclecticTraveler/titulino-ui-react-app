@@ -11,6 +11,7 @@ import CounterDisplay from 'components/layout-components/CounterDisplay';
 import DoubleCounterDisplay from 'components/layout-components/DoubleCounterDisplay';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
 import PieGraph from 'components/layout-components/Graphs/PieGraph';
+import ColumnBar from 'components/layout-components/Graphs/ColumnGraph';
 
 
 
@@ -28,7 +29,6 @@ const InsightsLandingDashboard = (props) => {
 		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData
    } = props;
 
-   console.log("sssss", overviewDashboardData, selectedCountryId)
   useEffect(() => {
     // ComponentDidMount and ComponentDidUpdate logic can go here
 	if(!allCourses){
@@ -89,32 +89,36 @@ const InsightsLandingDashboard = (props) => {
 					<CounterDisplay count={overviewDashboardData?.totalEnrollees} localizedTitle={"TotalEnrollees"}/>
 					</Col>
 					<Col xs={24} sm={24} md={24} lg={8}>
-					<CounterDisplay count={overviewDashboardData?.averageGeneralAge} localizedTitle={"averageAge"}/>
+					<BarGraph localizedTitle={"totalMalesVsFemales"} graphData={overviewDashboardData?.genderCount} passedValue={"count"} passedType={"sex"}/>
 					</Col>
 					<Col xs={24} sm={24} md={24} lg={8}>
-					<BarGraph localizedTitle={"totalMalesVsFemales"} graphData={overviewDashboardData?.genderCount} passedValue={"count"} passedType={"sex"}/>
+					<PieGraph localizedTitle={"genderPercentages"} graphData={overviewDashboardData?.genderPercentages} passedValue={"percentage"} passedType={"sex"}/>
+					</Col>
+
+					<Col xs={24} sm={24} md={24} lg={8}>
+					<CounterDisplay count={overviewDashboardData?.averageGeneralAge} localizedTitle={"averageAge"}/>
 					</Col>
 					<Col xs={24} sm={24} md={24} lg={8}>
 					<DoubleCounterDisplay firstCount={overviewDashboardData?.averageMaleAge} secondCount={overviewDashboardData?.averageFemaleAge} localizedTitle={"avgMaleVsFemaleAge"}/>
 					</Col>
 					<Col xs={24} sm={24} md={24} lg={8}>
-					<CounterDisplay count={overviewDashboardData?.totalNewEnrollees} localizedTitle={"totalNewEnrollees"}/>
+					<BarGraph localizedTitle={"agesGroups"} graphData={overviewDashboardData?.agesPercentages} passedValue={"count"} passedType={"label"}/>
+					</Col>
+
+
+					<Col xs={24} sm={24} md={24} lg={8}>
+					<DoubleCounterDisplay firstCount={overviewDashboardData?.totalNewEnrollees} secondCount={overviewDashboardData?.totalReturningEnrollees} localizedTitle={"newVsReturning"}/>
 					</Col>
 					<Col xs={24} sm={24} md={24} lg={8}>
-					<CounterDisplay count={overviewDashboardData?.totalReturningEnrollees} localizedTitle={"totalReturningEnrollees"}/>
+					<BarGraph localizedTitle={"enrolleeType"} graphData={overviewDashboardData?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
 					</Col>
 					<Col xs={24} sm={24} md={24} lg={8}>
-					<BarGraph localizedTitle={"admin.dashboard.dropdown.selection.all"} graphData={overviewDashboardData?.agesPercentages} passedValue={"count"} passedType={"label"}/>
+					<ColumnBar localizedTitle={"languageProficiency"} graphData={overviewDashboardData?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""}/>
 					</Col>
 					<Col xs={24} sm={24} md={24} lg={8}>
-					<PieGraph localizedTitle={"admin.dashboard.dropdown.selection.all"} graphData={overviewDashboardData?.genderPercentages} passedValue={"percentage"} passedType={"sex"}/>
+					<BarGraph localizedTitle={"languageProficiency"} graphData={overviewDashboardData?.enrolleeProficiencyGroups} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
 					</Col>
-					<Col xs={24} sm={24} md={24} lg={8}>
-					{/* <CounterDisplay count={0} localizedTitle={"temp"}/> */}
-					</Col>
-					<Col xs={24} sm={24} md={24} lg={8}>
-					{/* <CounterDisplay count={0} localizedTitle={"temp"}/> */}
-					</Col>
+
 				</Row>
 			</TabPane>
 			<TabPane tab="Ebook Renderer" key="2">

@@ -58,10 +58,10 @@ export const getCountriesByLocationType = async(courseCodeId, locationType) => {
 }
 
 export const getOverviewInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
-  const capitalizedLocationType = CapitalizeFirstLetter(locationType);
+  console.log("locationType", locationType)
   const overview = await TitulinoRestService.getAdminDashboardDemographicEnrolleeOverview(
     courseCodeId, 
-    capitalizedLocationType, 
+    locationType, 
     countryId, 
     "getOverviewInfoAdminDashboard"
   );

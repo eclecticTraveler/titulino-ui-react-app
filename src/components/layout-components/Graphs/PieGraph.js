@@ -10,7 +10,6 @@ const PieGraph = (props) => {
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
     };
-  console.log("graphData", graphData)
 
   const pieData = graphData?.map(item => ({
     type: item[passedType],

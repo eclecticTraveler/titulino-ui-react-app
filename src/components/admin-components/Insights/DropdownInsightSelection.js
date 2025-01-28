@@ -55,11 +55,12 @@ const DropdownInsightSelection = (props) => {
   const handleLocationTypeSelection = (value) => {
     if(value?.toLowerCase() === "all"){
       setIsLocationTypeAllSelected(true);
+      setSelectedCountry("All")
     }else{
       setIsLocationTypeAllSelected(false);
+      setSelectedCountry(null);
     }
     setSelectedLocationType(value);
-    setSelectedCountry(null);
   };
 
   
