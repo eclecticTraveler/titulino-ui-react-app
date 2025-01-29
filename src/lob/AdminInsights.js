@@ -10,7 +10,6 @@ export const CourseSelectionConverter = async(data) => {
 }
 
 export const LocationTypeConverter = async(data) => {
-  console.log("data", data)
   const transformedArray = data?.map((item, index) => ({
     index: index,
     name: item?.LocalizationKey ?? item?.LocalizationDescription,
@@ -32,7 +31,6 @@ export const CountrySelectionConverter = async(key, data) => {
 }
 
 export const OverviewInfoConvertion = async(data) => {
-  console.log("data", data)
   // Extract total enrollees
   const totalEnrollees = data?.EnrolleesCount;
 
@@ -82,11 +80,11 @@ export const OverviewInfoConvertion = async(data) => {
   }));
 
 
-    const enrolleeProficiencyGroups = data?.EnrolleeLanguageProficiencyDistribution?.map(item => ({
-      type: item?.LanguageLevelAbbreviation,
-      count: item?.Count,
-      percentage: item?.Percentage
-    }));
+  const enrolleeProficiencyGroups = data?.EnrolleeLanguageProficiencyDistribution?.map(item => ({
+    type: item?.LanguageLevelAbbreviation,
+    count: item?.Count,
+    percentage: item?.Percentage
+  }));
 
   return {
     totalEnrollees: totalEnrollees,
@@ -125,11 +123,77 @@ const CountriesByLocationExtractor = async (key, data) => {
 };
 
 
+// Define a color palette for unique colors
+const colorPalette = [
+  '#3e82f7', '#04d182', '#ffc542', '#fa8c16', '#ff6b72', '#a461d8', '#13c2c2', '#eb2f96', '#7cb305', 
+  '#2d99ff', '#34d399', '#ffd700', '#f97316', '#ff4757', '#9b59b6', '#20c997', '#f5222d', '#73d13d', 
+  '#3498db', '#1abc9c', '#f39c12', '#e67e22', '#e74c3c', '#8e44ad', '#16a085', '#ff8c00', '#00bfff'
+];
+
+// Helper function to transform demographic data
+// const transformDemographicArray = (dataArray, nameKey, nativeNameKey, extraKeys = {}) => {
+//   return dataArray?.map((item, index) => ({
+//     color: colorPalette[index % colorPalette.length],
+//     name: item[nameKey],
+//     value: `${item.Percentage.toFixed(2)}%`,
+//     nativeName: item[nativeNameKey],
+//     count: item?.EnrolleeCount,
+//     ...extraKeys(item)
+//   }));
+// };
+
+const transformDemographicArray = (dataArray, nameKey, nativeNameKey, extraKeys = () => ({})) => {
+  return dataArray?.map((item, index) => ({
+    color: colorPalette[index % colorPalette.length],
+    name: item[nameKey],
+    value: `${item.Percentage?.toFixed(2)}%`,
+    nativeName: item[nativeNameKey],
+    count: item?.EnrolleeCount,
+    ...extraKeys(item)
+  }));
+};
+
+// const transformedArray = residencyArray?.map((item, index) => ({
+//   color: colorPalette[index % colorPalette?.length], // Rotate through the colors
+//   name: item.CountryName, // Map CountryName to name
+//   value: `${item.Percentage.toFixed(2)}%`, // Append % to the Percentage
+//   nativeName: item?.NativeCountryName, // Append % to the Percentage
+//   count: item?.EnrolleeCount,
+//   countryId: item?.CountryOfResidencyId
+// }));
+
+// Function to transform general demographic data
+export const transformEnrolleeGeneralDemographicData = async (data) => {
+  return {
+    transformedResidencyArray: transformDemographicArray(data?.Residency, 'CountryName', 'NativeCountryName',  item => ({
+      countryId: item?.CountryOfResidencyId
+    })),
+    transformedBirthArray: transformDemographicArray(data?.Birth, 'CountryName', item => ({
+      countryId: item?.CountryOfResidencyId
+    }))
+  };
+};
+
+// Function to transform division demographic data
+export const transformEnrolleeDivisionDemographicData = async (data) => {
+  return {
+    transformedResidencyArray: transformDemographicArray(data?.Residency, 'CountryDivisionName', 'CountryDivisionName', item => ({
+      divisionId: item?.CountryDivisionId,
+      countryId: item?.CountryId
+    })),
+    transformedBirthArray: transformDemographicArray(data?.Birth, 'CountryDivisionName', 'CountryDivisionName', item => ({
+      divisionId: item?.CountryDivisionId,
+      countryId: item?.CountryId
+    }))
+  };
+};
 const AdminInsights = {
   CourseSelectionConverter,
   LocationTypeConverter,
   CountrySelectionConverter,
-  OverviewInfoConvertion
+  OverviewInfoConvertion,
+  transformEnrolleeGeneralDemographicData,
+  transformEnrolleeDivisionDemographicData
 };
 
 export default AdminInsights;

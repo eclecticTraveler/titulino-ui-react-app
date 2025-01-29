@@ -41,14 +41,26 @@ export const onGettingCountriesByLocationToDashboard = async (courseCodeId, loca
 }
 
 export const onLoadingAllDashboardContents = async (courseCodeId, locationType, countryId) => {
-  const overviewDashboardData = await TitulinoManager.getOverviewInfoAdminDashboard(courseCodeId, locationType, countryId)
-  return {
-    type: ON_LOADING_ALL_DASHBOARD_CONTENTS,
-    selectedCourseCodeId: courseCodeId,
-    selectedLocationType: locationType,
-    selectedCountryId: countryId,
-    overviewDashboardData: overviewDashboardData
+  try {
+    const [overviewDashboardData, demographicDashboardData] = await Promise.all([
+      TitulinoManager.getOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getDemographicInfoAdminDashboard(courseCodeId, locationType, countryId)
+    ]);
+
+    return {
+      type: ON_LOADING_ALL_DASHBOARD_CONTENTS,
+      selectedCourseCodeId: courseCodeId,
+      selectedLocationType: locationType,
+      selectedCountryId: countryId,
+      overviewDashboardData,
+      demographicDashboardData
+    };
+  } catch (error) {
+    console.error('Error loading admin dashboard data:', error);
+    throw error;
   }
-}
+};
+
+
 
   

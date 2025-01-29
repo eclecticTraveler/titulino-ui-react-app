@@ -29,21 +29,27 @@ const DropdownInsightSelection = (props) => {
     if (selectedCourse && selectedLocationType) {
       const fetchCountriesByLocationType = async () => {
         const countriesByLocation = await onGettingCountriesByLocationToDashboard(selectedCourse, selectedLocationType);
-        const countriesByLocationList = Array.isArray(countriesByLocation?.countriesByLocationType) ? countriesByLocation?.countriesByLocationType : [];
+        const countriesByLocationList = Array.isArray(countriesByLocation?.countriesByLocationType)
+          ? countriesByLocation?.countriesByLocationType
+          : [];
         setCountriesBySelectedLocationType(countriesByLocationList);
       };
       fetchCountriesByLocationType();
     } else {
       setCountriesBySelectedLocationType([]);
     }
-  }, [selectedLocationType, selectedCourse]);
+  }, [selectedLocationType, selectedCourse, onGettingCountriesByLocationToDashboard]);
+  
 
   useEffect(() => {
+    console.log("selectedCountry", selectedCountry)
     if (selectedCourse && selectedLocationType && selectedCountry) {
+      console.log("DROPDOWN OPTIOSN", selectedCourse, selectedLocationType, selectedCountry)
       // Unleash all the dashboards?
       onLoadingAllDashboardContents(selectedCourse, selectedLocationType, selectedCountry)
     } 
-  }, [selectedLocationType, selectedCourse, selectedCountry]);
+  }, [selectedLocationType, selectedCourse, selectedCountry, onLoadingAllDashboardContents]);
+
 
   const handleCourseSelection = (value) => {
     setSelectedCourse(value);

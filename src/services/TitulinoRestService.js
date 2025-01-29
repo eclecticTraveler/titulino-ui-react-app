@@ -431,6 +431,37 @@ export const getEnrolleeCountryCountByCourseCodeId = async (courseCodeId, whoCal
   }
 }
 
+export const getEnrolleeCountryDivisionCount = async (courseCodeId, countryId, whoCalledMe) => {
+
+  if(courseCodeId && countryId){
+     // Base URL
+     const enroleeCountryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryDivisionCount`;
+
+     const raw = JSON.stringify({
+       "p_coursecodeid": courseCodeId,
+       "p_countrynameorid": countryId
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(enroleeCountryCountUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getEnrolleeCountryDivisionCount: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
+
 export const getLocationTypeCountrySelection = async (courseCodeId, whoCalledMe) => {
 
   if(courseCodeId){
@@ -535,7 +566,8 @@ const TitulinoRestService = {
   getAllCourses,
   getLocationTypeCountrySelection,
   getLocationTypes,
-  getAdminDashboardDemographicEnrolleeOverview
+  getAdminDashboardDemographicEnrolleeOverview,
+  getEnrolleeCountryDivisionCount
 };
 
 export default TitulinoRestService;

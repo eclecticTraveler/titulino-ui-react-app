@@ -61,7 +61,7 @@ const getRegionValue = (name, data) => {
 
 const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
   	return (
-		<ComposableMap style={{transform: `${mapType === 'world' ? 'translateY(20px)' : 'none'}`}} data-tip="" height={380} projectionConfig={{ scale: 145 }}>
+		<ComposableMap style={{transform: `${mapType === 'worlda' ? 'translateY(20px)' : 'none'}`}} data-tip="" height={380} projectionConfig={{ scale: 145 }}>
 			<Geographies geography={mapSource}>
 				{({ geographies }) =>
 					geographies.map(geo => {
@@ -105,7 +105,7 @@ const Map = props => {
 }
 
 const renderDataList = data => {
-	const list = data.map(elm => (
+	const list = data?.map(elm => (
 		<div className="d-flex align-items-center justify-content-between mb-3" key={elm?.name}>
 			<div>
 				<Badge color={elm?.color} />
@@ -116,7 +116,7 @@ const renderDataList = data => {
 		</div>
 	))
 	return list
-}
+}  
 
 export const RegiondataWidget = props => {
 	const { data, mapSource, mapType, title, content, list } = props
@@ -125,7 +125,8 @@ export const RegiondataWidget = props => {
 		<Card bodyStyle={{padding: 0}}>
 			<Row>
 				<Col xs={24} sm={24} md={24} lg={7} className="border-right">
-					<div className="d-flex flex-column p-3 justify-content-between h-100">
+				{/* h-100 to be used only if we incorporate adding top region or performer*/}
+					<div className="d-flex flex-column p-3 justify-content-between">
 						<div>{title && <h4 className="font-weight-bold">{title}</h4>}</div>
 						<div>{content}</div>
 						<div>{list ? list : renderDataList(data)}</div>

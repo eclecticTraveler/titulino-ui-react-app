@@ -18,7 +18,8 @@ const analytics = (state = initState, action) => {
         selectedCourseCodeId: action.selectedCourseCodeId,
         selectedLocationType: action.selectedLocationType,
         selectedCountryId: action.selectedCountryId,
-        overviewDashboardData: action.overviewDashboardData
+        overviewDashboardData: action.overviewDashboardData,
+        demographicDashboardData: action.demographicDashboardData
       }
     case ON_GETTING_COUNTRIES_BY_LOCATION_TYPE:
       return {

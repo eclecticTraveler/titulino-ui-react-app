@@ -4,7 +4,7 @@ import RegiondataWidget from 'components/shared-components/RegiondataWidget';
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 
-const rederRegionTopEntrance = (
+const renderRegionTopEntrance = (
 	<div className="mb-4">
 	  <div className="d-flex align-items-center">
 		{/* <Avatar size={20} src="/img/flags/us.png"/> */}
@@ -13,8 +13,8 @@ const rederRegionTopEntrance = (
 	  <span className="text-muted">Top entrance region</span>
 	</div>
   )
-
-export const EnrolleeByRegionWidget = ({enrolleeRegionData}) => {  
+//   const { data, mapSource, mapType, title, content, list } = props
+export const EnrolleeByRegionWidget = ({enrolleeRegionData, mapSource, mapType, content}) => {  
 	const locale = true;
 	const setLocale = (isLocaleOn, localeKey) => {
 		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -24,14 +24,17 @@ export const EnrolleeByRegionWidget = ({enrolleeRegionData}) => {
 		return isLocaleOn
 		  ? getLocaleText(localeKey, defaultMessage) // Uses the new function
 		  : localeKey.toString(); // Falls back to the key if localization is off
-	  };  
+	  };
+	  console.log("CONTEST", enrolleeRegionData, mapSource, mapType)
 	return (
 	  <>
 		<RegiondataWidget 
 			title={setLocale(locale, "unauthenticated.dashboard.studentsByRegion")}
 			data={enrolleeRegionData}
-			// content={rederRegionTopEntrance}
-		/>
+			mapSource={mapSource}
+			mapType={mapType}
+			// content={renderRegionTopEntrance}
+		/>		
 	  </>
 	)
   }
