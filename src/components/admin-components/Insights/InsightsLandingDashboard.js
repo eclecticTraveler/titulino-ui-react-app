@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Tabs } from 'antd';
 import IntlMessage from 'components/util-components/IntlMessage';
 import DropdownInsightSelection from './DropdownInsightSelection';
-import { faRoad, faPieChart, faMapPin } from '@fortawesome/free-solid-svg-icons';
+import { faPersonThroughWindow, faPieChart, faMapPin } from '@fortawesome/free-solid-svg-icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard } from "redux/actions/Analytics";
 import { onLoadingEnrolleeByRegion } from "redux/actions/Lrn";
@@ -19,7 +19,7 @@ const { TabPane } = Tabs;
 
 const InsightsLandingDashboard = (props) => {
   const { allCourses, onRenderingAdminInsightsDashboard, locationTypes, onRenderingLocationTypeSelectionsToDashboard, demographicDashboardData,
-		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleeCountByRegion, onLoadingEnrolleeByRegion
+		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, onLoadingEnrolleeByRegion
    } = props;
 
 	const [activeKey, setActiveKey] = useState('1');
@@ -37,15 +37,7 @@ const InsightsLandingDashboard = (props) => {
 	if(!locationTypes){
 		onRenderingLocationTypeSelectionsToDashboard();
 	}
-  }, [allCourses, locationTypes]);
-
-  useEffect(() => {
-	if(!enrolleeCountByRegion){
-		onLoadingEnrolleeByRegion()
-	}
-  }, [enrolleeCountByRegion]);
-
-  
+  }, [allCourses, locationTypes, onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard]);
 
   const converUrl = 'https://images.unsplash.com/photo-1543286386-713bdd548da4?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
   const titleOfEnrollment = 'hello world';
@@ -134,7 +126,15 @@ const InsightsLandingDashboard = (props) => {
 			>
 			{renderGeneralOverview()}
 			</TabPane>
-			<TabPane tab="Ebook Renderer" key="2">
+			<TabPane
+				tab={
+					<span>
+					<IconAdapter icon={faPersonThroughWindow} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
+					{setLocale(locale, "Enrollees")}
+					</span>
+				} 
+				key="2"
+				>
 				<Row gutter={16}>
 				<Col xs={24} sm={24} md={24} lg={8}>
 					Hello
@@ -181,10 +181,9 @@ function mapDispatchToProps(dispatch) {
 }
 
 
-const mapStateToProps = ({ analytics, lrn }) => {
-  const { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, demographicDashboardData } = analytics;
-  const { enrolleeCountByRegion } = lrn;
-  return { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleeCountByRegion, demographicDashboardData };
+const mapStateToProps = ({ analytics }) => {
+  const { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, demographicDashboardData, enrolleDashboardData } = analytics;
+  return { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData, demographicDashboardData };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(InsightsLandingDashboard);

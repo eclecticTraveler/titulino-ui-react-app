@@ -549,6 +549,66 @@ export const getAdminDashboardDemographicEnrolleeOverview = async (courseCodeId,
   }
 }
 
+export const getEnrolleeGeneralListByCourseCodeId = async (courseCodeId, whoCalledMe) => {
+
+  if(courseCodeId){
+     // Base URL
+     const enrolleeListUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleesByCourse`;
+
+     const raw = JSON.stringify({
+       "input_course_code_id": courseCodeId
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(enrolleeListUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getEnrolleeGeneralListByCourseCodeId: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
+
+export const getEnrolleeCountrylListByCourseCodeId = async (courseCodeId, countryId, whoCalledMe) => {
+
+  if(courseCodeId && countryId){
+     // Base URL
+     const enroleeCountryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleesByCourseAndCountry`;
+
+     const raw = JSON.stringify({
+       "p_coursecodeid": courseCodeId,
+       "p_countrynameorid": countryId
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(enroleeCountryCountUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getEnrolleeCountryDivisionCount: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
 const TitulinoRestService = {
   getCountries,
   getAvailableCourses,
@@ -567,7 +627,9 @@ const TitulinoRestService = {
   getLocationTypeCountrySelection,
   getLocationTypes,
   getAdminDashboardDemographicEnrolleeOverview,
-  getEnrolleeCountryDivisionCount
+  getEnrolleeCountryDivisionCount,
+  getEnrolleeGeneralListByCourseCodeId,
+  getEnrolleeCountrylListByCourseCodeId
 };
 
 export default TitulinoRestService;

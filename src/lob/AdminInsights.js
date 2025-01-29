@@ -1,4 +1,4 @@
-export const CourseSelectionConverter = async(data) => {
+export const courseSelectionConverter = async(data) => {
   const transformedArray = data?.map((item, index) => ({
     index: index,
     name: item?.CourseDetails?.course,
@@ -9,7 +9,7 @@ export const CourseSelectionConverter = async(data) => {
   return transformedArray;
 }
 
-export const LocationTypeConverter = async(data) => {
+export const locationTypeConverter = async(data) => {
   const transformedArray = data?.map((item, index) => ({
     index: index,
     name: item?.LocalizationKey ?? item?.LocalizationDescription,
@@ -19,8 +19,8 @@ export const LocationTypeConverter = async(data) => {
   return transformedArray;
 }
 
-export const CountrySelectionConverter = async(key, data) => {
-  const result = await CountriesByLocationExtractor(key, data);
+export const countrySelectionConverter = async(key, data) => {
+  const result = await countriesByLocationExtractor(key, data);
   const transformedArray = result?.map((item, index) => ({
     index: index,
     name: item?.NativeCountryName ?? item?.CountryName,
@@ -30,7 +30,7 @@ export const CountrySelectionConverter = async(key, data) => {
   return transformedArray;
 }
 
-export const OverviewInfoConvertion = async(data) => {
+export const overviewInfoConvertion = async(data) => {
   // Extract total enrollees
   const totalEnrollees = data?.EnrolleesCount;
 
@@ -106,15 +106,15 @@ export const OverviewInfoConvertion = async(data) => {
   };
 }
 
-const CountriesByLocationExtractor = async (key, data) => {
+const countriesByLocationExtractor = async (key, data) => {
   if (!key || !data) return [];
 
   // Normalize key for case-insensitive comparison
-  const normalizedKey = key.toLowerCase();
+  const normalizedKey = key?.toLowerCase();
 
   // Find and return the correct array if key exists in the data object
   for (const dataKey of Object.keys(data)) {
-    if (dataKey.toLowerCase() === normalizedKey) {
+    if (dataKey?.toLowerCase() === normalizedKey) {
       return data[dataKey];
     }
   }
@@ -131,17 +131,6 @@ const colorPalette = [
 ];
 
 // Helper function to transform demographic data
-// const transformDemographicArray = (dataArray, nameKey, nativeNameKey, extraKeys = {}) => {
-//   return dataArray?.map((item, index) => ({
-//     color: colorPalette[index % colorPalette.length],
-//     name: item[nameKey],
-//     value: `${item.Percentage.toFixed(2)}%`,
-//     nativeName: item[nativeNameKey],
-//     count: item?.EnrolleeCount,
-//     ...extraKeys(item)
-//   }));
-// };
-
 const transformDemographicArray = (dataArray, nameKey, nativeNameKey, extraKeys = () => ({})) => {
   return dataArray?.map((item, index) => ({
     color: colorPalette[index % colorPalette.length],
@@ -187,13 +176,30 @@ export const transformEnrolleeDivisionDemographicData = async (data) => {
     }))
   };
 };
+
+export const enrolleeListConvertor = async(data) => {
+  const transformedArray = data?.map((item, index) => ({
+    index: index,
+    name: item?.NativeCountryName ?? item?.CountryName,
+    value: item?.CountryId,
+    alphaKey: item?.CountryAlpha3
+  }));
+
+  return {
+    columnsArray: transformedArray,
+    dataArray: transformedArray
+  }
+}
+
+
 const AdminInsights = {
-  CourseSelectionConverter,
-  LocationTypeConverter,
-  CountrySelectionConverter,
-  OverviewInfoConvertion,
+  courseSelectionConverter,
+  locationTypeConverter,
+  countrySelectionConverter,
+  overviewInfoConvertion,
   transformEnrolleeGeneralDemographicData,
-  transformEnrolleeDivisionDemographicData
+  transformEnrolleeDivisionDemographicData,
+  enrolleeListConvertor
 };
 
 export default AdminInsights;

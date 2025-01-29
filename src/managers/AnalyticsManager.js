@@ -12,7 +12,7 @@ export const getAllCourses = async() => {
   }
 
   const allCourses = await TitulinoRestService.getAllCourses("getAllCourses");
-  const transformedCourses = await AdminInsights.CourseSelectionConverter(allCourses);
+  const transformedCourses = await AdminInsights.courseSelectionConverter(allCourses);
   await LocalStorageService.setEnrolleesByCourse(
     transformedCourses, // Save both and set 60 min expiration     
     localStorageKey,
@@ -30,7 +30,7 @@ export const getLocationTypesForInsights = async() => {
   }
 
   const locationCategories = await TitulinoRestService.getLocationTypes("getLocationTypes");
-  const transformedCategories = await AdminInsights.LocationTypeConverter(locationCategories);
+  const transformedCategories = await AdminInsights.locationTypeConverter(locationCategories);
   await LocalStorageService.setEnrolleesByCourse(
     transformedCategories, // Save both and set 60 min expiration     
     localStorageKey,
@@ -48,7 +48,7 @@ export const getCountriesByLocationType = async(courseCodeId, locationType) => {
   }
 
   const locationCategories = await TitulinoRestService.getLocationTypeCountrySelection(courseCodeId, "getCountriesByLocationType");
-  const transformed = await AdminInsights.CountrySelectionConverter(locationType, locationCategories);
+  const transformed = await AdminInsights.countrySelectionConverter(locationType, locationCategories);
   await LocalStorageService.setEnrolleesByCourse(
     transformed, //set 60 min expiration     
     localStorageKey,
@@ -59,23 +59,16 @@ export const getCountriesByLocationType = async(courseCodeId, locationType) => {
 }
 
 export const getOverviewInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
-  console.log("locationType", locationType)
   const overview = await TitulinoRestService.getAdminDashboardDemographicEnrolleeOverview(
     courseCodeId, 
     locationType, 
     countryId, 
     "getOverviewInfoAdminDashboard"
   );
-  const transformed = await AdminInsights.OverviewInfoConvertion(overview);
+  const transformed = await AdminInsights.overviewInfoConvertion(overview);
 
   return transformed;
 };
-
-export const getEnrolleeInfoAdminDashboard = async(courseCodeId, locationType, countryId) => {
-  const locationCategories = await TitulinoRestService.getLocationTypeCountrySelection(courseCodeId, "getEnrolleeInfoAdminDashboard");
-  const transformed = await AdminInsights.CountrySelectionConverter(locationType, locationCategories);  
-  return transformed;
-}
 
 export const getDemographicInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
   const isAllLocation = locationType?.toLowerCase() === "all";
@@ -98,9 +91,19 @@ export const getDemographicInfoAdminDashboard = async (courseCodeId, locationTyp
   };
 };
 
+export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
+  const isAllLocation = locationType?.toLowerCase() === "all";
 
+  const enrolleeList = isAllLocation
+    ? await TitulinoRestService.getEnrolleeGeneralListByCourseCodeId(courseCodeId, "getEnrolleeInfoAdminDashboard")
+    : await TitulinoRestService.getEnrolleeCountrylListByCourseCodeId(courseCodeId, countryId, "getEnrolleeInfoAdminDashboard");
 
-const CapitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+  const transformedArrays = isAllLocation
+    ? await AdminInsights.enrolleeListConvertor(enrolleeList)
+    : await AdminInsights.enrolleeListConvertor(enrolleeList);
+
+  return transformedArrays;
+};
 
 
 const AnalyticsManager = {
