@@ -257,7 +257,6 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
   const processData = async(item, i) => {
       const daysUntilBday = await getDaysUntilComingBirthday(item?.DateOfBirth);
       const currentLevel = item.LanguageProficienciesHistory.find(entry => entry.EndDate === null)?.LanguageLevelAbbreviation;   
-      console.log("AGE", item?.Age, item?.ContactExternalId, daysUntilBday) 
       results.push({
           key: i,
           langLevel: currentLevel,
@@ -287,26 +286,6 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
         { field: item?.Location?.BirthLocation?.CountryDivisionBirthName, filter: 'regionOfBirth' }
     ];
    
-
-      // uniqueFilters.forEach(({ field, filter }) => {
-      //   const trackerKey = `${filter}Tracker`;
-      
-      //   // Skip if field already exists in tracker
-      //   if (field && !trackers[trackerKey]?.has(field)) {
-      //     const valueToAdd =
-      //       filter === "countryOfBirth" || filter === "countryOfResidency"
-      //         ? { 
-      //             key: field, 
-      //             text: <Flag code={field} style={{ width: 35, marginLeft: 5 }} />, 
-      //             value: field 
-      //           }
-      //         : { key: field, text: field, value: field };
-      
-      //     filters[`${filter}Filter`]?.add(valueToAdd); // Use `add()` for Sets
-      //     trackers[trackerKey]?.add(field); // Track the unique field
-      //   }
-      // });
-
       uniqueFilters.forEach(({ field, filter }) => {
         const trackerKey = `${filter}Tracker`;
       
@@ -388,7 +367,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
                       'M': ['geekblue', 'Male'],
                       'F': ['pink', 'Female']
                     };
-                    const [color, gender] = sexMap[sex] || ['black', 'Unknown'];
+                    const [color, gender] = sexMap[sex] || ['red', 'Unknown'];
                     return <Tag color={color} key={sex}>{gender}</Tag>;
                 }
             }

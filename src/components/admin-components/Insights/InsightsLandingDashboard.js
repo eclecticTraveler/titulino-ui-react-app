@@ -179,6 +179,7 @@ const InsightsLandingDashboard = (props) => {
 						tableData={filteredData}
 						tableColumns={enrolleDashboardData?.columns}
 						isAllowedToEditTableData={false}
+						isToRenderActionButton={false}
 					/>
 					) : (
 					<p>No matching records found.</p>
