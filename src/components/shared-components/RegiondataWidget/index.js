@@ -87,12 +87,12 @@ const getProjectionConfig = (mapType) => {
 		case 'CL':
 			return {
 				scale: 500, 
-				center: [-53, -35] 
+				center: [-53, -5] 
 			};
 		case 'CO':
 			return {
 				scale: 750, 
-				center: [-70, -15] 
+				center: [-70, -10] 
 			};
 		case 'PY':
 			return {
@@ -106,13 +106,13 @@ const getProjectionConfig = (mapType) => {
 			};
 		case 'CA':
 			return {
-				scale: 450, 
+				scale: 250, 
 				center: [-55, -10] 
 			};
 		case 'MX':
 			return {
 				scale: 350, 
-				center: [-80, -55] 
+				center: [-80, -35] 
 			};
 		case 'US':
 			return {
@@ -121,7 +121,7 @@ const getProjectionConfig = (mapType) => {
 			};
 		case 'CR':
 			return {
-				scale: 500, 
+				scale: 200, 
 				center: [-55, -20] 
 			};
 		case 'UY':
@@ -131,8 +131,8 @@ const getProjectionConfig = (mapType) => {
 			};
 		case 'VE':
 			return {
-				scale: 1250, 
-				center: [-75, 5] 
+				scale: 1350, 
+				center: [-53, 5] 
 			};
 		default:
 		  return {
