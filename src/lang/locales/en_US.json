@@ -288,7 +288,19 @@
 	"admin.dashboard.dropdown.selection.birth":"Birth",
 	"admin.dashboard.dropdown.selection.residency":"Residency",
 	"admin.dashboard.dropdown.selection.all":"All",
-	"admin.dashboard.selections":"Dropdown Selections"
+	"admin.dashboard.selections":"Dropdown Selections",
+	"admin.dashboard.insights.enrolleeList":"Enrollee List",
+	"admin.dashboard.insights.demographics": "Demographics",
+	"admin.dashboard.insights.overview.totalEnrollees": "Total Enrollees",
+	"admin.dashboard.insights.overview.totalMalesVsFemales": "Total Male & Females",
+	"admin.dashboard.insights.overview.genderPercentages": "Gender Distribution",
+	"admin.dashboard.insights.overview.averageAge": "Average Age",
+	"admin.dashboard.insights.overview.avgMaleVsFemaleAge": "Average Male & Females Age",
+	"admin.dashboard.insights.overview.agesGroups": "Ages Groups Distribution",
+	"admin.dashboard.insights.overview.newVsReturning": "New vs Returning Enrollee",
+	"admin.dashboard.insights.overview.languageProficiency": "Language Proficiency Distribution",
+	"admin.dashboard.insights.overview.enrolleeType": "Enrollee Category Type"
+
 	
 	
 	

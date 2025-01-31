@@ -1,8 +1,9 @@
 import LocalStorageService from "services/LocalStorageService";
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
+import GoogleService from "services/GoogleService";
 import AdminInsights from "lob/AdminInsights";
-import GeoMapService from "services/GeoMapService";
+// import GeoMapService from "services/GeoMapService";
 
 export const getAllCourses = async() => {
   const localStorageKey = `adminAllCourses`;
@@ -81,8 +82,10 @@ export const getDemographicInfoAdminDashboard = async (courseCodeId, locationTyp
     ? await AdminInsights.transformEnrolleeGeneralDemographicData(regionData)
     : await AdminInsights.transformEnrolleeDivisionDemographicData(regionData);
 
-  const mapType = isAllLocation ? "world" : countryId;
-  const mapJson = await GeoMapService.getJsonGeoMap(isAllLocation ? undefined : countryId);
+  const mapType = (isAllLocation || countryId === 'GI') ? "world" : countryId;
+  // const mapJson = await GeoMapService.getJsonGeoMap(isAllLocation ? undefined : countryId);
+  const mapJson = await GoogleService.getGeoMapResource(isAllLocation ? undefined : countryId, "getDemographicInfoAdminDashboard");
+  console.log("mapJson", mapJson)
 
   return {
     transformedArrays,

@@ -25,7 +25,7 @@ export const EnrolleeByRegionWidget = ({enrolleeRegionData, mapSource, mapType, 
 		  ? getLocaleText(localeKey, defaultMessage) // Uses the new function
 		  : localeKey.toString(); // Falls back to the key if localization is off
 	  };
-	  console.log("CONTEST", enrolleeRegionData, mapSource, mapType)
+
 	return (
 	  <>
 		<RegiondataWidget 

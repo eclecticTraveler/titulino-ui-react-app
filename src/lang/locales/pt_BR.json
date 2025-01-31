@@ -290,6 +290,18 @@
 	"admin.dashboard.dropdown.selection.birth":"Nacimiento",
 	"admin.dashboard.dropdown.selection.residency":"Residencia",
 	"admin.dashboard.dropdown.selection.all": "Todos",
-	"admin.dashboard.selections":"Seleções"
+	"admin.dashboard.selections":"Seleções",
+	"admin.dashboard.insights.enrolleeList":"Lista de inscritos",
+	"admin.dashboard.insights.demographics": "Dados demográficos",
+	"admin.dashboard.insights.overview.totalEnrollees": "Total de inscritos",
+	"admin.dashboard.insights.overview.totalMalesVsFemales": "Total de homens e mulheres",
+	"admin.dashboard.insights.overview.genderPercentages": "Distribuição de gênero",
+	"admin.dashboard.insights.overview.averageAge": "Idade média",
+	"admin.dashboard.insights.overview.avgMaleVsFemaleAge": "Idade média de homens e mulheres",
+	"admin.dashboard.insights.overview.agesGroups": "Distribuição de grupos por idade",
+	"admin.dashboard.insights.overview.newVsReturning": "Inscrito novo vs recorrente",
+	"admin.dashboard.insights.overview.languageProficiency": "Distribuição de proficiência linguística",
+	"admin.dashboard.insights.overview.enrolleeType": "Tipo de categoria de inscrito"
+
 
 }

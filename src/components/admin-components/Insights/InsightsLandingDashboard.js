@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
 import { Row, Col, Card, Tabs } from 'antd';
 import IntlMessage from 'components/util-components/IntlMessage';
 import DropdownInsightSelection from './DropdownInsightSelection';
 import { faPersonThroughWindow, faPieChart, faMapPin } from '@fortawesome/free-solid-svg-icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard } from "redux/actions/Analytics";
-import { onLoadingEnrolleeByRegion } from "redux/actions/Lrn";
-import { connect } from "react-redux";
-import { bindActionCreators } from "redux";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
 import DoubleCounterDisplay from 'components/layout-components/DoubleCounterDisplay';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
@@ -19,7 +18,7 @@ const { TabPane } = Tabs;
 
 const InsightsLandingDashboard = (props) => {
   const { allCourses, onRenderingAdminInsightsDashboard, locationTypes, onRenderingLocationTypeSelectionsToDashboard, demographicDashboardData,
-		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, onLoadingEnrolleeByRegion
+		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData
    } = props;
 
 	const [activeKey, setActiveKey] = useState('1');
@@ -28,16 +27,19 @@ const InsightsLandingDashboard = (props) => {
 		setActiveKey(key); // Update active tab key
 	};
 
-  useEffect(() => {
-    // ComponentDidMount and ComponentDidUpdate logic can go here
-	if(!allCourses){
-		onRenderingAdminInsightsDashboard()
-	}
-
-	if(!locationTypes){
-		onRenderingLocationTypeSelectionsToDashboard();
-	}
-  }, [allCourses, locationTypes, onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard]);
+	useEffect(() => {
+		// Load data only if necessary
+		if (!allCourses || !locationTypes) {
+		  if (!allCourses) {
+			onRenderingAdminInsightsDashboard();
+		  }
+		  if (!locationTypes) {
+			onRenderingLocationTypeSelectionsToDashboard();
+		  }
+		}
+	  }, [allCourses, locationTypes]);
+	  
+	  
 
   const converUrl = 'https://images.unsplash.com/photo-1543286386-713bdd548da4?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
   const titleOfEnrollment = 'hello world';
@@ -47,37 +49,36 @@ const InsightsLandingDashboard = (props) => {
 	<>
 		<Row gutter={16}>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<CounterDisplay count={overviewDashboardData?.totalEnrollees} localizedTitle={"TotalEnrollees"}/>
+			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.totalEnrollees"} count={overviewDashboardData?.totalEnrollees}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"totalMalesVsFemales"} graphData={overviewDashboardData?.genderCount} passedValue={"count"} passedType={"sex"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.totalMalesVsFemales"} graphData={overviewDashboardData?.genderCount} passedValue={"count"} passedType={"sex"}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<PieGraph localizedTitle={"genderPercentages"} graphData={overviewDashboardData?.genderPercentages} passedValue={"percentage"} passedType={"sex"}/>
+			<PieGraph localizedTitle={"admin.dashboard.insights.overview.genderPercentages"} graphData={overviewDashboardData?.genderPercentages} passedValue={"percentage"} passedType={"sex"}/>
 			</Col>
 
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<CounterDisplay count={overviewDashboardData?.averageGeneralAge} localizedTitle={"averageAge"}/>
+			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={overviewDashboardData?.averageGeneralAge} />
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay firstCount={overviewDashboardData?.averageMaleAge} secondCount={overviewDashboardData?.averageFemaleAge} localizedTitle={"avgMaleVsFemaleAge"}/>
+			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.avgMaleVsFemaleAge"} firstCount={overviewDashboardData?.averageMaleAge} secondCount={overviewDashboardData?.averageFemaleAge} />
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"agesGroups"} graphData={overviewDashboardData?.agesPercentages} passedValue={"count"} passedType={"label"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.agesGroups"} graphData={overviewDashboardData?.agesPercentages} passedValue={"count"} passedType={"label"}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay firstCount={overviewDashboardData?.totalNewEnrollees} secondCount={overviewDashboardData?.totalReturningEnrollees} localizedTitle={"newVsReturning"}/>
+			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.newVsReturning"} firstCount={overviewDashboardData?.totalNewEnrollees} secondCount={overviewDashboardData?.totalReturningEnrollees}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"enrolleeType"} graphData={overviewDashboardData?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={overviewDashboardData?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<ColumnBar localizedTitle={"languageProficiency"} graphData={overviewDashboardData?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""}/>
+			<ColumnBar localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={overviewDashboardData?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""}/>
 			</Col>
-			{/* <Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"languageProficiency"} graphData={overviewDashboardData?.enrolleeProficiencyGroups} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
-			</Col> */}
-
+			<Col xs={24} sm={24} md={24} lg={8}>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={overviewDashboardData?.enrolleeProficiencyGroups} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
+			</Col>
 		</Row>
 	</>
 	);
@@ -130,7 +131,7 @@ const InsightsLandingDashboard = (props) => {
 				tab={
 					<span>
 					<IconAdapter icon={faPersonThroughWindow} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-					{setLocale(locale, "Enrollees")}
+					{setLocale(locale, "admin.dashboard.insights.enrolleeList")}
 					</span>
 				} 
 				key="2"
@@ -145,7 +146,7 @@ const InsightsLandingDashboard = (props) => {
 				tab={
 					<span>
 					<IconAdapter icon={faMapPin} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-					{setLocale(locale, "Demographics")}
+					{setLocale(locale, "admin.dashboard.insights.demographics")}
 					</span>
 				} 
 				key="3"
@@ -175,8 +176,7 @@ const InsightsLandingDashboard = (props) => {
 function mapDispatchToProps(dispatch) {
 	return bindActionCreators({
 		onRenderingAdminInsightsDashboard: onRenderingAdminInsightsDashboard,
-		onRenderingLocationTypeSelectionsToDashboard: onRenderingLocationTypeSelectionsToDashboard,
-		onLoadingEnrolleeByRegion: onLoadingEnrolleeByRegion
+		onRenderingLocationTypeSelectionsToDashboard: onRenderingLocationTypeSelectionsToDashboard
 	}, dispatch);
 }
 

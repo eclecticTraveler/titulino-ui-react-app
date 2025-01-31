@@ -289,7 +289,18 @@
 	"admin.dashboard.dropdown.selection.birth":"Nacimiento",
 	"admin.dashboard.dropdown.selection.residency":"Residencia",
 	"admin.dashboard.dropdown.selection.all": "Todos",
-	"admin.dashboard.selections":"Selecciones desplegables"
+	"admin.dashboard.selections":"Selecciones desplegables",
+	"admin.dashboard.insights.enrolleeList":"Lista de inscritos",
+	"admin.dashboard.insights.demographics": "Datos demográficos",
+	"admin.dashboard.insights.overview.totalEnrollees": "Total de inscritos",
+	"admin.dashboard.insights.overview.totalMalesVsFemales": "Total de hombres y mujeres",
+	"admin.dashboard.insights.overview.genderPercentages": "Distribución de género",
+	"admin.dashboard.insights.overview.averageAge": "Edad promedio",
+	"admin.dashboard.insights.overview.avgMaleVsFemaleAge": "Edad promedio de hombres y mujeres",
+	"admin.dashboard.insights.overview.agesGroups": "Distribución de grupos de edades",
+	"admin.dashboard.insights.overview.newVsReturning": "Afiliado nuevo versus afiliado recurrente",
+	"admin.dashboard.insights.overview.languageProficiency": "Distribución del dominio del idioma",
+	"admin.dashboard.insights.overview.enrolleeType": "Tipo de categoría de afiliado"
 	
 }
 

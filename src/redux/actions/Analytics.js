@@ -1,3 +1,4 @@
+import TitulinoManager from "managers/AnalyticsManager";
 import {
   DEFAULT,
   ON_RENDERING_ADMIN_INSIGHTS_DASHBOARD,
@@ -5,7 +6,6 @@ import {
   ON_GETTING_COUNTRIES_BY_LOCATION_TYPE,
   ON_LOADING_ALL_DASHBOARD_CONTENTS
 } from '../constants/Analytics';
-import TitulinoManager from "managers/AnalyticsManager";
 
 export function onTestingDefault(defaultValue) {
   return {
@@ -22,7 +22,6 @@ export const onRenderingAdminInsightsDashboard = async () => {
     allCourses: allCourses
   }
 }
-
 
 export const onRenderingLocationTypeSelectionsToDashboard = async () => {
   const locationTypes = await TitulinoManager.getLocationTypesForInsights();

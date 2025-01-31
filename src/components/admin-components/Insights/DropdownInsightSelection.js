@@ -26,37 +26,43 @@ const DropdownInsightSelection = (props) => {
   };
 
   useEffect(() => {
+    let isMounted = true;
     if (selectedCourse && selectedLocationType) {
       const fetchCountriesByLocationType = async () => {
         const countriesByLocation = await onGettingCountriesByLocationToDashboard(selectedCourse, selectedLocationType);
-        const countriesByLocationList = Array.isArray(countriesByLocation?.countriesByLocationType)
-          ? countriesByLocation?.countriesByLocationType
-          : [];
-        setCountriesBySelectedLocationType(countriesByLocationList);
+        if (isMounted) {
+          const countriesByLocationList = Array.isArray(countriesByLocation?.countriesByLocationType)
+            ? countriesByLocation?.countriesByLocationType
+            : [];
+          setCountriesBySelectedLocationType(countriesByLocationList);
+        }
       };
       fetchCountriesByLocationType();
     } else {
       setCountriesBySelectedLocationType([]);
     }
+    return () => {
+      isMounted = false;
+    };
   }, [selectedLocationType, selectedCourse, onGettingCountriesByLocationToDashboard]);
+  
   
 
   useEffect(() => {
-    console.log("selectedCountry", selectedCountry)
     if (selectedCourse && selectedLocationType && selectedCountry) {
-      console.log("DROPDOWN OPTIOSN", selectedCourse, selectedLocationType, selectedCountry)
       // Unleash all the dashboards?
       onLoadingAllDashboardContents(selectedCourse, selectedLocationType, selectedCountry)
     } 
-  }, [selectedLocationType, selectedCourse, selectedCountry, onLoadingAllDashboardContents]);
+  }, [selectedLocationType, selectedCourse, selectedCountry]);
 
 
   const handleCourseSelection = (value) => {
     setSelectedCourse(value);
     setSelectedLocationType(null);
-    setCountriesBySelectedLocationType([]);
     setSelectedCountry(null);
+    setCountriesBySelectedLocationType([]);
   };
+  
 
   const handleLocationTypeSelection = (value) => {
     if(value?.toLowerCase() === "all"){

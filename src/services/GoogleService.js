@@ -136,12 +136,60 @@ export const getCourseProgressData = async (whoCalledMe) => {
 
 };
 
+
+export const getGeoMapResource = async (countryId, whoCalledMe) => {
+  if (!whoCalledMe) return _results;
+
+  const requestOptions = {
+    method: "GET",
+    redirect: "follow"
+  };
+
+  // URLs for specific and default maps
+  const specificMapUrl = `${gcbucketBaseUrl}/maps/gadm41_${countryId}_1.json`;
+  const defaultMapUrl = `${gcbucketBaseUrl}/maps/world-countries-sans-antarctica.json`;
+
+  try {
+    // Attempt fetching the specific map
+    const response = await fetch(specificMapUrl, requestOptions);
+
+    // If response is not OK (e.g., 404), fetch the default map
+    if (!response.ok) {
+      console.warn(`Map for ${countryId} not found. Fetching default map.`);
+      return await fetchDefaultMap(defaultMapUrl, requestOptions);
+    }
+
+    const apiResult = await response.json();
+    return apiResult ?? _results;
+
+} catch (error) {
+    console.error(`Error fetching map for ${countryId}.`, error);
+    return fetchDefaultMap(defaultMapUrl, requestOptions);
+  }
+};
+
+// Helper function to fetch the default map
+const fetchDefaultMap = async (url, requestOptions) => {
+  try {
+    const defaultResponse = await fetch(url, requestOptions);
+    if (!defaultResponse.ok) {
+      throw new Error("Failed to load default map.");
+    }
+    return await defaultResponse.json();
+  } catch (error) {
+    console.error("Error fetching default map:", error);
+    return _results;
+  }
+};
+
+
 const GoogleService = {
   getProgressByEmailId,
   getChapterBookData,
   getGCUriForImages,
   getVideoClassData,
-  getCourseProgressData
+  getCourseProgressData,
+  getGeoMapResource
 };
 
 export default GoogleService;
