@@ -1,3 +1,40 @@
+import Flag from "react-world-flags";
+import { Tag } from 'antd';
+
+
+const getDaysUntilComingBirthday = async(birthday) => {
+  // Parse the provided birthday
+  const targetDate = new Date(birthday);
+  if (isNaN(targetDate)) {
+    throw new Error("Invalid date format");
+  }
+
+  // Get today's UTC date without time
+  const todayUTC = new Date(Date.UTC(
+    new Date().getUTCFullYear(),
+    new Date().getUTCMonth(),
+    new Date().getUTCDate()
+  ));
+
+  // Set the target year to this year
+  let comingBirthday = new Date(Date.UTC(
+    todayUTC.getUTCFullYear(),
+    targetDate.getUTCMonth(),
+    targetDate.getUTCDate()
+  ));
+
+  // If the birthday has already passed this year, use the next year
+  if (comingBirthday < todayUTC) {
+    comingBirthday.setUTCFullYear(todayUTC.getUTCFullYear() + 1);
+  }
+
+  // Calculate the difference in days
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysUntil = Math.ceil((comingBirthday - todayUTC) / msPerDay);
+
+  return daysUntil;
+}
+
 export const courseSelectionConverter = async(data) => {
   const transformedArray = data?.map((item, index) => ({
     index: index,
@@ -177,20 +214,207 @@ export const transformEnrolleeDivisionDemographicData = async (data) => {
   };
 };
 
-export const enrolleeListConvertor = async(data) => {
-  // const transformedArray = data?.map((item, index) => ({
-  //   index: index,
-  //   name: item?.NativeCountryName ?? item?.CountryName,
-  //   value: item?.CountryId,
-  //   alphaKey: item?.CountryAlpha3
-  // }));
+const proficiencyMaps = {
+  'be': ['purple', 'Beginner'],
+  'ba': ['yellow', 'Basic'],
+  'in': ['orange', 'Intermediate'],
+  'ad': ['green', 'Advanced']
+};
+
+export const handleEnrolleeListConvertor = async (data, locationType) => {
+
+  if (!data) return { tableData: [], columns: [] };
+
+  const results = [];
+  const filters = {
+    langLevelFilter: new Set(),
+    enrolleeIdFilter: new Set(),
+    namesFilter: new Set(),
+    lastNamesFilter: new Set(),
+    ageFilter: new Set(),
+    daysToBdayFilter: new Set(),
+    sexFilter: new Set(),
+    countryOfResidencyFilter: new Set(),
+    regionOfResidencyFilter: new Set(),
+    countryOfBirthFilter: new Set(),
+    regionOfBirthFilter: new Set(),
+  };
+
+  const trackers = {
+      langLevelTracker: new Set(),
+      enrolleeIdTracker: new Set(),
+      namesTracker: new Set(),
+      lastNamesTracker: new Set(),
+      ageTracker: new Set(),
+      sexTracker: new Set(),
+      daysToBdayTracker: new Set(),
+      countryOfResidencyTracker: new Set(),
+      regionOfResidencyTracker: new Set(),
+      countryOfBirthTracker: new Set(),
+      regionOfBirthTracker: new Set()
+  };
+
+  const processData = async(item, i) => {
+      const daysUntilBday = await getDaysUntilComingBirthday(item?.DateOfBirth);
+      const currentLevel = item.LanguageProficienciesHistory.find(entry => entry.EndDate === null)?.LanguageLevelAbbreviation;   
+      console.log("AGE", item?.Age, item?.ContactExternalId, daysUntilBday) 
+      results.push({
+          key: i,
+          langLevel: currentLevel,
+          enrolleeId: item?.ContactExternalId,
+          names: item?.Names,
+          lastNames: item?.LastNames,
+          age: item?.Age,
+          sex: item?.Sex,
+          daysToBday: daysUntilBday,
+          countryOfResidency: item?.Location?.ResidencyLocation?.CountryOfResidency,
+          regionOfResidency: item?.Location?.ResidencyLocation?.CountryDivisionResidencyName,
+          countryOfBirth: item?.Location?.BirthLocation?.CountryOfBirth,
+          regionOfBirth: item?.Location?.BirthLocation?.CountryDivisionBirthName
+      });
+
+      const uniqueFilters = [
+        { field: currentLevel, filter: 'langLevel' },
+        { field: item?.ContactExternalId, filter: 'enrolleeId' },
+        { field: item?.Names, filter: 'names' },
+        { field: item?.LastNames, filter: 'lastNames' },
+        { field: item?.Age, filter: 'age' },
+        { field: item?.Sex, filter: 'sex' },
+        { field: daysUntilBday, filter: 'daysToBday' },
+        { field: item?.Location?.ResidencyLocation?.CountryOfResidency, filter: 'countryOfResidency' },
+        { field: item?.Location?.ResidencyLocation?.CountryDivisionResidencyName, filter: 'regionOfResidency' },
+        { field: item?.Location?.BirthLocation?.CountryOfBirth, filter: 'countryOfBirth' },
+        { field: item?.Location?.BirthLocation?.CountryDivisionBirthName, filter: 'regionOfBirth' }
+    ];
+   
+
+      // uniqueFilters.forEach(({ field, filter }) => {
+      //   const trackerKey = `${filter}Tracker`;
+      
+      //   // Skip if field already exists in tracker
+      //   if (field && !trackers[trackerKey]?.has(field)) {
+      //     const valueToAdd =
+      //       filter === "countryOfBirth" || filter === "countryOfResidency"
+      //         ? { 
+      //             key: field, 
+      //             text: <Flag code={field} style={{ width: 35, marginLeft: 5 }} />, 
+      //             value: field 
+      //           }
+      //         : { key: field, text: field, value: field };
+      
+      //     filters[`${filter}Filter`]?.add(valueToAdd); // Use `add()` for Sets
+      //     trackers[trackerKey]?.add(field); // Track the unique field
+      //   }
+      // });
+
+      uniqueFilters.forEach(({ field, filter }) => {
+        const trackerKey = `${filter}Tracker`;
+      
+        if (field && !trackers[trackerKey]?.has(field)) {
+          let valueToAdd;
+      
+          if (filter === "langLevel") {
+            // Handling langLevel with proficiency map
+            const proficiencyMap = proficiencyMaps;
+      
+            const [color, proficiency] = proficiencyMap[field] || ['black', 'Unknown'];
+      
+            valueToAdd = {
+              key: field,
+              text: <Tag color={color}>{proficiency}</Tag>,
+              value: field
+            };
+          } else if (filter === "countryOfBirth" || filter === "countryOfResidency") {
+            // Handling country filters with Flag component
+            valueToAdd = {
+              key: field,
+              text: (
+                <>
+                  <Flag code={field} style={{ width: 35, marginLeft: 5 }} /> {field}
+                </>
+              ),
+              value: field
+            };
+          } else {
+            // Default handling for other filters
+            valueToAdd = { key: field, text: field, value: field };
+          }
+      
+          filters[`${filter}Filter`]?.add(valueToAdd);
+          trackers[trackerKey]?.add(field);
+        }
+      });
+      
+      
+  };
+
+  await data?.forEach(processData);
+
+  const columns = [
+      {
+          title: 'Level',
+          dataIndex: 'langLevel',
+          editable: false,
+          filterSearch: true,
+          filters: Array.from(filters.langLevelFilter),
+          onFilter: (value, record) => record.langLevel?.indexOf(value) === 0,
+          sorter: (a, b) => a.langLevel.localeCompare(b.langLevel),
+          sortDirections: ["ascend", "descend"],
+          render: (langLevel) => {
+              const proficiencyMap = proficiencyMaps;
+              const [color, proficiency] = proficiencyMap[langLevel] || ['black', 'Unknown'];
+              return <Tag color={color} key={langLevel}>{proficiency}</Tag>;
+          }
+      },
+      {
+          title: 'Profile',
+          children: [
+              { title: 'Id', dataIndex: 'enrolleeId', editable: false, filterSearch: true, filters: Array.from(filters.enrolleeIdFilter), onFilter: (value, record) => record.enrolleeId === value ? true : false, sorter: (a, b) => a.enrolleeId - b.enrolleeId },
+              { title: 'Names', dataIndex: 'names', editable: false, filterSearch: true, filters: Array.from(filters.namesFilter), onFilter: (value, record) => record.names?.indexOf(value) === 0, sorter: (a, b) => a.names.localeCompare(b.names), sortDirections: ["ascend", "descend"] },
+              { title: 'Last Names', dataIndex: 'lastNames', editable: false, filterSearch: true, filters: Array.from(filters.lastNamesFilter), onFilter: (value, record) => record.lastNames?.indexOf(value) === 0, sorter: (a, b) => a.lastNames.localeCompare(b.lastNames), sortDirections: ["ascend", "descend"] },
+              { title: 'Age', dataIndex: 'age', editable: false, filterSearch: true, filters: Array.from(filters.ageFilter), onFilter: (value, record) => record.age === value ? true : false, sorter: (a, b) => a.age - b.age },
+              { title: 'Days To B-day', dataIndex: 'daysToBday', editable: false, filterSearch: true, filters: Array.from(filters.daysToBdayFilter), onFilter: (value, record) => record.daysToBday === value ? true : false, sorter: (a, b) => a.daysToBday - b.daysToBday },
+              {
+                title: 'Gender',
+                dataIndex: 'sex',
+                editable: false,
+                filterSearch: true,
+                filters: Array.from(filters.sexFilter),
+                onFilter: (value, record) => record.sex?.indexOf(value) === 0,
+                sorter: (a, b) => a.sex.localeCompare(b.sex),
+                sortDirections: ["ascend", "descend"],
+                render: (sex) => {
+                    const sexMap = {
+                      'M': ['geekblue', 'Male'],
+                      'F': ['pink', 'Female']
+                    };
+                    const [color, gender] = sexMap[sex] || ['black', 'Unknown'];
+                    return <Tag color={color} key={sex}>{gender}</Tag>;
+                }
+            }
+          ]
+      },
+      ...(locationType === "all" || locationType === "residency" ? [{
+          title: 'Residency',
+          children: [
+              { title: 'Country', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
+              { title: 'Region', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
+          ]
+      }] : []),
+      ...(locationType === "all" || locationType === "birth" ? [{
+          title: 'Birth',
+          children: [
+              { title: 'Country', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
+              { title: 'Region', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
+          ]
+      }] : [])
+  ];
 
   return {
-    columnsArray: [],
-    dataArray: []
-  }
-}
-
+      tableData: results,
+      columns: columns
+  };
+};
 
 const AdminInsights = {
   courseSelectionConverter,
@@ -199,7 +423,7 @@ const AdminInsights = {
   overviewInfoConvertion,
   transformEnrolleeGeneralDemographicData,
   transformEnrolleeDivisionDemographicData,
-  enrolleeListConvertor
+  handleEnrolleeListConvertor
 };
 
 export default AdminInsights;

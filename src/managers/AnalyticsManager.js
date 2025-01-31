@@ -3,7 +3,6 @@ import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import GoogleService from "services/GoogleService";
 import AdminInsights from "lob/AdminInsights";
-// import GeoMapService from "services/GeoMapService";
 
 export const getAllCourses = async() => {
   const localStorageKey = `adminAllCourses`;
@@ -83,9 +82,7 @@ export const getDemographicInfoAdminDashboard = async (courseCodeId, locationTyp
     : await AdminInsights.transformEnrolleeDivisionDemographicData(regionData);
 
   const mapType = (isAllLocation || countryId === 'GI') ? "world" : countryId;
-  // const mapJson = await GeoMapService.getJsonGeoMap(isAllLocation ? undefined : countryId);
   const mapJson = await GoogleService.getGeoMapResource(isAllLocation ? undefined : countryId, "getDemographicInfoAdminDashboard");
-  console.log("mapJson", mapJson)
 
   return {
     transformedArrays,
@@ -100,10 +97,17 @@ export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, 
   const enrolleeList = isAllLocation
     ? await TitulinoRestService.getEnrolleeGeneralListByCourseCodeId(courseCodeId, "getEnrolleeInfoAdminDashboard")
     : await TitulinoRestService.getEnrolleeCountrylListByCourseCodeId(courseCodeId, countryId, "getEnrolleeInfoAdminDashboard");
+    console.log("enrolleeList", enrolleeList);
+    let extractedArray = [];
+    if(isAllLocation){
+      extractedArray = enrolleeList;
+    } else if(locationType?.toLowerCase() === "residency"){
+      extractedArray = enrolleeList?.Residency;
+    } else if (locationType?.toLowerCase() === "birth"){
+      extractedArray = enrolleeList?.Birth;
+    }
 
-  const transformedArrays = isAllLocation
-    ? await AdminInsights.enrolleeListConvertor(enrolleeList)
-    : await AdminInsights.enrolleeListConvertor(enrolleeList);
+  const transformedArrays = await AdminInsights.handleEnrolleeListConvertor(extractedArray, locationType);
 
   return transformedArrays;
 };

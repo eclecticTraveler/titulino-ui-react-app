@@ -290,13 +290,17 @@ export const RegiondataWidget = props => {
 }
 
 RegiondataWidget.propTypes = {
-	title: PropTypes.string,
+	title: PropTypes.oneOfType([
+	  PropTypes.string,
+	  PropTypes.object
+	]),
 	data: PropTypes.array,
 	mapSource: PropTypes.object,
 	mapType: PropTypes.string,
 	content: PropTypes.element,
 	list: PropTypes.element
-}
+  };
+  
 
 RegiondataWidget.defaultProps = {
 	data: [],

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { Row, Col, Card, Tabs } from 'antd';
+import { Row, Col, Card, Tabs, Input } from 'antd';
 import IntlMessage from 'components/util-components/IntlMessage';
 import DropdownInsightSelection from './DropdownInsightSelection';
-import { faPersonThroughWindow, faPieChart, faMapPin } from '@fortawesome/free-solid-svg-icons';
+import { faPersonPraying, faPieChart, faMapPin } from '@fortawesome/free-solid-svg-icons';
+import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard } from "redux/actions/Analytics";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
@@ -14,18 +15,44 @@ import PieGraph from 'components/layout-components/Graphs/PieGraph';
 import ColumnBar from 'components/layout-components/Graphs/ColumnGraph';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
+import AbstractTable from 'components/shared-components/Table/AbstractTable';
 const { TabPane } = Tabs;
 
 const InsightsLandingDashboard = (props) => {
   const { allCourses, onRenderingAdminInsightsDashboard, locationTypes, onRenderingLocationTypeSelectionsToDashboard, demographicDashboardData,
-		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData
+		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData
    } = props;
 
 	const [activeKey, setActiveKey] = useState('1');
+	const [loading, setLoading] = useState(false);
+	const [searchValue, setSearchValue] = useState('');
+  	const [filteredData, setFilteredData] = useState(enrolleDashboardData?.tableData || []);
+
 
 	const handleTabChange = (key) => {
 		setActiveKey(key); // Update active tab key
 	};
+
+	const handleSearch = (event) => {
+		const value = event.target.value.toLowerCase();
+		setSearchValue(value);
+	
+		if (enrolleDashboardData?.tableData) {
+		  const filtered = enrolleDashboardData.tableData.filter((item) =>
+			['names', 'lastNames', 'age', 'enrolleeId', 'daysToBday', 'regionOfResidency', 'regionOfBirth'].some((key) =>
+			  String(item[key]).toLowerCase().includes(value)
+			)
+		  );
+		  setFilteredData(filtered);
+		}
+	  };
+	
+
+	useEffect(() => {
+		if (enrolleDashboardData?.tableData) {
+		  setFilteredData(enrolleDashboardData.tableData);
+		}
+	  }, [enrolleDashboardData]);
 
 	useEffect(() => {
 		// Load data only if necessary
@@ -130,15 +157,32 @@ const InsightsLandingDashboard = (props) => {
 			<TabPane
 				tab={
 					<span>
-					<IconAdapter icon={faPersonThroughWindow} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
+					<IconAdapter icon={faPersonPraying} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
 					{setLocale(locale, "admin.dashboard.insights.enrolleeList")}
 					</span>
 				} 
 				key="2"
 				>
 				<Row gutter={16}>
-				<Col xs={24} sm={24} md={24} lg={8}>
-					Hello
+				<Col span={24}>
+					<Input
+					placeholder="Search by names, last names, or age"
+					value={searchValue}
+					onChange={handleSearch}
+					prefix={<SearchOutlined />}
+					style={{ marginBottom: 16 }}
+					/>
+				</Col>
+				<Col xs={24} sm={24} md={24} lg={24}>
+					{filteredData.length > 0 ? (
+					<AbstractTable 
+						tableData={filteredData}
+						tableColumns={enrolleDashboardData?.columns}
+						isAllowedToEditTableData={false}
+					/>
+					) : (
+					<p>No matching records found.</p>
+					)}
 				</Col>
 				</Row>
 			</TabPane>
