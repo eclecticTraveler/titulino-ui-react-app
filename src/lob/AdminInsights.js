@@ -178,16 +178,16 @@ export const transformEnrolleeDivisionDemographicData = async (data) => {
 };
 
 export const enrolleeListConvertor = async(data) => {
-  const transformedArray = data?.map((item, index) => ({
-    index: index,
-    name: item?.NativeCountryName ?? item?.CountryName,
-    value: item?.CountryId,
-    alphaKey: item?.CountryAlpha3
-  }));
+  // const transformedArray = data?.map((item, index) => ({
+  //   index: index,
+  //   name: item?.NativeCountryName ?? item?.CountryName,
+  //   value: item?.CountryId,
+  //   alphaKey: item?.CountryAlpha3
+  // }));
 
   return {
-    columnsArray: transformedArray,
-    dataArray: transformedArray
+    columnsArray: [],
+    dataArray: []
   }
 }
 

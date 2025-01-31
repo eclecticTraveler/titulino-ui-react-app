@@ -81,7 +81,7 @@ export const getDemographicInfoAdminDashboard = async (courseCodeId, locationTyp
     ? await AdminInsights.transformEnrolleeGeneralDemographicData(regionData)
     : await AdminInsights.transformEnrolleeDivisionDemographicData(regionData);
 
-  const mapType = isAllLocation ? "world" : "country";
+  const mapType = isAllLocation ? "world" : countryId;
   const mapJson = await GeoMapService.getJsonGeoMap(isAllLocation ? undefined : countryId);
 
   return {

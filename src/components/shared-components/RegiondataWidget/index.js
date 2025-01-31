@@ -20,7 +20,7 @@ const getHighlightedRegion = (name, data) => {
 	if(data.length > 0 || name) {
 		for (let i = 0; i < data.length; i++) {
 			const elm = data[i];
-			if(name === elm.name || name === elm.nativeName) {
+			if(name === elm.name || name === elm.nativeName || (name === elm.name?.replaceAll(' ', '') || name === elm.nativeName?.replaceAll(' ', ''))) {
 				return elm.color
 			}
 		}
@@ -33,7 +33,7 @@ const getRegionHoverColor = (name, data) => {
 	if(data.length > 0 || name) {
 		for (let i = 0; i < data.length; i++) {
 			const elm = data[i];
-			if(name === elm.name || name === elm.nativeName) {
+			if(name === elm.name || name === elm.nativeName || (name === elm.name?.replaceAll(' ', '') || name === elm.nativeName?.replaceAll(' ', ''))) {
 				return utils.shadeColor(elm.color, hoverPercentage)
 			}
 		}
@@ -46,7 +46,7 @@ const getRegionValue = (name, data) => {
 	if(data.length > 0 || name) {
 		for (let i = 0; i < data.length; i++) {
 			const elm = data[i];
-			if(name === elm.name || name === elm.nativeName) {
+			if(name === elm.name || name === elm.nativeName || (name === elm.name?.replaceAll(' ', '') || name === elm.nativeName?.replaceAll(' ', ''))) {
 				return (
 				<>
 				<Flag code={elm?.countryId} style={{ width: 20, marginRight: 10 }} />
@@ -59,9 +59,94 @@ const getRegionValue = (name, data) => {
 	return ''
 }
 
+const getProjectionConfig = (mapType) => {
+	console.log("mapType", mapType);
+	if (mapType === 'world') {
+	  return {
+		scale: 145, // World map scale
+		center: [0, 0] 
+	  };
+	} else {
+	  // Adjust scale and center for country maps
+	  switch (mapType) {
+		case 'AR':
+		  return {
+			scale: 650,
+			center: [-60, -35]
+		  };
+		case 'BO':
+		  return {
+			scale: 950, 
+			center: [-65, -17] //mas neg mas arriba // -65 mas a la derecha
+		  };
+		case 'BR':
+		  return {
+			scale: 450, 
+			center: [-55, -15] 
+		  };
+		case 'CL':
+			return {
+				scale: 500, 
+				center: [-53, -35] 
+			};
+		case 'CO':
+			return {
+				scale: 750, 
+				center: [-70, -15] 
+			};
+		case 'PY':
+			return {
+				scale: 980, 
+				center: [-55, -25] 
+			};
+		case 'PE':
+			return {
+				scale: 950, 
+				center: [-75, -10] 
+			};
+		case 'CA':
+			return {
+				scale: 450, 
+				center: [-55, -10] 
+			};
+		case 'MX':
+			return {
+				scale: 350, 
+				center: [-80, -55] 
+			};
+		case 'US':
+			return {
+				scale: 450, 
+				center: [-105, 40] 
+			};
+		case 'CR':
+			return {
+				scale: 500, 
+				center: [-55, -20] 
+			};
+		case 'UY':
+			return {
+				scale: 2000, 
+				center: [-55, -32] 
+			};
+		case 'VE':
+			return {
+				scale: 1250, 
+				center: [-75, 5] 
+			};
+		default:
+		  return {
+			scale: 350, // Default for other countries
+			center: [-55, -20] // Default center
+		  };
+	  }
+	}
+  }
+
 const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
+	const projectionConfig = getProjectionConfig(mapType);
   	return (
-		<ComposableMap style={{transform: `${mapType === 'worlda' ? 'translateY(20px)' : 'none'}`}} data-tip="" height={380} projectionConfig={{ scale: 145 }}>
+		<ComposableMap style={{transform: `${mapType === 'worlda' ? 'translateY(20px)' : 'none'}`}} data-tip="" height={480} projectionConfig={projectionConfig}>
 			<Geographies geography={mapSource}>
 				{({ geographies }) =>
 					geographies.map(geo => {

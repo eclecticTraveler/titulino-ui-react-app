@@ -2,6 +2,7 @@ const mapCache = {}; // Simple cache for maps
 
 const getJsonGeoMap = async (countryId) => {
   // Return default if no countryId is provided
+  console.log("GEOMAP", countryId)
   if (!countryId) {
     return loadDefaultMap();
   }
