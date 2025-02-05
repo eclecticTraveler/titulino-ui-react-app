@@ -62,7 +62,9 @@ import {
   ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
   ON_RESET_SUBMITTING_ENROLLEE,
   GET_LISTENING_PRACTICE_MODULE,
-  ON_LOADING_ENROLEE_BY_REGION
+  ON_LOADING_ENROLEE_BY_REGION,
+  ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
+  ON_MODAL_INTERACTION
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -363,6 +365,14 @@ export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLan
   }
 }
 
+
+export const onModalInteraction = async (hasUserInteractedWithModal) => {
+  return {
+    type: ON_MODAL_INTERACTION,
+    hasUserInteractedWithModal: hasUserInteractedWithModal
+  }
+}
+
 export const onSearchingForProgressByEmailIdAndCourseCodeId = async (email, courseCodeId, courseLanguageId) => {
   // Get courseId in Factory
   const isUserEmailRegisteredForCourse = await TitulinoRestService.isUserEmailRegisteredForGivenCourse(email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
@@ -389,12 +399,40 @@ export const onSearchingForProgressByEmailIdAndCourseCodeId = async (email, cour
   }
 }
 
+export const onVerifyingProgressByEmailIdAndCourseCodeId = async (yearOfBirth, email, courseCodeId, courseLanguageId) => {
+  // Get courseId in Factory
+  const isUserEmailRegisteredForCourse = await TitulinoRestService.isUserEmailRegisteredInCourse(yearOfBirth, email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  let registeredProgress = [];
+  if(isUserEmailRegisteredForCourse){
+    // Get records for registered unauthenticated users
+    registeredProgress = await TitulinoRestService.getCourseProgressByYearOfBirthEmailCourseCodeIdAndLanguageId(yearOfBirth, email, courseCodeId, courseLanguageId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  }else{
+    // Get records for unregistered users
+    registeredProgress = await TitulinoRestService.getCourseProgressByEmailAndCourseCodeId(email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  }
+
+  const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
+    StudentProgress.calculateUserCourseProgressPercentageForCertificates(registeredProgress),
+    StudentProgress.getUserCourseProgressCategories(registeredProgress)
+  ]);
+  
+  return {
+    type: ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
+    registeredProgressByEmailId: registeredProgress,
+    studentPercentagesForCourse: studentPercentagesForCourse,
+    studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse,
+    isUserEmailRegisteredForCourse: isUserEmailRegisteredForCourse
+  }
+}
+
 export const onResetingProgressByEmailIdAndCourseCodeId = async () => {  
   return {
     type: ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
     registeredProgressByEmailId: null,
     studentPercentagesForCourse: null,
-    studentCategoriesCompletedForCourse: null
+    studentCategoriesCompletedForCourse: null,
+    isUserEmailRegisteredForCourse: null,
+    hasUserInteractedWithModal: null
   }
 }
 

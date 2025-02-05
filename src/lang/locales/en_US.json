@@ -21,6 +21,7 @@
 	"sidenave.practice": "Practice",	
 	"sidenav.login": "Login",
 	"profile.enroll": "Enrollment",
+	"profile.adminInsights":"Admin Insights",
 	"under.construction.title":"Under Construction, coming soon",
 	"under.construction.subtitle":"We will let you know when this is available for you",
 	"under.construction.gratitute":"Thank you for your support",
@@ -161,7 +162,7 @@
 
 	"resources.myprogress.enterEmail": "Please enter an email address",
 	"resources.myprogress.noRecordsFound":"No records found.",
-	"resources.myprogress.readyToRegister":"Ready to record your progress. Please select the Progress & Tracking Tab below",
+	"resources.myprogress.readyToRegister":"Ready to record your progress.",
 	"resources.myprogress.requirements":"You will need 8 Grammar classes and 8 Live or Recording General gatherings",
 	"resources.myprogress.participation":"Participation",
 	"resources.myprogress.date":"Date",
@@ -180,6 +181,7 @@
 	"resources.myprogress.recordProgress":"Record your progress",
 	"resources.myprogress.here":"Here",
 	"resources.myprogress.searchYourEmail":"Search with your email",
+	"resources.myprogress.searchbyEmailandYear":"Search with your email and year of birth ",
 
 	"resources.myprogress.generalDashboard":"General Progress",
 	"resources.myprogress.brokenDown":"Broken-down Course Progress",
@@ -299,7 +301,11 @@
 	"admin.dashboard.insights.overview.agesGroups": "Ages Groups Distribution",
 	"admin.dashboard.insights.overview.newVsReturning": "New vs Returning Enrollee",
 	"admin.dashboard.insights.overview.languageProficiency": "Language Proficiency Distribution",
-	"admin.dashboard.insights.overview.enrolleeType": "Enrollee Category Type"
+	"admin.dashboard.insights.overview.enrolleeType": "Enrollee Category Type",
+	"userprogress.enrollment.invitationMessage":"Proceed to enroll in course",
+	"userprogress.enrollment.invitationMessageTitle":"Before proceeding to record your progress",
+	"userprogress.enrollment.invitationMessageContent":"We do not have your enrollment record under the email and year provided. If it's not a mistake,\n Would you like to formally enroll For certification & communication\n",
+	"userprogress.enrollment.yesLetsEnroll":"Yes, take me to the enrollment page"
 
 	
 	

@@ -97,7 +97,6 @@ export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, 
   const enrolleeList = isAllLocation
     ? await TitulinoRestService.getEnrolleeGeneralListByCourseCodeId(courseCodeId, "getEnrolleeInfoAdminDashboard")
     : await TitulinoRestService.getEnrolleeCountrylListByCourseCodeId(courseCodeId, countryId, "getEnrolleeInfoAdminDashboard");
-    console.log("enrolleeList", enrolleeList);
     let extractedArray = [];
     if(isAllLocation){
       extractedArray = enrolleeList;

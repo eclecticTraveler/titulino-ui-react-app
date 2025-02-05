@@ -7,6 +7,7 @@ import { APP_PREFIX_PATH, DEFAULT_LANDING_COURSE } from '../../configs/AppConfig
 import { onCurrentRouteInfo } from '../../redux/actions/Lrn';
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import { retry } from '../../helpers/index';
+import { env } from 'configs/EnvironmentConfig';
 
 export const AppViews = (props) => {
 	const { course } = props;
@@ -22,7 +23,7 @@ export const AppViews = (props) => {
 			<Route path={`${APP_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.quizletpdf}`} component={lazy(() => retry(() => import(`./course-level/chapter/pdf-render`)))} />		
 			<Route path={`${APP_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`./course-level/chapter/practice`)))} />			
 			<Route exact path={`${APP_PREFIX_PATH}/enroll`} component={lazy(() => import(`./user/enrollment`))} />
-			<Route exact path={`${APP_PREFIX_PATH}/insight`} component={lazy(() => import(`./user/analytics`))} />
+			{env.ENVIROMENT !== 'prod' && <Route exact path={`${APP_PREFIX_PATH}/insight`} component={lazy(() => import(`./user/analytics`))} />}
 			<Route exact path={`${APP_PREFIX_PATH}/switch-course`} component={lazy(() => retry(() => import(`./course-selection`)))} />	
 			<Route exact path={`${APP_PREFIX_PATH}/profile/edit-profile`} component={lazy(() => retry(() => import(`./profile/index`)))} />				
 			<Route exact path={`${APP_PREFIX_PATH}/logout`} component={lazy(() => import(`./logout`))} />

@@ -18,6 +18,7 @@
 	"sidenav.quizlet":"Quizlet",
 	"sidenav.login": "Iniciar Sesion",
 	"profile.enroll": "Inscripción",
+	"profile.adminInsights": "Perspectivas",
 	"sidenav.finaltest": "Prueba Final",
 	"profile.donate":"Haz una donacion",
 	"under.construction.title":"Bajo construcción, proximanente",
@@ -161,7 +162,7 @@
 
 	"resources.myprogress.enterEmail": "Por favor ingresa una dirección de correo electrónico",
 	"resources.myprogress.noRecordsFound":"No se encontraron registros.",
-	"resources.myprogress.readyToRegister":"Listo para registrar tu progreso. Por favor, seleccione la pestaña Progreso y seguimiento abajo",
+	"resources.myprogress.readyToRegister":"Listo para registrar su progreso",
 	"resources.myprogress.requirements":"Necesitarás 8 clases de gramática y 8 reuniones de los Martes o de grabación general",
 	"resources.myprogress.participation":"Participación",
 	"resources.myprogress.date":"Fecha",
@@ -180,6 +181,7 @@
 	"resources.myprogress.recordProgress":"Registra tu progreso",
 	"resources.myprogress.here":"Aquí",
 	"resources.myprogress.searchYourEmail":"Busqueda con correo electrónico",
+	"resources.myprogress.searchbyEmailandYear":"Busqueda con correo electrónico y año de nacimiento",
 
 	"resources.myprogress.generalDashboard": "Progreso general",
 	"resources.myprogress.brokenDown":"Progreso del curso desglosado",
@@ -300,7 +302,11 @@
 	"admin.dashboard.insights.overview.agesGroups": "Distribución de grupos de edades",
 	"admin.dashboard.insights.overview.newVsReturning": "Afiliado nuevo versus afiliado recurrente",
 	"admin.dashboard.insights.overview.languageProficiency": "Distribución del dominio del idioma",
-	"admin.dashboard.insights.overview.enrolleeType": "Tipo de categoría de afiliado"
+	"admin.dashboard.insights.overview.enrolleeType": "Tipo de categoría de afiliado",
+	"userprogress.enrollment.invitationMessage":"Continúe con la inscripción en el curso",
+	"userprogress.enrollment.invitationMessageTitle":"Antes de proceder a registrar su progreso",
+	"userprogress.enrollment.invitationMessageContent":"No tenemos su registro de inscripción en el correo electrónico y el año proporcionados. Si no es un error,\n ¿Le gustaría inscribirse formalmente para certificación y comunicación?\n",
+	"userprogress.enrollment.yesLetsEnroll":"Sí, llévame a la página de inscripción"
 	
 }
 

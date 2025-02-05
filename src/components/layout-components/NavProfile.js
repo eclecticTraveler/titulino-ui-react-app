@@ -61,7 +61,7 @@ const configureMenuItems = () => {
   if(env.IS_ADMIN_DASHBOARD_FEAT_ON){
     menuLinks.push(
       {
-        title: setLocale(locale,"profile.admin"),
+        title: setLocale(locale,"profile.adminInsights"),
         icon: RadarChartOutlined ,
         path: "insight"
       }

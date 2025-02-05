@@ -201,13 +201,13 @@ export const transformEnrolleeGeneralDemographicData = async (data) => {
 };
 
 // Function to transform division demographic data
-export const transformEnrolleeDivisionDemographicData = async (data) => {
+export const transformEnrolleeDivisionDemographicData = async (data) => {  
   return {
-    transformedResidencyArray: transformDemographicArray(data?.Residency, 'CountryDivisionName', 'CountryDivisionName', item => ({
+    transformedResidencyArray: transformDemographicArray(data?.Residency, 'CountryDivisionName', 'CountryDivisionNativeName', item => ({
       divisionId: item?.CountryDivisionId,
       countryId: item?.CountryId
     })),
-    transformedBirthArray: transformDemographicArray(data?.Birth, 'CountryDivisionName', 'CountryDivisionName', item => ({
+    transformedBirthArray: transformDemographicArray(data?.Birth, 'CountryDivisionName', 'CountryDivisionNativeName', item => ({
       divisionId: item?.CountryDivisionId,
       countryId: item?.CountryId
     }))
@@ -379,14 +379,30 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
               { title: 'Country', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
               { title: 'Region', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
           ]
-      }] : []),
-      ...(locationType === "all" || locationType === "birth" ? [{
+          },
+          {
+            title: 'Birth',
+            children: [
+                { title: 'Country', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
+                { title: 'Region', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
+            ]
+        }
+    ] : []),
+      ...(locationType === "birth" ? [{
           title: 'Birth',
           children: [
               { title: 'Country', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
               { title: 'Region', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
           ]
-      }] : [])
+      },
+      {
+        title: 'Residency',
+        children: [
+            { title: 'Country', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
+            { title: 'Region', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
+        ]
+      }
+    ] : [])
   ];
 
   return {

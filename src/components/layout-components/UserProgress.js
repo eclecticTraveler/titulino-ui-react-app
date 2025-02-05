@@ -31,8 +31,6 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   };
 
-  console.log("progressData->", progressData)
-
   const success = () => {
     // Show loading message
     // const inProgressMessage = setLocale(locale, "resources.myprogress.submittingInProgress");
@@ -138,7 +136,6 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
   ?.filter((category) => {
     // If no level, include category
     if (!category?.level) return true;
-    console.log("progressData", progressData);
     // Check if progressData is a non-empty array
     const isProgressDataValid = Array.isArray(progressData) && progressData.length > 0;
     // If progressData is not valid, include categories with level === 1
@@ -360,9 +357,6 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
                                     if (requiresDropdown) {
                                       handleCheckboxChange(category?.categoryId, classNumber);
                                     }
-                                  }}
-                                  onChange={() => {
-                                    handleCheckboxChange(category?.categoryId, classNumber);
                                   }}
                                   checked={!!isSelected}
                                 >

@@ -395,6 +395,7 @@ useEffect(() => {
 
             {availableCourses?.map((course, index) => (
                 <Card
+                  key={course.id || index}
                   style={quickEnrollmentStyle}
                   bordered
                   title={setLocale(locale, "enrollment.courseDetails")}

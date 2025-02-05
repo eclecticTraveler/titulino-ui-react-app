@@ -241,6 +241,40 @@ export const getCourseProgressByEmailCourseCodeIdAndLanguageId = async (email, c
   }
 }
 
+
+export const getCourseProgressByYearOfBirthEmailCourseCodeIdAndLanguageId = async (yearOfBirth, email, courseCodeId, courseLanguageId, whoCalledMe) => {
+
+  if(yearOfBirth > 0 && email && courseCodeId && courseLanguageId){
+     // Base URL
+     const courseProgressByEmailUrl = `${SupabaseConfig.baseApiUrl}/GetUnauthenticatedEnrolleeCourseProgress`;
+
+     const raw = JSON.stringify({
+       "p_year": yearOfBirth,
+       "p_email": email,
+       "p_course_code": courseCodeId,
+       "p_language_id": courseLanguageId
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(courseProgressByEmailUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult?.length > 0 ? apiResult : _results;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getCourseProgressByYearOfBirthEmailCourseCodeIdAndLanguageId: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+
+  }
+}
+
 export const getCourseProgressByEmailAndCourseCodeId = async (email, courseCodeId, whoCalledMe) => {
 
   if(email && courseCodeId){
@@ -334,6 +368,38 @@ export const isUserEmailRegisteredForGivenCourse = async (email, courseCodeId, w
       return apiResult ?? false;      
     } catch (error) {
       console.log(`Error Retrieving API payload in isUserEmailRegisteredForGivenCourse: from ${whoCalledMe}`);
+      console.error(error);
+      return false;
+    }
+
+  }
+}
+
+export const isUserEmailRegisteredInCourse = async (yearOfBirth, email, courseCodeId, whoCalledMe) => {
+
+  if(email && courseCodeId && yearOfBirth > 0){
+     // Base URL
+     const IsEmailRegisteredUrl = `${SupabaseConfig.baseApiUrl}/IsUserRegisteredInCourse`;
+
+     const raw = JSON.stringify({
+       "yearofbirth": yearOfBirth,
+       "email": email,
+       "coursecodeid": courseCodeId
+     })
+
+     const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(IsEmailRegisteredUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? false;      
+    } catch (error) {
+      console.log(`Error Retrieving API payload in isUserEmailRegisteredInCourse: from ${whoCalledMe}`);
       console.error(error);
       return false;
     }
@@ -629,7 +695,9 @@ const TitulinoRestService = {
   getAdminDashboardDemographicEnrolleeOverview,
   getEnrolleeCountryDivisionCount,
   getEnrolleeGeneralListByCourseCodeId,
-  getEnrolleeCountrylListByCourseCodeId
+  getEnrolleeCountrylListByCourseCodeId,
+  isUserEmailRegisteredInCourse,
+  getCourseProgressByYearOfBirthEmailCourseCodeIdAndLanguageId 
 };
 
 export default TitulinoRestService;
