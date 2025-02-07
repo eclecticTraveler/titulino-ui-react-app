@@ -74,6 +74,7 @@ export const ProgressDashboardByEmailV3 = (props) => {
     setIsModalVisible(false);
     onModalInteraction(false);
     setUserYearOfBirth(0);
+    form?.resetFields();
     // Global
     onResetingProgressByEmailIdAndCourseCodeId();
 
@@ -110,7 +111,6 @@ export const ProgressDashboardByEmailV3 = (props) => {
     
     // const formEmail = form?.getFieldValue("emailAddress");
     // const formYOB = parseInt(form?.getFieldValue("yearOfBirth")?.format("YYYY"), 10);
-    console.log("userYearOfBirth", userYearOfBirth)
     if(currentCourseCodeId && userYearOfBirth > 0){
       setLoading(true);
       setEmail(sanitizedEmail);
@@ -185,6 +185,14 @@ useEffect(() => {
   }
 
 }, [isUserEmailRegisteredForCourse, hasUserInteractedWithModal]);
+
+
+useEffect(() => {
+  if (selectedLessonsForSubmission && Object.keys(selectedLessonsForSubmission).length > 0) {
+    setActiveKey("1");
+  }
+}, [selectedLessonsForSubmission]);
+
 
 useEffect(() => {
 

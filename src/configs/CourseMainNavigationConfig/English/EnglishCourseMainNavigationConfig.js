@@ -10,7 +10,7 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
 const dashBoardNavTree = [
 	{
-		key: 'level-1-eng',
+		key: 'level-1-eng-inactive',
 		path: `${APP_PREFIX_PATH}/eng/level-1`,
 		title: 'main.upper.nav.level.1',
 		sideTitle: 'Lower Beginner',
@@ -30,7 +30,7 @@ const dashBoardNavTree = [
 		]
 	},
 	{
-		key: 'level-2-eng',
+		key: 'level-2-eng-inactive',
 		path: `${APP_PREFIX_PATH}/eng/level-2`,
 		title: 'main.upper.nav.level.2',
 		sideTitle: 'Mid Beginner',
@@ -50,7 +50,7 @@ const dashBoardNavTree = [
 		]
 	},
 	{
-		key: 'level-3-eng',
+		key: 'level-3-eng-inactive',
 		path: `${APP_PREFIX_PATH}/eng/level-3`,
 		title: 'main.upper.nav.level.3',
 		sideTitle: 'Upper Beginner',

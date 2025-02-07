@@ -7,12 +7,16 @@ import {
 	faChildReaching,
 	faChildren,
    } from '@fortawesome/free-solid-svg-icons';
+   
+   import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
 
-export const getCourseSubNavigationHighBasic = (lang) => {			
+  
+export const getCourseSubNavigationHighBasic = (lang) => {
+	const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-3/${getLocalizedConfig(lang)?.chapter}`;	
 	return [
 		{
 			key: 'chapter-sidenav-high-basic-1',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-3/${getLocalizedConfig(lang)?.chapter}-1`,
+			path: `${commonPath}-1`,
 			title: 'sidenav.chapter.1',
 			icon: faChildReaching,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -23,7 +27,7 @@ export const getCourseSubNavigationHighBasic = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-high-basic-2',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-3/${getLocalizedConfig(lang)?.chapter}-2`,
+			path: `${commonPath}-2`,
 			title: 'sidenav.chapter.2',
 			icon: faChildren,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -34,7 +38,7 @@ export const getCourseSubNavigationHighBasic = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-high-basic-3',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-3/${getLocalizedConfig(lang)?.chapter}-3`,
+			path: `${commonPath}-3`,
 			title: 'sidenav.chapter.3',
 			icon: faEye,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,

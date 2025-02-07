@@ -1,195 +1,171 @@
-   /* The Modal (background) */
-   .titulino-modal {
-	position: fixed; /* Stay in place */
-	z-index: 1; /* Sit on top */
-	padding-top: 100px; /* Location of the box */
-	left: 0;
-	top: 0;
-	width: 100%; /* Full width */
-	height: 100%; /* Full height */
-	overflow: auto; /* Enable scroll if needed */
-	background-color: rgb(41,30,59); /* Fallback color */
-	background-color: rgba(41,30,59,0.4); /* Black w/ opacity */ 
-	color: #291E3B !important;      /* font color */     
-}
-
-/* Modal Content */
+/* Modal Layout */
 .titulino-modal-content {
 	background-color: #fefefe;
 	margin: auto;
 	padding: 20px;
 	border: 1px solid #888;
-	top: 143px;
-	left: 617px;
-	width: 684px;
+	width: 80%;  /* Adjust width for mobile */
+	max-width: 684px;
 	background: #FFFFFF 0% 0% no-repeat padding-box;
 	box-shadow: 0px 2px 4px #0000001A;
 	border-radius: 5px;
 	opacity: 1;
+  
+	/* Dark Theme adjustments */
+	& when (@theme = dark) {
+		background-color: #283142;  /* Dark background for modal */
+		border-color: #283142;
+		box-shadow: 0px 2px 4px #00000080;
+	}
 }
-
-.upperTitleTrainning{
-	clear: both;  
-	margin-left: 40%;
-}
-
-.upperTitleConstruction{
-	clear: both;  
-	margin-left: 32%;
-}
-
-.text-center{
+  
+/* Title and Icon alignment for mobile */
+.upperTitleConstruction {
+	margin-left: 0;
 	text-align: center;
+
+	/* Dark Theme adjustments */
+	& when (@theme = dark) {
+		color: #fff;  /* Light text color on dark theme */
+	}
+}
+  
+.constructionIcon {
+	margin: 0 auto;
+	display: block;
+	width: 50px;
+	height: auto;
+
+	/* Dark Theme adjustments */
+	& when (@theme = dark) {
+		filter: invert(1);  /* Invert the color of the icon for dark theme */
+	}
+}
+  
+/* Responsive Design for Smaller Screens */
+@media (max-width: 768px) {
+	.titulino-modal-content {
+		width: 90%;  /* Make modal more responsive */
+	}
+
+	.mainTitle {
+		font-size: 28px; /* Smaller title for mobile */
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			color: #fff;  /* Light text for dark theme */
+		}
+	}
+
+	.innerColoredContainer {
+		width: 100%;
+		padding: 15px;
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			background-color: #444;  /* Dark background for inner container */
+		}
+	}
+
+	.footerInformation {
+		text-align: center;
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			color: #fff;  /* Light text for footer in dark theme */
+		}
+	}
+
+	.innerFooterTitle {
+		font-size: 14px;  /* Smaller footer text */
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			color: #aaa;  /* Lighter footer text for dark theme */
+		}
+	}
+
+	.underConstruccion.contentTitle {
+		font-size: 16px;
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			color: #fff;  /* Light text for dark theme */
+		}
+	}
 }
 
-.trainingSVG, .experienceSVG, .reputationSVG{
-	margin-right:5px;
-	height:35px;
-	margin-top: 20px;
+@media (max-width: 480px) {
+	.mainTitle {
+		font-size: 24px; /* Reduce font size further for small screens */
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			color: #fff;  /* Light text for dark theme */
+		}
+	}
+
+	.constructionIcon {
+		width: 30px; /* Smaller icon on very small screens */
+		height: 30px;
+	}
+
+	.innerColoredContainer {
+		padding: 10px;
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			background-color: #444;  /* Dark background for inner container */
+		}
+	}
+
+	.footerInformation {
+		font-size: 12px;
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			color: #fff;  /* Light text for dark theme */
+		}
+	}
 }
 
-.trainingSVG{
-	margin-left: 50px;
+@media (max-width: 576px) {
+	.underConstruccion.contentTitle {
+		font-size: 14px;
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			color: #fff;  /* Light text for dark theme */
+		}
+	}
+
+	.innerColoredContainer {
+		width: 100%;
+		padding: 10px;
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			background-color: #444;  /* Dark background for inner container */
+		}
+	}
+
+	.innerFooterTitle {
+		font-size: 12px;
+
+		/* Dark Theme adjustments */
+		& when (@theme = dark) {
+			color: #aaa;  /* Lighter footer text for dark theme */
+		}
+	}
 }
 
-.checkMarkSVG{
-	margin-right:10px;
-	float:left;
-	height:20px;
-	margin-bottom: 10px;
-}
+/* Adjust icon on dark theme */
+.constructionIcon {
+	width: 50px;   /* Adjust to the desired width */
+	height: auto;  /* Maintains aspect ratio */
 
-.innerTitle{
-	position: relative;
-	top: 10px;
-}
-
-.construction{
-   height:35px;
-   margin-top: 25px;
-   clear:both;
-}
-
-.constructionIcon, lockExperience, .lockTraining, .lockReputation{
-	margin-left: 50%;
-}
-
-.mainTitle{
-	margin-top: 20px;
-	font-size: 35px;
-	text-align: center;
-	margin-bottom: 20px;
-	color: black;
-}
-
-.innerPadding{
-	margin: 20px;
-}
-
-.trainingColoredContainer{
-	background-color: #F5E7E4;
-	height: 115px;
-}
-.underConstructionColoredContainer{
-	background-color: #E2F2F0;
-	height: 110px;
-}
-.reputationColoredContainer{
-	background-color: #F8F4ED;
-	height: 165px;
-}
-.innerColoredContainer{
-	margin: auto;
-	padding: 20px;
-	width: 630px;
-	box-shadow: 0px 2px 4px #0000001A;
-	border-radius: 15px;
-	opacity: 1;
-}
-
-.innerColoredContent{
-	width: 65%;
-	float: left;
-	font-size: 14px;
-}
-
-.contentTitle{
-	font-weight: 700;
-	color: black;
-}
-
-.customerName {
-	text-align: left !important;
-}
-
-.wordBreak {
-	word-wrap: break-word !important;
-}
-
-.innerColoredContentBody{
-	word-break: normal;
-	color: #291E3B !important;
-}
-
-.expertTitle{
-	font-style: italic;
-	font-size: 12px;
-}
-
-.expertName{
-	font-size: 15px;
-	color: #78429A;
-	font-weight: 700;
-}
-
-.mainBodyContent{
-	margin-top: 10px;
-}
-
-.mainInformation{
-	padding: 20px;
-}
-
-.checkMarkContainer{
-	margin-top: 12px;
-}
-
-.mainBodyBulletPoints{
-	font-size: 14px;
-}
-
-.footerInformation{
-	border-top: 1px solid;
-}
-
-.innerFooterTitle{
-	margin-top: 20px;
-	margin-left: 20px;	
-	color: black;
-	font-size: 17px;	
-    text-align: center;
-}
-
-.footerContainerProfile{   
-	margin-top: 10px;     
-	margin-left: 20px;
-	font-size: 13px;
-}
-
-.innerColoredContentTitle {
-	margin-bottom: 0px;
-}
-
-.justifyLeft{
-	text-align: left !important;
-}
-
-.underConstruccionHalfwayMessage{
-	font-size: 16px;
-	padding: 20px;
-	text-align: center !important;
-}
-
-.reputationTitle{
-	font-size: 17px;
+	/* Dark Theme adjustments */
+	& when (@theme = dark) {
+		filter: invert(1);  /* Invert icon color for dark theme */
+	}
 }

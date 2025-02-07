@@ -8,6 +8,7 @@ const dev = {
   IS_ENROLLMENT_FEAT_ON: true,
   IS_ADMIN_DASHBOARD_FEAT_ON: true,
   IS_NEW_PROGRESS_APP_ON: true,
+  IS_NEW_SEARCH_CONFIG_ON: true,
   TITULINO_NET_API: 'https://api.titulino.com',
   ENVIROMENT: 'dev',  
 };
@@ -22,6 +23,7 @@ const prod = {
   IS_ENROLLMENT_FEAT_ON: true,
   IS_ADMIN_DASHBOARD_FEAT_ON: false,
   IS_NEW_PROGRESS_APP_ON: true,
+  IS_NEW_SEARCH_CONFIG_ON: true,
   TITULINO_NET_API: 'https://api.titulino.com',
   ENVIROMENT: 'prod'
 };
@@ -36,15 +38,16 @@ const local = {
   IS_ENROLLMENT_FEAT_ON: true,
   IS_ADMIN_DASHBOARD_FEAT_ON: true,
   IS_NEW_PROGRESS_APP_ON: true,
+  IS_NEW_SEARCH_CONFIG_ON: true,
   TITULINO_NET_API: 'https://api.titulino.com',
   ENVIROMENT: 'local'
 };
 
 const getEnv = () => {
   // const enviroment = process.env.NODE_ENV
-  // const enviroment = "production";
+  const enviroment = "production";
   // const enviroment = "development";
-  const enviroment = "local";
+  // const enviroment = "local";
 	switch (enviroment) {
 		case 'development':
 			return dev

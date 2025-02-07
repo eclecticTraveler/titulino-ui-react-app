@@ -23,7 +23,24 @@
     }
 }
 
-.upper-submenu-title-top{
-    color: white;
-    font-size: 16px;
+.upper-submenu-title-top {
+    color: white;  /* Default color for desktop */
+
+    font-size: 14px;
+
+    &.light {
+        color: black;
+    }
+
+    &.dark {
+        & when (@theme = dark) {
+            color: white;
+        }
+    }
+
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+        color: #29203B;  /* Change color to black on mobile devices */
+    }
 }
+

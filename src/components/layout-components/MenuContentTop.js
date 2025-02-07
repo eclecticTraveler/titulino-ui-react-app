@@ -1,117 +1,191 @@
-import React, {useState} from "react";
-import { Link, NavLink } from "react-router-dom";
-import { Menu } from "antd";
-import IntlMessage from "../util-components/IntlMessage";
+import React, { useState, useEffect } from "react";
+import { Menu, Popover } from "antd";
+import { EllipsisOutlined } from "@ant-design/icons";
+import { Grid } from "antd";
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
+import { useLocation, NavLink } from "react-router-dom";
 import IconAdapter from "components/util-components/IconAdapter";
-import {connect} from 'react-redux';
-import { bindActionCreators } from 'redux';
-import {getUpperNavigationBasedOnUserConfig, toggleUpperNavigationLevelSelection, toggleSelectedUpperNavigationTabOnLoad} from '../../redux/actions/Lrn';
-import { useLocation } from 'react-router-dom';
-import { env } from '../../configs/EnvironmentConfig';
-import { onMobileNavToggle } from "../../redux/actions/Theme";
-const { SubMenu } = Menu;
+import IntlMessage from "../util-components/IntlMessage";
+import {
+  getUpperNavigationBasedOnUserConfig,
+  toggleUpperNavigationLevelSelection,
+  toggleSelectedUpperNavigationTabOnLoad,
+} from "../../redux/actions/Lrn";
+
+const { useBreakpoint } = Grid;
+const { SubMenu, Item } = Menu;
 
 const setLocale = (isLocaleOn, localeKey) =>
-	isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+  isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
 
 const MenuContentTop = (props) => {
-	const [expanded, setExpanded] = useState(false);
-	const {dynamicUpperMainNavigation, topNavColor, localization, toggleUpperNavigationLevelSelection, getUpperNavigationBasedOnUserConfig} = props;
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [openKeys, setOpenKeys] = useState([]);
+  const screens = useBreakpoint();
+  const isMobileView = !screens.lg;
+  const {
+    dynamicUpperMainNavigation,
+    topNavColor,
+    localization,
+    toggleUpperNavigationLevelSelection,
+    getUpperNavigationBasedOnUserConfig,
+  } = props;
 
-	getUpperNavigationBasedOnUserConfig();
-	toggleSelectedUpperNavigationTabOnLoad(useLocation()?.pathname, dynamicUpperMainNavigation);
-	// TITULINO: Verify that menu is loading well and see if there is a need to do a version of load on tab like in line 21 but in lrn redux
-	// Do spefic content that is only render on log in check linke 30, this was the only way that was smooth, did not cause white page, or infinity loops and updates
-	// redux, to use.
-	return (
-		<Menu mode="horizontal" style={{ backgroundColor: topNavColor }}>
-		  {dynamicUpperMainNavigation
-			?.filter(menu => menu?.isToDisplayInNavigation)
-			?.map((menu, menuIndex) =>
-			  menu?.topSubmenu?.length > 0 ? (
-				<SubMenu
-				  key={`menu-${menuIndex}`} // Unique key
-				  title={<span className="upper-submenu-title-top">{setLocale(localization, menu?.title)}</span>}
-				  icon={
-					menu.icon ? (
-					  <span className="upper-submenu-icon-parent">
-						<IconAdapter icon={menu?.icon} iconPosition={menu?.iconPosition} />
-					  </span>
-					) : (
-					  <span className="upper-submenu-icon-parent">
-						<IconAdapter icon={menu?.iconAlt} />
-					  </span>
-					)
-				  }
-				>
-				  {menu?.topSubmenu?.map((topSubMenuFirstChild, subMenuIndex) =>
-					topSubMenuFirstChild?.topSubmenu?.length > 0 ? (
-					  <SubMenu
-						key={`subMenuFirst-${menuIndex}-${subMenuIndex}`} // Unique key
-						title={<span className="upper-submenu-title">{setLocale(localization, topSubMenuFirstChild?.title)}</span>}
-						icon={
-							topSubMenuFirstChild?.icon ? (
-							  <span className="upper-submenu-icon-parent">
-								<IconAdapter icon={topSubMenuFirstChild?.icon} iconPosition={topSubMenuFirstChild?.iconPosition} />
-							  </span>
-							) : (
-							  <span className="upper-submenu-icon-parent">
-								<IconAdapter icon={topSubMenuFirstChild?.iconAlt} />
-							  </span>
-							)
-						  }
-					  >
-						{topSubMenuFirstChild?.topSubmenu.map((subMenuSecond, subMenuSecondIndex) => (
-						  <Menu.Item key={`subMenuSecond-${menuIndex}-${subMenuIndex}-${subMenuSecondIndex}`} className={subMenuSecond?.current ? 'current' : null} >
-							<span>{setLocale(localization, subMenuSecond?.title)}</span>
-							{subMenuSecond?.path ? <NavLink to={subMenuSecond?.path} /> : null}
-						  </Menu.Item>
-						))}
-					  </SubMenu>
-					) : (
-					  <Menu.Item
-						key={`subMenuFirst-item-${menuIndex}-${subMenuIndex}`} // Unique key
-						className={topSubMenuFirstChild?.current ? 'current' : null}
-						onClick={() => toggleUpperNavigationLevelSelection(topSubMenuFirstChild)}
-					  >
-						<IconAdapter icon={topSubMenuFirstChild?.icon} iconPosition={topSubMenuFirstChild?.iconPosition} />
-						<span>{setLocale(localization, topSubMenuFirstChild?.title)}</span>
-						{topSubMenuFirstChild?.path ? <NavLink to={topSubMenuFirstChild?.path} /> : null}
-					  </Menu.Item>
-					)
-				  )}
-				</SubMenu>
-			  ) : (
-				// Only render if there are no submenus
-				menu?.topSubmenu?.length === 0 && (
-				  <Menu.Item
-					key={`menu-${menuIndex}`} // Unique key
-					className={menu.current ? 'current' : null}
-					onClick={() => toggleUpperNavigationLevelSelection(menu)}
-				  >
-					<IconAdapter icon={menu?.icon} iconPosition={menu?.iconPosition} />
-					<span>{setLocale(localization, menu?.title)}</span>
-					{menu?.path ? <NavLink to={menu?.path} /> : null}
-				  </Menu.Item>
-				)
-			  )
-			)}
-		</Menu>
-	  );	  
-	
+  useEffect(() => {
+    if (!isMobileView) {
+      setMenuVisible(false); // Reset menu visibility when switching to desktop
+    }
+  }, [isMobileView]);
+
+  useEffect(() => {
+    getUpperNavigationBasedOnUserConfig();
+  }, [dynamicUpperMainNavigation]);
+
+  toggleSelectedUpperNavigationTabOnLoad(
+    useLocation()?.pathname,
+    dynamicUpperMainNavigation
+  );
+
+  const toggleMenu = () => setMenuVisible(!menuVisible);
+
+  const handleMenuClick = () => {
+    setMenuVisible(false);
+  };
+
+  const handleOpenChange = (keys) => {
+    setOpenKeys(keys);
+  };
+
+  const renderSubMenu = (menu, menuIndex) => (
+    <SubMenu
+      key={`menu-${menu?.key}-parent`}
+      title={
+        <span className="upper-submenu-title-top">
+          {setLocale(localization, menu?.title)}
+        </span>
+      }
+      icon={
+        menu.icon ? (
+          <span className="upper-submenu-icon-parent">
+            <IconAdapter
+              icon={menu?.icon}
+              iconPosition={menu?.iconPosition}
+            />
+          </span>
+        ) : (
+          <span className="upper-submenu-icon-parent">
+            <IconAdapter icon={menu?.iconAlt} />
+          </span>
+        )
+      }
+    >
+      {menu?.topSubmenu?.map((topSubMenuFirstChild, subMenuIndex) =>
+        topSubMenuFirstChild?.topSubmenu?.length > 0 ? (
+          <SubMenu
+            key={`subMenuFirst-${menuIndex}-${subMenuIndex}`}
+            title={
+              <span className="upper-submenu-title">
+                {setLocale(localization, topSubMenuFirstChild?.title)}
+              </span>
+            }
+          >
+            {topSubMenuFirstChild?.topSubmenu.map(
+              (subMenuSecond, subMenuSecondIndex) => (
+                <Item
+                  key={`subMenuSecond-${menuIndex}-${subMenuIndex}-${subMenuSecondIndex}`}
+                >
+                  <span>{setLocale(localization, subMenuSecond?.title)}</span>
+                  {subMenuSecond?.path ? <NavLink to={subMenuSecond?.path} /> : null}
+                </Item>
+              )
+            )}
+          </SubMenu>
+        ) : (
+          <Item key={`subMenuFirst-item-${menuIndex}-${subMenuIndex}`}>
+            <IconAdapter
+              icon={topSubMenuFirstChild?.icon}
+              iconPosition={topSubMenuFirstChild?.iconPosition}
+            />
+            <span>{setLocale(localization, topSubMenuFirstChild?.title)}</span>
+            {topSubMenuFirstChild?.path ? (
+              <NavLink to={topSubMenuFirstChild?.path} />
+            ) : null}
+          </Item>
+        )
+      )}
+    </SubMenu>
+  );
+
+  const menu = (
+    <Menu
+      mode={isMobileView ? "vertical" : "horizontal"}
+      style={{ backgroundColor: topNavColor }}
+      onClick={handleMenuClick}
+      triggerSubMenuAction={isMobileView ? "click" : "hover"}
+      openKeys={openKeys}
+      onOpenChange={handleOpenChange}
+    >
+      {dynamicUpperMainNavigation
+        ?.filter((menu) => menu?.isToDisplayInNavigation)
+        ?.map((menu, menuIndex) =>
+          menu?.topSubmenu?.length > 0
+            ? renderSubMenu(menu, menuIndex)
+            : (
+                <Item key={`menu-${menuIndex}`}>
+                  <IconAdapter
+                    icon={menu?.icon}
+                    iconPosition={menu?.iconPosition}
+                  />
+                  <span>{setLocale(localization, menu?.title)}</span>
+                  {menu?.path ? <NavLink to={menu?.path} /> : null}
+                </Item>
+              )
+        )}
+    </Menu>
+  );
+
+  return (
+    <div style={{ position: "relative" }}>
+      {isMobileView && (
+        <Popover
+          content={menu}
+          trigger="click"
+          visible={menuVisible}
+          onVisibleChange={toggleMenu}
+        >
+          <button
+            className="menu-toggle-button"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "24px",
+            }}
+          >
+            <EllipsisOutlined style={{ fontSize: "40px", fontWeight: "bold" }} />
+          </button>
+        </Popover>
+      )}
+      {!isMobileView && menu}
+    </div>
+  );
 };
 
-function mapDispatchToProps(dispatch){
-	return bindActionCreators({
-		getUpperNavigationBasedOnUserConfig: getUpperNavigationBasedOnUserConfig,
-		toggleUpperNavigationLevelSelection: toggleUpperNavigationLevelSelection,
-		toggleSelectedUpperNavigationTabOnLoad: toggleSelectedUpperNavigationTabOnLoad
-	}, dispatch)
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators(
+    {
+      getUpperNavigationBasedOnUserConfig,
+      toggleUpperNavigationLevelSelection,
+      toggleSelectedUpperNavigationTabOnLoad,
+    },
+    dispatch
+  );
 }
 
-const mapStateToProps = ({lrn}) => {
-	const {dynamicUpperMainNavigation} = lrn;
-	return {dynamicUpperMainNavigation} 
+const mapStateToProps = ({ lrn }) => {
+  const { dynamicUpperMainNavigation } = lrn;
+  return { dynamicUpperMainNavigation };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MenuContentTop);

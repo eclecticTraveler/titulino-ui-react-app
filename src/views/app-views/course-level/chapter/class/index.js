@@ -29,15 +29,12 @@ class VideoClass extends Component {
         if(!this.props.videoClass) {
             return (
                 <div>
-                    <div>
-                        <Loading cover="content"/>
-                    </div>
                     <UnderConstruccion/>                
                 </div>
             )
         }else{
             return (
-                <div>
+                <div id="unathenticated-page">
                     <InternalIFrame iFrameUrl={`${this.props.videoClass}`}/>                    
                 </div>
             )
