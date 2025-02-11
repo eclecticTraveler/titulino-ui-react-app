@@ -9,6 +9,7 @@ import ProfileService from "../../services/ProfileService";
 import dummyData from "../../assets/data/dummyDW.json";
 import GraphService from "../../services/Charting/Admin/GraphService";
 import BookChapterService from "services/BookChapterService";
+import SpeakingPracticeService from "services/SpeakingPracticeService";
 import PdfFileService from "services/PdfFileService";
 import GoogleService from "services/GoogleService";
 import TitulinoRestService from "services/TitulinoRestService";
@@ -58,7 +59,12 @@ import {
   ON_LOADING_EBOOK_URL,
   ON_SUBMITTING_ENROLLEE,
   ON_LOGIN_FOR_ENROLLMENT,
-  ON_UPSERTING_ENROLLMENT_FOR_QUEUE
+  ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
+  ON_RESET_SUBMITTING_ENROLLEE,
+  GET_LISTENING_PRACTICE_MODULE,
+  ON_LOADING_ENROLEE_BY_REGION,
+  ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
+  ON_MODAL_INTERACTION
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -140,6 +146,17 @@ export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, c
       bookChapterUrl: url
     }
   }
+
+
+export const getSpeakingPracticeModule = async (levelTheme, chapterNo, nativeLanguage, course) => {
+  const uri = await GoogleService.getGCUriForImages("getSpeakingPracticeModule", levelTheme); 
+  const module = await SpeakingPracticeService.getSpeakingChapterModule(levelTheme, chapterNo, nativeLanguage, course);
+    return {
+      type: GET_LISTENING_PRACTICE_MODULE,
+      speakingChapterModule: module,
+      gcBucketUri: uri
+    }
+  }  
 
 
 export const geteBookUrl = async (levelTheme, nativeLanguage, course) => {
@@ -230,16 +247,27 @@ export const onSubmittingUserCourseProgress = async (email, courseProgress) => {
 
 export const onSubmittingEnrollee = async (enrollees, isFullEnrollment) => {
   let submittedEnrollee = [];
-  const token = await TitulinoNetService.getRegistrationToken("onLoginEnrolleeContact");
-  submittedEnrollee = await TitulinoNetService.upsertEnrollment(token, enrollees, "onSubmittingEnrollee")
-  
   let wasSuccessful = false;
-  if(submittedEnrollee?.length > 0){
-    wasSuccessful = true;
-  }else{
-    // Backup
-    submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
+  const token = await TitulinoNetService.getRegistrationToken("onLoginEnrolleeContact");
+  if(token){
+    submittedEnrollee = await TitulinoNetService.upsertEnrollment(token, enrollees, "onSubmittingEnrollee");
+    console.log("submittedEnrollee Net", submittedEnrollee?.length > 0);
     if(submittedEnrollee?.length > 0){
+      wasSuccessful = true;
+    }else{
+      // Backup
+      submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
+      console.log("submittedEnrollee DW");
+      if(submittedEnrollee?.length > 0){
+        wasSuccessful = true;
+      }else{
+        wasSuccessful = false;
+      }
+    }
+  }else{
+    submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
+    console.log("submittedEnrollee 2nd DW");
+    if(submittedEnrollee){
       wasSuccessful = true;
     }else{
       wasSuccessful = false;
@@ -251,6 +279,13 @@ export const onSubmittingEnrollee = async (enrollees, isFullEnrollment) => {
   }
 }
 
+export const onResetSubmittingEnrollee = async (resetValue) => {
+  return {
+    type: ON_RESET_SUBMITTING_ENROLLEE,
+    wasSubmittingEnrolleeSucessful: resetValue
+  }
+}
+
 export const onRequestingCourseProgressStructure = async (nativeLanguage, course, courseCodeId ) => {
   const courseStructure = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
     return {
@@ -258,7 +293,48 @@ export const onRequestingCourseProgressStructure = async (nativeLanguage, course
     }
   }
 
+  export const onLoadingEnrolleeByRegion = async (courseTheme) => {
+    //NOTE this will later need to be refactor to get the course via TitulinoNet and 
+    // It will handle the caching through REDIS, but for now its okay
+    
+    // Get `courseCodeId` for the given `courseTheme`
+    const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
   
+    // Dynamic local storage key based on `courseCodeId`
+    const localStorageKey = `EnrolleesByCourse_${courseCodeId}`;
+    
+    // Check local storage for cached data
+    const cachedData = await LocalStorageService.getEnrolleesByCourse(localStorageKey);
+  
+    if (cachedData) {
+      // Use cached data if available
+      return {
+        type: ON_LOADING_ENROLEE_BY_REGION,
+        enrolleeCountByRegion: cachedData?.transformedArray,
+        totalEnrolleeCount: cachedData?.totalEnrolleeCount,
+      };
+    }
+  
+    // Fetch fresh data if no valid cache exists
+    const countByRegion = await TitulinoRestService.getEnrolleeCountryCountByCourseCodeId(courseCodeId, "onLoadingEnrolleeByRegion");
+    const { transformedArray, totalEnrolleeCount } = await StudentProgress.transformEnrolleeGeographycalResidencyData(countByRegion);
+  
+    // Save fetched and transformed data to local storage with expiry (e.g., 60 minutes)
+    await LocalStorageService.setEnrolleesByCourse(
+      { transformedArray, totalEnrolleeCount }, // Save both and set 60 min expiration     
+      localStorageKey,
+      60
+    );
+  
+    // Return fresh data
+    return {
+      type: ON_LOADING_ENROLEE_BY_REGION,
+      enrolleeCountByRegion: transformedArray,
+      totalEnrolleeCount: totalEnrolleeCount,
+    };
+  };
+  
+   
 
 export const onSearchingForProgressByEmailId = async (email) => {
   const registeredProgressById = await GoogleService.getProgressByEmailId(email, "onSearchingForProgressByEmailId");
@@ -289,6 +365,14 @@ export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLan
   }
 }
 
+
+export const onModalInteraction = async (hasUserInteractedWithModal) => {
+  return {
+    type: ON_MODAL_INTERACTION,
+    hasUserInteractedWithModal: hasUserInteractedWithModal
+  }
+}
+
 export const onSearchingForProgressByEmailIdAndCourseCodeId = async (email, courseCodeId, courseLanguageId) => {
   // Get courseId in Factory
   const isUserEmailRegisteredForCourse = await TitulinoRestService.isUserEmailRegisteredForGivenCourse(email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
@@ -315,12 +399,40 @@ export const onSearchingForProgressByEmailIdAndCourseCodeId = async (email, cour
   }
 }
 
+export const onVerifyingProgressByEmailIdAndCourseCodeId = async (yearOfBirth, email, courseCodeId, courseLanguageId) => {
+  // Get courseId in Factory
+  const isUserEmailRegisteredForCourse = await TitulinoRestService.isUserEmailRegisteredInCourse(yearOfBirth, email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  let registeredProgress = [];
+  if(isUserEmailRegisteredForCourse){
+    // Get records for registered unauthenticated users
+    registeredProgress = await TitulinoRestService.getCourseProgressByYearOfBirthEmailCourseCodeIdAndLanguageId(yearOfBirth, email, courseCodeId, courseLanguageId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  }else{
+    // Get records for unregistered users
+    registeredProgress = await TitulinoRestService.getCourseProgressByEmailAndCourseCodeId(email, courseCodeId, "onSearchingForProgressByEmailIdAndCourseCodeId");
+  }
+
+  const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
+    StudentProgress.calculateUserCourseProgressPercentageForCertificates(registeredProgress),
+    StudentProgress.getUserCourseProgressCategories(registeredProgress)
+  ]);
+  
+  return {
+    type: ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
+    registeredProgressByEmailId: registeredProgress,
+    studentPercentagesForCourse: studentPercentagesForCourse,
+    studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse,
+    isUserEmailRegisteredForCourse: isUserEmailRegisteredForCourse
+  }
+}
+
 export const onResetingProgressByEmailIdAndCourseCodeId = async () => {  
   return {
     type: ON_RESETING_USER_PROGRESS_BY_EMAIL_ID,
     registeredProgressByEmailId: null,
     studentPercentagesForCourse: null,
-    studentCategoriesCompletedForCourse: null
+    studentCategoriesCompletedForCourse: null,
+    isUserEmailRegisteredForCourse: null,
+    hasUserInteractedWithModal: null
   }
 }
 
@@ -356,7 +468,7 @@ export const getUserNativeLanguage = async () => {
   }
 }
 
-export const setUserNativeLanguage = async (lang) => {
+export const setUserNativeLanguage = async (lang) => {	
   LocalStorageService.setUserSelectedNativeLanguage(lang);
   return {
     type: SET_USER_NATIVE_LANGUAGE,

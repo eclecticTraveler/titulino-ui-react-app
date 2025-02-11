@@ -31,7 +31,7 @@ class CourseSelection extends Component {
 					
 	}
 
-	processUserNativeLanguage = (language) => {			
+	processUserNativeLanguage = (language) => {		
 		this.props.setUserNativeLanguage(language);
 		this.props.onLocaleChange(language?.localizationId);
 	}
@@ -101,8 +101,10 @@ class CourseSelection extends Component {
 							(!this.props.nativeLanguage) && 
 							<div id="course-selection-section">
 								<div className="information">
-									<h2>Seleccione abajo su idioma nativo / Selecione embaixo o seu idioma nativo</h2>
-									<p>Select your native language below</p>
+									<h2>Instrucciones:</h2>
+									<h3><Flag code='ar' style={{ width: 20, marginRight: 10 }} />Seleccione abajo su idioma nativo</h3>
+									<h3><Flag code='br' style={{ width: 20, marginRight: 10 }} />Selecione embaixo o seu idioma nativo</h3>
+									<h3><Flag code='us' style={{ width: 20, marginRight: 10 }} />Select your native language below</h3>
 								</div>
 								<div>
 								{listOfBasedLanguages}

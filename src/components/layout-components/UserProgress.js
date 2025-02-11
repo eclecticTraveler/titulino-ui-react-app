@@ -31,8 +31,6 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   };
 
-  console.log("progressData->", progressData)
-
   const success = () => {
     // Show loading message
     // const inProgressMessage = setLocale(locale, "resources.myprogress.submittingInProgress");
@@ -138,7 +136,6 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
   ?.filter((category) => {
     // If no level, include category
     if (!category?.level) return true;
-    console.log("progressData", progressData);
     // Check if progressData is a non-empty array
     const isProgressDataValid = Array.isArray(progressData) && progressData.length > 0;
     // If progressData is not valid, include categories with level === 1
@@ -236,21 +233,17 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
                     const today = new Date();
                     const targetDate = new Date(availableDate);
 
-                    // Truncate time
+                    // Truncate time to UTC
                     const todayDateOnly = new Date(
-                      today.getFullYear(),
-                      today.getMonth(),
-                      today.getDate()
+                      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
                     );
                     const targetDateOnly = new Date(
-                      targetDate.getFullYear(),
-                      targetDate.getMonth(),
-                      targetDate.getDate()
+                      Date.UTC(targetDate.getUTCFullYear(), targetDate.getUTCMonth(), targetDate.getUTCDate())
                     );
 
                     // Compare the dates
                     const lessonIsAvailableForUser =
-                      todayDateOnly > targetDateOnly;
+                      todayDateOnly >= targetDateOnly;
 
                     return (
                       <Col key={index}>
@@ -364,9 +357,6 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
                                     if (requiresDropdown) {
                                       handleCheckboxChange(category?.categoryId, classNumber);
                                     }
-                                  }}
-                                  onChange={() => {
-                                    handleCheckboxChange(category?.categoryId, classNumber);
                                   }}
                                   checked={!!isSelected}
                                 >

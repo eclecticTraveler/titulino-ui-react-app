@@ -1,5 +1,5 @@
 {
-	"select.course.go.back": "Change Native Language",
+	"select.course.go.back": "Go Back",
 	"select.course.modal.title": "Select Language course you would like to take",
 	"select.course.modal.subtitle": "Select the flag below.",
 	"select.course.footer.question":"Need more help?",
@@ -9,6 +9,8 @@
 	"profile.sign.out":"Sign Out",
 	"profile.donate":"Donate",
 	"sidenav.class":"Class",
+	"sidenav.welcome":"Welcome",
+	"sidenav.speaking":"Speaking",
 	"sidenav.listening": "Listening",
 	"sidenav.review": "Review",
 	"sidenav.spell": "Spell",
@@ -19,6 +21,7 @@
 	"sidenave.practice": "Practice",	
 	"sidenav.login": "Login",
 	"profile.enroll": "Enrollment",
+	"profile.adminInsights":"Admin Insights",
 	"under.construction.title":"Under Construction, coming soon",
 	"under.construction.subtitle":"We will let you know when this is available for you",
 	"under.construction.gratitute":"Thank you for your support",
@@ -159,6 +162,7 @@
 
 	"resources.myprogress.enterEmail": "Please enter an email address",
 	"resources.myprogress.noRecordsFound":"No records found.",
+	"resources.myprogress.readyToRegister":"Ready to record your progress.",
 	"resources.myprogress.requirements":"You will need 8 Grammar classes and 8 Live or Recording General gatherings",
 	"resources.myprogress.participation":"Participation",
 	"resources.myprogress.date":"Date",
@@ -177,6 +181,7 @@
 	"resources.myprogress.recordProgress":"Record your progress",
 	"resources.myprogress.here":"Here",
 	"resources.myprogress.searchYourEmail":"Search with your email",
+	"resources.myprogress.searchbyEmailandYear":"Search with your email and year of birth ",
 
 	"resources.myprogress.generalDashboard":"General Progress",
 	"resources.myprogress.brokenDown":"Broken-down Course Progress",
@@ -271,7 +276,38 @@
 	"enrollment.form.termsAndConditionsTitle": "Terms and Conditions Content (Version 1.0)",
 	"enrollment.form.termsAndConditionsContent": "# Welcome to Titulino Languages\nBy using our services, you agree to the following Terms and Conditions. Please read them carefully.\n\n### **1. Data Ownership & Privacy**\nThe data you provide during your use of our platform is owned by **Titulino Languages**. We collect this data to better serve our students and improve our offerings.\n\n- **Data Sharing**: We do not share your data with any third parties unless explicitly required by law or necessary for service provision.\n- **Privacy**: We are committed to maintaining your privacy and improving our security measures with every iteration. However, as a startup, we acknowledge that there are inherent risks in data protection, and we do not assume responsibility for any data loss that might occur.",
 	"enrollment.form.enrollmentCompleted":"Enrollment Completed!",
-	"enrollment.form.enrollmentCompletedMessage":"You will be getting an email with all the details!!"
+	"enrollment.form.enrollmentCompletedMessage":"You will be getting an email with all the details!!",
+	"enrollment.form.enrollmentWhatsApp":"Join our WhatsApp Group by clicking on the link below!!",
+	"enrollment.form.whatsAppLinks":"Links:",
+	"speech.practice":"Practice",
+	"speech.playWord":"Play Word",
+	"speech.correct":"Correct!!",
+	"speech.tryAgain":"Try Again or Move on to the next",
+	"unauthenticated.dashboard.welcome":"Welcome to",
+	"unauthenticated.dashboard.courseOverview":"Course Overview",
+	"unauthenticated.dashboard.totalStudents":"Total Students in the Course",
+	"unauthenticated.dashboard.studentsByRegion":"Our Students by Region",
+	"admin.dashboard.dropdown.selection.birth":"Birth",
+	"admin.dashboard.dropdown.selection.residency":"Residency",
+	"admin.dashboard.dropdown.selection.all":"All",
+	"admin.dashboard.selections":"Dropdown Selections",
+	"admin.dashboard.insights.enrolleeList":"Enrollee List",
+	"admin.dashboard.insights.demographics": "Demographics",
+	"admin.dashboard.insights.overview.totalEnrollees": "Total Enrollees",
+	"admin.dashboard.insights.overview.totalMalesVsFemales": "Total Male & Females",
+	"admin.dashboard.insights.overview.genderPercentages": "Gender Distribution",
+	"admin.dashboard.insights.overview.averageAge": "Average Age",
+	"admin.dashboard.insights.overview.avgMaleVsFemaleAge": "Average Male & Females Age",
+	"admin.dashboard.insights.overview.agesGroups": "Ages Groups Distribution",
+	"admin.dashboard.insights.overview.newVsReturning": "New vs Returning Enrollee",
+	"admin.dashboard.insights.overview.languageProficiency": "Language Proficiency Distribution",
+	"admin.dashboard.insights.overview.enrolleeType": "Enrollee Category Type",
+	"userprogress.enrollment.invitationMessage":"Proceed to enroll in course",
+	"userprogress.enrollment.invitationMessageTitle":"Before proceeding to record your progress",
+	"userprogress.enrollment.invitationMessageContent":"We do not have your enrollment record under the email and year provided. If it's not a mistake,\n Would you like to formally enroll For certification & communication\n",
+	"userprogress.enrollment.yesLetsEnroll":"Yes, take me to the enrollment page"
+
+	
 	
 	
 }

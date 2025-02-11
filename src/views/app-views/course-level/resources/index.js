@@ -7,7 +7,7 @@ import InternalIFrame from 'components/layout-components/InternalIFrame';
 import UnderConstruccion from 'components/layout-components/UnderConstruccion';
 import utils from 'utils';
 import ProgressDashboardByEmail from 'components/layout-components/ProgressDashboardByEmail';
-import ProgressDashboardByEmailV2 from 'components/layout-components/ProgressDashboardByEmailV2';
+import ProgressDashboardByEmailV3 from 'components/layout-components/ProgressDashboardByEmailV3';
 import EnrolleeCourseProgressTrackingByEmail from 'components/layout-components/EnrolleeCourseProgressTrackingByEmail';
 import CountdownDisplay from 'components/layout-components/CountdownDisplay';
 import Countdown from 'react-countdown';
@@ -71,7 +71,7 @@ const ExternalFormSection = (props) => {
 
     if (pathInfo?.modality === "my-progress") {
         if(env.IS_NEW_PROGRESS_APP_ON){
-            return <ProgressDashboardByEmailV2 />; 
+            return <ProgressDashboardByEmailV3 />; 
         }else{
             return <ProgressDashboardByEmail />;
         }

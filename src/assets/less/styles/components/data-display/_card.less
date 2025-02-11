@@ -38,6 +38,28 @@
     // }
 }
 
+.speech {    
+    margin-bottom: 20px;
+}
+
+.is-correct {
+    background-color: #6ed86e;
+    & when (@theme = dark) {
+        background-color: #143f14;
+    }
+} 
+
+.is-not-correct {
+    background-color: #effa8f;
+    & when (@theme = dark) {
+        background-color: #772b07;
+    }
+}
+
+.speech-result {
+    color: black !important;
+}
+
 .ant-card-meta-title {
     font-weight: @font-weight-bold;
 }
@@ -50,6 +72,40 @@
 .card-completed-meta {
     color: #ffffff !important;
 }
+
+.student-count-card {
+    font-size: 190px;
+    font-weight: 700;
+    color: #3e82f7;
+    text-shadow: 
+        1px 1px 0px #ccc, /* Light gray shadow for highlight */
+        2px 2px 2px rgba(0, 0, 0, 0.2), /* Slightly darker shadow */
+        3px 3px 4px rgba(0, 0, 0, 0.3); /* Darker shadow for depth */
+    text-align: center;
+    margin: 0;
+    padding: 20px 0;
+}
+
+.double-count-card {
+    font-size: 120px;
+    font-weight: 700;
+    text-shadow: 
+        1px 1px 0px #ccc, /* Light gray shadow for highlight */
+        2px 2px 2px rgba(0, 0, 0, 0.2), /* Slightly darker shadow */
+        3px 3px 4px rgba(0, 0, 0, 0.3); /* Darker shadow for depth */
+    text-align: center;
+    margin: 0;
+    padding: 20px 0;
+}
+
+.double-count-card-first {
+    color: #3e82f7;
+}
+
+.double-count-card-second {
+    color: #e35aff;
+}
+
 
 .ant-card-type-inner {
 
@@ -75,6 +131,19 @@
   @media (max-width: 480px) {
     .responsive-image {
       max-width: 150px; /* Example for smaller screens */
+    }
+
+    .student-count-card {
+        font-size: 150px;
+        font-weight: 700;
+        color: #3e82f7;
+        text-shadow: 
+            1px 1px 0px #ccc, /* Light gray shadow for highlight */
+            2px 2px 2px rgba(0, 0, 0, 0.2), /* Slightly darker shadow */
+            3px 3px 4px rgba(0, 0, 0, 0.3); /* Darker shadow for depth */
+        text-align: center;
+        margin: 0;
+        padding: 20px 0;
     }
   }
   

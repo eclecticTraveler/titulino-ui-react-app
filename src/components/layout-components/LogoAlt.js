@@ -19,8 +19,8 @@ export const LogoAlt = (props, { title }) => {
 
 
 	return (
-		<div className="logo-alt" onClick={() => {onToggle()}}>
-			<img className="titulino-logo-v2"  src="/img/titulino-logo-1.png" alt=""  />
+		<div className="logo-alt-parent-container" onClick={() => {onToggle()}}>
+			<img className="logo-alt"  src="/img/titulino-logo-1.png" alt=""  />
 		</div>
 	)
 }

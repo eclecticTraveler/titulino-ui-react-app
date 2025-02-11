@@ -37,7 +37,12 @@ import {
   ON_LOADING_EBOOK_URL,
   ON_SUBMITTING_ENROLLEE,
   ON_LOGIN_FOR_ENROLLMENT,
-  ON_UPSERTING_ENROLLMENT_FOR_QUEUE
+  ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
+  ON_RESET_SUBMITTING_ENROLLEE,
+  GET_LISTENING_PRACTICE_MODULE,
+  ON_LOADING_ENROLEE_BY_REGION,
+  ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
+  ON_MODAL_INTERACTION
 } from "../constants/Lrn";
 
 const initState = {
@@ -50,6 +55,31 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_MODAL_INTERACTION:
+      return {
+        ...state,
+        hasUserInteractedWithModal: action.hasUserInteractedWithModal
+      }
+    case ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID:
+      return {
+        ...state,
+        registeredProgressByEmailId: action.registeredProgressByEmailId,
+        studentPercentagesForCourse: action.studentPercentagesForCourse,
+        studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse,
+        isUserEmailRegisteredForCourse: action.isUserEmailRegisteredForCourse
+      }
+    case ON_LOADING_ENROLEE_BY_REGION:
+      return {
+        ...state,
+        enrolleeCountByRegion: action.enrolleeCountByRegion,
+        totalEnrolleeCount: action.totalEnrolleeCount
+      }
+    case GET_LISTENING_PRACTICE_MODULE:
+      return {
+        ...state,
+        speakingChapterModule: action.speakingChapterModule,
+        gcBucketUri: action.gcBucketUri
+      }
     case ON_UPSERTING_ENROLLMENT_FOR_QUEUE:
       return {
         ...state
@@ -58,6 +88,11 @@ const lrn = (state = initState, action) => {
       return {
         ...state,
         apiToken: action.apiToken
+      }
+    case ON_RESET_SUBMITTING_ENROLLEE:
+      return {
+        ...state,
+        wasSubmittingEnrolleeSucessful: action.wasSubmittingEnrolleeSucessful
       }
     case ON_SUBMITTING_ENROLLEE:
       return {
@@ -82,7 +117,8 @@ const lrn = (state = initState, action) => {
         ...state,
         registeredProgressByEmailId: action.registeredProgressByEmailId,
         studentPercentagesForCourse: action.studentPercentagesForCourse,
-        studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse
+        studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse,
+        isUserEmailRegisteredForCourse: action.isUserEmailRegisteredForCourse
       }
     case ON_SUBMITTING_USER_COURSE_PROGRESS:
       return{

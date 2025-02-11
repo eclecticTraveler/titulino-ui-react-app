@@ -150,7 +150,8 @@ export const ProgressDashboardByEmail = (props) => {
               </Button>
             </Card>
           </Col>
-
+1460
+to 1200 resta 1388.24
           {/* LiquidCirclePercent - Participation Certificate */}
           <Col xs={24} sm={8}>
             <Card title={setLocale(locale, "resources.myprogress.participationcert")} bordered>

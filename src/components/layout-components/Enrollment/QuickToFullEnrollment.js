@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee } from "redux/actions/Lrn";
+import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee } from "redux/actions/Lrn";
 import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space  } from "antd";
 import moment from "moment";
 import Flag from "react-world-flags";
@@ -17,7 +17,7 @@ const { Option } = Select;
 
 export const QuickToFullEnrollment = (props) => {
   const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedCourse, nativeLanguage,
-         onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful } = props;
+         onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries } = props;
   const [form] = Form.useForm();
   const [isEmailVisible, setEmailVisible] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(true);
@@ -38,10 +38,10 @@ export const QuickToFullEnrollment = (props) => {
   const [enrolleeResidencyDivision, setEnrolleeResidencyDivision] = useState("");
   const [enrolleeBirthDivision, setEnrolleeBirthDivision] = useState("");
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [submittingLoading, setSubmittingLoading] = useState(false);
+  const [submittedRecords, setSubmittingRecords] = useState([]);
+    
   const locale = true;
-  console.log("wasSubmittingEnrolleeSucessful", wasSubmittingEnrolleeSucessful)
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
     };
@@ -50,23 +50,26 @@ export const QuickToFullEnrollment = (props) => {
       return isLocaleOn
         ? getLocaleText(localeKey, defaultMessage) // Uses the new function
         : localeKey.toString(); // Falls back to the key if localization is off
-    };
-
-    useEffect(() => {
-      // If the submission was successful, we reset form or show success message
-      if (wasSubmittingEnrolleeSucessful) {
-        // Handle the success logic here, like resetting the form or showing a success message
-        console.log("Form submitted successfully!");
-      }
-    }, [wasSubmittingEnrolleeSucessful]); // Only re-run if `wasSubmittingEnrolleeSucessful` changes
+    };  
     
-    
-    // Trigger modal visibility when enrollment submission is successful
     useEffect(() => {
-      if (wasSubmittingEnrolleeSucessful) {
-        setIsEnrollmentModalVisible(true); // Show modal on success
+      if (submittedRecords?.length > 0) {
+        
+        const upsertFormattedData = async () => {
+          // onSubmittingEnrollee(formattedDatatoSubmit, isToProceedToFullEnrollment);
+          const upsertedRecords = await onSubmittingEnrollee(submittedRecords, null);
+          const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
+          if (wasSuccessful === true) {
+            setIsEnrollmentModalVisible(true);
+          } else if (wasSuccessful === false) {
+            console.log("wasSuccessful", wasSuccessful);
+            setIsEnrollmentModalVisible(false);
+          }
+        };
+        upsertFormattedData();
       }
-    }, [wasSubmittingEnrolleeSucessful]); // Dependency array, so it only runs when this value changes
+    }, [submittedRecords]);
+    
   
     const handleCloseModal = () => {
       setIsEnrollmentModalVisible(false); // Close modal when user clicks close button
@@ -105,7 +108,7 @@ useEffect(() => {
       const divisions = await onRequestingGeographicalDivision(selectedCountryOfResidence);
       const divisionList = Array.isArray(divisions?.countryDivisions) ? divisions?.countryDivisions : [];
       setDivisions(divisionList);
-
+      
       // Clear the field if no divisions are available
       if (divisionList.length === 0) {
         form.setFieldsValue({ countryDivisionOfResidence: null });
@@ -162,17 +165,17 @@ useEffect(() => {
   };
 
   const onYesConfirm = () => {
-    // setUserData(null); // Clear user data after confirmation
     setConfirmVisible(false);
     // If there is no missing data then dont display update?
-    if((!returningEnrolleeCountryDivisionInfo?.countryDivisionResidencyName ||
-       !returningEnrolleeCountryDivisionInfo?.countryDivisionBirthName ||
-       !returningEnrolleeCountryDivisionInfo?.countryOfResidencyName ||
-       !returningEnrolleeCountryDivisionInfo?.countryOfBirthName )){
-        setGeographyInfoVisible(true);
-       }else{
-        setGeographyInfoVisible(false);
-       }
+    setGeographyInfoVisible(true);
+    // if((!returningEnrolleeCountryDivisionInfo?.countryDivisionResidencyName ||
+    //    !returningEnrolleeCountryDivisionInfo?.countryDivisionBirthName ||
+    //    !returningEnrolleeCountryDivisionInfo?.countryOfResidencyName ||
+    //    !returningEnrolleeCountryDivisionInfo?.countryOfBirthName )){
+    //     setGeographyInfoVisible(true);
+    //    }else{
+    //     setGeographyInfoVisible(false);
+    //    }
     setFindMeVisible(false);
     setSubmitEnabled(true);
   };
@@ -194,6 +197,7 @@ useEffect(() => {
       nativeLanguage,
       selectedCourse,
       availableCourses,
+      countries
     } = props;
   
     const {
@@ -213,13 +217,23 @@ useEffect(() => {
     
     // Extract properties from matchedEnrolleeInfo
     const matchedInfo = matchedEnrolleeInfo || {};
-    
+
+    // Unfortunate temp fix until I refactor taking ids instead of Alpha3s
+    const birthCountryName = countries
+    ?.find(country => country.CountryId === countryOfBirth)
+    ?.CountryName || null;
+  
+    const residencyCountryName = countries
+      ?.find(country => country.CountryId === countryOfResidence)
+      ?.CountryName || null;
+  
+
     let enrolleeDob;
     if(isQuickEnrollment){
         // Convert dateOfBirth to year if it's a Moment object
         const submittedYear = yearOfBirth ? yearOfBirth.year() : null;
         const matchedYearOfBirth = matchedInfo?.dateOfBirth 
-        ? new Date(matchedInfo.dateOfBirth).getFullYear()
+        ? new Date(matchedInfo.dateOfBirth).getUTCFullYear()
         : null;
         if(submittedYear === matchedYearOfBirth){
           enrolleeDob = matchedInfo?.dateOfBirth
@@ -233,45 +247,32 @@ useEffect(() => {
 
     // Define the base object
     const formattedData = {
-      contactExternalId: isQuickEnrollment ? matchedInfo?.contactExternalId || null : null,
-      emailAddress: isQuickEnrollment ? matchedInfo?.email || emailAddress || null : emailAddress || null,
-      lastNames: isQuickEnrollment ? matchedInfo?.lastNames || lastNames || null : lastNames || null,
-      names: isQuickEnrollment ? matchedInfo?.names || names || null : names || null,
-      sex: isQuickEnrollment ? matchedInfo?.sex || sex || null : sex || null,
+      contactExternalId: matchedInfo?.contactExternalId ?? null,
+      emailAddress: emailAddress ?? (matchedInfo?.email || null),
+      lastNames: lastNames ?? (matchedInfo?.lastNames || null),
+      names: names ?? (matchedInfo?.names || null),
+      sex: sex ?? (matchedInfo?.sex || null),
       dateOfBirth: enrolleeDob || null,
-      countryOfResidence: isQuickEnrollment
-        ? matchedInfo.countryOfResidencyName || countryOfResidence || null
-        : countryOfResidence || null,
-      countryDivisionOfResidence: isQuickEnrollment
-        ? matchedInfo.countryDivisionResidencyName || countryDivisionOfResidence || null
-        : countryDivisionOfResidence || null,
-      countryOfBirth: isQuickEnrollment
-        ? matchedInfo.countryOfBirthName || countryOfBirth || null
-        : countryOfBirth || null,
-      countryDivisionOfBirth: isQuickEnrollment
-        ? matchedInfo.countryDivisionBirthName || countryDivisionOfBirth || null
-        : countryDivisionOfBirth || null,
+
+      countryOfResidence: residencyCountryName ?? (matchedInfo.countryOfResidencyName || null),
+      countryDivisionOfResidence: countryDivisionOfResidence ?? (matchedInfo.countryDivisionResidencyName || null),
+      countryOfBirth: birthCountryName ?? (matchedInfo.countryOfBirthName || null),
+      countryDivisionOfBirth: countryDivisionOfBirth ?? (matchedInfo.countryDivisionBirthName || null),
+      
       termsVersion: termsAndConditionsVersion || "1.0", // Default version
       coursesCodeIds: (availableCourses || []).map((course) => ({
         courseCodeId: course?.CourseCodeId || null,
       })),
-      languageProficiencies: isQuickEnrollment
-        ? [
-          {
-            languageId: selectedCourse?.localizationId || null,
-            languageLevelAbbreviation: languageLevelAbbreviation || "ba", // Form-provided or default
-          }
-        ]
-        : [
-            {
-              languageId: nativeLanguage?.localizationId || null,
-              languageLevelAbbreviation: "na", // Default for native language
-            },
-            {
-              languageId: selectedCourse?.localizationId || null,
-              languageLevelAbbreviation: languageLevelAbbreviation || "ba", // Form-provided or default
-            },
-          ],
+      languageProficiencies: [
+        {
+          languageId: nativeLanguage?.localizationId || 'es', // TODO: For now
+          languageLevelAbbreviation: "na", // Default for native language
+        },
+        {
+          languageId: selectedCourse?.localizationId || 'en',
+          languageLevelAbbreviation: languageLevelAbbreviation || "ba", // Form-provided or default
+        },
+      ]
     };
   
     const recordsToSubmit = formattedData ? [formattedData] : [];
@@ -280,22 +281,18 @@ useEffect(() => {
   };
   
   const onFormSubmit = async (values) => {
-
-    if (wasSubmittingEnrolleeSucessful) {
-      return; // Prevent form submission if already successful
-    }
-
     try {
       // Trigger validation for the form during submit
       await form.validateFields(); // Ensure all fields are valid before proceeding
-
       const formattedDatatoSubmit = formatSubmissionData(values, {
         nativeLanguage,
         selectedCourse,
         availableCourses,
+        countries
       }, !isToProceedToFullEnrollment, returningEnrolleeCountryDivisionInfo);
 
-      onSubmittingEnrollee(formattedDatatoSubmit, isToProceedToFullEnrollment)
+      setSubmittingLoading(true);
+      setSubmittingRecords(formattedDatatoSubmit);
 
     } catch (error) {
       // Handle validation failure
@@ -327,7 +324,9 @@ useEffect(() => {
     setEnrolleeResidencyDivision("");
     setEnrolleeBirthDivision("");
     setResetChildStates(null);
-    // reset api token
+    onResetSubmittingEnrollee(undefined);
+    setSubmittingLoading(false);
+    setSubmittingRecords([]);    
   };
   
 
@@ -365,11 +364,14 @@ useEffect(() => {
   
   return (
     <div className="container customerName">
-      <EnrollmentModal 
-        wasSubmittingEnrolleeSucessful={wasSubmittingEnrolleeSucessful} 
-        closeEnrollmentModal={handleCloseModal}
-        visible={isEnrollmentModalVisible} // Pass the modal visibility
-      />
+      {isEnrollmentModalVisible && 
+            <EnrollmentModal             
+            closeEnrollmentModal={handleCloseModal}
+            visibleModal={isEnrollmentModalVisible} // Pass the modal visibility
+            courses={availableCourses}
+          />
+      }
+
       <Form
           form={form}
           onFinish={onFormSubmit}
@@ -377,7 +379,7 @@ useEffect(() => {
         >
         <Row gutter={24}>
           <Col lg={24}>
-            <Card style={quickEnrollmentStyle} bordered
+            <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered
               cover={
                 <img
                 alt={titleOfEnrollment}
@@ -387,33 +389,48 @@ useEffect(() => {
               }
             >
               <h1 style={{ marginBottom: "10px", textAlign: "left" }}>
-                {titleOfEnrollment}
+                {titleOfEnrollment} - (v1.3)
               </h1>
             </Card>
 
             {availableCourses?.map((course, index) => (
                 <Card
-                key={index}
-                style={quickEnrollmentStyle}
-                bordered
-                title={setLocale(locale, "enrollment.courseDetails")}
+                  key={course.id || index}
+                  style={quickEnrollmentStyle}
+                  bordered
+                  title={setLocale(locale, "enrollment.courseDetails")}
+                  loading={submittingLoading}
                 >
-                <div style={{ display: "flex", alignItems: "center", padding: "10px" }}>
-                  <div style={{ display: "flex", justifyContent: "center", paddingRight: "10px" }}>
-                    <img
-                      src={course?.CourseDetails?.imageUrl || process.env.PUBLIC_URL + '/img/avatars/tempProfile.jpg'}
-                      alt={`${course?.CourseDetails?.course} profile`}
-                      style={{ width: 200, height: 200, borderRadius: '5%', marginRight:"20px" }}
-                    />
-                  </div>
-                  <CourseDetails course={course} />
-                </div>
-              </Card>
+                     <Row gutter={[16,16]}>
+                    {/* Image Column */}
+                    <Col xs={24} sm={24} lg={12}>
+                      <img
+                        src={
+                          course?.CourseDetails?.imageUrl ||
+                          process.env.PUBLIC_URL + '/img/avatars/tempProfile.jpg'
+                        }
+                        alt={`${course?.CourseDetails?.course} profile`}
+                        style={{
+                          width: 200,
+                          height: 200,
+                          borderRadius: '5%',
+                          marginBottom: '10px',
+                        }}
+                      />
+                    </Col>
+
+                    {/* Course Details Column */}
+                    <Col xs={24} sm={24} lg={12} >
+                      <CourseDetails course={course} />
+                    </Col>
+                    </Row>
+                </Card>
             ))}
  
             {!isToProceedToFullEnrollment && (
               <Card style={quickEnrollmentStyle}
                     title={setLocale(locale, "enrollment.personalInfo")}
+                    loading={submittingLoading}
                     bordered>
               <Form.Item name="yearOfBirth" label={setLocale(locale, "enrollment.yearOfBirth")} 
               rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.pleaseSelectYearOfBirth") }]}>
@@ -434,7 +451,7 @@ useEffect(() => {
  
 
             {isEmailVisible && !isToProceedToFullEnrollment && (
-              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} bordered>
+              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} loading={submittingLoading} bordered>
                 <Form.Item 
                   name="emailAddress" 
                   rules={[
@@ -482,7 +499,7 @@ useEffect(() => {
           { returningEnrolleeCountryDivisionInfo?.personalCommunicationName && !isToProceedToFullEnrollment && (
             <>
               {isConfirmVisible && (
-              <Card style={quickEnrollmentStyle} bordered>                
+              <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>                
                 <h3><Flag code={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId} style={{ width: 20, marginRight: 10 }} />
                  {returningEnrolleeCountryDivisionInfo?.names}?</h3>
                 <Button onClick={onYesConfirm}>{setLocale(locale, "enrollment.form.yes")}</Button>
@@ -491,9 +508,9 @@ useEffect(() => {
             )}
 
             {isGeographyInfoVisible && (
-              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} bordered>
+              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} loading={submittingLoading} bordered>
                 <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
-                  rules={[{ required: true }]}
+                  rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}
                   initialValue={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId ?? undefined}               
                   >
                   <Select
@@ -518,6 +535,8 @@ useEffect(() => {
                 {selectedCountryOfResidence && residencyDivisions?.length > 0 && (
                   <Form.Item name="countryDivisionOfResidence" label={setLocale(locale, "enrollment.form.stateOrRegion")} 
                   rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegion") }]}
+                  initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdResidency ?? undefined}
+                  
                   >
                     <Select
                       showSearch
@@ -540,7 +559,7 @@ useEffect(() => {
                 <Form.Item
                   name="countryOfBirth"
                   label={setLocale(locale, "enrollment.form.countryOfNationalityOfBirth")}
-                  rules={[{ required: true }]}
+                  rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfBirth") }]}
                   initialValue={returningEnrolleeCountryDivisionInfo?.countryOfBirthId ?? undefined}
                 >
                   <Select
@@ -565,7 +584,9 @@ useEffect(() => {
 
                 {selectedBirthCountry && birthDivisions?.length > 0 && (
                   <Form.Item name="countryDivisionOfBirth" label={setLocale(locale, "enrollment.form.stateOrRegionOfBirth")} 
-                  rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegionOfBirth") }]}>
+                  rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegionOfBirth") }]}
+                  initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth ?? undefined}
+                  >
                     <Select
                       showSearch
                       placeholder="Select state/region of nationality of birth"
@@ -591,9 +612,8 @@ useEffect(() => {
 
           {returningEnrolleeCountryDivisionInfo?.personalCommunicationName &&
             !isToProceedToFullEnrollment &&
-            enrolleeResidencyDivision &&
-            enrolleeBirthDivision && (
-              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.languageLevelForCourse")} bordered={true}>
+            isGeographyInfoVisible && (
+              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.languageLevelForCourse")} loading={submittingLoading} bordered={true}>
                 <Form.Item
                   name="languageLevelAbbreviation"
                   rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectLanguageLevelForCourse") }]}
@@ -620,14 +640,15 @@ useEffect(() => {
                 form={form}
                 setResetChildStates={setResetChildStates} // Pass the delegate setter to the child
                 enrollmentStyle={quickEnrollmentStyle}
+                submittingLoading={submittingLoading}
                 />
 
             )
           }
 
-            <Card style={quickEnrollmentStyle} bordered>
+            <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
               <p>
-                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}{" "}
+                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}{" (1.03) "}
                 <TermsModal />{" "}
                 {setLocale(locale, "enrollment.form.ofUseAndPrivacyPolicy")}
               </p>
@@ -635,7 +656,6 @@ useEffect(() => {
                 type="primary"
                 htmlType="submit"
                 disabled={!isSubmitEnabled}
-                onClick={() => form.submit()} // This will trigger the child form submission
               >
                 {setLocale(locale, "enrollment.form.submit")}
               </Button>
@@ -652,7 +672,8 @@ function mapDispatchToProps(dispatch) {
     onRenderingCourseRegistration,
     onSearchingForAlreadyEnrolledContact,
     onRequestingGeographicalDivision,
-    onSubmittingEnrollee
+    onSubmittingEnrollee,
+    onResetSubmittingEnrollee
   }, dispatch);
 }
 

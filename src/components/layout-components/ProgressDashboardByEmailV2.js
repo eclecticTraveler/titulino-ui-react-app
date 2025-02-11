@@ -14,7 +14,7 @@ import useWindowSize from 'react-use/lib/useWindowSize';
 import { faRoad, faPieChart } from '@fortawesome/free-solid-svg-icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
-import ConfettiExplosion from 'react-confetti-explosion';
+// import ConfettiExplosion from 'react-confetti-explosion';
 
 
 export const ProgressDashboardByEmailV2 = (props) => {
@@ -153,7 +153,7 @@ useEffect(() => {
 
   const renderMessageResults = () => {
     if (!registeredProgressByEmailId || registeredProgressByEmailId?.length === 0) {
-      return <div>{setLocale(locale, "resources.myprogress.noRecordsFound")}</div>;
+      return <div>{setLocale(locale, "resources.myprogress.readyToRegister")}</div>;
     }
 
     return <div>{registeredProgressByEmailId?.length} {setLocale(locale, "resources.myprogress.recordsFound")}.</div>
@@ -318,7 +318,7 @@ useEffect(() => {
 
   return (
     <div className="container customerName wordBreak">
-    {isSmallConfettiVisible && <ConfettiExplosion />}
+    {/* {isSmallConfettiVisible && <ConfettiExplosion />} */}
     {isMassiveConfettiVisible && (
         <Confetti
           width={width}

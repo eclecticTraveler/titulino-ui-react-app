@@ -17,12 +17,16 @@ import {
 	faHotdog,
 	faBoxes
    } from '@fortawesome/free-solid-svg-icons';
+   import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
+   
 
 export const CourseSubNavigationSupermarketTheme = (lang) => {			
+	const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}`;
+
 	return [
 		{
 			key: 'chapter-sidenav-theme-supermarket-1',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-1`,
+			path: `${commonPath}-1`,
 			title: 'sidenav.chapter.1',
 			icon: faCarrot,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -33,7 +37,7 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-2',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-2`,
+			path: `${commonPath}-2`,
 			title: 'sidenav.chapter.2',
 			icon: faPepperHot,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -44,7 +48,7 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-3',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-3`,
+			path: `${commonPath}-3`,
 			title: 'sidenav.chapter.3',
 			icon: faAppleAlt,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -55,7 +59,7 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-4',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-4`,
+			path: `${commonPath}-4`,
 			title: 'sidenav.chapter.4',
 			icon: faLemon,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -66,7 +70,7 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-5',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-5`,
+			path: `${commonPath}-5`,
 			title: 'sidenav.chapter.5',
 			icon: faBacon,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -77,7 +81,7 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-6',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-6`,
+			path: `${commonPath}-6`,
 			title: 'sidenav.chapter.6',
 			icon: faFish,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -88,7 +92,7 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-7',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-7`,
+			path: `${commonPath}-7`,
 			title: 'sidenav.chapter.7',
 			icon: faBoxArchive,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -99,7 +103,7 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-8',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-8`,
+			path: `${commonPath}-8`,
 			title: 'sidenav.chapter.8',
 			icon: faArchive,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -110,7 +114,7 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-9',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-9`,
+			path: `${commonPath}-9`,
 			title: 'sidenav.chapter.9',
 			icon: faMoneyBill,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -121,7 +125,7 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-10',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-10`,
+			path: `${commonPath}-10`,
 			title: 'sidenav.chapter.10',
 			icon: faBreadSlice,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
@@ -132,7 +136,7 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-supermarket-11',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.chapter}-11`,
+			path: `${commonPath}-11`,
 			title: 'sidenav.chapter.11',
 			icon: faHotdog,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,

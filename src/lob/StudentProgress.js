@@ -127,9 +127,9 @@ export const getDerivedCategoriesFromCourseStructureData = async (selectedCourse
 export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
   switch (courseTheme.toLowerCase()) {
     case 'supermarket':
-      return 'SUPERMARKET_SEP_2024_COURSE_01';
-    case 'household':
-      return 'HOUSEHOLD_PART_1_JAN_2025_COURSE_01';
+      return 'SUPERMARKET_SEP_2024_COURSE_01';      
+    case 'household':      
+      return 'HOUSEHOLD_ITEMS_PART_1_JAN_2025_COURSE_01'
     // Add more cases as needed
     case 'electronics':
       return 'ELECTRONICS_MAR_2025_COURSE_01';
@@ -138,13 +138,44 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
   }
 };
 
+export const transformEnrolleeGeographycalResidencyData = async(data) => {
+  // Define a color palette for unique colors
+  const colorPalette = [
+    '#3e82f7', '#04d182', '#ffc542', '#fa8c16', '#ff6b72', '#a461d8', '#13c2c2', '#eb2f96', '#7cb305', 
+    '#2d99ff', '#34d399', '#ffd700', '#f97316', '#ff4757', '#9b59b6', '#20c997', '#f5222d', '#73d13d', 
+    '#3498db', '#1abc9c', '#f39c12', '#e67e22', '#e74c3c', '#8e44ad', '#16a085', '#ff8c00', '#00bfff'
+  ];
+  
+  // Access the Residency property
+  const residencyArray = data?.Residency;
+
+  // Calculate the total EnrolleeCount
+  const totalEnrolleeCount = residencyArray?.reduce((total, item) => total + item.EnrolleeCount, 0);
+
+  // Map the Residency array to the desired format
+  const transformedArray = residencyArray?.map((item, index) => ({
+    color: colorPalette[index % colorPalette?.length], // Rotate through the colors
+    name: item.CountryName, // Map CountryName to name
+    value: `${item.Percentage.toFixed(2)}%`, // Append % to the Percentage
+    nativeName: item?.NativeCountryName, // Append % to the Percentage
+    count: item?.EnrolleeCount,
+    countryId: item?.CountryOfResidencyId
+  }));
+
+  return {
+    transformedArray,
+    totalEnrolleeCount
+  };
+}
+
 const StudentProgress = {
   calculatePercentageForSupermarketCertificates,
   getCategoriesObtainedByEmailForSupermarketCourse,
   calculateUserCourseProgressPercentageForCertificates,
   getUserCourseProgressCategories,
   getDerivedCategoriesFromCourseStructureData,
-  getCourseCodeIdByCourseTheme
+  getCourseCodeIdByCourseTheme,
+  transformEnrolleeGeographycalResidencyData
 };
 
 export default StudentProgress;

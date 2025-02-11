@@ -10,9 +10,12 @@ export class AbstractTable extends Component {
 
   render() {
      return (
-      <div>
-        <EditableModalTable tableData={this.props.tableData} tableColumns={this.props.tableColumns} isAllowedToEditTableData={this.props.isAllowedToEditTableData}/>
-      </div>
+      <EditableModalTable tableData={this.props.tableData}
+                          tableColumns={this.props.tableColumns}
+                          isAllowedToEditTableData={this.props.isAllowedToEditTableData}
+                          selectionToRenderInModal={this.props.selectionToRenderInModal}
+                          isToRenderActionButton={this.props.isToRenderActionButton}
+                          isToMakeRowsSelectable={this.props.isToMakeRowsSelectable}/>
     )
   }
 }

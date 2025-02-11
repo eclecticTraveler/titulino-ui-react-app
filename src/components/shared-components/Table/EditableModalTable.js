@@ -41,14 +41,14 @@ const EditableCell = ({
 };
 
 const EditableModalTable = props => {
-  const { tableData, tableColumns, isAllowedToEditTableData, onSelectingCorrectionToEdit, onCorrectionsModalChange  } = props;
+  const { tableData, tableColumns, isAllowedToEditTableData, onSelectingCorrectionToEdit, onCorrectionsModalChange, isToRenderActionButton  } = props;
 
-  console.log("isAllowedToEditTableData++++++++++++");
-  console.log(isAllowedToEditTableData);
-  console.log("tableData++++++++++++");
-  console.log(tableData);
-  console.log("tableColumns++++++++++++");
-  console.log(tableColumns);
+  // console.log("isAllowedToEditTableData++++++++++++");
+  // console.log(isAllowedToEditTableData);
+  // console.log("tableData++++++++++++");
+  // console.log(tableData);
+  // console.log("tableColumns++++++++++++");
+  // console.log(tableColumns);
 
 const [form] = Form.useForm();
 
@@ -62,7 +62,6 @@ const displayMoreInfo = (record, isToEdit) => {
 const cancel = () => {
   onCorrectionsModalChange(false)
 };
-
 
 
 // const save = async key => {
@@ -91,7 +90,7 @@ let columns = [
 ];
 
 // if theey are integrated show button that says more info rather than edit but they wont be able to edit anything
-if(columns?.length > 0) {
+if(columns?.length > 0 && isToRenderActionButton) {
   columns.push(
     {
       title: 'Actions',
@@ -118,6 +117,7 @@ const components = {
     cell: EditableCell,
   },
 };
+
 const mergedColumns = columns.map(col => {
   if (!col.editable) {
     return col;
@@ -133,6 +133,7 @@ const mergedColumns = columns.map(col => {
     }),
   };
 });
+
 return (
   <div>
     <Table
@@ -143,6 +144,10 @@ return (
       rowClassName="editable-row"
       pagination={{
         onChange: cancel,
+      }}
+      scroll={{
+        x: 'calc(700px + 50%)',
+        y: 440,    // Vertical scrolling with fixed height
       }}
     />
   <AbstractContactModalForm isToEditContent={isAllowedToEditTableData}/>

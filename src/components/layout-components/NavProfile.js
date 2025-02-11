@@ -11,7 +11,8 @@ import {
   SwapOutlined,
   LoginOutlined,
   GlobalOutlined,
-  UsergroupAddOutlined
+  UsergroupAddOutlined,
+  RadarChartOutlined
 } from '@ant-design/icons';
 import Icon from '../../components/util-components/Icon';
 import { signOut } from 'redux/actions/Auth';
@@ -56,6 +57,16 @@ const configureMenuItems = () => {
     // }
     
   ];
+
+  if(env.IS_ADMIN_DASHBOARD_FEAT_ON){
+    menuLinks.push(
+      {
+        title: setLocale(locale,"profile.adminInsights"),
+        icon: RadarChartOutlined ,
+        path: "insight"
+      }
+    )
+  }
 
   if(env.IS_ENROLLMENT_FEAT_ON){
     menuLinks.push(

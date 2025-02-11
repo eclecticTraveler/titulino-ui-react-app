@@ -32,7 +32,7 @@ const setDefaultOpen = (key) => {
 	
 const SideNavContent = (props) => {
 	const { sideNavTheme, routeInfo, hideGroupTitle, localization, onMobileNavToggle, currentRoute, navCollapsed } = props;
-	const isMobile = !utils.getBreakPoint(useBreakpoint()).includes('lg')
+	const isMobile = !utils.getBreakPoint(useBreakpoint()).includes('md')
 	// Replacing temp variable with proper dynamic value, I could not think of a better way to do this.
 	const closeMobileNav = () => {
 		if (isMobile) {

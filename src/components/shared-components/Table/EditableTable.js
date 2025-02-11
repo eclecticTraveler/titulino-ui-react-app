@@ -89,6 +89,7 @@ const EditableTable = props => {
 
   // if theey are integrated show button that says more info rather than edit but they wont be able to edit anything
   if(columns?.length > 0) {
+    columns[0].fixed = true;
     if(isAllowedToEditTableData){      
       columns.push(
         {
@@ -158,19 +159,24 @@ const EditableTable = props => {
   });
   return (
     <div>
-    <Form form={form} component={false}>
-      <Table
-        components={components}
-        bordered
-        dataSource={data}
-        columns={mergedColumns}
-        rowClassName="editable-row"
-        pagination={{
-          onChange: cancel,
-        }}
-      />
-    </Form> 
-    
+      <Form form={form} component={false}>
+        <Table
+          components={components}
+          bordered
+          dataSource={data}
+          columns={mergedColumns}
+          rowClassName="editable-row"
+          pagination={{
+            onChange: cancel,
+            position: ['bottomRight'], // Pagination bottom-right aligned
+          }}
+          scroll={{
+            x: '100vw', // Ensure horizontal scrolling when columns overflow
+            y: 240,    // Vertical scrolling with fixed height
+          }}
+          style={{ width: '100%' }} // Stretch the table across the container
+        />
+      </Form>    
     </div>
 
   );
