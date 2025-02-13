@@ -276,6 +276,7 @@ useEffect(() => {
     };
   
     const recordsToSubmit = formattedData ? [formattedData] : [];
+    console.log("recordsToSubmit", recordsToSubmit)
     return recordsToSubmit;
     
   };
@@ -292,7 +293,7 @@ useEffect(() => {
       }, !isToProceedToFullEnrollment, returningEnrolleeCountryDivisionInfo);
 
       setSubmittingLoading(true);
-      setSubmittingRecords(formattedDatatoSubmit);
+      // setSubmittingRecords(formattedDatatoSubmit);
 
     } catch (error) {
       // Handle validation failure
@@ -556,54 +557,63 @@ useEffect(() => {
                   </Form.Item>
                 )}
 
-                <Form.Item
-                  name="countryOfBirth"
-                  label={setLocale(locale, "enrollment.form.countryOfNationalityOfBirth")}
-                  rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfBirth") }]}
-                  initialValue={returningEnrolleeCountryDivisionInfo?.countryOfBirthId ?? undefined}
+
+        {( 
+            !returningEnrolleeCountryDivisionInfo?.countryOfBirthId ||
+            !returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth
+          ) && (
+          <>
+            <Form.Item
+                name="countryOfBirth"
+                label={setLocale(locale, "enrollment.form.countryOfNationalityOfBirth")}
+                rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfBirth") }]}
+                initialValue={returningEnrolleeCountryDivisionInfo?.countryOfBirthId ?? undefined}
+              >
+                <Select
+                  showSearch
+                  placeholder="Select country of nationality of birth"
+                  optionFilterProp="children"
+                  onChange={(value) => {
+                    setSelectedBirthCountry(value);
+                    setBirthDivisions([]);
+                    form.setFieldsValue({ countryDivisionOfBirth: null });
+                  }}
                 >
-                  <Select
-                    showSearch
-                    placeholder="Select country of nationality of birth"
-                    optionFilterProp="children"
-                    onChange={(value) => {
-                      setSelectedBirthCountry(value); // Update selected country
-                      setBirthDivisions([]); // Reset divisions for birth country
-                      form.setFieldsValue({ countryDivisionOfBirth: null }); // Clear form division value
-                    }}
-                  >
-                    {props.countries?.map((country) => (
-                      <Option key={country.CountryId} value={country.CountryId}>
-                        <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
-                        {`${country.NativeCountryName} | ${country.CountryName}`}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
+                  {props.countries?.map((country) => (
+                    <Option key={country.CountryId} value={country.CountryId}>
+                      <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
+                      {`${country.NativeCountryName} | ${country.CountryName}`}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
 
-
-                {selectedBirthCountry && birthDivisions?.length > 0 && (
-                  <Form.Item name="countryDivisionOfBirth" label={setLocale(locale, "enrollment.form.stateOrRegionOfBirth")} 
-                  rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegionOfBirth") }]}
-                  initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth ?? undefined}
-                  >
-                    <Select
-                      showSearch
-                      placeholder="Select state/region of nationality of birth"
-                      optionFilterProp="children"
-                      onChange={(value) => {
-                        setEnrolleeBirthDivision(value);
-                      }}
-                    >
-                      {birthDivisions?.map((division) => (
-                        <Option key={division.CountryDivisionId} value={division.CountryDivisionId}>
-                          <Flag code={division.CountryId} style={{ width: 20, marginRight: 10 }} />
-                          {division.CountryDivisionName}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                )}
+            {selectedBirthCountry && birthDivisions?.length > 0 && (
+              <Form.Item
+                name="countryDivisionOfBirth"
+                label={setLocale(locale, "enrollment.form.stateOrRegionOfBirth")}
+                rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegionOfBirth") }]}
+                initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth ?? undefined}
+              >
+                <Select
+                  showSearch
+                  placeholder="Select state/region of nationality of birth"
+                  optionFilterProp="children"
+                  onChange={(value) => {
+                    setEnrolleeBirthDivision(value);
+                  }}
+                >
+                  {birthDivisions?.map((division) => (
+                    <Option key={division.CountryDivisionId} value={division.CountryDivisionId}>
+                      <Flag code={division.CountryId} style={{ width: 20, marginRight: 10 }} />
+                      {division.CountryDivisionName}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            )}
+          </>
+        )}
               </Card>
             )}
             </>

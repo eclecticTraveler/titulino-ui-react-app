@@ -181,7 +181,7 @@
 	"resources.myprogress.recordProgress":"Registra tu progreso",
 	"resources.myprogress.here":"Aquí",
 	"resources.myprogress.searchYourEmail":"Busqueda con correo electrónico",
-	"resources.myprogress.searchbyEmailandYear":"Busqueda con correo electrónico y año de nacimiento",
+	"resources.myprogress.searchbyEmailandYear":"Busqueda de registros",
 
 	"resources.myprogress.generalDashboard": "Progreso general",
 	"resources.myprogress.brokenDown":"Progreso del curso desglosado",
@@ -239,7 +239,7 @@
 	"enrollment.form.noRecordsProceedEnrollment": "Procedamos a la inscripción completa...",
 	"enrollment.form.yes": "Sí",
 	"enrollment.form.no": "No",
-	"enrollment.form.confirmProfileGeography": "Por favor ayúdenme a confirmar su geografía estudiantil",
+	"enrollment.form.confirmProfileGeography": "Por favor ayúdenme a confirmar su geografía (para fines de horarios)",
 	"enrollment.form.countryOfResidency": "País de residencia",
 	"enrollment.form.selectCountryOfResidence": "Seleccione su país de residencia",
 	"enrollment.form.selectCountryOfBirth": "Seleccione su país de nacimiento",
