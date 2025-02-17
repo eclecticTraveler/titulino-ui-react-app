@@ -44,7 +44,7 @@ export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicU
   });
 
   const screens = utils.getBreakPoint(useBreakpoint());
-  const isMobile = !screens.includes('lg')
+  const isMobile = !screens.includes('md')
   const isNavSide = navType === NAV_TYPE_SIDE
   const isNavTop = navType === NAV_TYPE_TOP
   const getLayoutGutter = () => {

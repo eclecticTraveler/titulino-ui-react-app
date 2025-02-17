@@ -35,7 +35,6 @@ export const HeaderNav = props => {
 	const setLocale = (isLocaleOn, localeKey) =>{		
 		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
 	  }
-	// const { keycloak } = useKeycloak();
 	const locale = true;
 
 	const isToogleToBeDisplayedToUser =  false;

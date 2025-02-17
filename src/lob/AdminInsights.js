@@ -170,10 +170,10 @@ const colorPalette = [
 // Helper function to transform demographic data
 const transformDemographicArray = (dataArray, nameKey, nativeNameKey, extraKeys = () => ({})) => {
   return dataArray?.map((item, index) => ({
-    color: colorPalette[index % colorPalette.length],
+    color: colorPalette[index % colorPalette?.length],
     name: item[nameKey],
     value: `${item.Percentage?.toFixed(2)}%`,
-    nativeName: item[nativeNameKey],
+    nativeName: item[nativeNameKey] ?? item[nameKey],
     count: item?.EnrolleeCount,
     ...extraKeys(item)
   }));

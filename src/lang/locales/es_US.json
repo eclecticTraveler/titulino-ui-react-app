@@ -306,7 +306,11 @@
 	"userprogress.enrollment.invitationMessage":"Continúe con la inscripción en el curso",
 	"userprogress.enrollment.invitationMessageTitle":"Antes de proceder a registrar su progreso",
 	"userprogress.enrollment.invitationMessageContent":"No tenemos su registro de inscripción en el correo electrónico y el año proporcionados. Si no es un error,\n ¿Le gustaría inscribirse formalmente para certificación y comunicación?\n",
-	"userprogress.enrollment.yesLetsEnroll":"Sí, llévame a la página de inscripción"
+	"userprogress.enrollment.yesLetsEnroll":"Sí, llévame a la página de inscripción",
+	"enrollment.coursesNotAvailable":"Los cursos no están disponibles en este momento",
+	"enrollment.coursesNotAvailableMessage":"Actualmente no tenemos ningún curso abierto, ¡pero no te preocupes! Aún puedes explorar los recursos gratuitos disponibles en nuestra página.",
+	"enrollment.coursesNotAvailableMessage2":"Estén atentos a las actualizaciones sobre los próximos cursos siguiendo nuestro.",
+	"enrollment.coursesNotAvailableMessage3": "Página de Facebook de Titulolino"
 	
 }
 

@@ -307,7 +307,11 @@
 	"userprogress.enrollment.invitationMessage":"Prosseguir para inscrição no curso",
 	"userprogress.enrollment.invitationMessageTitle":"Antes de prosseguir com o registro do seu progresso",
 	"userprogress.enrollment.invitationMessageContent":"Não temos seu registro de inscrição no e-mail e ano fornecidos. Se não for um erro,\n Gostaria de se inscrever formalmente para certificação e comunicação\n",
-	"userprogress.enrollment.yesLetsEnroll":"Sim, leve-me para a página de inscrição"
+	"userprogress.enrollment.yesLetsEnroll":"Sim, leve-me para a página de inscrição",
+	"enrollment.coursesNotAvailable":"Os cursos não estão disponíveis no momento",
+	"enrollment.coursesNotAvailableMessage":"Atualmente não temos cursos abertos, mas não se preocupe! Você ainda pode explorar os recursos gratuitos disponíveis em nossa página.",
+	"enrollment.coursesNotAvailableMessage2":"Fique atento às atualizações sobre os próximos cursos seguindo nosso.",
+	"enrollment.coursesNotAvailableMessage3":"Página do Facebook do Titulino"
 
 
 }

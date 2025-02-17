@@ -14,7 +14,8 @@ const DropdownInsightSelection = (props) => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [isLocationTypeAllSelected, setIsLocationTypeAllSelected] = useState(false);
   const [countriesBySelectedLocationType, setCountriesBySelectedLocationType] = useState([]);
-  const { allCourses, locationTypes, onGettingCountriesByLocationToDashboard, onLoadingAllDashboardContents } = props;
+  const { allCourses, locationTypes, onGettingCountriesByLocationToDashboard, onLoadingAllDashboardContents, setLoading } = props;
+
 
   // Example data based on your categories
   const CoursesOptions = allCourses ? [...allCourses] : [];
@@ -50,8 +51,10 @@ const DropdownInsightSelection = (props) => {
 
   useEffect(() => {
     if (selectedCourse && selectedLocationType && selectedCountry) {
+      setLoading(true); // Start loading
       // Unleash all the dashboards?
       onLoadingAllDashboardContents(selectedCourse, selectedLocationType, selectedCountry)
+      ?.finally(() => setLoading(false)); // Stop loading after data fetch
     } 
   }, [selectedLocationType, selectedCourse, selectedCountry]);
 
