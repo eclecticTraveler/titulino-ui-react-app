@@ -39,7 +39,7 @@ const configureMenuItems = () => {
     //   title: setLocale(locale,"sidenav.login"),
     //   icon: LoginOutlined ,
     //   path: "login"
-    //   },
+    // },
     // {
     // title: setLocale(locale,"profile.edit.profile"),
     // icon: EditOutlined ,
@@ -57,6 +57,14 @@ const configureMenuItems = () => {
     // }
     
   ];
+
+  if(env.IS_SSO_ON){ 
+    menuLinks.push({
+      title: setLocale(locale,"sidenav.login"),
+      icon: LoginOutlined ,
+      path: "login"
+  })
+}
 
   if(env.IS_ADMIN_DASHBOARD_FEAT_ON){
     menuLinks.push(
@@ -122,7 +130,6 @@ export const NavProfile = (props, {signOut}) => {
     setUserNativeLanguage(null);
   }
 
-  // const { keycloak } = useKeycloak();
   const menuItems = configureMenuItems();
   const profileImg = "/img/avatars/tempProfile-2.png";
   const profileMenu = (
@@ -131,8 +138,8 @@ export const NavProfile = (props, {signOut}) => {
           <div className="d-flex">
             <Avatar size={50} src={profileImg} />
             <div className="pl-3">
-              {/* <h4 className="mb-0">{keycloak.tokenParsed?.name}</h4>
-              <span className="text-muted">{keycloak.tokenParsed?.preferred_username}</span> */}
+              {/* <h4 className="mb-0">{tokenParsed?.name}</h4>
+              <span className="text-muted">{tokenParsed?.preferred_username}</span> */}
             </div>
           </div>
         </div>

@@ -125,8 +125,8 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn}) => {
-	const {keycloakRedux, isToEditShippingAddress, shippingTabKey, userAddresses} = lrn;
-	return {keycloakRedux, isToEditShippingAddress, shippingTabKey, userAddresses} 
+	const {isToEditShippingAddress, shippingTabKey, userAddresses} = lrn;
+	return {isToEditShippingAddress, shippingTabKey, userAddresses} 
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AddressEditableDisplay));

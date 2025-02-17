@@ -5,20 +5,24 @@ import { createClient } from '@supabase/supabase-js';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { Route, Switch, Redirect } from "react-router-dom";
+import supabaseConfig from 'configs/SupabaseConfig';
+import { SupabaseProvider } from '@supabase/auth-helpers-react';
 
 
 export const RedirectLogin = () => {
-  useEffect(() => {
-    // Add any login logic here if needed.
-  }, []);
+	const supabase = createClient(
+		"https://dollxabphvcafglmixns.supabase.co",
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvbGx4YWJwaHZjYWZnbG1peG5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc0OTM5MjUsImV4cCI6MjA0MzA2OTkyNX0.bXj0ZjusXoRNihiG5BcSjMOGXqy35WBwm0aqGmCohY4"
+	)
+
 
 //   return <Redirect to={`${AUTH_PREFIX_PATH}/login`} />;
 return (
-	<><div><LoginOne allowRedirect={true} /></div></>
-			//  <Auth
-			// 	supabaseClient={supabasedb}
-				
-			// /> 
+	// <><div><LoginOne allowRedirect={true} /></div></>
+	// <SupabaseProvider supabaseClient={supabase}>
+		<div>Test Component</div>
+	// </SupabaseProvider>
+		// <>jsll</>
 		// 	<div className="auth-container">
 		// 	<Switch>
 		// 		<Redirect to={`${AUTH_PREFIX_PATH}/test`} />
@@ -29,55 +33,3 @@ return (
 };
 
 export default RedirectLogin;
-
-
-// import React, {Component, useEffect} from 'react'
-// import { createClient } from '@supabase/supabase-js';
-// import { Auth } from '@supabase/auth-ui-react'
-// import { ThemeSupa } from "@supabase/auth-ui-shared";
-// import { useHistory } from "react-router-dom";
-
-
-// const supabase = createClient(
-//)
-
-// const SupabaseLogin = (props) => {
-// 	const history = useHistory();
-
-// 	useEffect(() => {
-// 	  // Listen to authentication state changes
-// 	  const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-// 		if (event === 'SIGNED_OUT') {
-// 		  alert('Signed out!');
-// 		//   history.push('/success'); // Redirect to a successful logout page
-// 		} else if (event === 'SIGNED_IN') {
-// 		  alert('Signed in!');
-// 		//   history.push('/'); // Redirect to the home page upon login
-// 		}
-// 	  });
-// 	// Clean up the listener when the component unmounts
-// 	return () => {
-// 	authListener.unsubscribe();
-// 	};
-// }, [history]);
-
-
-
-
-// 	return (
-// 		<div>
-// 			<header>
-// 				{/* <Auth
-// 				supabaseClient={supabase}
-// 				appearance={{theme: ThemeSupa }}
-// 				theme="dark"
-// 				providers={["facebook"]}
-// 				/> */}
-// 				<div>HELLO WORLD</div>
-// 			</header>
-// 		</div>
-
-// 	)
-// }
-
-// export default SupabaseLogin
