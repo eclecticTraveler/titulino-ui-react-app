@@ -305,7 +305,11 @@
 	"userprogress.enrollment.invitationMessage":"Proceed to enroll in course",
 	"userprogress.enrollment.invitationMessageTitle":"Before proceeding to record your progress",
 	"userprogress.enrollment.invitationMessageContent":"We do not have your enrollment record under the email and year provided. If it's not a mistake,\n Would you like to formally enroll For certification & communication\n",
-	"userprogress.enrollment.yesLetsEnroll":"Yes, take me to the enrollment page"
+	"userprogress.enrollment.yesLetsEnroll":"Yes, take me to the enrollment page",
+	"enrollment.coursesNotAvailable":"Courses are not available at the moment",
+	"enrollment.coursesNotAvailableMessage":"Currently, we don't have any open courses, but don't worry! You can still explore the free resources available on our page.",
+	"enrollment.coursesNotAvailableMessage2":"Stay tuned for updates on upcoming courses by following our.",
+	"enrollment.coursesNotAvailableMessage3":"Titulino Facebook Page"
 
 	
 	

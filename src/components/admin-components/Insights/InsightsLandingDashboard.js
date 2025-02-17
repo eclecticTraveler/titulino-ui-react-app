@@ -69,7 +69,7 @@ const InsightsLandingDashboard = (props) => {
 	  
 
   const converUrl = 'https://images.unsplash.com/photo-1543286386-713bdd548da4?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
-  const titleOfEnrollment = 'hello world';
+  const titleOfEnrollment = 'insights';
   const locale = true;
 
 	const renderGeneralOverview = () => (
@@ -118,7 +118,6 @@ const InsightsLandingDashboard = (props) => {
   return (
     <div className="container customerName">
       <Card
-        loading={false}
         bordered
         cover={
           <img
@@ -134,14 +133,13 @@ const InsightsLandingDashboard = (props) => {
       </Card>
 
       <Card
-        loading={false}
         bordered
         title={setLocale(locale, 'admin.dashboard.selections')}
       >
-        <DropdownInsightSelection />
+        <DropdownInsightSelection setLoading={setLoading}/>
       </Card>
-      <Card loading={false} bordered>
-        <Tabs defaultActiveKey="1">
+      <Card loading={loading} bordered>
+        <Tabs activeKey={activeKey} onChange={handleTabChange}>
 			<TabPane 
 			tab={
 				<span>
@@ -149,7 +147,6 @@ const InsightsLandingDashboard = (props) => {
 				{setLocale(locale, "resources.myprogress.generalView")}
 				</span>
 			} 
-			onChange={handleTabChange} activeKey={activeKey}
 			key="1"
 			>
 			{renderGeneralOverview()}

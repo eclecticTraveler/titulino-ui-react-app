@@ -8,6 +8,7 @@ import { onRenderingCourseRegistration, onLoginForEnrollment } from "redux/actio
 import Loading from "components/shared-components/Loading";
 import CourseSelection from "./CourseSelection";
 import QuickToFullEnrollment from "./QuickToFullEnrollment";
+import CoursesNotAvailableMessage from "components/admin-components/ModalMessages/CoursesNotAvailableMessage";
 
  
 export const EnrollmentWrapper = (props) => {
@@ -21,9 +22,15 @@ export const EnrollmentWrapper = (props) => {
 
     if(!availableCourses){
         return (
-            <div>
+            <>
                 <Loading cover="content"/>
-            </div>
+            </>
+        )
+    }else if(availableCourses?.length === 0){
+        return (
+            <>
+                <CoursesNotAvailableMessage />
+            </>
         )
     }else{
         // if(availableCourses?.length > 1){
