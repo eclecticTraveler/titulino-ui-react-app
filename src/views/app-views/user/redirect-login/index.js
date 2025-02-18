@@ -38,18 +38,11 @@ export const LoginAdapter = (props) => {
 			const getSession = async () => {
 			  const { data: { session } } = await supabase.auth.getSession();
 			  if (session) {
-				console.log("SESSION1", session);
-				authenticated(session);
+				authenticated(session?.user);
 				// history.push(AUTH_PREFIX_PATH);
 				history.push(APP_PREFIX_PATH);
 				// history.push("/");
 							//   showLoading()
-			//   			// JwtAuthService.login(values).then(resp => {
-			// 	// 	authenticated(fakeToken)
-			// 	// }).then(e => {
-			// 	// 	showAuthMessage(e)
-			// 	// })
-			// 	authenticated(session);
 			  }
 			};
 		  
@@ -57,18 +50,11 @@ export const LoginAdapter = (props) => {
 		  
 			const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
 			  if (session) {  // Only update if session exists
-				console.log("SESSION2", session);
-				authenticated(session);
+				authenticated(session?.user);
 				history.push(APP_PREFIX_PATH);
 				// history.push(AUTH_PREFIX_PATH);
 				// history.push("/");
 							//   showLoading()
-			//   			// JwtAuthService.login(values).then(resp => {
-			// 	// 	authenticated(fakeToken)
-			// 	// }).then(e => {
-			// 	// 	showAuthMessage(e)
-			// 	// })
-			// 	authenticated(session);
 			  }
 			});
 		  
