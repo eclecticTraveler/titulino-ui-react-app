@@ -6,7 +6,7 @@ import {
 	showLoading,
 	hideAuthMessage,
 	authenticated } from "redux/actions/Auth";
-import { AUTH_PREFIX_PATH } from "../../../../configs/AppConfig";
+import { AUTH_PREFIX_PATH, APP_PREFIX_PATH } from "configs/AppConfig";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
@@ -38,7 +38,11 @@ export const LoginAdapter = (props) => {
 			const getSession = async () => {
 			  const { data: { session } } = await supabase.auth.getSession();
 			  if (session) {
+				console.log("SESSION1", session);
 				authenticated(session);
+				// history.push(AUTH_PREFIX_PATH);
+				history.push(APP_PREFIX_PATH);
+				// history.push("/");
 							//   showLoading()
 			//   			// JwtAuthService.login(values).then(resp => {
 			// 	// 	authenticated(fakeToken)
@@ -53,7 +57,11 @@ export const LoginAdapter = (props) => {
 		  
 			const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
 			  if (session) {  // Only update if session exists
+				console.log("SESSION2", session);
 				authenticated(session);
+				history.push(APP_PREFIX_PATH);
+				// history.push(AUTH_PREFIX_PATH);
+				// history.push("/");
 							//   showLoading()
 			//   			// JwtAuthService.login(values).then(resp => {
 			// 	// 	authenticated(fakeToken)
@@ -65,7 +73,7 @@ export const LoginAdapter = (props) => {
 			});
 		  
 			return () => authListener?.subscription?.unsubscribe();
-		  }, [authenticated]);
+		  }, [authenticated, history]);
   
 
 	const converUrl = 'https://images.unsplash.com/photo-1603899122634-f086ca5f5ddd?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';

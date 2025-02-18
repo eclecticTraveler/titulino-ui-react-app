@@ -26,7 +26,6 @@ import NavSearchWrapper from './NavSearchWrapper';
 import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
 import { env } from "configs/EnvironmentConfig";
 import { setUserNativeLanguage } from 'redux/actions/Lrn';
-import SupabaseService from 'services/SupabaseService';
 
 const locale = true;
 const setLocale = (isLocaleOn, localeKey) =>{		
@@ -115,8 +114,8 @@ const configureMenuItems = () => {
   return menuLinks;
 }
 
-export const NavProfile = (props, {signOut}) => {  
-  const { course, direction, mode, isMobile, setUserNativeLanguage, token } = props;
+export const NavProfile = (props) => {  
+  const { course, direction, mode, isMobile, setUserNativeLanguage, token, signOut } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
 
   const showDrawer = () => {
@@ -129,6 +128,10 @@ export const NavProfile = (props, {signOut}) => {
 
   const resetBaseCourseLanguage = () => {
     setUserNativeLanguage(null);
+  }
+
+  const handleSigningOut = () => {
+    signOut();
   }
 
   const menuItems = configureMenuItems();
@@ -180,14 +183,14 @@ export const NavProfile = (props, {signOut}) => {
                 <span className="font-weight-normal">  {setLocale(locale, "settings.menu.main.title")}</span>
               </span>
             </Menu.Item>
-            {token && 
-              <Menu.Item key={menuItems?.length + 4} onClick={() => SupabaseService.signOutRequest()}>
+            { token && 
+              <Menu.Item key={menuItems?.length + 4} onClick={() => handleSigningOut()}>
                 <span>
                   <LogoutOutlined className="mr-3 profile-accomdation"/>
                   <span className="font-weight-normal">{setLocale(locale, "profile.sign.out")}</span>
                 </span>
-              </Menu.Item>
-            }
+              </Menu.Item>            
+            }            
           </Menu>
         </div>
       </div>
@@ -221,4 +224,4 @@ const mapStateToProps = ({ theme, auth }) => {
 	return { course, token }
 };
 
-export default connect(mapStateToProps, {signOut, setUserNativeLanguage})(NavProfile)
+export default connect(mapStateToProps, {signOut, setUserNativeLanguage, })(NavProfile)
