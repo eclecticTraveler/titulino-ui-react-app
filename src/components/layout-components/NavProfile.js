@@ -32,7 +32,7 @@ const setLocale = (isLocaleOn, localeKey) =>{
   return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
 }
 
-const configureMenuItems = () => {
+const configureMenuItems = (token) => {
 
   const menuLinks = [
     // {
@@ -58,13 +58,15 @@ const configureMenuItems = () => {
     
   ];
 
-  if(env.IS_SSO_ON){ 
-    menuLinks.push({
-      title: setLocale(locale,"sidenav.login"),
-      icon: LoginOutlined ,
-      path: "login"
-  })
-}
+  if (env.IS_SSO_ON) {
+    if (!token) {
+      menuLinks.push({
+        title: setLocale(locale, "sidenav.login"),
+        icon: LoginOutlined,
+        path: "login"
+      });
+    }
+  }
 
   if(env.IS_ADMIN_DASHBOARD_FEAT_ON){
     menuLinks.push(
@@ -117,7 +119,7 @@ const configureMenuItems = () => {
 export const NavProfile = (props) => {  
   const { course, direction, mode, isMobile, setUserNativeLanguage, token, signOut } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
-
+ 
   const showDrawer = () => {
     setVisible(true);
   };
@@ -134,17 +136,17 @@ export const NavProfile = (props) => {
     signOut();
   }
 
-  const menuItems = configureMenuItems();
+  const menuItems = configureMenuItems(token);
   const profileImg = "/img/avatars/tempProfile-2.png";
-  const avatarImg = token?.user?.user_metadata?.avatar_url ?? profileImg;
+  const avatarImg = token?.user_metadata?.avatar_url ?? profileImg;
   const profileMenu = (
       <div className="nav-profile nav-dropdown">
         <div className="nav-profile-header">
           <div className="d-flex">
             <Avatar size={50} src={avatarImg} />
             <div className="pl-3">
-              {token && token?.user?.user_metadata?.full_name && <h4 className="mb-0">{token?.user?.user_metadata?.full_name}</h4>}
-              {token && token?.user?.email && <span className="text-muted">{token?.user?.email}</span>}
+              {token && token?.user_metadata?.full_name && <h4 className="mb-0">{token?.user_metadata?.full_name}</h4>}
+              {token && token?.email && <span className="text-muted">{token?.email}</span>}
             </div>
           </div>
         </div>
