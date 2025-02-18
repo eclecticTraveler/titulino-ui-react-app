@@ -24,8 +24,8 @@ export const LoginForm = (props) => {
 	const localization = true;
 
 	const { 
-		otherSignIn, 
-		showForgetPassword, 
+		otherSignIn = true, 
+		showForgetPassword = false, 
 		hideAuthMessage,
 		onForgetPasswordClick,
 		showLoading,
@@ -198,11 +198,6 @@ LoginForm.propTypes = {
 		PropTypes.string,
 		PropTypes.element
 	]),
-};
-
-LoginForm.defaultProps = {
-	otherSignIn: true,
-	showForgetPassword: false
 };
 
 const mapStateToProps = ({auth}) => {

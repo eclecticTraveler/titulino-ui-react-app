@@ -68,7 +68,7 @@ export const Views = (props) => {
 
     }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);
 
-    // console.log("tokennow",token);
+    console.log("tokennow",token);
 
     if(!wasUserConfigSet){
         return (

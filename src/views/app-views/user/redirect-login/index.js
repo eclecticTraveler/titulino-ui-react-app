@@ -1,35 +1,125 @@
 import React, { useState, useEffect } from 'react';
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
+import { 		
+	showAuthMessage,
+	showLoading,
+	hideAuthMessage,
+	authenticated } from "redux/actions/Auth";
 import { AUTH_PREFIX_PATH } from "../../../../configs/AppConfig";
-import LoginOne from "../../../auth-views/authentication/login-1";
-import { createClient } from '@supabase/supabase-js';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { Route, Switch, Redirect } from "react-router-dom";
-import supabaseConfig from 'configs/SupabaseConfig';
-import { SupabaseProvider } from '@supabase/auth-helpers-react';
+import { supabase } from 'auth/SupabaseAuth';
+import { Card } from 'antd';
+import { useHistory } from "react-router-dom";
+import JwtAuthService from 'services/JwtAuthService'
 
+export const LoginAdapter = (props) => {
+		let history = useHistory();	
+		const { 
+			otherSignIn = true, 
+			showForgetPassword = false, 
+			hideAuthMessage,
+			onForgetPasswordClick,
+			showLoading,
+			extra,
+			loading,
+			showMessage,
+			message,
+			authenticated,
+			showAuthMessage,
+			token,
+			redirect,
+			allowRedirect
+		} = props
+	  
 
-export const RedirectLogin = () => {
-	const supabase = createClient(
-		"https://dollxabphvcafglmixns.supabase.co",
-		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvbGx4YWJwaHZjYWZnbG1peG5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjc0OTM5MjUsImV4cCI6MjA0MzA2OTkyNX0.bXj0ZjusXoRNihiG5BcSjMOGXqy35WBwm0aqGmCohY4"
-	)
+		  useEffect(() => {
+			const getSession = async () => {
+			  const { data: { session } } = await supabase.auth.getSession();
+			  if (session) {
+				authenticated(session);
+							//   showLoading()
+			//   			// JwtAuthService.login(values).then(resp => {
+			// 	// 	authenticated(fakeToken)
+			// 	// }).then(e => {
+			// 	// 	showAuthMessage(e)
+			// 	// })
+			// 	authenticated(session);
+			  }
+			};
+		  
+			getSession();
+		  
+			const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+			  if (session) {  // Only update if session exists
+				authenticated(session);
+							//   showLoading()
+			//   			// JwtAuthService.login(values).then(resp => {
+			// 	// 	authenticated(fakeToken)
+			// 	// }).then(e => {
+			// 	// 	showAuthMessage(e)
+			// 	// })
+			// 	authenticated(session);
+			  }
+			});
+		  
+			return () => authListener?.subscription?.unsubscribe();
+		  }, [authenticated]);
+  
 
-
+	const converUrl = 'https://images.unsplash.com/photo-1603899122634-f086ca5f5ddd?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+	const titleOfEnrollment = 'login';
 //   return <Redirect to={`${AUTH_PREFIX_PATH}/login`} />;
-return (
-	// <><div><LoginOne allowRedirect={true} /></div></>
-	// <SupabaseProvider supabaseClient={supabase}>
-		<div>Test Component</div>
-	// </SupabaseProvider>
-		// <>jsll</>
-		// 	<div className="auth-container">
-		// 	<Switch>
-		// 		<Redirect to={`${AUTH_PREFIX_PATH}/test`} />
-		// 	</Switch>
-		
-		// </div>
-)
-};
+	return (
+		<>
+			<div className="container customerName">
+		<Card
+			bordered
+			cover={
+			<img
+				alt={titleOfEnrollment}
+				src={converUrl}
+				style={{ height: 100, objectFit: 'cover' }}
+			/>
+			}
+		>
+			<Auth
+			className="supabase-auth-ui"
+			supabaseClient={supabase}
+			appearance={{
+				theme: ThemeSupa,
+				variables: {
+				default: {
+					colors: {
+					brand: "#e79547", // Primary button color
+					brandAccent: "#d27c3f", // Hover color
+					},
+				},
+				},
+			}}
+			providers={['google', 'facebook']}
+			/>
+		</Card>
+		</div>
+		</>
+		)
+	};
 
-export default RedirectLogin;
+
+function mapDispatchToProps(dispatch) {
+  return bindActionCreators({
+		showAuthMessage,
+		showLoading,
+		hideAuthMessage,
+		authenticated
+  }, dispatch);
+}
+
+
+const mapStateToProps = ({auth}) => {
+	const {loading, message, showMessage, token, redirect} = auth;
+	return {loading, message, showMessage, token, redirect}
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginAdapter);

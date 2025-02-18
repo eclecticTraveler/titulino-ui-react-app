@@ -1,0 +1,41 @@
+.supabase-auth-ui {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content */
+}
+
+@media (min-width: 768px) { /* Desktop screens */
+  .supabase-auth-ui {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px; /* Add spacing between elements */
+  }
+}
+
+.supabase-auth-ui button {
+  width: auto !important; /* Prevent full-width buttons */
+  min-width: 200px; /* Adjust as needed */
+  padding: 8px 16px; /* Standard button padding */
+  border-radius: 8px; /* Rounded corners */
+}
+
+.supabase-auth-ui .social-auth button {
+  background-color: #ffffff !important; /* White background */
+  color: #333 !important; /* Dark text */
+  border: 1px solid #ccc !important;
+  width: auto !important;
+}
+
+.supabase-auth-ui .sbui-button-container {
+  display: flex;
+  flex-direction: column; /* Default: stack buttons */
+  align-items: center; /* Center buttons */
+  gap: 10px;
+}
+
+@media (min-width: 768px) { 
+  .supabase-auth-ui .sbui-button-container {
+    flex-direction: row; /* Arrange buttons in a row on large screens */
+    justify-content: center;
+  }
+}

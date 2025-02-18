@@ -25,7 +25,8 @@ import { DIR_RTL } from 'constants/ThemeConstant';
 import NavSearchWrapper from './NavSearchWrapper';
 import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
 import { env } from "configs/EnvironmentConfig";
-import { setUserNativeLanguage } from 'redux/actions/Lrn'
+import { setUserNativeLanguage } from 'redux/actions/Lrn';
+import SupabaseService from 'services/SupabaseService';
 
 const locale = true;
 const setLocale = (isLocaleOn, localeKey) =>{		
@@ -115,7 +116,7 @@ const configureMenuItems = () => {
 }
 
 export const NavProfile = (props, {signOut}) => {  
-  const { course, direction, mode, isMobile, setUserNativeLanguage } = props;
+  const { course, direction, mode, isMobile, setUserNativeLanguage, token } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
 
   const showDrawer = () => {
@@ -132,14 +133,15 @@ export const NavProfile = (props, {signOut}) => {
 
   const menuItems = configureMenuItems();
   const profileImg = "/img/avatars/tempProfile-2.png";
+  const avatarImg = token?.user?.user_metadata?.avatar_url ?? profileImg;
   const profileMenu = (
       <div className="nav-profile nav-dropdown">
         <div className="nav-profile-header">
           <div className="d-flex">
-            <Avatar size={50} src={profileImg} />
+            <Avatar size={50} src={avatarImg} />
             <div className="pl-3">
-              {/* <h4 className="mb-0">{tokenParsed?.name}</h4>
-              <span className="text-muted">{tokenParsed?.preferred_username}</span> */}
+              {token && token?.user?.user_metadata?.full_name && <h4 className="mb-0">{token?.user?.user_metadata?.full_name}</h4>}
+              {token && token?.user?.email && <span className="text-muted">{token?.user?.email}</span>}
             </div>
           </div>
         </div>
@@ -178,12 +180,14 @@ export const NavProfile = (props, {signOut}) => {
                 <span className="font-weight-normal">  {setLocale(locale, "settings.menu.main.title")}</span>
               </span>
             </Menu.Item>
-            {/* <Menu.Item key={menuItems?.length + 3} onClick={() => alert("dd")}>
-              <span>
-                <LogoutOutlined className="mr-3 profile-accomdation"/>
-                <span className="font-weight-normal">{setLocale(locale, "profile.sign.out")}</span>
-              </span>
-            </Menu.Item> */}
+            {token && 
+              <Menu.Item key={menuItems?.length + 4} onClick={() => SupabaseService.signOutRequest()}>
+                <span>
+                  <LogoutOutlined className="mr-3 profile-accomdation"/>
+                  <span className="font-weight-normal">{setLocale(locale, "profile.sign.out")}</span>
+                </span>
+              </Menu.Item>
+            }
           </Menu>
         </div>
       </div>
@@ -195,7 +199,7 @@ export const NavProfile = (props, {signOut}) => {
 
       <Dropdown placement="bottomRight" overlay={profileMenu} trigger={["click"]}>
         <div className="avatar-menu d-flex align-items-center" mode="horizontal">
-          <Avatar size={40} src={profileImg} />
+          <Avatar size={40} src={avatarImg} />
         </div>
       </Dropdown>
 
@@ -211,9 +215,10 @@ export const NavProfile = (props, {signOut}) => {
   );
 }
 
-const mapStateToProps = ({ theme }) => {
+const mapStateToProps = ({ theme, auth }) => {
 	const { course } =  theme;
-	return { course }
+  const { token } = auth;
+	return { course, token }
 };
 
 export default connect(mapStateToProps, {signOut, setUserNativeLanguage})(NavProfile)
