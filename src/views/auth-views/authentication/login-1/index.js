@@ -26,7 +26,6 @@ const LoginOne = props => {
 						<Card>
 							<div className="my-4">
 								<div className="text-center">
-									<img className="img-fluid" src={`/img/${theme === 'light' ? 'titulino-logo-1.png': 'logo-white.png'}`} alt="" />
 									<IconAdapter icon={"/img/titulino-logo-1.png"} iconType={ICON_LIBRARY_TYPE_CONFIG.hostedSvg}/>
 									<p>{setLocale(localization, "profile.login.accountyet")} <a href="/lrn/signup">{setLocale(localization, "profile.login.signup")}</a></p>
 								</div>

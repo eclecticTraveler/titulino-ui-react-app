@@ -18,7 +18,6 @@ import { env } from "../../configs/EnvironmentConfig";
 import { toggleCollapsedNav, onMobileNavToggle } from '../../redux/actions/Theme';
 import { NAV_TYPE_TOP, SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from '../../constants/ThemeConstant';
 import utils from '../../utils'
-// import { useKeycloak } from "@react-keycloak/web";
 import { Button } from "antd";
 import IntlMessage from "../../components/util-components/IntlMessage";
 import { MenuFoldOutlined, MenuUnfoldOutlined, SearchOutlined } from '@ant-design/icons';

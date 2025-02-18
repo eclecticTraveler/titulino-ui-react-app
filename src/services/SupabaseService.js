@@ -1,6 +1,7 @@
 import { supabase } from 'auth/SupabaseAuth';
 
 const SupabaseService = {};
+// **AUTHENTICATION METHODS**
 
 // Sign in with email and password
 SupabaseService.signInEmailRequest = async (email, password) => {
@@ -34,7 +35,7 @@ SupabaseService.signInGoogleRequest = async () => {
     console.error("Error signing in with Google:", error);
     return error;
   }
-  return data;
+  return data.session?.user;
 };
 
 // Sign in with Facebook
@@ -46,10 +47,10 @@ SupabaseService.signInFacebookRequest = async () => {
     console.error("Error signing in with Facebook:", error);
     return error;
   }
-  return data;
+  return data.session?.user;
 };
 
-// Sign up with email and password
+// Sign up with email & password
 SupabaseService.signUpEmailRequest = async (email, password) => {
   const { user, error } = await supabase.auth.signUp({
     email,
@@ -60,19 +61,6 @@ SupabaseService.signUpEmailRequest = async (email, password) => {
     return error;
   }
   return user;
-};
-
-
-// Get detail user session
-SupabaseService.getCurrentSession = async () => {
-  const { data, error } = await supabase.auth.getSession();
-  
-  if (error) {
-    console.error("Error fetching session:", error);
-    return error;
-  }
-  
-  return data.session;  // or just return data if you want more flexibility
 };
 
 export default SupabaseService;

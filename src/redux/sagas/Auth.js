@@ -20,7 +20,6 @@ import SupabaseService from 'services/SupabaseService';
 
 // Sign in with email and password
 export function* signInWithEmail() {
-	console.log("SAGAAAA")
   yield takeEvery(SIGNIN, function* ({payload}) {
     const {email, password} = payload;
     try {
@@ -56,7 +55,6 @@ export function* signOut() {
 
 // Sign up with email and password
 export function* signUpWithEmail() {
-	console.log("SAGAAA FacebookA")
   yield takeEvery(SIGNUP, function* ({ payload }) {
     const { email, password } = payload;
     try {

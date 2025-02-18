@@ -60,7 +60,6 @@ const getRegionValue = (name, data) => {
 }
 
 const getProjectionConfig = (mapType) => {
-	console.log("mapType", mapType);
 	if (mapType === 'world') {
 	  return {
 		scale: 145, // World map scale
@@ -264,7 +263,7 @@ const renderDataList = data => {
 }  
 
 export const RegiondataWidget = props => {
-	const { data, mapSource, mapType, title, content, list } = props
+	const { data = [], mapSource = geoUrl, mapType = 'world', title, content, list } = props
 	const isMobile = !utils.getBreakPoint(useBreakpoint()).includes('lg')
 	return (
 		<Card bodyStyle={{padding: 0}}>
@@ -301,11 +300,4 @@ RegiondataWidget.propTypes = {
 	list: PropTypes.element
   };
   
-
-RegiondataWidget.defaultProps = {
-	data: [],
-	mapSource: geoUrl,
-	mapType: 'world'
-};
-
 export default RegiondataWidget

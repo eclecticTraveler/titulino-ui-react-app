@@ -68,23 +68,29 @@ export const Views = (props) => {
 
     }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);
 
-    // console.log("tokennow",token);
+    console.log("tokennow",token);
 
+    if(!wasUserConfigSet){
+        return (
+            <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
+                <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
+                    <CourseSelection />
+                </ConfigProvider>
+            </IntlProvider>
+        )
+    }
 
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
             <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
                 <Switch>
-                    {!wasUserConfigSet && <CourseSelection />}
+                    {/* {!wasUserConfigSet && <CourseSelection />} */}
                     <Route exact path={DEFAULT_PREFIX_VIEW}>
                         <Redirect to={token ? AUTH_PREFIX_PATH : APP_PREFIX_PATH} />
                     </Route>
                     <Route path={APP_PREFIX_PATH}>
                         <AppLayout direction={direction} location={location} />
                     </Route>
-                    {/* <Route path={AUTH_PREFIX_PATH}>
-                        <AuthLayout direction={direction} location={location}/>
-                    </Route> */}
                     <RouteInterceptor path={AUTH_PREFIX_PATH} isAuthenticated={token}>
                         <AuthLayout direction={direction} location={location}/>
                     </RouteInterceptor>

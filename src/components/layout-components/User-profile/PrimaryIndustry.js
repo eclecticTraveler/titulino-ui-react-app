@@ -92,8 +92,8 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn}) => {
-	const {keycloakRedux, isToEditUserProfile} = lrn;
-	return {keycloakRedux, isToEditUserProfile} 
+	const {isToEditUserProfile} = lrn;
+	return {isToEditUserProfile} 
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PrimaryIndustry));

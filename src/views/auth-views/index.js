@@ -15,7 +15,7 @@ export const AuthViews = (props) => {
       <Switch>
         {/* <Route exact path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}`} component={lazy(() => retry(() => import(`./authentication/auth-course-level`)))} /> */}
         <Route exact path={`${AUTH_PREFIX_PATH}/test`} component={lazy(() => retry(() => import(`./authentication/auth-course-level`)))} />
-        {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/keycloak-login`))} /> */}
+        {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/login`))} /> */}
         {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/login`))} /> */}
         {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={Login} /> */}
         <Route path={`${AUTH_PREFIX_PATH}/login-2`} component={lazy(() => import(`./authentication/login-2`))} />
