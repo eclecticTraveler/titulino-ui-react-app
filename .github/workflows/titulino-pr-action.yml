@@ -1,4 +1,4 @@
-name: publish to buckets
+name: publish to gc buckets
 
 on:
   push:
@@ -26,7 +26,7 @@ env:
   CI: false
   NODE_OPTIONS: "--max_old_space_size=8112"
   GCP_PROJECT_ID: your-google-cloud-project-id
-  GCP_BUCKET_NAME: gs://your-bucket-name
+  GCP_BUCKET_NAME: ${{ github.ref == 'refs/heads/master' && 'gs://titulino.com' || 'gs://dev.titulino.com' }}
   GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} # Add this secret in your GitHub repo
 
 jobs:
