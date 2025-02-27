@@ -390,7 +390,7 @@ useEffect(() => {
               }
             >
               <h1 style={{ marginBottom: "10px", textAlign: "left" }}>
-                {titleOfEnrollment} - (v1.4)
+                {titleOfEnrollment} - (v1.3.1)
               </h1>
             </Card>
 
@@ -658,7 +658,7 @@ useEffect(() => {
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
               <p>
-                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}{" (1.04) "}
+                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}{" (v1.3.1) "}
                 <TermsModal />{" "}
                 {setLocale(locale, "enrollment.form.ofUseAndPrivacyPolicy")}
               </p>
