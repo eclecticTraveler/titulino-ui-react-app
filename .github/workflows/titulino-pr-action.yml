@@ -54,7 +54,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-
+          
 
       # Cache npm modules
       - name: Cache npm modules
@@ -79,11 +79,23 @@ jobs:
         run: |
           echo "npm version --> $(npm -v)"
           echo "node version --> $(node -v)"
+          
+          # Output current environment variable for debugging
+          echo "process.env.ENVIRONMENT --> $ENVIRONMENT"
+          
           [ -n "${ENV_INPUT}" ] && export ENV=${ENV_INPUT}
           echo "ENV--> ${ENV} ENV_INPUT--> ${ENV_INPUT}"
           export ENVIRONMENT=${ENV}
+          
+          # Print the environment after the change
+          echo "After setting ENV, process.env.ENVIRONMENT --> $ENVIRONMENT"
+
+          # Replace the placeholder with actual ENV value
           sed -i "s/process.env.ENVIRONMENT/\"${ENV}\";/" src/configs/EnvironmentConfig.js
 
+          # Remove all files in the bucket before syncing
+          gsutil -m rm -r gs://${GCP_BUCKET_NAME}/*
 
           # Sync new build to the bucket
           gsutil -m rsync -r build gs://${GCP_BUCKET_NAME}
+
