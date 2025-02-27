@@ -20,33 +20,38 @@ env:
   DEV_DOMAIN_NAME: dev.titulino.com
   PROD_DOMAIN_NAME: titulino.com
   CACHE_BUCKET_NAME: github-actions-cache-162166941288
-  GIT_TOKEN: ${{ secrets.TITULINO_GITHUB_TOKEN  }}
+  GIT_TOKEN: ${{ secrets.TITULINO_GITHUB_TOKEN }}
   ENV: ${{ github.ref == 'refs/heads/master' && 'prod' || 'dev' }}
   ENV_INPUT: ${{ inputs.env }}
   CI: false
   NODE_OPTIONS: "--max_old_space_size=4096" # Reduce memory to 4GB unless needed
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCP_BUCKET_NAME: ${{ github.ref == 'refs/heads/master' && 'titulino.com' || 'dev.titulino.com' }}
-  GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
 jobs:
   publish:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Checkout code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 18.10.0
-      - name: Install Google Cloud SDK
-        run: |
-          curl https://sdk.cloud.google.com | bash
-          source $HOME/google-cloud-sdk/path.bash.inc
-      - name: Authenticate with Google Cloud
-        run: |
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > gcp-key.json
-          gcloud auth activate-service-account --key-file=gcp-key.json
-          gcloud config set project $GCP_PROJECT_ID
+
+      # Install Google Cloud SDK and authenticate using service account credentials
+      - name: Setup Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      # Cache npm modules
       - name: Cache npm modules
         id: npm-cache
         run: |
@@ -55,10 +60,16 @@ jobs:
             gsutil cp gs://${CACHE_BUCKET_NAME}/cip/npm_cache.tgz npm_cache.tgz
             tar -xzf npm_cache.tgz
           fi
+
+      # Install dependencies
       - name: Install dependencies
-        run: npm install # Make sure dependencies are installed
+        run: npm install
+
+      # Build React app
       - name: Build React App
         run: npm run build
+
+      # Upload to GCS
       - name: Upload to GCS
         run: |
           echo "npm version --> $(npm -v)"
@@ -67,4 +78,9 @@ jobs:
           echo "ENV--> ${ENV} ENV_INPUT--> ${ENV_INPUT}"
           export ENVIRONMENT=${ENV}
           sed -i "s/process.env.ENVIRONMENT/\"${ENV}\";/" src/configs/EnvironmentConfig.js
+
+          # Remove all files in the bucket before syncing
+          gsutil -m rm -r gs://${GCP_BUCKET_NAME}/*
+
+          # Sync new build to the bucket
           gsutil -m rsync -r build gs://${GCP_BUCKET_NAME}
