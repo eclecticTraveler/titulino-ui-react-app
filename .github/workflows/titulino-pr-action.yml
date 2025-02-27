@@ -41,7 +41,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18.10.0
+          node-version: 22.13.1
 
       # Install Google Cloud SDK and authenticate using service account credentials
       - name: Setup Google Cloud CLI
