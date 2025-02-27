@@ -2,9 +2,9 @@ name: publish to gc buckets
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main  ]
   pull_request:
-    branches: [ master ]
+    branches: [ main  ]
   workflow_dispatch:
     inputs:
       env:
@@ -21,12 +21,12 @@ env:
   PROD_DOMAIN_NAME: titulino.com
   CACHE_BUCKET_NAME: github-actions-cache-162166941288
   GIT_TOKEN: ${{ secrets.TITULINO_GITHUB_TOKEN }}
-  ENV: ${{ github.ref == 'refs/heads/master' && 'prod' || 'dev' }}
+  ENV: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
   ENV_INPUT: ${{ inputs.env }}
   CI: false
   NODE_OPTIONS: "--max_old_space_size=4096"
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  GCP_BUCKET_NAME: ${{ github.ref == 'refs/heads/master' && 'titulino.com' || 'dev.titulino.com' }}
+  GCP_BUCKET_NAME: ${{ github.ref == 'refs/heads/main' && 'titulino.com' || 'dev.titulino.com' }}
 
 jobs:
   publish:
