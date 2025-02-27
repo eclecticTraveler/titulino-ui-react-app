@@ -55,12 +55,7 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # Force gcloud to use JSON and ignore .p12
-      - name: Authenticate explicitly
-        run: |
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" | base64 -d > /tmp/key.json
-          gcloud auth activate-service-account --key-file=/tmp/key.json --project=${{ secrets.GCP_PROJECT_ID }}
-    
+
       # Cache npm modules
       - name: Cache npm modules
         id: npm-cache
