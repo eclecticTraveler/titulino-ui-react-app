@@ -24,10 +24,10 @@ env:
   ENV: ${{ github.ref == 'refs/heads/master' && 'prod' || 'dev' }}
   ENV_INPUT: ${{ inputs.env }}
   CI: false
-  NODE_OPTIONS: "--max_old_space_size=8112"
-  GCP_PROJECT_ID: your-google-cloud-project-id
-  GCP_BUCKET_NAME: ${{ github.ref == 'refs/heads/master' && 'gs://titulino.com' || 'gs://dev.titulino.com' }}
-  GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} # Add this secret in your GitHub repo
+  NODE_OPTIONS: "--max_old_space_size=4096" # Reduce memory to 4GB unless needed
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_BUCKET_NAME: ${{ github.ref == 'refs/heads/master' && 'titulino.com' || 'dev.titulino.com' }}
+  GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
 jobs:
   publish:
@@ -44,29 +44,27 @@ jobs:
           source $HOME/google-cloud-sdk/path.bash.inc
       - name: Authenticate with Google Cloud
         run: |
-            # Write the secret content directly to a file
-            echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > gcp-key.json
-            
-            # Authenticate using the service account key
-            gcloud auth activate-service-account --key-file=gcp-key.json
-            
-            # Set the project ID
-            gcloud config set project $GCP_PROJECT_ID        
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > gcp-key.json
+          gcloud auth activate-service-account --key-file=gcp-key.json
+          gcloud config set project $GCP_PROJECT_ID
       - name: Cache npm modules
         id: npm-cache
         run: |
-          # Check if the cache exists in GCS
           if gsutil -q stat gs://${CACHE_BUCKET_NAME}/cip/npm_cache.tgz; then
             echo "Cache found. Restoring from GCS..."
             gsutil cp gs://${CACHE_BUCKET_NAME}/cip/npm_cache.tgz npm_cache.tgz
             tar -xzf npm_cache.tgz
           fi
+      - name: Install dependencies
+        run: npm install # Make sure dependencies are installed
+      - name: Build React App
+        run: npm run build
       - name: Upload to GCS
         run: |
           echo "npm version --> $(npm -v)"
           echo "node version --> $(node -v)"
           [ -n "${ENV_INPUT}" ] && export ENV=${ENV_INPUT}
           echo "ENV--> ${ENV} ENV_INPUT--> ${ENV_INPUT}"
-          export ENVIROMENT=${ENV}
-          sed -i "s/process.env.ENVIROMENT/\"${ENV}\";/" src/configs/EnvironmentConfig.js
-          echo "Setting environment sp
+          export ENVIRONMENT=${ENV}
+          sed -i "s/process.env.ENVIRONMENT/\"${ENV}\";/" src/configs/EnvironmentConfig.js
+          gsutil -m rsync -r build gs://${GCP_BUCKET_NAME}
