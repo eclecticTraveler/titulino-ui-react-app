@@ -45,7 +45,7 @@ jobs:
 
       # Authenticate with Google Cloud using service account key
       - name: Authenticate with GCP
-        uses: google-github-actions/auth@v0
+        uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
