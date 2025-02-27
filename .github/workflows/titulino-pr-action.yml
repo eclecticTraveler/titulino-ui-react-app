@@ -44,9 +44,14 @@ jobs:
           source $HOME/google-cloud-sdk/path.bash.inc
       - name: Authenticate with Google Cloud
         run: |
-          echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' | base64 --decode > gcp-key.json
-          gcloud auth activate-service-account --key-file=gcp-key.json
-          gcloud config set project $GCP_PROJECT_ID
+            # Write the secret content directly to a file
+            echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > gcp-key.json
+            
+            # Authenticate using the service account key
+            gcloud auth activate-service-account --key-file=gcp-key.json
+            
+            # Set the project ID
+            gcloud config set project $GCP_PROJECT_ID        
       - name: Cache npm modules
         id: npm-cache
         run: |
