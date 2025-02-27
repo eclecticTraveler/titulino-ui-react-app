@@ -44,8 +44,8 @@ const local = {
 };
 
 const getEnv = () => {
-  // const enviroment = process.env.NODE_ENV
-  const enviroment = "production";
+  const enviroment = process.env.NODE_ENV
+  // const enviroment = "production";
   // const enviroment = "development";
   // const enviroment = "local";
 	switch (enviroment) {

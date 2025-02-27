@@ -1,7 +1,7 @@
 {
   "name": "lrn-ui-react-app",
   "homepage": "https://titulino.com",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@ant-design/charts": "^1.4.2",
@@ -61,7 +61,6 @@
   },
   "scripts": {
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -89,7 +88,6 @@
   "devDependencies": {
     "@types/react-router-dom": "^5.3.3",
     "autoprefixer": "^10.4.2",
-    "gh-pages": "^6.1.1",
     "gulp-csso": "^4.0.1",
     "gulp-debug": "^3.2.0",
     "gulp-less": "^4.0.1",
