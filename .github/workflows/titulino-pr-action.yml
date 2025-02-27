@@ -43,13 +43,20 @@ jobs:
         with:
           node-version: 22.13.1
 
-      # Install Google Cloud SDK and authenticate using service account credentials
+      # Install Google Cloud SDK
       - name: Setup Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v0
         with:
-          service_account_email: ${{ secrets.GCP_SA_EMAIL }}
           service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
           project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      # Force gcloud to use JSON and ignore .p12
+      - name: Authenticate explicitly
+        run: |
+          echo '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}' > /tmp/key.json
+          gcloud auth activate-service-account --key-file=/tmp/key.json --project=${{ secrets.GCP_PROJECT_ID }}
+          gcloud auth list
+          gcloud config list project
 
       # Cache npm modules
       - name: Cache npm modules
