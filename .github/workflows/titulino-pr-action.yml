@@ -45,16 +45,16 @@ jobs:
 
       # Authenticate with Google Cloud using service account key
       - name: Authenticate with GCP
-        run: |
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" | base64 -d > /tmp/key.json
-          gcloud auth activate-service-account --key-file=/tmp/key.json --project=${{ secrets.GCP_PROJECT_ID }}
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       # Install Google Cloud SDK
       - name: Setup Google Cloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          
+
 
       # Cache npm modules
       - name: Cache npm modules
@@ -84,8 +84,6 @@ jobs:
           export ENVIRONMENT=${ENV}
           sed -i "s/process.env.ENVIRONMENT/\"${ENV}\";/" src/configs/EnvironmentConfig.js
 
-          # Remove all files in the bucket before syncing
-          gsutil -m rm -r gs://${GCP_BUCKET_NAME}/*
 
           # Sync new build to the bucket
           gsutil -m rsync -r build gs://${GCP_BUCKET_NAME}
