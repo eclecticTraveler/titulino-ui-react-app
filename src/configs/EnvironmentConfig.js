@@ -6,7 +6,7 @@ const dev = {
   IS_KC_FEATURE_ON: false,
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
   IS_ENROLLMENT_FEAT_ON: true,
-  IS_ADMIN_DASHBOARD_FEAT_ON: true,
+  IS_ADMIN_DASHBOARD_FEAT_ON: false,
   IS_NEW_PROGRESS_APP_ON: true,
   IS_NEW_SEARCH_CONFIG_ON: true,
   IS_SSO_ON: true,
