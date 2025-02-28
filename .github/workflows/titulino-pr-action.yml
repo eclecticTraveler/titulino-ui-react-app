@@ -1,13 +1,10 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
-name: Publish CI For DEV in NODE
+name: publish to gc buckets
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main  ]
   pull_request:
-    branches: [ master ]
+    branches: [ main  ]
   workflow_dispatch:
     inputs:
       env:
@@ -20,40 +17,85 @@ on:
           - prod
 
 env:
-  DEV_DOMAIN_NAME: eclectictraveler.github.io/titulino-ui-react-app
+  DEV_DOMAIN_NAME: dev.titulino.com
   PROD_DOMAIN_NAME: titulino.com
-  ENV: ${{ github.ref == 'refs/heads/master' && 'prod' || 'dev' }}
+  CACHE_BUCKET_NAME: github-actions-cache-162166941288
+  GIT_TOKEN: ${{ secrets.TITULINO_GITHUB_TOKEN }}
+  ENV: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
   ENV_INPUT: ${{ inputs.env }}
   CI: false
-
-permissions:
-  contents: write
+  NODE_OPTIONS: "--max_old_space_size=4096"
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_BUCKET_NAME: ${{ github.ref == 'refs/heads/main' && 'titulino.com' || 'dev.titulino.com' }}
 
 jobs:
-  build:
-
+  publish:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    #- run: npm test
+      # Checkout code
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
+      # Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.1
 
-    - name: Deploy with gh-pages
-      run: |
-        git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-        npm run deploy -- -u "github-actions-bot <support+actions@github.com>"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Authenticate with Google Cloud using service account key
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      # Install Google Cloud SDK
+      - name: Setup Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          
+
+      # Cache npm modules
+      - name: Cache npm modules
+        id: npm-cache
+        run: |
+          if gsutil -q stat gs://${CACHE_BUCKET_NAME}/cip/npm_cache.tgz; then
+            echo "Cache found. Restoring from GCS..."
+            gsutil cp gs://${CACHE_BUCKET_NAME}/cip/npm_cache.tgz npm_cache.tgz
+            tar -xzf npm_cache.tgz
+          fi
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Build React app
+      - name: Build React App
+        run: npm run build
+
+      # Upload to GCS
+      - name: Upload to GCS
+        run: |
+          echo "npm version --> $(npm -v)"
+          echo "node version --> $(node -v)"
+          
+          # Output current environment variable for debugging
+          echo "process.env.ENVIRONMENT --> $ENVIRONMENT"
+          
+          [ -n "${ENV_INPUT}" ] && export ENV=${ENV_INPUT}
+          echo "ENV--> ${ENV} ENV_INPUT--> ${ENV_INPUT}"
+          export ENVIRONMENT=${ENV}
+          
+          # Print the environment after the change
+          echo "After setting ENV, process.env.ENVIRONMENT --> $ENVIRONMENT"
+
+          # Replace the placeholder with actual ENV value
+          sed -i "s/process.env.ENVIRONMENT/\"${ENV}\";/" src/configs/EnvironmentConfig.js
+
+          # Remove all files in the bucket before syncing
+          gsutil -m rm -r gs://${GCP_BUCKET_NAME}/*
+
+          # Sync new build to the bucket
+          gsutil -m rsync -r build gs://${GCP_BUCKET_NAME}
+
