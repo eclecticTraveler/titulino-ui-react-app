@@ -134,7 +134,8 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
     case 'electronics':
       return 'ELECTRONICS_MAR_2025_COURSE_01';
     default:
-      throw new Error(`Invalid course theme: ${courseTheme}`);
+      return 'HOUSEHOLD_ITEMS_PART_1_JAN_2025_COURSE_01' // TODO find a better way to do this!
+      // throw new Error(`Invalid course theme: ${courseTheme}`);
   }
 };
 
