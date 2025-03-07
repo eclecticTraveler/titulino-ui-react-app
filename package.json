@@ -65,7 +65,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "dev": "concurrently \"npm run start\" \"gulp watch\"",
-    "dontForgetAfterEachRelease": "git push --follow-tags origin fix-NAN"
+    "afterEachRelease": "git push --follow-tags origin fix-NAN"
   },
   "eslintConfig": {
     "extends": [
