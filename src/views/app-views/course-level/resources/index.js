@@ -68,7 +68,6 @@ const ExternalFormSection = (props) => {
     }, [loadResources]);
 
     const pathInfo = utils.getCourseSectionInfoFromUrl(location?.pathname);
-
     if (pathInfo?.modality === "my-progress") {
         if(env.IS_NEW_PROGRESS_APP_ON){
             return <ProgressDashboardByEmailV3 />; 
@@ -77,7 +76,7 @@ const ExternalFormSection = (props) => {
         }
 
     } else if (pathInfo?.modality === "test") {
-        if(pathInfo?.levelNo === "household"){
+        if(pathInfo?.levelNo === "level-household"){
             return (
                 <>
                     <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSd9jUkxcvfj4j50gvptcwOSOV5bq451beC3B1NvxUB-h0ZrGg/viewform" />
