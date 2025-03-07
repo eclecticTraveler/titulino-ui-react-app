@@ -58,16 +58,6 @@ const configureMenuItems = (token) => {
     
   ];
 
-  if (env.IS_SSO_ON) {
-    if (!token) {
-      menuLinks.push({
-        title: setLocale(locale, "sidenav.login"),
-        icon: LoginOutlined,
-        path: "login"
-      });
-    }
-  }
-
   if(env.IS_ADMIN_DASHBOARD_FEAT_ON){
     menuLinks.push(
       {
@@ -107,11 +97,6 @@ const configureMenuItems = (token) => {
     });
   }
   
-  // menuLinks.push({
-  //   title: setLocale(locale, "profile.sign.out"),
-  //   icon: LogoutOutlined,
-  //   path: "logout"
-  // });
 
   return menuLinks;
 }
@@ -151,49 +136,65 @@ export const NavProfile = (props) => {
           </div>
         </div>
         <div className="nav-profile-body">
-          <Menu>
-            {menuItems.map((el, i) => {
-              return (
-                <Menu.Item key={i}>
-                    <Link id={el.id} to={`${APP_PREFIX_PATH}/${el.path}`}>
-                       <Icon className="mr-3 profile-accomdation" type={el.icon} />
-                       <span className="font-weight-normal">{el.title}</span>
-                    </Link>
-                </Menu.Item>
-              );
-            })}
-            <Menu.Item key={menuItems?.length + 2}  onClick={resetBaseCourseLanguage}>
-              <span>
-                <SwapOutlined className="mr-3 profile-accomdation" />
-                <span className="font-weight-normal">  {setLocale(locale, "profile.switch.course")}</span>
-              </span>
+        <Menu>
+          {menuItems.map((el, i) => (
+            <Menu.Item key={i}>
+              <Link id={el.id} to={`${APP_PREFIX_PATH}/${el.path}`}>
+                <Icon className="mr-3 profile-accomdation" type={el.icon} />
+                <span className="font-weight-normal">{el.title}</span>
+              </Link>
             </Menu.Item>
-            <Menu.SubMenu
-              key="language"
-              title={
-                <span>
-                  <GlobalOutlined className="mr-3 profile-accommodation profile-submenu-accomodation" />
-                  <span className="font-weight-normal">{setLocale(locale, "settings.menu.sub.title.2.language")}</span>
-                </span>
-              }
-            >
-              <ProfileNavLanguagePanelConfig />
-            </Menu.SubMenu>
-            <Menu.Item key={menuItems?.length + 3}  onClick={showDrawer}>
+          ))}
+
+          <Menu.Item key={menuItems?.length + 2} onClick={resetBaseCourseLanguage}>
+            <span>
+              <SwapOutlined className="mr-3 profile-accomdation" />
+              <span className="font-weight-normal"> {setLocale(locale, "profile.switch.course")}</span>
+            </span>
+          </Menu.Item>
+
+          <Menu.SubMenu
+            key="language"
+            title={
               <span>
-                <SettingOutlined className="mr-3 profile-accomdation" />
-                <span className="font-weight-normal">  {setLocale(locale, "settings.menu.main.title")}</span>
+                <GlobalOutlined className="mr-3 profile-accommodation profile-submenu-accomodation" />
+                <span className="font-weight-normal">{setLocale(locale, "settings.menu.sub.title.2.language")}</span>
               </span>
+            }
+          >
+            <ProfileNavLanguagePanelConfig />
+          </Menu.SubMenu>
+
+          <Menu.Item key={menuItems?.length + 3} onClick={showDrawer}>
+            <span>
+              <SettingOutlined className="mr-3 profile-accomdation" />
+              <span className="font-weight-normal"> {setLocale(locale, "settings.menu.main.title")}</span>
+            </span>
+          </Menu.Item>
+
+          {/* Conditional rendering for Login and Logout */}
+                  {env.IS_SSO_ON && !token ? (
+          <>
+            <Menu.Divider />
+            <Menu.Item key="login" className="menu-highlight">
+              <Link to={`${APP_PREFIX_PATH}/login`}>
+                <LoginOutlined className="mr-3 profile-accomdation" />
+                <span className="font-weight-bold">{setLocale(locale, "sidenav.login")}</span>
+              </Link>
             </Menu.Item>
-            { token && 
-              <Menu.Item key={menuItems?.length + 4} onClick={() => handleSigningOut()}>
-                <span>
-                  <LogoutOutlined className="mr-3 profile-accomdation"/>
-                  <span className="font-weight-normal">{setLocale(locale, "profile.sign.out")}</span>
-                </span>
-              </Menu.Item>            
-            }            
-          </Menu>
+          </>
+        ) : env.IS_SSO_ON && token ? (
+          <>
+            <Menu.Divider />
+            <Menu.Item key="logout" className="menu-highlight" onClick={handleSigningOut}>
+              <LogoutOutlined className="mr-3 profile-accomdation" />
+              <span className="font-weight-bold">{setLocale(locale, "profile.sign.out")}</span>
+            </Menu.Item>
+          </>
+        ) : null}
+
+        </Menu>
+
         </div>
       </div>
   );
