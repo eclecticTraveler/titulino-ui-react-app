@@ -48,7 +48,8 @@ const local = {
 
 const getEnv = () => {
 
-  const environment = process.env.NODE_ENV || "production"; // Default to production
+  const environment = process.env.NODE_ENV; // Default to production
+  console.log('Environment:', environment); // Check what this logs
   // const environment = "production";
   // const environment = "development";
   // const environment = "local";
