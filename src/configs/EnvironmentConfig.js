@@ -6,10 +6,10 @@ const dev = {
   IS_KC_FEATURE_ON: false,
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
   IS_ENROLLMENT_FEAT_ON: true,
-  IS_ADMIN_DASHBOARD_FEAT_ON: false,
+  IS_ADMIN_DASHBOARD_FEAT_ON: true,
   IS_NEW_PROGRESS_APP_ON: true,
   IS_NEW_SEARCH_CONFIG_ON: true,
-  IS_SSO_ON: true,
+  IS_SSO_ON: false,
   TITULINO_NET_API: 'https://api.titulino.com',
   ENVIROMENT: 'dev',  
 };
@@ -47,11 +47,12 @@ const local = {
 };
 
 const getEnv = () => {
-  const enviroment = process.env.NODE_ENV
-  // const enviroment = "production";
-  // const enviroment = "development";
-  // const enviroment = "local";
-	switch (enviroment) {
+
+  const environment = process.env.NODE_ENV || "production"; // Default to production
+  // const environment = "production";
+  // const environment = "development";
+  // const environment = "local";
+	switch (environment) {
 		case 'development':
 			return dev
 		case 'production':
@@ -59,7 +60,7 @@ const getEnv = () => {
 		case 'local':
 			return local
 		default:
-			break;
+      return prod;
 	}
 }
 

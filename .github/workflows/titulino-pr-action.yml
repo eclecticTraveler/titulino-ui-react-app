@@ -72,7 +72,15 @@ jobs:
 
       # Build React app
       - name: Build React App
-        run: npm run build
+        run: |
+          if [ "$ENV" = "dev" ]; then
+            echo "Building for development..."
+            NODE_ENV=development npm run build
+          else
+            echo "Building for production..."
+            NODE_ENV=production npm run build
+          fi
+
 
       # Upload to GCS
       - name: Upload to GCS

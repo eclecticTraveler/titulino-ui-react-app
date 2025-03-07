@@ -18,7 +18,7 @@ import getLocaleText from "components/util-components/IntString";
 import GenericModal from "./GenericModal";
 import registerForm from 'assets/lotties/registerForm.json';
 import EnrollInvitationMessage from "components/admin-components/ModalMessages/EnrollInvitationMessage";
-// import ConfettiExplosion from 'react-confetti-explosion';
+import ConfettiExplosion from 'react-confetti-explosion';
 
 
 export const ProgressDashboardByEmailV3 = (props) => {
@@ -367,7 +367,7 @@ useEffect(() => {
 
   return (
     <div className="container customerName wordBreak">
-    {/* {isSmallConfettiVisible && <ConfettiExplosion />} */}
+    {isSmallConfettiVisible && <ConfettiExplosion />}
     {isMassiveConfettiVisible && (
         <Confetti
           width={width}
