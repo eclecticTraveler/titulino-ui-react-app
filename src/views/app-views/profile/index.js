@@ -33,7 +33,7 @@ class Profile extends Component {
 
 	render(){ 
 		// If not authenticated then send them back to main
-		if(!this.props.keycloakRedux.authenticated){
+		if(!this.props.authenticated){
 			this.props.history.push('/');	
 		}
 
@@ -113,8 +113,8 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn}) => {
-	const {keycloakRedux, shippingTabKey, isToEditShippingAddress, isToEditUserProfile, userAddresses, tabIndexedAddresses} = lrn;
-	return {keycloakRedux, shippingTabKey, isToEditShippingAddress, isToEditUserProfile, userAddresses, tabIndexedAddresses} 
+	const {shippingTabKey, isToEditShippingAddress, isToEditUserProfile, userAddresses, tabIndexedAddresses} = lrn;
+	return {shippingTabKey, isToEditShippingAddress, isToEditUserProfile, userAddresses, tabIndexedAddresses} 
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Profile));

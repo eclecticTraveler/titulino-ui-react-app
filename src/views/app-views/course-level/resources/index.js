@@ -68,7 +68,6 @@ const ExternalFormSection = (props) => {
     }, [loadResources]);
 
     const pathInfo = utils.getCourseSectionInfoFromUrl(location?.pathname);
-
     if (pathInfo?.modality === "my-progress") {
         if(env.IS_NEW_PROGRESS_APP_ON){
             return <ProgressDashboardByEmailV3 />; 
@@ -77,16 +76,22 @@ const ExternalFormSection = (props) => {
         }
 
     } else if (pathInfo?.modality === "test") {
-        return (
-            <>
-                {/* <CountdownDisplay
-                countdownDate={getThursday7th2024()}
-                completionComponent={<InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSfVR9lA1OISsTgs4mvrHrMfqYOGtk7uiK60u8SQY2vfpQamQw/viewform" />}
-                /> */}
-                <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSfVR9lA1OISsTgs4mvrHrMfqYOGtk7uiK60u8SQY2vfpQamQw/viewform" />
-            </>
+        if(pathInfo?.levelNo === "level-household"){
+            return (
+                <>
+                    <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSd9jUkxcvfj4j50gvptcwOSOV5bq451beC3B1NvxUB-h0ZrGg/viewform" />
+                </>
+    
+            );
+        }else{
+            return (
+                <>    
+                    <InternalIFrame iFrameUrl="https://docs.google.com/forms/d/e/1FAIpQLSfVR9lA1OISsTgs4mvrHrMfqYOGtk7uiK60u8SQY2vfpQamQw/viewform" />
+                </>
+    
+            );
+        }
 
-        );
     } else {
         return (
             <>Error</>

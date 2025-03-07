@@ -51,9 +51,9 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { wasUserConfigSet, selectedCourse, nativeLanguage, landingObjectPictureOfTheDay } = lrn;
+	const { selectedCourse, nativeLanguage, landingObjectPictureOfTheDay } = lrn;
     const { locale, direction, course } =  theme;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, landingObjectPictureOfTheDay }
+	return { locale, direction, course, selectedCourse, nativeLanguage, landingObjectPictureOfTheDay }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Welcome);

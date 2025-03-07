@@ -362,7 +362,7 @@ useEffect(() => {
                             : setLocale(locale, "enrollment.quickEnrollment");
 
   const converUrl = "https://images.unsplash.com/photo-1519406596751-0a3ccc4937fe?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-  
+  const enrollmentVersion = "v1.3.3";
   return (
     <div className="container customerName">
       {isEnrollmentModalVisible && 
@@ -390,7 +390,7 @@ useEffect(() => {
               }
             >
               <h1 style={{ marginBottom: "10px", textAlign: "left" }}>
-                {titleOfEnrollment} - (v1.3.2)
+                {titleOfEnrollment} - ({enrollmentVersion})
               </h1>
             </Card>
 
@@ -658,7 +658,7 @@ useEffect(() => {
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
               <p>
-                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}{" (v1.3.2) "}
+                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}-{enrollmentVersion}
                 <TermsModal />{" "}
                 {setLocale(locale, "enrollment.form.ofUseAndPrivacyPolicy")}
               </p>

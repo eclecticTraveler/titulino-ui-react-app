@@ -161,7 +161,6 @@ export const getSpeakingPracticeModule = async (levelTheme, chapterNo, nativeLan
 
 export const geteBookUrl = async (levelTheme, nativeLanguage, course) => {
   const url = await BookChapterService.getBookBaseUrl(levelTheme, nativeLanguage, course);
-  console.log("urlurl", url)
     return {
       type: ON_LOADING_EBOOK_URL,
       ebookUrl: url

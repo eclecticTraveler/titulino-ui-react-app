@@ -1,9 +1,9 @@
-const CACHE_NAME = `v${process.env.VERSION}`; // Uses the version from package.json
+const CACHE_NAME = 'v0.1.33'; // Increment with every deployment
 const CACHE_ASSETS = [
   '/',
   '/index.html',
-  `/main.js?v=${process.env.VERSION}`, // Use version for main.js
-  `/styles.css?v=${process.env.VERSION}`, // Use version for styles.css
+  '/main.js?v=0.1.33',
+  '/styles.css?v=0.1.33',
 ];
 
 // Install event: Cache initial assets

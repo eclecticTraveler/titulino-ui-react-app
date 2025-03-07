@@ -21,7 +21,6 @@ const initState = {
 const auth = (state = initState, action) => {
 	switch (action.type) {
 		case AUTHENTICATED:
-			console.log("AUTN reducers", state);
 			return {
 				...state,
 				loading: false,

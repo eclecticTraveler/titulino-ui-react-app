@@ -42,7 +42,7 @@ class Profile extends Component {
 
 	render(){ 
 		// If not authenticated then send them back to main
-		if(!this.props.keycloakRedux.authenticated){
+		if(!this.props.authenticated){
 			this.props.history.push('/');	
 		}
 		const imageUploadProps = {
@@ -265,8 +265,8 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn}) => {
-	const {languageCourses, nativeLanguage, keycloakRedux} = lrn;
-	return {languageCourses, nativeLanguage, keycloakRedux} 
+	const {languageCourses, nativeLanguage} = lrn;
+	return {languageCourses, nativeLanguage} 
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Profile));
