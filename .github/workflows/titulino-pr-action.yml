@@ -79,7 +79,7 @@ jobs:
             echo "Building for production..."
             NODE_ENV=production npm run build
           fi
-
+      
       # Upload to GCS with Cache Busting
       - name: Upload to GCS
         run: |
@@ -99,8 +99,14 @@ jobs:
           # Replace the placeholder with actual ENV value
           sed -i "s/process.env.ENVIRONMENT/\"${ENV}\";/" src/configs/EnvironmentConfig.js
 
-          # Remove all files in the bucket before syncing
-          gsutil -m rm -r gs://${GCP_BUCKET_NAME}/*
+          # Check if the bucket is empty before removing files
+          if gsutil -q stat gs://${GCP_BUCKET_NAME}/*; then
+            echo "Bucket is not empty. Removing old files..."
+            gsutil -m rm -r gs://${GCP_BUCKET_NAME}/*
+          else
+            echo "Bucket is empty. Skipping file removal."
+          fi
 
           # Sync new build to the bucket
           gsutil -m rsync -r build gs://${GCP_BUCKET_NAME}
+
