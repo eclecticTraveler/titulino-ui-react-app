@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: 22.13.1
 
-      # Authenticate with Google Cloud using service account key
+      # Authenticate with Google Cloud
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v1
         with:
@@ -69,6 +69,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # Install Gulp globally
+      - name: Install Gulp CLI
+        run: npm install -g gulp-cli
+
+      # Run Gulp tasks to process CSS
+      - name: Run Gulp Tasks
+        run: |
+          gulp less
+          gulp theme
+          gulp less
+
       # Build React app
       - name: Build React App
         run: |
@@ -79,20 +90,20 @@ jobs:
             echo "Building for production..."
             NODE_ENV=production npm run build
           fi
-      
+
       # Upload to GCS with Cache Busting
       - name: Upload to GCS
         run: |
           echo "npm version --> $(npm -v)"
           echo "node version --> $(node -v)"
-          
+
           # Output current environment variable for debugging
           echo "process.env.ENVIRONMENT --> $ENVIRONMENT"
-          
+
           [ -n "${ENV_INPUT}" ] && export ENV=${ENV_INPUT}
           echo "ENV--> ${ENV} ENV_INPUT--> ${ENV_INPUT}"
           export ENVIRONMENT=${ENV}
-          
+
           # Print the environment after the change
           echo "After setting ENV, process.env.ENVIRONMENT --> $ENVIRONMENT"
 
@@ -109,4 +120,3 @@ jobs:
 
           # Sync new build to the bucket
           gsutil -m rsync -r build gs://${GCP_BUCKET_NAME}
-
