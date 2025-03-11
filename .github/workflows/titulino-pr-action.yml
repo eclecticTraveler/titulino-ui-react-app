@@ -2,9 +2,9 @@ name: publish to gc buckets
 
 on:
   push:
-    branches: [ main  ]
+    branches: [ main ]
   pull_request:
-    branches: [ main  ]
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       env:
@@ -54,7 +54,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          
 
       # Cache npm modules
       - name: Cache npm modules
@@ -81,8 +80,7 @@ jobs:
             NODE_ENV=production npm run build
           fi
 
-
-      # Upload to GCS
+      # Upload to GCS with Cache Busting
       - name: Upload to GCS
         run: |
           echo "npm version --> $(npm -v)"
@@ -104,6 +102,8 @@ jobs:
           # Remove all files in the bucket before syncing
           gsutil -m rm -r gs://${GCP_BUCKET_NAME}/*
 
-          # Sync new build to the bucket
-          gsutil -m rsync -r build gs://${GCP_BUCKET_NAME}
+          # Sync new build to the bucket with proper caching
+          gsutil -m rsync -r -c -d -h "Cache-Control:public, max-age=31536000, immutable" build gs://${GCP_BUCKET_NAME}
 
+          # Ensure index.html is always fetched fresh
+          gsutil -m setmeta -h "Cache-Control:no-cache, no-store, must-revalidate" gs://${GCP_BUCKET_NAME}/index.html
