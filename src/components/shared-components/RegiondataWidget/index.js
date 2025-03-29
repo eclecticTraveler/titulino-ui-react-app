@@ -193,6 +193,11 @@ const getProjectionConfig = (mapType) => {
 				scale: 1620,
 				center: [137, 36] 
 				};
+		case 'CU':
+			return {
+				scale: 4000,
+				center: [-79, 21] 
+				};
 		default:
 		  return {
 			scale: 100, // Default for other countries
