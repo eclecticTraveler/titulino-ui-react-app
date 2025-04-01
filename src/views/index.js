@@ -84,7 +84,6 @@ export const Views = (props) => {
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
             <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
                 <Switch>
-                    {/* {!wasUserConfigSet && <CourseSelection />} */}
                     <Route exact path={DEFAULT_PREFIX_VIEW}>
                         <Redirect to={token ? AUTH_PREFIX_PATH : APP_PREFIX_PATH} />
                     </Route>

@@ -12,14 +12,10 @@ import { env } from 'configs/EnvironmentConfig';
 
 export const AppViews = (props) => {
 	const { course } = props;
-	console.log('course:', course);
-	console.log('Localized Config:', getLocalizedConfig(course));
 
-
-	if (!course || !getLocalizedConfig(course)) {
+	if (!course) {
 		return <Loading cover="content" />;
-	}
-	
+	  }
 
 	return (
 		<>
@@ -41,8 +37,7 @@ export const AppViews = (props) => {
 			{env.IS_SSO_ON && <Route exact path={`${APP_PREFIX_PATH}/login`} component={lazy(() => import(`./user/redirect-login`))} />}
 			<Route exact path={`${APP_PREFIX_PATH}/signup`} component={lazy(() => import(`./user/redirect-signup`))} />
 			{/* // Default to level 1 for any course until they are authorized to save where their progress was and land them there	*/}			
-			<Redirect from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
-			<Redirect from={`${APP_PREFIX_PATH}/`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
+			<Redirect exact from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
 		</Switch>
 	</Suspense>
 	</>
