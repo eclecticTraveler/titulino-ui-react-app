@@ -413,12 +413,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
                                     <img
                                       alt={title}
                                       src={imageUrl}
-                                      style={{
-                                        width: '250px',
-                                        height: '200px',
-                                        objectFit: 'cover',
-                                        borderRadius: 5,
-                                      }}
+                                      className="responsive-image tamo-ai-na-atividade"
                                     />
                                   )}
                                 </Col>
@@ -571,12 +566,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
                                   <img
                                     alt={title}
                                     src={imageUrl}
-                                    style={{
-                                      width: '250px',
-                                      height: '200px',
-                                      objectFit: 'cover',
-                                      borderRadius: 5,
-                                    }}
+                                    className="responsive-image"
                                   />
                                 )}
                               </Col>
