@@ -279,7 +279,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
                                     }
                                   />
                                 </div>
-                              }                              
+                              }
                             >
                               <Row gutter={16}>
                                 <Col flex="100px">
