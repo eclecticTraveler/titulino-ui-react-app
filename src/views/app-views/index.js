@@ -12,6 +12,15 @@ import { env } from 'configs/EnvironmentConfig';
 
 export const AppViews = (props) => {
 	const { course } = props;
+	console.log('course:', course);
+	console.log('Localized Config:', getLocalizedConfig(course));
+
+
+	if (!course || !getLocalizedConfig(course)) {
+		return <Loading cover="content" />;
+	}
+	
+
 	return (
 		<>
 	<Suspense fallback={<Loading cover="content"/>}>
