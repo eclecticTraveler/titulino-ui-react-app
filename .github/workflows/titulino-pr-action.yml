@@ -96,12 +96,6 @@ jobs:
             REACT_APP_ENV=production npm run build
           fi
 
-      - name: Prepare Service Worker Hash
-        run: |
-          SW_HASH=$(sha256sum build/service-worker.js | awk '{ print $1 }')
-          sed -i "s|service-worker.js|service-worker-${SW_HASH}.js|g" build/index.html
-          mv build/service-worker.js build/service-worker-${SW_HASH}.js
-
       - name: Upload to GCS
         run: |
           echo "Uploading to GCP Bucket: ${GCP_BUCKET_NAME}"
@@ -117,6 +111,14 @@ jobs:
           # Upload new files
           gsutil -m rsync -r build gs://${GCP_BUCKET_NAME}
 
-          # Set cache headers
+          # Set to not cache headers on critical files
           gsutil -m setmeta -h "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" gs://${GCP_BUCKET_NAME}/index.html
-          gsutil -m setmeta -h "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" gs://${GCP_BUCKET_NAME}/service-worker-${SW_HASH}.js
+          gsutil -m setmeta -h "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" gs://${GCP_BUCKET_NAME}/service-worker.js
+
+          # Add a content hash to service worker (optional, but better)
+          SW_HASH=$(sha256sum build/service-worker.js | awk '{ print $1 }')
+          gsutil cp build/service-worker.js gs://${GCP_BUCKET_NAME}/service-worker-${SW_HASH}.js
+
+          # Ensure the app loads the correct service worker dynamically
+          sed -i "s|service-worker.js|service-worker-${SW_HASH}.js|g" build/index.html
+          gsutil cp build/index.html gs://${GCP_BUCKET_NAME}/index.html
