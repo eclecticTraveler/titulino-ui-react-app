@@ -21,8 +21,7 @@ env:
   PROD_DOMAIN_NAME: titulino.com
   CACHE_BUCKET_NAME: github-actions-cache-162166941288
   GIT_TOKEN: ${{ secrets.TITULINO_GITHUB_TOKEN }}
-  ENV: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
-  ENV_INPUT: ${{ inputs.env }}
+  ENV_INPUT: ${{ github.event.inputs.env || (github.ref == 'refs/heads/main' && 'prod' || 'dev') }}
   CI: false
   NODE_OPTIONS: "--max_old_space_size=4096"
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -63,6 +62,8 @@ jobs:
             echo "Cache found. Restoring from GCS..."
             gsutil cp gs://${CACHE_BUCKET_NAME}/cip/npm_cache.tgz npm_cache.tgz
             tar -xzf npm_cache.tgz
+          else
+            echo "No cache found. Skipping."
           fi
 
       # Install dependencies
@@ -80,56 +81,42 @@ jobs:
           gulp theme
           gulp less
 
-      # Build React app
+      - name: Set Environment Variables
+        run: |
+          echo "Using environment: ${ENV_INPUT}"
+          echo "REACT_APP_ENV=${ENV_INPUT}" > .env
+
       - name: Build React App
         run: |
-          if [ "$ENV" = "dev" ]; then
+          if [ "$ENV_INPUT" = "dev" ]; then
             echo "Building for development..."
-            NODE_ENV=development npm run build
+            REACT_APP_ENV=development npm run build
           else
             echo "Building for production..."
-            NODE_ENV=production npm run build
+            REACT_APP_ENV=production npm run build
           fi
 
-      # Upload to GCS with Cache Busting
+      - name: Prepare Service Worker Hash
+        run: |
+          SW_HASH=$(sha256sum build/service-worker.js | awk '{ print $1 }')
+          sed -i "s|service-worker.js|service-worker-${SW_HASH}.js|g" build/index.html
+          mv build/service-worker.js build/service-worker-${SW_HASH}.js
+
       - name: Upload to GCS
         run: |
-          echo "npm version --> $(npm -v)"
-          echo "node version --> $(node -v)"
+          echo "Uploading to GCP Bucket: ${GCP_BUCKET_NAME}"
 
-          # Output current environment variable for debugging
-          echo "process.env.ENVIRONMENT --> $ENVIRONMENT"
-
-          [ -n "${ENV_INPUT}" ] && export ENV=${ENV_INPUT}
-          echo "ENV--> ${ENV} ENV_INPUT--> ${ENV_INPUT}"
-          export ENVIRONMENT=${ENV}
-
-          # Print the environment after the change
-          echo "After setting ENV, process.env.ENVIRONMENT --> $ENVIRONMENT"
-
-          # Replace the placeholder with actual ENV value
-          sed -i "s/process.env.ENVIRONMENT/\"${ENV}\";/" src/configs/EnvironmentConfig.js
-
-          # Check if the bucket is empty before removing files
+          # Ensure bucket is clean
           if gsutil -q stat gs://${GCP_BUCKET_NAME}/*; then
-            echo "Bucket is not empty. Removing old files..."
+            echo "Removing old files..."
             gsutil -m rm -r gs://${GCP_BUCKET_NAME}/*
           else
-            echo "Bucket is empty. Skipping file removal."
+            echo "Bucket is empty. No removal needed."
           fi
 
-          # Sync new build to the bucket
-          # Upload files normally
+          # Upload new files
           gsutil -m rsync -r build gs://${GCP_BUCKET_NAME}
 
-          # Set cache control headers for critical files
+          # Set cache headers
           gsutil -m setmeta -h "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" gs://${GCP_BUCKET_NAME}/index.html
-          gsutil -m setmeta -h "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" gs://${GCP_BUCKET_NAME}/service-worker.js
-
-          # Add a content hash to service worker (optional, but better)
-          SW_HASH=$(sha256sum build/service-worker.js | awk '{ print $1 }')
-          gsutil cp build/service-worker.js gs://${GCP_BUCKET_NAME}/service-worker-${SW_HASH}.js
-
-          # Ensure the app loads the correct service worker dynamically
-          sed -i "s|service-worker.js|service-worker-${SW_HASH}.js|g" build/index.html
-          gsutil cp build/index.html gs://${GCP_BUCKET_NAME}/index.html
+          gsutil -m setmeta -h "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" gs://${GCP_BUCKET_NAME}/service-worker-${SW_HASH}.js
