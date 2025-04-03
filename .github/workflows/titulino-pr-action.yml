@@ -103,16 +103,16 @@ jobs:
       
       - name: Build React App
         run: |
-          if [ "$ENV_INPUT" = "dev" ]; then
-            echo "🚧 Building for development..."
-            # Remove any CR (carriage return) characters from the .env file (to fix line endings issues)
-            sed -i 's/\r//' .env
-            REACT_APP_ENV=development npm run build
-          else
+          if [ "$ENV_INPUT" = "prod" ]; then
             echo "🚧 🚧 Building for production..."
             # Remove any CR (carriage return) characters from the .env file (to fix line endings issues)
             sed -i 's/\r//' .env
             REACT_APP_ENV=production npm run build
+          else
+            echo "🚧 Building for development..."
+            # Remove any CR (carriage return) characters from the .env file (to fix line endings issues)
+            sed -i 's/\r//' .env
+            REACT_APP_ENV=development npm run build
           fi
           echo "✅ Build completed!"     
 
