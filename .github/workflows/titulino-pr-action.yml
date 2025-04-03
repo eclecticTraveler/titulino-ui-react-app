@@ -110,18 +110,25 @@ jobs:
             echo "🚧 🚧 Building for production..."
           fi
       
-          # Clean the .env file and export variables
+          # Clean the .env file and export variables with debug
           while IFS='=' read -r key value; do
-            # Strip leading/trailing spaces and ignore invalid lines
+            # Remove leading/trailing spaces from key and value
             key=$(echo "$key" | xargs)
             value=$(echo "$value" | xargs)
       
+            # Debug: Print out the key-value pair to check for issues
+            echo "Exporting: $key=$value"
+      
+            # Ensure the key is valid and not empty or commented
             if [[ ! "$key" =~ ^# && -n "$key" ]]; then
+              # Export only valid key-value pairs
               export "$key=$value"
+            else
+              echo "Skipping invalid key: $key"
             fi
           done < .env
       
-          npm run build
+          npm run build       
         
 
       - name: Upload to GCS
