@@ -101,38 +101,20 @@ jobs:
       
           echo "✅ .env file generated!"
       
-
       - name: Build React App
         run: |
           if [ "$ENV_INPUT" = "dev" ]; then
             echo "🚧 Building for development..."
+            # Remove any CR (carriage return) characters from the .env file (to fix line endings issues)
+            sed -i 's/\r//' .env
+            REACT_APP_ENV=development npm run build
           else
             echo "🚧 🚧 Building for production..."
+            # Remove any CR (carriage return) characters from the .env file (to fix line endings issues)
+            sed -i 's/\r//' .env
+            REACT_APP_ENV=production npm run build
           fi
-
-          # Remove any CR (carriage return) characters from the .env file (to fix line endings issues)
-          sed -i 's/\r//' .env
-      
-          # Clean the .env file and export variables with debug
-          while IFS='=' read -r key value; do
-            # Remove leading/trailing spaces from key and value
-            key=$(echo "$key" | xargs)
-            value=$(echo "$value" | xargs)
-      
-            # Print out the key-value pair to check for issues
-            echo "Exporting: $key=$value"
-      
-            # Ensure the key is valid and not empty or commented
-            if [[ ! "$key" =~ ^# && -n "$key" ]]; then
-              # Export only valid key-value pairs
-              export "$key=$value"
-            else
-              echo "Skipping invalid key: $key"
-            fi
-          done < .env
-      
-          npm run build       
-        
+          echo "✅ Build completed!"     
 
       - name: Upload to GCS
         run: |
