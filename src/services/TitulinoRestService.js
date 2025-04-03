@@ -471,7 +471,8 @@ export const getEnrolleeCountryCountByCourseCodeId = async (courseCodeId, whoCal
 
   if(courseCodeId){
      // Base URL
-     const enroleeCountryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryCountByCourseCodeId`;
+     console.log("SupabaseConfig.baseApiUrl", SupabaseConfig.baseApiUrl);
+     const enrolleeCountryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryCountByCourseCodeId`;
 
      const raw = JSON.stringify({
        "p_coursecodeid": courseCodeId
@@ -485,7 +486,7 @@ export const getEnrolleeCountryCountByCourseCodeId = async (courseCodeId, whoCal
     };
 
     try {
-      const response = await fetch(enroleeCountryCountUrl, requestOptions);
+      const response = await fetch(enrolleeCountryCountUrl, requestOptions);
       const apiResult = await response.json();
       return apiResult ?? _results;      
     } catch (error) {
@@ -501,7 +502,7 @@ export const getEnrolleeCountryDivisionCount = async (courseCodeId, countryId, w
 
   if(courseCodeId && countryId){
      // Base URL
-     const enroleeCountryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryDivisionCount`;
+     const enrolleeCountryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryDivisionCount`;
 
      const raw = JSON.stringify({
        "p_coursecodeid": courseCodeId,
@@ -516,7 +517,7 @@ export const getEnrolleeCountryDivisionCount = async (courseCodeId, countryId, w
     };
 
     try {
-      const response = await fetch(enroleeCountryCountUrl, requestOptions);
+      const response = await fetch(enrolleeCountryCountUrl, requestOptions);
       const apiResult = await response.json();
       return apiResult ?? _results;      
     } catch (error) {
@@ -649,7 +650,7 @@ export const getEnrolleeCountrylListByCourseCodeId = async (courseCodeId, countr
 
   if(courseCodeId && countryId){
      // Base URL
-     const enroleeCountryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleesByCourseAndCountry`;
+     const enrolleeCountryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleesByCourseAndCountry`;
 
      const raw = JSON.stringify({
        "p_coursecodeid": courseCodeId,
@@ -664,7 +665,7 @@ export const getEnrolleeCountrylListByCourseCodeId = async (courseCodeId, countr
     };
 
     try {
-      const response = await fetch(enroleeCountryCountUrl, requestOptions);
+      const response = await fetch(enrolleeCountryCountUrl, requestOptions);
       const apiResult = await response.json();
       return apiResult ?? _results;      
     } catch (error) {
