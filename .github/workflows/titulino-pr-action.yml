@@ -104,16 +104,20 @@ jobs:
       - name: Debug Environment Variables
         run: cat .env
         
-
+        
       - name: Build React App
         run: |
-          if [ "$ENV_INPUT" = "dev" ]; then
-            echo "🚧 Building for development..."
-            export $(grep -v '^#' .env | xargs) && npm run build
-          else
-            echo "🚧 🚧 Building for production..."
-            export $(grep -v '^#' .env | xargs) && npm run build
-          fi
+            if [ "$ENV_INPUT" = "dev" ]; then
+              echo "🚧 Building for development..."
+            else
+              echo "🚧 🚧 Building for production..."
+            fi
+      
+            while IFS='=' read -r key value; do
+              if [[ ! "$key" =~ ^# && -n "$key" ]]; then
+                export "$key=$value"
+              fi
+            done < .env
 
       - name: Upload to GCS
         run: |
