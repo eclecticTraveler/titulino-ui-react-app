@@ -59,7 +59,7 @@ jobs:
         id: npm-cache
         run: |
           if gsutil -q stat gs://${CACHE_BUCKET_NAME}/cip/npm_cache.tgz; then
-            echo "Cache found. Restoring from GCS..."
+            echo "✨ 🔍 Cache found. Restoring from GCS..."
             gsutil cp gs://${CACHE_BUCKET_NAME}/cip/npm_cache.tgz npm_cache.tgz
             tar -xzf npm_cache.tgz
           else
@@ -81,31 +81,47 @@ jobs:
           gulp theme
           gulp less
 
-      - name: Set Environment Variables
+      - name: Set & Inject Environment Variables
         run: |
-          echo "Using environment: ${ENV_INPUT}"
-          echo "REACT_APP_ENV=${ENV_INPUT}" > .env
+          echo " ➡️ REACT_APP_ENV=${ENV_INPUT}" > .env
+      
+          if [ "${ENV_INPUT}" = "dev" ]; then
+            echo "REACT_APP_SUPABASE_BASE_API_URL=${{ secrets.SUPABASE_BASE_API_URL_DEV }}" >> .env
+            echo "REACT_APP_SUPABASE_URL=${{ secrets.SUPABASE_URL_DEV }}" >> .env
+            echo "REACT_APP_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY_DEV }}" >> .env
+            echo "REACT_APP_BACKEND_NET_SERVICE_USERNAME=${{ secrets.BACKEND_NET_SERVICE_USERNAME_DEV }}" >> .env
+            echo "REACT_APP_TITULINO_NET_API=${{ secrets.TITULINO_NET_API_DEV }}" >> .env
+          else
+            echo "REACT_APP_SUPABASE_BASE_API_URL=${{ secrets.SUPABASE_BASE_API_URL_PROD }}" >> .env
+            echo "REACT_APP_SUPABASE_URL=${{ secrets.SUPABASE_URL_PROD }}" >> .env
+            echo "REACT_APP_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY_PROD }}" >> .env
+            echo "REACT_APP_BACKEND_NET_SERVICE_USERNAME=${{ secrets.BACKEND_NET_SERVICE_USERNAME_PROD }}" >> .env
+            echo "REACT_APP_TITULINO_NET_API=${{ secrets.TITULINO_NET_API_PROD }}" >> .env
+          fi
+      
+          echo "✅ .env file generated!"
+        
 
       - name: Build React App
         run: |
           if [ "$ENV_INPUT" = "dev" ]; then
-            echo "Building for development..."
+            echo "🚧 Building for development..."
             REACT_APP_ENV=development npm run build
           else
-            echo "Building for production..."
+            echo "🚧 🚧 Building for production..."
             REACT_APP_ENV=production npm run build
           fi
 
       - name: Upload to GCS
         run: |
-          echo "Uploading to GCP Bucket: ${GCP_BUCKET_NAME}"
+          echo "☁️ Uploading to GCP Bucket : ${GCP_BUCKET_NAME}"
 
           # Ensure bucket is clean
           if gsutil -q stat gs://${GCP_BUCKET_NAME}/*; then
-            echo "Removing old files..."
+            echo "🧼 Removing old files..."
             gsutil -m rm -r gs://${GCP_BUCKET_NAME}/*
           else
-            echo "Bucket is empty. No removal needed."
+            echo "✨ Bucket is empty. No removal needed."
           fi
 
           # Upload new files
