@@ -1,7 +1,7 @@
 {
   "name": "lrn-ui-react-app",
   "homepage": "https://titulino.com",
-  "version": "0.1.47",
+  "version": "0.1.48",
   "private": true,
   "dependencies": {
     "@ant-design/charts": "^1.4.2",
