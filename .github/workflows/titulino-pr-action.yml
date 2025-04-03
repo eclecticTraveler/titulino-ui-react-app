@@ -100,16 +100,19 @@ jobs:
           fi
       
           echo "✅ .env file generated!"
+
+      - name: Debug Environment Variables
+        run: cat .env
         
 
       - name: Build React App
         run: |
           if [ "$ENV_INPUT" = "dev" ]; then
             echo "🚧 Building for development..."
-            REACT_APP_ENV=development npm run build
+            export $(grep -v '^#' .env | xargs) && npm run build
           else
             echo "🚧 🚧 Building for production..."
-            REACT_APP_ENV=production npm run build
+            export $(grep -v '^#' .env | xargs) && npm run build
           fi
 
       - name: Upload to GCS
