@@ -109,6 +109,9 @@ jobs:
           else
             echo "🚧 🚧 Building for production..."
           fi
+
+          # Remove any CR (carriage return) characters from the .env file (to fix line endings issues)
+          sed -i 's/\r//' .env
       
           # Clean the .env file and export variables with debug
           while IFS='=' read -r key value; do
@@ -116,7 +119,7 @@ jobs:
             key=$(echo "$key" | xargs)
             value=$(echo "$value" | xargs)
       
-            # Debug: Print out the key-value pair to check for issues
+            # Print out the key-value pair to check for issues
             echo "Exporting: $key=$value"
       
             # Ensure the key is valid and not empty or commented
