@@ -11,7 +11,7 @@ let _results = [];
 const getHeaders = () => {
 
   const myHeaders = new Headers();
-  myHeaders.append("apiKey", process.env.REACT_APP_SUPABASE_ANON_KEY);
+  myHeaders.append("apiKey", SupabaseConfig.supabaseAnonApiKey);
   myHeaders.append("Content-Type", "application/json");
   myHeaders.append("Accept-Profile", "TitulinoApi_v1");
   myHeaders.append("Content-Profile", "TitulinoApi_v1");
@@ -472,7 +472,6 @@ export const getEnrolleeCountryCountByCourseCodeId = async (courseCodeId, whoCal
 
   if(courseCodeId){
      // Base URL
-     console.log("code", SupabaseConfig.baseApiUrl);
      const enrolleeCountryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryCountByCourseCodeId`;
 
      const raw = JSON.stringify({

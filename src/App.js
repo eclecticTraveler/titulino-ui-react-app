@@ -6,13 +6,15 @@ import { Provider } from 'react-redux';
 import store from './redux/store';
 import { ThemeSwitcherProvider } from "react-css-theme-switcher";
 import { THEME_CONFIG } from './configs/AppConfig';
-
+import SupabaseConfig from './configs/SupabaseConfig';
 const themes = {
   dark: `${process.env.PUBLIC_URL}/css/dark-theme.css`,
   light: `${process.env.PUBLIC_URL}/css/light-theme.css`,
 };
 
 function App(){
+       console.log("Process", SupabaseConfig);
+       console.log("env", process.env);
     return (
       <div className="App">
           <Provider store={store}>

@@ -305,7 +305,7 @@ export const onRequestingCourseProgressStructure = async (nativeLanguage, course
     // Check local storage for cached data
     const cachedData = await LocalStorageService.getEnrolleesByCourse(localStorageKey);
   
-    if (cachedData) {
+    if (cachedData && Object.keys(cachedData).length > 0) {
       // Use cached data if available
       return {
         type: ON_LOADING_ENROLEE_BY_REGION,

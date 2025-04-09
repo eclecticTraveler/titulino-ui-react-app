@@ -21,7 +21,7 @@ env:
   PROD_DOMAIN_NAME: titulino.com
   CACHE_BUCKET_NAME: github-actions-cache-162166941288
   GIT_TOKEN: ${{ secrets.TITULINO_GITHUB_TOKEN }}
-  ENV_INPUT: ${{ github.event.inputs.env || (github.ref == 'refs/heads/main' && 'prod' || 'dev') }}
+  ENV_INPUT: ${{ github.event.inputs.env || (github.ref == 'refs/heads/main' && 'production' || 'development') }}
   CI: false
   NODE_OPTIONS: "--max_old_space_size=4096"
   GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -85,7 +85,7 @@ jobs:
         run: |
           echo "REACT_APP_ENV=${ENV_INPUT}" > .env
 
-          if [ "${ENV_INPUT}" = "dev" ]; then
+          if [ "${ENV_INPUT}" = "development" ]; then
             echo "REACT_APP_SUPABASE_BASE_API_URL=${{ secrets.SUPABASE_BASE_API_URL_DEV }}" >> .env
             echo "REACT_APP_SUPABASE_URL=${{ secrets.SUPABASE_URL_DEV }}" >> .env
             echo "REACT_APP_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY_DEV }}" >> .env
