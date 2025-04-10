@@ -17,9 +17,8 @@ export const getRegistrationToken = async (whoCalledMe, userName) => {
 const loginUrl = `${titulinoNetApiUri}/login`;
 const myHeaders = new Headers();
 myHeaders.append("Content-Type", "application/json");
-console.log("backenduser",process.env.REACT_APP_BACKEND_NET_SERVICE_USERNAME)
 const raw = JSON.stringify({
-  "userName": "titulinoUiSystem"
+  "userName": process.env.REACT_APP_BACKEND_NET_SERVICE_USERNAME
 });
 
 const requestOptions = {
