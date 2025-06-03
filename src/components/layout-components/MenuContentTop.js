@@ -183,7 +183,7 @@ function mapDispatchToProps(dispatch) {
   );
 }
 
-const mapStateToProps = ({ lrn }) => {
+const mapStateToProps = ({ lrn, grant }) => {
   const { dynamicUpperMainNavigation } = lrn;
   return { dynamicUpperMainNavigation };
 };

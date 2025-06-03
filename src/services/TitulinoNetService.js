@@ -14,7 +14,7 @@ const getHeaders = (token) => {
 
 export const getRegistrationToken = async (whoCalledMe, userName) => {
  
-const loginUrl = `${titulinoNetApiUri}/login`;
+const loginUrl = `${titulinoNetApiUri}/auth`;
 const myHeaders = new Headers();
 myHeaders.append("Content-Type", "application/json");
 const raw = JSON.stringify({

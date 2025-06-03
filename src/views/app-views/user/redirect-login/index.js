@@ -39,10 +39,11 @@ export const LoginAdapter = (props) => {
 			  const { data: { session } } = await supabase.auth.getSession();
 			  if (session) {
 				authenticated(session?.user);
+				// Push to modal asking for DOB by redux action.
 				// history.push(AUTH_PREFIX_PATH);
 				history.push(APP_PREFIX_PATH);
 				// history.push("/");
-							//   showLoading()
+				//   showLoading()
 			  }
 			};
 		  

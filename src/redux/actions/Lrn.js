@@ -501,8 +501,8 @@ export const getWasUserConfigSetFlag = async () => {
 }
 
 export const getUpperNavigationBasedOnUserConfig = async () => {  
-  const selectedCourse =  await LocalStorageService.getUserSelectedCourse();
-  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedCourse?.courseAbbreviation);
+  const selectedLanguageForCourse =  await LocalStorageService.getUserSelectedCourse();
+  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation);
   return {
     type: GET_UPPER_NAV_BASED_ON_USER_CONFIG,
     upperMainNavigation: upperMainNavigation

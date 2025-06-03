@@ -2,21 +2,14 @@ import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
-	faChalkboardUser,	
-	faEarListen,
-	faBrain,
-	faGamepad,
 	faBookReader,
-	faKeyboard,
 	faClone,
 	faFileLines,
 	faDice,
 	faUserClock,
 	faPencilAlt,
 	faChalkboard,
-	faArrowUp,
 	faFilePdf,
-	faRoad,
 	faChartSimple,
 	faMicrophone
    } from '@fortawesome/free-solid-svg-icons';
@@ -32,81 +25,7 @@ const getCommonUrl = (lang, levelNo, chapterNo) => {
 	return commonPath;
 }
 
-export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
-	const commonPath = getCommonUrl(lang, levelNo, chapterNo);
-// spell  || flashcards -> Resources || Match || Learn --> pratica|| Test
-  	return [
-		{
-			key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
-			path: `${commonPath}/${getLocalizedConfig(lang)?.class}`,
-			title: 'sidenav.class',
-			icon: faChalkboardUser,
-			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-			breadcrumb: false,
-			isRootMenuItem: false,				
-			submenu: [],
-			keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'class')
-		},
-		{
-			key: `module-listening-${levelNo}-${chapterNo}-${uuidv4()}`,
-			path: `${commonPath}/${getLocalizedConfig(lang)?.listening}`,
-			title: 'sidenav.listening',
-			icon: faEarListen,
-			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-			breadcrumb: false,
-			isRootMenuItem: false,				
-			submenu: [],
-			keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'listening')
-		},
-		{
-			key: `module-resources-${levelNo}-${chapterNo}-${uuidv4()}`,
-			path: `${commonPath}/${getLocalizedConfig(lang)?.resources}`,
-			title: 'sidenav.resources',
-			icon: faBrain,
-			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-			breadcrumb: false,
-			isRootMenuItem: false,				
-			submenu: [],
-			keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'resources')
-		},
-		{
-			key: `module-play-${levelNo}-${chapterNo}-${uuidv4()}`,	
-			path: `${commonPath}/${getLocalizedConfig(lang)?.play}`,
-			title: 'sidenav.match',
-			icon: faGamepad,
-			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-			breadcrumb: false,
-			isRootMenuItem: false,				
-			submenu: [],
-			keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'match')
-		},
-		{
-			key: `module-spell-${levelNo}-${chapterNo}-${uuidv4()}`,
-			path: `${commonPath}/${getLocalizedConfig(lang)?.spell}`,
-			title: 'sidenav.spell',
-			icon: faKeyboard,
-			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-			breadcrumb: false,
-			isRootMenuItem: false,				
-			submenu: [],
-			keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'match')
-		},
-		{
-			key: `module-test-${levelNo}-${chapterNo}-${uuidv4()}`,
-			path: `${commonPath}/${getLocalizedConfig(lang)?.test}`,
-			title: 'sidenav.test',
-			icon: faBookReader,
-			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-			breadcrumb: false,
-			isRootMenuItem: false,				
-			submenu: [],
-			keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'test')
-		}
-	]
-
-}
-
-export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {	
+export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {	
 	const commonPath = getCommonUrl(lang, levelNo, chapterNo);
 	// spell  || flashcards -> Resources || Match || Learn --> pratica|| Test
 		  return [
@@ -129,7 +48,34 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 				breadcrumb: false,
 				isRootMenuItem: false,				
-				submenu: [],
+				submenu: [
+					{
+						key: `module-class-gg-${levelNo}-${chapterNo}-${uuidv4()}`,
+						path: `${commonPath}/${getLocalizedConfig(lang)?.class}`,
+						title: 'sidenav.generalGathering',
+						icon: faChalkboard,
+						iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+						breadcrumb: false,
+						isRootMenuItem: false,				
+						submenu: [
+							
+						],
+						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'class', 'general gathering')
+					},
+					{
+						key: `module-class-gc-${levelNo}-${chapterNo}-${uuidv4()}`,
+						path: `${commonPath}/${getLocalizedConfig(lang)?.class}`,
+						title: 'sidenav.grammarClass',
+						icon: faChalkboard,
+						iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+						breadcrumb: false,
+						isRootMenuItem: false,				
+						submenu: [
+							
+						],
+						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'class', 'grammar class')
+					}
+				],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'class')
 			},
 			{
@@ -144,15 +90,86 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizlet')
 			},
 			{
-				key: `module-play-${levelNo}-${chapterNo}-${uuidv4()}`,	
-				path: `${commonPath}/${getLocalizedConfig(lang)?.play}`,
-				title: 'sidenav.match',
-				icon: faDice,
+				key: `module-quizlet-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${commonPath}/${getLocalizedConfig(lang)?.exercises}`,
+				title: 'sidenav.exercises',
+				icon: faClone,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: [
+					{
+						key: `module-quizlet-pdf-${levelNo}-${chapterNo}-${uuidv4()}`,
+						path: `${commonPath}/${getLocalizedConfig(lang)?.quizletpdf}`,
+						title: 'sidenav.quizletpdf',
+						icon: faFilePdf,
+						iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+						breadcrumb: false,
+						isRootMenuItem: false,				
+						submenu: [],
+						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizletpdf')
+					},	
+					...(levelNo === "household"
+						? [			{
+							key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
+							path: `${commonPath}/${getLocalizedConfig(lang)?.speaking}`,
+							title: 'sidenav.speaking',
+							icon: faMicrophone,
+							iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+							breadcrumb: false,
+							isRootMenuItem: false,
+							submenu: [],
+							keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'speaking')
+						}]
+						: []
+					),
+					{
+						key: `module-review-${levelNo}-${chapterNo}-${uuidv4()}`,
+						path: `${commonPath}/${getLocalizedConfig(lang)?.review}`,
+						title: 'sidenav.review',
+						icon: faFileLines,
+						iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+						breadcrumb: false,
+						isRootMenuItem: false,				
+						submenu: [],
+						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'review')
+					},
+					{
+						key: `module-play-${levelNo}-${chapterNo}-${uuidv4()}`,	
+						path: `${commonPath}/${getLocalizedConfig(lang)?.play}`,
+						title: 'sidenav.match',
+						icon: faDice,
+						iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+						breadcrumb: false,
+						isRootMenuItem: false,				
+						submenu: [],
+						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'play')
+					},
+					{
+						key: `module-spell-${levelNo}-${chapterNo}-${uuidv4()}`,
+						path: `${commonPath}/${getLocalizedConfig(lang)?.spell}`,
+						title: 'sidenav.spell',
+						icon: faPencilAlt,
+						iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+						breadcrumb: false,
+						isRootMenuItem: false,				
+						submenu: [],
+						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'spell')
+					}
+		
+				],
+				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'exercises')
+			},
+			{
+				key: `module-test-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${commonPath}/${getLocalizedConfig(lang)?.test}`,
+				title: 'sidenav.test',
+				icon: faUserClock,
 				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 				breadcrumb: false,
 				isRootMenuItem: false,				
 				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'play')
+				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'test')
 			}
 		]
 	

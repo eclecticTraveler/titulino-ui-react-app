@@ -34,7 +34,7 @@ const local = {
 const getEnv = () => {
 
   const environment = process.env.REACT_APP_ENV || 'production'; 
-  console.log('Environment:', environment); // Check what this logs
+  console.log('Environment:', environment);
 	switch (environment) {
 		case 'development':
 			return dev
