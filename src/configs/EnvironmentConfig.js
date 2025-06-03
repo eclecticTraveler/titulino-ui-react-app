@@ -12,21 +12,18 @@ const commonConfig = {
 
 const dev = {
   ...commonConfig,
-  IS_ADMIN_DASHBOARD_FEAT_ON: false,
   IS_SSO_ON: false,
   ENVIROMENT: 'dev',  
 };
 
 const prod = {
   ...commonConfig,
-  IS_ADMIN_DASHBOARD_FEAT_ON: false,
   IS_SSO_ON: false,
   ENVIROMENT: 'prod'
 };
 
 const local = {
   ...commonConfig,
-  IS_ADMIN_DASHBOARD_FEAT_ON: true,
   IS_SSO_ON: true,
   ENVIROMENT: 'local'
 };
