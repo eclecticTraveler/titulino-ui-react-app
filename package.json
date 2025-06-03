@@ -1,7 +1,7 @@
 {
   "name": "lrn-ui-react-app",
   "homepage": "https://titulino.com",
-  "version": "0.1.52",
+  "version": "0.1.53",
   "private": true,
   "dependencies": {
     "@ant-design/charts": "^1.4.2",
@@ -11,6 +11,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@react-keycloak/web": "^3.4.0",
+    "@reduxjs/toolkit": "^2.8.2",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/ssr": "^0.5.2",
@@ -39,7 +40,7 @@
     "react-dom": "^18.3.1",
     "react-iframe": "^1.8.0",
     "react-intl": "^5.18.2",
-    "react-redux": "^7.2.4",
+    "react-redux": "^7.2.9",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^5.0.1",
     "react-simple-maps": "^3.0.0",
