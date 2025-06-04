@@ -6,6 +6,10 @@ import InternalIFrame from 'components/layout-components/InternalIFrame';
 import UnderConstruccion from 'components/layout-components/UnderConstruccion';
 import utils from 'utils';
 import { useLocation } from 'react-router-dom';
+import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
+import { faLevelDown, faLevelUp } from '@fortawesome/free-solid-svg-icons';
+import IntlMessage from "components/util-components/IntlMessage";
+import IconAdapter from "components/util-components/IconAdapter";
 
 const getGrammarCategory = (proficiencyOrderId) => {
   if (proficiencyOrderId === null || proficiencyOrderId === undefined) return 'basic';
@@ -20,6 +24,11 @@ const VideoClasses = ({
   userProficiencyOrder
 }) => {
   const location = useLocation();
+ const { TabPane } = Tabs;
+   const locale = true;
+  const setLocale = (isLocaleOn, localeKey) => {
+    return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+  };
 
   useEffect(() => {
     const pathInfo = utils.getCourseInfoFromUrl(location?.pathname);
@@ -35,18 +44,37 @@ const VideoClasses = ({
     return <UnderConstruccion />;
   }
 
-  const activeCategory = getGrammarCategory(userProficiencyOrder);
-  const videoClass = videoClassUrls[0]; // assuming 1 result per request
+    const videoClass = videoClassUrls;
+    const rawCategory = getGrammarCategory(userProficiencyOrder);
+    const activeCategory = (rawCategory === 'basic' || rawCategory === 'advanced') ? rawCategory : 'basic';
 
-  const items = ['basic', 'advanced'].map(category => ({
-    key: category,
-    label: category.charAt(0).toUpperCase() + category.slice(1),
-    children: <InternalIFrame iFrameUrl={videoClass[category]} />
-  }));
+    // for V5 ANTD Tabs
+    // const items = ['basic', 'advanced']?.map(category => ({
+    // key: category,
+    // label: category.charAt(0).toUpperCase() + category.slice(1),
+    // children:<InternalIFrame iFrameUrl={videoClass[category]} />
+    // }));
 
   return (
-    <div id="unathenticated-page">
-      <Tabs defaultActiveKey={activeCategory} items={items} />
+    <div id="iframed-double-page">
+      {/* <Tabs defaultActiveKey={activeCategory} items={items} /> for V5 */}
+        <Tabs type="card" defaultActiveKey={activeCategory}>
+        {['basic', 'advanced'].map(category => (
+            <TabPane
+            tab={
+                <span>
+                <IconAdapter icon={category === "basic" ? faLevelDown : faLevelUp} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
+                {setLocale(locale, `classes.grammar.${category}`)}
+                </span>
+            } 
+            key={category}
+            >
+            <span>
+                <InternalIFrame iFrameUrl={videoClass[category]} className="iframed-video-classes" />
+            </span>
+            </TabPane>
+        ))}
+        </Tabs>
     </div>
   );
 };

@@ -313,8 +313,9 @@
 	"enrollment.coursesNotAvailable":"Los cursos no están disponibles en este momento",
 	"enrollment.coursesNotAvailableMessage":"Actualmente no tenemos ningún curso abierto, ¡pero no te preocupes! Aún puedes explorar los recursos gratuitos disponibles en nuestra página.",
 	"enrollment.coursesNotAvailableMessage2":"Estén atentos a las actualizaciones sobre los próximos cursos siguiendo nuestro.",
-	"enrollment.coursesNotAvailableMessage3": "Página de Facebook de Titulolino"
-	
+	"enrollment.coursesNotAvailableMessage3": "Página de Facebook de Titulino",
+	"classes.grammar.basic":"Básico",
+	"classes.grammar.advanced":"Avanzado"
 }
 
   
