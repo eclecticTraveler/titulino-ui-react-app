@@ -4,6 +4,7 @@ import DynamicNavigationRouter from "../../services/DynamicNavigationRouter";
 import LocalStorageService from "../../services/LocalStorageService";
 import QuizletService from "../../services/QuizletService";
 import VideoClassService from "../../services/VideoClassService";
+import GrammarClassService from "services/GrammarClassService";
 import LandingWidgetsService from "../../services/LandingWidgetsService";
 import ProfileService from "../../services/ProfileService";
 import dummyData from "../../assets/data/dummyDW.json";
@@ -64,7 +65,8 @@ import {
   GET_LISTENING_PRACTICE_MODULE,
   ON_LOADING_ENROLEE_BY_REGION,
   ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
-  ON_MODAL_INTERACTION
+  ON_MODAL_INTERACTION,
+  ON_LOADING_VIDEO_CLASS_ARRAY_URLS
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -138,6 +140,13 @@ const url = await VideoClassService.getVideoClassUrl(levelNo, chapterNo, nativeL
   }
 }
 
+export const ongettingVideoClassArrayUrls = async (levelNo, chapterNo, nativeLanguage, course) => {
+const urls = await GrammarClassService.getGrammarClassUrlsByChapter(levelNo, chapterNo, nativeLanguage, course);
+  return {
+    type: ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
+    videoClassUrls: urls
+  }
+}
 
 export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, course) => {
   const url = await BookChapterService.getBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course);
@@ -500,9 +509,11 @@ export const getWasUserConfigSetFlag = async () => {
   }
 }
 
-export const getUpperNavigationBasedOnUserConfig = async () => {  
+export const getUpperNavigationBasedOnUserConfig = async (isAuthenticated) => {  
+  let isUserAuthenticated = true ?? false;
+  console.log("isUserAuthenticated: ", isUserAuthenticated);
   const selectedLanguageForCourse =  await LocalStorageService.getUserSelectedCourse();
-  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation);
+  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation, isUserAuthenticated);
   return {
     type: GET_UPPER_NAV_BASED_ON_USER_CONFIG,
     upperMainNavigation: upperMainNavigation
@@ -525,25 +536,32 @@ export const toggleUpperNavigationLevelSelection = async (level) => {
   }
 }
 
-export const toggleSelectedUpperNavigationTabOnLoad = async(path, dynamicUpperMainNavigation) => {
+export const toggleSelectedUpperNavigationTabOnLoad = (path, dynamicUpperMainNavigation) => {
   const pathArray = path.split('/');
   const courseOnLoad = pathArray[3]; // Last course in the url
-  if(courseOnLoad){
-    dynamicUpperMainNavigation?.forEach(function(mainNavMenu){
-      if(mainNavMenu.current === true ){
-        mainNavMenu.current = false;
-      }
-      if(mainNavMenu.key === courseOnLoad && mainNavMenu.current === false){
-        mainNavMenu.current = true;
-      }
-    })
+
+  if (!courseOnLoad || !dynamicUpperMainNavigation) {
+    return {
+      type: GET_SELECTED_COURSE_FROM_UPPER_NAV_ON_LOAD,
+      courseOnLoad,
+    };
   }
-  
+
+  // Create a new navigation array, setting 'current' properly without mutation
+  const updatedNavigation = dynamicUpperMainNavigation?.map(menuItem => {
+    return {
+      ...menuItem,
+      current: menuItem.key === courseOnLoad
+    };
+  });
+
   return {
     type: GET_SELECTED_COURSE_FROM_UPPER_NAV_ON_LOAD,
-    courseOnLoad:courseOnLoad
-  }
-}
+    courseOnLoad,
+    updatedNavigation, // send the updated navigation with current flags set
+  };
+};
+
 
 export const onCorrectionsModalChange = async(isCorrectionModalOpened) => {
   return {

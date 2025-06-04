@@ -1,35 +1,33 @@
-import { createStore, applyMiddleware, compose } from "redux";
-import reducers from "../reducers";
-import createSagaMiddleware from "redux-saga";
-import rootSaga from "../sagas/index";
-import axiosMiddleware from "redux-axios-middleware";
-import HttpService from "../../services/HttpService";
+import { configureStore } from '@reduxjs/toolkit';
+import reducers from '../reducers';
+import createSagaMiddleware from 'redux-saga';
+import rootSaga from '../sagas/index';
+import axiosMiddleware from 'redux-axios-middleware';
+import HttpService from '../../services/HttpService';
 import reduxPromise from 'redux-promise';
 
- const sagaMiddleware = createSagaMiddleware();
+const sagaMiddleware = createSagaMiddleware();
 
-const middlewares = [sagaMiddleware, reduxPromise, axiosMiddleware(HttpService.getAxiosClient())];
+const customMiddlewares = [
+  sagaMiddleware,
+  reduxPromise,
+  axiosMiddleware(HttpService.getAxiosClient()),
+];
 
-function configureStore(preloadedState) {
- 
-  const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-  const store = createStore(reducers, preloadedState, composeEnhancers(
-    applyMiddleware(...middlewares)
-  ));
+const store = configureStore({
+  reducer: reducers,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({ thunk: false, serializableCheck: false }).concat(customMiddlewares),
+  devTools: process.env.NODE_ENV !== 'production',
+});
 
-   sagaMiddleware.run(rootSaga);
+sagaMiddleware.run(rootSaga);
 
-  if (module.hot) {
-    module.hot.accept("../reducers/index", () => {
-      const nextRootReducer = require("../reducers/index");
-      store.replaceReducer(nextRootReducer);
-    });
-  }
-
-  return store;
+if (module.hot) {
+  module.hot.accept('../reducers/index', () => {
+    const nextRootReducer = require('../reducers/index').default;
+    store.replaceReducer(nextRootReducer);
+  });
 }
 
-const store = configureStore();
-
 export default store;
-

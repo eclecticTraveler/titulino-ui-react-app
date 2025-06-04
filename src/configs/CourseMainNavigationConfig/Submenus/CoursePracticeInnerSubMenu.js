@@ -193,17 +193,6 @@ export const getCoursePracticeResourcesInnerSubMenu = (lang, levelNo, chapterNo)
 		  return [
 			{
 				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.resources}/${getLocalizedConfig(lang)?.myProgress}`,
-				title: 'sidenav.findMyprogress',
-				icon: faChartSimple,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'myProgress')
-			},
-			{
-				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
 				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.resources}/${getLocalizedConfig(lang)?.test}`,
 				title: 'sidenav.finaltest',
 				icon: faUserClock,

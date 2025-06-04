@@ -62,11 +62,13 @@ const SideNavContent = (props) => {
 								<SubMenu
 									key={subMenuFirst.key}
 									title={setLocale(localization, subMenuFirst?.title)}
+									icon={<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} />}
 									
 								>
 									{
 										subMenuFirst.submenu?.map((subMenuSecond) => (
 											<Menu.Item key={subMenuSecond?.key} >
+												<IconAdapter icon={subMenuSecond.icon} iconType={subMenuSecond.iconType} />
 												<span>
 													{setLocale(localization, subMenuSecond?.title)}
 												</span>

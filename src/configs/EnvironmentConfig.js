@@ -1,12 +1,8 @@
 const commonConfig = {
-  KC_REALM: 'titulino',
-  KC_ENDPOINT_URL: '',
-  KC_ENABLED_FEATURE: false,
-  IS_KC_FEATURE_ON: false,
   IS_NEW_PROGRESS_APP_ON: true,
   IS_NEW_SEARCH_CONFIG_ON: true,
   IS_ENROLLMENT_FEAT_ON: true,
-  TITULINO_NET_API: process.env.REACT_APP_TITULINO_NET_API || 'https://api.titulino.com',
+  TITULINO_NET_API: process.env.REACT_APP_TITULINO_NET_API || '',
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
 };
 

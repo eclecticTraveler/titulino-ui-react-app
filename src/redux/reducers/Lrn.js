@@ -42,7 +42,8 @@ import {
   GET_LISTENING_PRACTICE_MODULE,
   ON_LOADING_ENROLEE_BY_REGION,
   ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
-  ON_MODAL_INTERACTION
+  ON_MODAL_INTERACTION,
+  ON_LOADING_VIDEO_CLASS_ARRAY_URLS
 } from "../constants/Lrn";
 
 const initState = {
@@ -227,6 +228,11 @@ const lrn = (state = initState, action) => {
         ...state,
         videoClass: action.videoClass
       }
+    case ON_LOADING_VIDEO_CLASS_ARRAY_URLS:
+      return {
+        ...state,
+        videoClassUrls: action.videoClassUrls
+      }
     case GET_QUIZLET_URL:
       return {
         ...state,
@@ -252,7 +258,8 @@ const lrn = (state = initState, action) => {
     case GET_SELECTED_COURSE_FROM_UPPER_NAV_ON_LOAD:
       return {
         ...state,
-        courseOnLoad: action.courseOnLoad
+      dynamicUpperMainNavigation: action.updatedNavigation || state.lrn.dynamicUpperMainNavigation,
+      selectedCourseOnLoad: action.courseOnLoad,
       }
     case SET_USER_SELECTED_COURSE:
       return {
