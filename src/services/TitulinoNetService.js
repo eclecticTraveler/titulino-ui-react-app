@@ -14,12 +14,11 @@ const getHeaders = (token) => {
 
 export const getRegistrationToken = async (whoCalledMe, userName) => {
  
-const loginUrl = `${titulinoNetApiUri}/login`;
+const loginUrl = `${titulinoNetApiUri}/auth`;
 const myHeaders = new Headers();
 myHeaders.append("Content-Type", "application/json");
-
 const raw = JSON.stringify({
-  "userName": "titulinoUiSystem"
+  "userName": process.env.REACT_APP_BACKEND_NET_SERVICE_USERNAME
 });
 
 const requestOptions = {

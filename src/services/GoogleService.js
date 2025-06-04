@@ -84,6 +84,34 @@ export const getGCUriForImages = async(whoCalledMe, theme) => {
   }
 }
 
+
+export const getGrammarClassData = async (whoCalledMe) => {
+  if (whoCalledMe) {
+      
+    const requestOptions = {
+      method: "GET",
+      redirect: "follow"
+    };      
+    
+    // Base URL
+    let classDataUrl = `${gcbucketBaseUrl}/${gcBucketName}/grammar-class-data.json`;
+
+    try {
+      const response = await fetch(classDataUrl, requestOptions);
+      const apiResult = await response.json();
+      console.log("Grammar Videos", apiResult)
+      return apiResult ?? _results;
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getGrammarClassData: from ${whoCalledMe}`);
+      console.error(error);
+      return _results; // Might be better to return a handled response
+    }
+  }
+
+  return _results;
+
+};
+
 export const getVideoClassData = async (whoCalledMe) => {
   if (whoCalledMe) {
       
@@ -189,7 +217,8 @@ const GoogleService = {
   getGCUriForImages,
   getVideoClassData,
   getCourseProgressData,
-  getGeoMapResource
+  getGeoMapResource,
+  getGrammarClassData
 };
 
 export default GoogleService;

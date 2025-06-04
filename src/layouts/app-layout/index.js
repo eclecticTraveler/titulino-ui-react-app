@@ -14,7 +14,7 @@ import {
   Grid,
 } from "antd";
 
-import {getUpperNavigationBasedOnUserConfig, onCurrentRouteInfo} from '../../redux/actions/Lrn';
+import {onCurrentRouteInfo} from '../../redux/actions/Lrn';
 import mainNavigationConfig from "../../configs/MainNavigationConfig";
 
 import { 
@@ -95,7 +95,6 @@ export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicU
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-		getUpperNavigationBasedOnUserConfig: getUpperNavigationBasedOnUserConfig,
     onCurrentRouteInfo: onCurrentRouteInfo
 	}, dispatch)
 }
