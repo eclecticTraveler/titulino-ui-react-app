@@ -70,6 +70,8 @@ export const Views = (props) => {
 
     console.log("tokennow",token);
 
+    // if token is available 
+
     if(!wasUserConfigSet){
         return (
             <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>

@@ -4,7 +4,8 @@ import {
   ON_RENDERING_ADMIN_INSIGHTS_DASHBOARD,
   ON_RENDERING_LOCATION_TYPE_SELECTIONS,
   ON_GETTING_COUNTRIES_BY_LOCATION_TYPE,
-  ON_LOADING_ALL_DASHBOARD_CONTENTS
+  ON_LOADING_ALL_DASHBOARD_CONTENTS,
+  ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD
 } from '../constants/Analytics';
 
 export function onTestingDefault(defaultValue) {
@@ -61,6 +62,22 @@ export const onLoadingAllDashboardContents = async (courseCodeId, locationType, 
     throw error;
   }
 };
+
+export const onLoadingUserAuthenticatedProgressDashboard = (emailId, dobOrYob, course) => {
+
+  // Use a manager to do 
+
+  // Get CourseCodeId associated with the course
+
+  // call TitulinoRestService to get the user progress
+
+  // 
+  return {
+    type: ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD,
+    emailId: emailId,
+    dobOrYob: dobOrYob
+  };
+}
 
 
 

@@ -144,17 +144,6 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 			submenu: [
 				...getCoursePracticeInnerSubMenuV2(lang, 'supermarket', 11)
 			]
-		},
-		{
-			key: 'chapter-sidenav-theme-supermarket-resources',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-supermarket/${getLocalizedConfig(lang)?.resources}`,
-			title: 'module.resources',
-			icon: faBoxes,
-			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-			breadcrumb: false,
-			submenu: [
-				...getCoursePracticeResourcesInnerSubMenu(lang, 'supermarket', 'resources')
-			]
 		}
 	]
 }
