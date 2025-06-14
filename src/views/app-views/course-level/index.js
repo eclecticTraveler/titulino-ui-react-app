@@ -2,10 +2,13 @@ import React, {Component, Suspense} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
 import { geteBookUrl, onLoadingEnrolleeByRegion }  from 'redux/actions/Lrn';
+import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 import utils from 'utils';
+
+import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 
 class CourseLevel extends Component {
 
@@ -30,6 +33,15 @@ class CourseLevel extends Component {
     render() {
         const searchTerms = ["supermarket", "household"]; // Array of search terms
         const isFound = searchTerms.some(term => this.props.location?.pathname?.includes(term));
+        const selecting = true;
+        if(selecting){ //this.props.userCourses
+            return (
+                <div id="unathenticated-landing-page-margin">
+                    {/* <ProgressDashboardByEmailV4 /> */}
+                    <EmailYearSearchForm/>
+                </div>
+            )
+        }
 
         if(isFound && this.props.ebookUrl){
             return (
@@ -58,10 +70,11 @@ function mapDispatchToProps(dispatch){
 	}, dispatch)
 }
 
-const mapStateToProps = ({lrn, theme}) => {
+const mapStateToProps = ({lrn, theme, grant}) => {
 	const { wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount } = lrn;
     const { locale, direction, course } =  theme;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount }
+    const { userCourses } = grant;
+	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userCourses }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);

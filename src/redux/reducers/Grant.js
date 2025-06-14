@@ -1,18 +1,18 @@
 import {
-	AUTH_TOKEN,
-	AUTHENTICATED,
-	SHOW_AUTH_MESSAGE,
-	SHOW_LOADING,
-	AUTH_TITULINO_INTERNAL_TOKEN
+	ON_AUTHENTICATING_WITH_INTERNAL_RESOURCES,
+	ON_AUTHENTICATING_WITH_SSO,
+	AUTH_TITULINO_INTERNAL_TOKEN,
+	ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH
 } from '../constants/Grant';
 
 const initState = {
-  loading: false,
+  generalLoading: false,
   message: '',
   showMessage: false,
-  userCourses: [],
+  userCourses: null,
   contactId: null,
-  emailId: null,
+  emailId: null,	
+  dobOrYob: null,
   communicationName: null,
   expirationDate: null,
   hasEverBeenFacilitator: false,
@@ -21,24 +21,32 @@ const initState = {
 
 const grant = (state = initState, action) => {
 	switch (action.type) {
-		case AUTHENTICATED:
+		case ON_AUTHENTICATING_WITH_INTERNAL_RESOURCES: 
 			return {
 				...state,
-				loading: false,
-				redirect: '/',
-				innerToken: action.token
+				generalLoading: false,
+				innerToken: action.innerToken
 			}
-		case SHOW_AUTH_MESSAGE: 
+		case ON_AUTHENTICATING_WITH_SSO: {
 			return {
 				...state,
-				message: action.message,
-				showMessage: true,
-				loading: false
+				generalLoading: false,
+				emailId: action.emailId
 			}
-		case SHOW_LOADING: {
+		}
+		case ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH: {
+			state.generalLoading = action.userProfile.generalLoading;
+			state.message = action.userProfile.message;
+			state.userCourses = action.userProfile.userCourses;
+			state.contactId = action.userProfile.contactId;
+			state.communicationName = action.userProfile.communicationName;
+			state.expirationDate = action.userProfile.expirationDate;
+			state.hasEverBeenFacilitator = action.userProfile.hasEverBeenFacilitator;
+			state.showMessage = action.userProfile.showMessage;
 			return {
 				...state,
-				loading: true
+				generalLoading: false,
+				userProfile: action.userProfile,
 			}
 		}
 		default:

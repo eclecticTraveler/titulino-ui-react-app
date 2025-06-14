@@ -15,8 +15,6 @@ import { faRoad, faPieChart } from '@fortawesome/free-solid-svg-icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import getLocaleText from "components/util-components/IntString";
-import GenericModal from "./GenericModal";
-import registerForm from 'assets/lotties/registerForm.json';
 import EnrollInvitationMessage from "components/admin-components/ModalMessages/EnrollInvitationMessage";
 import ConfettiExplosion from 'react-confetti-explosion';
 
@@ -69,55 +67,7 @@ export const ProgressDashboardByEmailV4 = (props) => {
     // Global
     onResetingProgressByEmailIdAndCourseCodeId();
 
-  }
- 
-  const handleYearOfBirth = (year) => {
-    if (year) {
-      setUserYearOfBirth(year)
-    } else {
-      console.log("No year selected");
-    }
-  };
-  
-
-  // Trigger the search and set loading to true
-  const handleSearch = () => {
-
-    if (!email) {
-      const messageToDisplay = "Enter Email";
-      message.warning(messageToDisplay);
-      return;
-    }
-
-    let sanitizedEmail = email?.trim()?.toLowerCase();
-
-      // Basic email format validation (optional, you can use a more strict validation)
-    const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-
-    if (!sanitizedEmail || !emailRegex.test(sanitizedEmail)) {
-      const messageToDisplay = "Bad Email";
-      message.warning(messageToDisplay);
-      return;
-    }
-    
-    // const formEmail = form?.getFieldValue("emailAddress");
-    // const formYOB = parseInt(form?.getFieldValue("yearOfBirth")?.format("YYYY"), 10);
-    if(currentCourseCodeId && userYearOfBirth > 0){
-      setLoading(true);
-      setEmail(sanitizedEmail);
-      onVerifyingProgressByEmailIdAndCourseCodeId(userYearOfBirth, sanitizedEmail, currentCourseCodeId, selectedCourse?.localizationId);
-    }
-
-  };
-
- 
-  const handleEmailChange = (email) => {
-    const emailValue = email?.trim()?.toLowerCase(); // Trim spaces and convert to lowercase to user input
-    setEmail(emailValue);
-    
-    const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-    setIsEmailValid(emailRegex.test(emailValue));
-  };
+  }  
 
   // Submit progress and refetch data
 useEffect(() => {
@@ -234,22 +184,6 @@ useEffect(() => {
     setActiveKey(key); // Update active tab key
   };
 
-  const renderSubtitle = () => {
-    if (activeKey === '1') {
-      return (
-        <Divider>
-          <h3>{setLocale(locale, "resources.myprogress.generalDashboard")}</h3>
-        </Divider>
-      );
-    } else if (activeKey === '2') {
-      return (
-        <Divider>
-          <h3>{setLocale(locale, "resources.myprogress.brokenDown")}</h3>
-        </Divider>
-      );
-    }
-    return null; // Default if no active key
-  };
 
   const renderProgressTracking = () => (
     registeredProgressByEmailId && (
@@ -301,41 +235,6 @@ useEffect(() => {
     }
   }
 
-  const renderButtons = () => {
-    if (activeKey === '2' && email) {
-      return renderUpsertUserProgressBottom()
-    } else {
-      return (
-        <>
-          <Row justify="center">
-            <Col xs={24} sm={24} lg={8}>
-            <Form.Item style={{ marginBottom: "10px" }}>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              loading={loading} 
-              style={{ width: "100%" }} 
-              disabled={!(email)}
-            >
-              {setLocale(locale, "resources.myprogress.search")}
-            </Button>
-          </Form.Item>              
-          <Form.Item>
-            <Button 
-              htmlType="button" 
-              onClick={handleReset} 
-              style={{ width: "100%" }} 
-            >
-              {setLocale(locale, "resources.myprogress.reset")}
-            </Button>
-          </Form.Item>
-                </Col>
-            </Row>
-        </>
-      );
-    }
-    return null; // Default if no active key
-  };
 
   const capitalizeFirstLetter = (str) => {
     return str?.charAt(0)?.toUpperCase() + str?.slice(1);
@@ -375,6 +274,7 @@ useEffect(() => {
 
     <Card bordered loading={loading}>
       <h1>{renderDashboardTitle()}</h1>
+      {registeredProgressByEmailId && <h2>{renderMessageResults()}</h2>}
      </Card>
 
       <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}>

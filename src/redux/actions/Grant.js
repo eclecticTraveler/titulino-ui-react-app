@@ -1,100 +1,51 @@
+import TitulinoManager from "managers/GrantManager";
+
 import {
-  SIGNIN,
-  AUTHENTICATED,
-  SIGNOUT,
-  SIGNOUT_SUCCESS,
-  SHOW_AUTH_MESSAGE,
-  HIDE_AUTH_MESSAGE,
-  SIGNUP,
-  SIGNUP_SUCCESS,
-  SHOW_LOADING,
-  SIGNIN_WITH_GOOGLE,
-  SIGNIN_WITH_GOOGLE_AUTHENTICATED,
-  SIGNIN_WITH_FACEBOOK,
-  SIGNIN_WITH_FACEBOOK_AUTHENTICATED
+ON_AUTHENTICATING_WITH_INTERNAL_RESOURCES,
+ON_AUTHENTICATING_WITH_SSO,
+AUTH_TITULINO_INTERNAL_TOKEN,
+ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH
 } from '../constants/Grant';
 
-export const signIn = (user) => {
-  return {
-    type: SIGNIN,
-    payload: user
+export const onRetrievingProfileByEmailIdAndYearOfBirth = (emailId, dobOrYob) => {
+  const userProfile = TitulinoManager.getUserProfile(emailId, dobOrYob);
+  return  {
+      type: ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
+      userProfile: {
+            generalLoading: false,
+            userCourses: userProfile?.userCourses ?? null,
+            contactId: userProfile?.contactId ?? null, 
+            communicationName: userProfile?.communicationName ?? null,
+            expirationDate: userProfile?.expirationDate ?? null,
+            hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
+            showMessage: false,
+            message: userProfile?.message ?? '',
+            emailId: emailId,
+            dobOrYob: dobOrYob
+          }
+    }
   }
-};
 
-export const authenticated = (token) => {
+export const onAuthenticatingWithInternalResources = (innerToken) => {
   return {
-    type: AUTHENTICATED,
-    token
-  }
-};
-
-export const signOut = () => {
-  return {
-    type: SIGNOUT
+    type: ON_AUTHENTICATING_WITH_INTERNAL_RESOURCES,
+    innerToken
   };
+}
+
+export const onAuthenticatingWithSSO = (emailId) => {
+  return {
+    type: ON_AUTHENTICATING_WITH_SSO,
+    emailId
+  };  
 };
 
-export const signOutSuccess = () => {
-  return {
-    type: SIGNOUT_SUCCESS,
-  }
-};
 
-export const signUp = (user) => {
+///
+export const setAuthInnerToken = (token) => {
+  localStorage.setItem(AUTH_TITULINO_INTERNAL_TOKEN, token);
   return {
-    type: SIGNUP,
-    payload: user
-  };
-};
-
-export const signUpSuccess = (token) => {
-  return {
-    type: SIGNUP_SUCCESS,
+    type: AUTH_TITULINO_INTERNAL_TOKEN,
     token
   };
-};
-
-export const signInWithGoogle = () => {
-  return {
-    type: SIGNIN_WITH_GOOGLE
-  };
-};
-
-export const signInWithGoogleAuthenticated = (token) => {
-  return {
-    type: SIGNIN_WITH_GOOGLE_AUTHENTICATED,
-    token
-  };
-};
-
-export const signInWithFacebook = () => {
-  return {
-    type: SIGNIN_WITH_FACEBOOK
-  };
-};
-
-export const signInWithFacebookAuthenticated = (token) => {
-  return {
-    type: SIGNIN_WITH_FACEBOOK_AUTHENTICATED,
-    token
-  };
-};
-
-export const showAuthMessage = (message) => {
-  return {
-    type: SHOW_AUTH_MESSAGE,
-    message
-  };
-};
-
-export const hideAuthMessage = () => {
-  return {
-    type: HIDE_AUTH_MESSAGE,
-  };
-};
-
-export const showLoading = () => {
-  return {
-    type: SHOW_LOADING,
-  };
-};
+}

@@ -520,6 +520,18 @@ export const getUpperNavigationBasedOnUserConfig = async (isAuthenticated) => {
   }
 }
 
+
+export const onRetrievingProfileByEmailIdAndYearOfBirth = async (email, yobOrDateOfBirth) => {  
+  let isUserAuthenticated = true ?? false;
+  console.log("isUserAuthenticated: ", isUserAuthenticated);
+  const selectedLanguageForCourse =  await LocalStorageService.getUserSelectedCourse();
+  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation, isUserAuthenticated);
+  return {
+    type: GET_UPPER_NAV_BASED_ON_USER_CONFIG,
+    upperMainNavigation: upperMainNavigation
+  }
+}
+
 export const onCurrentRouteInfo = async (route) => {
   return{
     type: CURRENT_ROUTE_INFO,
