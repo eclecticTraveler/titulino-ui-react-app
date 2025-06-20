@@ -7,12 +7,13 @@ import {toggleCollapsedNav, onMobileNavToggle} from 'redux/actions/Theme';
 import { onRenderingCourseRegistration, onLoginForEnrollment } from "redux/actions/Lrn";
 import Loading from "components/shared-components/Loading";
 import CourseSelection from "./CourseSelection";
+import WeeklyCourseSelector from "./WeeklyCourseSelector";
 import QuickToFullEnrollment from "./QuickToFullEnrollment";
 import CoursesNotAvailableMessage from "components/admin-components/ModalMessages/CoursesNotAvailableMessage";
 
  
 export const EnrollmentWrapper = (props) => {
-	const { mobileNav, onMobileNavToggle, toggleCollapsedNav, navCollapsed, onRenderingCourseRegistration, availableCourses, onLoginForEnrollment, apiToken } = props;
+	const { mobileNav, onMobileNavToggle, toggleCollapsedNav, navCollapsed, onRenderingCourseRegistration, availableCourses, onLoginForEnrollment, apiToken, selectedCourses } = props;
     // If you need componentDidMount/componentDidUpdate-like behavior, you can use useEffect:
     useEffect(() => {
         // This runs once on mount (componentDidMount)
@@ -28,32 +29,24 @@ export const EnrollmentWrapper = (props) => {
         )
     }else if(availableCourses?.length === 0){
         return (
-            <>
+            <>                            
                 <CoursesNotAvailableMessage />
             </>
         )
     }else{
-        // if(availableCourses?.length > 1){
-        //     return (
-        //         <div>
-                    
-        //             {/* <QuickToFullEnrollment/> */}
-        //              <CourseSelection/>
-        //              {/* <ContactEnrollment /> */}
-        //         </div>
-        //     );
-        // }else{
-        //     return (
-        //         <div>
-        //              <QuickToFullEnrollment/>
-        //         </div>
-        //     );
-        // }
-        return (
-            <div>
-                 <QuickToFullEnrollment/>
-            </div>
-        );
+        if(availableCourses?.length > 1 && selectedCourses?.length === 0){
+            return (
+                <div>
+                     <WeeklyCourseSelector/>
+                </div>
+            );
+        }else{
+            return (
+                <div>
+                     <QuickToFullEnrollment/>
+                </div>
+            );
+        }
     }
 }
 
@@ -67,9 +60,9 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({ theme, lrn }) => {
-	const {currentRoute, availableCourses, apiToken} = lrn;
+	const {currentRoute, availableCourses, apiToken, selectedCourses} = lrn;
 	const { sideNavTheme, topNavColor, navCollapsed } = theme;
-	return { sideNavTheme, topNavColor, currentRoute, navCollapsed, availableCourses, apiToken };
+	return { sideNavTheme, topNavColor, currentRoute, navCollapsed, availableCourses, apiToken, selectedCourses };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EnrollmentWrapper);

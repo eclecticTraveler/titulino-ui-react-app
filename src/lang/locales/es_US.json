@@ -310,7 +310,18 @@
 	"enrollment.coursesNotAvailable":"Los cursos no están disponibles en este momento",
 	"enrollment.coursesNotAvailableMessage":"Actualmente no tenemos ningún curso abierto, ¡pero no te preocupes! Aún puedes explorar los recursos gratuitos disponibles en nuestra página.",
 	"enrollment.coursesNotAvailableMessage2":"Estén atentos a las actualizaciones sobre los próximos cursos siguiendo nuestro.",
-	"enrollment.coursesNotAvailableMessage3": "Página de Facebook de Titulolino"
+	"enrollment.coursesNotAvailableMessage3": "Página de Facebook de Titulolino",
+	"enrollment.weeklySelectionTitle": "📅 Selección semanal de cursos",
+	"days.monday": "Lunes",
+	"days.tuesday": "Martes",
+	"days.wednesday": "Miércoles",
+	"days.thursday": "Jueves",
+	"days.friday": "Viernes",
+	"days.saturday": "Sábado",
+	"days.sunday": "Domingo",
+	"enrollment.continue": "Continuar",
+	"enrollment.timeConflictWarning": "El curso se superpone con un curso ya seleccionado."
+
 	
 }
 

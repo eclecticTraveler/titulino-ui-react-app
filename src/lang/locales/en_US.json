@@ -309,7 +309,17 @@
 	"enrollment.coursesNotAvailable":"Courses are not available at the moment",
 	"enrollment.coursesNotAvailableMessage":"Currently, we don't have any open courses, but don't worry! You can still explore the free resources available on our page.",
 	"enrollment.coursesNotAvailableMessage2":"Stay tuned for updates on upcoming courses by following our.",
-	"enrollment.coursesNotAvailableMessage3":"Titulino Facebook Page"
+	"enrollment.coursesNotAvailableMessage3":"Titulino Facebook Page",
+	"enrollment.weeklySelectionTitle": "📅 Weekly Course Selection",
+	"days.monday": "Monday",
+	"days.tuesday": "Tuesday",
+	"days.wednesday": "Wednesday",
+	"days.thursday": "Thursday",
+	"days.friday": "Friday",
+	"days.saturday": "Saturday",
+	"days.sunday": "Sunday",
+	"enrollment.continue": "Continue",
+	"enrollment.timeConflictWarning": "Course overlaps with an already selected course."
 
 	
 	
