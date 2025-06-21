@@ -246,7 +246,7 @@ export const getCourseProgressByYearOfBirthEmailCourseCodeIdAndLanguageId = asyn
 
   if(yearOfBirth > 0 && email && courseCodeId && courseLanguageId){
      // Base URL
-     const courseProgressByEmailUrl = `${SupabaseConfig.baseApiUrl}/GetUnauthenticatedEnrolleeCourseProgress`;
+     const courseProgressByEmailUrl = `${SupabaseConfig.baseApiUrl}/GetUnauthenticatedEnrolleeCourseProgressWithDefault`;
 
      const raw = JSON.stringify({
        "p_year": yearOfBirth,
