@@ -10,7 +10,7 @@ import getLocaleText from "components/util-components/IntString";
 const { Option } = Select;
 
 // Sample course data (use your own array here)
-let courseData = [
+const courseData = [
   {
     CourseCodeId: "SUPERMARKET_SEP_2024_COURSE_01",
     CourseDetails: [{
@@ -94,10 +94,12 @@ const daysOfWeek = [
 const WeeklyCourseSelector = (props) => {
   const [selectedCourses, setSelectedCourses] = useState([]);
   const { availableCourses, onSelectingEnrollmentCourses } = props;
+  let availableCoursesToSelectFrom = [];  
   if(availableCourses){
-    courseData = [...availableCourses];
+    // availableCoursesToSelectFrom = [...availableCourses, ...courseData];
+    availableCoursesToSelectFrom = [...availableCourses];
   }
-  
+
     const locale = true;
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -117,7 +119,7 @@ const WeeklyCourseSelector = (props) => {
         : [course.CourseDetails]
     }));
 
-  const normalizedCourseData = normalizeCourses(courseData);
+  const normalizedCourseData = normalizeCourses(availableCoursesToSelectFrom);
 
   const flatCourseDetails = normalizedCourseData.flatMap(course =>
     course.CourseDetails.map((detail, index) => ({
@@ -128,12 +130,12 @@ const WeeklyCourseSelector = (props) => {
   );
 
   const normalizeDay = (day) => {
-    const lower = day.toLowerCase();
-    return daysOfWeek.find(d => lower.includes(d.toLowerCase()));
+    const lower = day?.toLowerCase();
+    return daysOfWeek.find(d => lower?.includes(d?.toLowerCase()));
   };
 
   const groupedCourses = useMemo(() => {
-    const groups = daysOfWeek.reduce((acc, day) => {
+    const groups = daysOfWeek?.reduce((acc, day) => {
       acc[day] = [];
       return acc;
     }, {});
@@ -160,7 +162,7 @@ const WeeklyCourseSelector = (props) => {
     const newTime = newCourseDetail.gatheringTime;
   
     return selectedCourses.some(code => {
-      const course = courseData.find(c => c.CourseCodeId === code);
+      const course = availableCoursesToSelectFrom?.find(c => c.CourseCodeId === code);
   
       if (!course) return false;
   
@@ -304,18 +306,14 @@ const WeeklyCourseSelector = (props) => {
             </Card>
           </Col>
         ))}
-
         <Col span={24}>
-          <div style={{ textAlign: "center", marginTop: 24 }}>
+          <Card
+            bordered
+          >
           <Button type="primary" size="large" block onClick={handleSaveSelection} disabled={selectedCourses?.length === 0}>
             {setLocale(locale, "enrollment.continue")}
           </Button>
-          </div>
-
-          <div style={{ textAlign: "center", marginTop: 24 }}>
-            <strong>Selected CourseCodeIds:</strong>
-            <pre>{JSON.stringify(selectedCourses, null, 2)}</pre>
-          </div>
+          </Card>
         </Col>
       </Row>
     </div>
