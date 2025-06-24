@@ -41,12 +41,13 @@ export const LoginAdapter = (props) => {
 			const getSession = async () => {
 			  const { data: { session } } = await supabase.auth.getSession();
 			  if (session) {
+				console.log("getSession Session exists", session);
 				authenticated(session?.user);
 				onAuthenticatingWithSSO(session?.email);
 				// Push to modal asking for DOB by redux action.
-				history.push("/session-retrieval");
+				// history.push("/session-retrieval");
 				// history.push(AUTH_PREFIX_PATH);
-				// history.push(APP_PREFIX_PATH);
+				history.push(APP_PREFIX_PATH);
 				// history.push("/");
 				//   showLoading()
 			  }
@@ -56,9 +57,10 @@ export const LoginAdapter = (props) => {
 		  
 			const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
 			  if (session) {  // Only update if session exists
+				console.log("Session exists", session);
 				authenticated(session?.user);
-				history.push("/session-retrieval");
-				// history.push(APP_PREFIX_PATH);
+				// history.push("/session-retrieval");
+				history.push(APP_PREFIX_PATH);
 				// history.push(AUTH_PREFIX_PATH);
 				// history.push("/");
 							//   showLoading()

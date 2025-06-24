@@ -11,7 +11,7 @@ import ContactEnrollment from 'components/layout-components/Enrollment/ContactEn
 
 const EmailYearSearchForm = (props) => {
   // Destructure props
-  const { emailId, onRetrievingProfileByEmailIdAndYearOfBirth, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = props;
+  const { user, onRetrievingProfileByEmailIdAndYearOfBirth, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = props;
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [searchResult, setSearchResult] = useState(null);
@@ -52,7 +52,7 @@ const EmailYearSearchForm = (props) => {
 
   if (loading) return;
 
-  const email = emailId?.trim()?.toLowerCase();
+  const email = user?.emailId?.trim()?.toLowerCase();
 
   const year = form?.getFieldValue("yearOfBirth")?.year();
   const fullDate = form?.getFieldValue("dateOfBirth");
@@ -241,7 +241,7 @@ useEffect(() => {
           </Col>
           <Col xs={24} sm={24} lg={12}>
                 <Form.Item>
-                  <Input value={emailId} disabled />
+                  <Input value={user?.emailId} disabled />
                 </Form.Item>
           </Col>
           
@@ -268,7 +268,7 @@ useEffect(() => {
 
                     {isToDisplayFullEnrollment && (
                         <ContactEnrollment
-                        selectedEmail={emailId}
+                        selectedEmail={user?.emailId}
                         selectedDateOfBirth={form?.getFieldValue("dateOfBirth")}
                         form={form}
                         onFormSubmit={onFormSubmit ?? (() => {})} // define this function if not already
@@ -287,7 +287,7 @@ useEffect(() => {
                   htmlType="submit" 
                   loading={loading} 
                   style={{ width: "100%" }} 
-                  disabled={!(yearOfBirth && emailId)}
+                  disabled={!(yearOfBirth && user?.emailId)}
                 >
                   {setLocale(locale, "resources.myprogress.search")}
                 </Button>
@@ -313,9 +313,9 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ grant, lrn }) => {
-  const { emailId } = grant;
+  const { user } = grant;
   const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = lrn;
-  return { emailId, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful };
+  return { user, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EmailYearSearchForm);

@@ -36,7 +36,7 @@ export const AppViews = (props) => {
 			<Route exact path={`${APP_PREFIX_PATH}/profile/edit-profile`} component={lazy(() => retry(() => import(`./profile/index`)))} />		
 			<Route exact path={`${APP_PREFIX_PATH}/session-retrieval`} component={lazy(() => import(`./user/session-retrieval`))} />
 			<Route exact path={`${APP_PREFIX_PATH}/logout`} component={lazy(() => import(`./logout`))} />
-			{env.IS_SSO_ON && <Route exact path={`${APP_PREFIX_PATH}/login`} component={lazy(() => import(`./user/redirect-login`))} />}
+			{env.IS_SSO_ON && <Route exact path={`${APP_PREFIX_PATH}/login`} component={lazy(() => import(`./user/login`))} />}
 			<Route exact path={`${APP_PREFIX_PATH}/signup`} component={lazy(() => import(`./user/redirect-signup`))} />
 			{/* // Default to level 1 for any course until they are authorized to save where their progress was and land them there	*/}			
 			<Redirect exact from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
