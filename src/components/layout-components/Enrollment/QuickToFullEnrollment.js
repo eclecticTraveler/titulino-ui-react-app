@@ -12,6 +12,7 @@ import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
 import EnrollmentModal from "./EnrollmentModal";
+import { useHistory } from 'react-router-dom';
 
 const { Option } = Select;
 
@@ -40,6 +41,7 @@ export const QuickToFullEnrollment = (props) => {
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [submittedRecords, setSubmittingRecords] = useState([]);
+  const history = useHistory();
     
   const locale = true;
     const setLocale = (isLocaleOn, localeKey) => {
@@ -359,7 +361,8 @@ useEffect(() => {
     onResetSubmittingEnrollee(undefined);
     setSubmittingLoading(false);
     setSubmittingRecords([]); 
-    onSelectingEnrollmentCourses([]);   
+    onSelectingEnrollmentCourses([]);
+    history.push("/");
   };
   
 
@@ -456,11 +459,11 @@ useEffect(() => {
               <Card
                 style={quickEnrollmentStyle}
                 bordered
-                title={setLocale(locale, "enrollment.numOfCoursesEnrolled")}
+                title={setLocale(locale, "enrollment.courseDetails")}
                 loading={submittingLoading}
               >
-                {setLocale(locale, "enrollment.courseDetails")} 
-                {coursesToDisplay?.length}
+                <h2>{setLocale(locale, "enrollment.numOfCoursesEnrolled")} - {coursesToDisplay?.length}</h2>
+                
                 <Tabs tabPosition="top" type="line">
                   {coursesToDisplay.map((course, index) => (
                     <Tabs.TabPane
