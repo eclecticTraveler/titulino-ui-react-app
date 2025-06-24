@@ -11,13 +11,23 @@ const { Option } = Select;
 
 export const ContactEnrollment = (props) => {
   const { countries, selfLanguageLevel, onRequestingGeographicalDivision, selectedEmail, selectedYearOfBirth, selectedDateOfBirth,
-     onEmailChange, onFormSubmit, form, setResetChildStates, enrollmentStyle, submittingLoading } = props;
+     onEmailChange, onFormSubmit, form, setResetChildStates, enrollmentStyle, submittingLoading, selectedCoursesToEnroll, availableCourses } = props;
   const [selectedCountryOfResidence, setSelectedCountryOfResidence] = useState(null);
   const [selectedBirthCountry, setSelectedBirthCountry] = useState(null);
   const [divisions, setDivisions] = useState([]);
   const [birthDivisions, setBirthDivisions] = useState([]);
   const locale = true;
     
+  const getLanguageName = (id) => {
+    const map = {
+      en: "English",
+      es: "Español",
+      pt: "Português"
+      // add more if needed
+    };
+    return map[id] || id;
+  };
+
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   };
@@ -102,22 +112,59 @@ export const ContactEnrollment = (props) => {
         </Form.Item>
       </Card>
 
+      <>
+        {Array.from(
+          new Set(
+            (selectedCoursesToEnroll.length > 0
+              ? availableCourses.filter(course =>
+                  selectedCoursesToEnroll.includes(course.CourseCodeId)
+                )
+              : availableCourses
+            )?.map(course => course?.TargetLanguageId).filter(Boolean)
+          )
+        ).map((langId, index, allLanguages) => {
+          const isSingle = allLanguages.length === 1;
+          const fieldName = isSingle
+            ? "languageLevelAbbreviation"
+            : `languageLevelAbbreviation_${langId}`;
+          const languageName = getLanguageName(langId);
 
-      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.languageLevel")} loading={submittingLoading} bordered={true}>
-      <Form.Item name="languageLevelAbbreviation" 
-      rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectLanguageLevelForCourse") }]}
-      >
-          <Radio.Group>
-            <Space direction="vertical">
-              {selfLanguageLevel?.map((level) => (
-                <Radio key={level?.LevelAbbreviation} value={level?.LevelAbbreviation}>
-                  {setLocale(locale, level.LocalizationKey)}
-                </Radio>
-              ))}
-            </Space>
-          </Radio.Group>        
-        </Form.Item>
-      </Card>
+          return (
+            <Card
+              key={langId}
+              style={enrollmentStyle}
+              title={
+                isSingle
+                  ? <p>{setLocale(locale, "enrollment.form.languageLevelForCourseIn")} {languageName}?</p>
+                  : setLocale(locale, "enrollment.form.languageLevelForCourse")
+              }
+              loading={submittingLoading}
+              bordered
+            >
+              <Form.Item
+                name={fieldName}
+                rules={[
+                  {
+                    required: true,
+                    message: setLocaleString(locale, "enrollment.form.selectLanguageLevelForCourse")
+                  },
+                ]}
+              >
+                <Radio.Group>
+                  <Space direction="vertical">
+                    {selfLanguageLevel?.map((level) => (
+                      <Radio key={level?.LevelAbbreviation} value={level?.LevelAbbreviation}>
+                        {setLocale(locale, level.LocalizationKey)}
+                      </Radio>
+                    ))}
+                  </Space>
+                </Radio.Group>
+              </Form.Item>
+            </Card>
+          );
+        })}
+      </>
+
 
       <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.personalInfo")} loading={submittingLoading} bordered={true}>
           <Form.Item name="lastNames" label={setLocale(locale, "enrollment.form.lastNames")} 
@@ -254,8 +301,8 @@ function mapDispatchToProps(dispatch) {
 
 
 const mapStateToProps = ({ lrn }) => {
-  const { countries, selfLanguageLevel, countryDivisions } = lrn;
-  return { countries, selfLanguageLevel, countryDivisions };
+  const { countries, selfLanguageLevel, countryDivisions, selectedCoursesToEnroll, availableCourses } = lrn;
+  return { countries, selfLanguageLevel, countryDivisions, selectedCoursesToEnroll, availableCourses };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ContactEnrollment);

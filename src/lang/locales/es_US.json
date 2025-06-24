@@ -213,6 +213,7 @@
 	"resources.myprogress.selectAparticipationType":"Seleccione un tipo de participación para todas las categorías requeridas.",
 	"resources.userProgress.participationType": "Tipo de participación",
 
+	"enrollment.numOfCoursesEnrolled": "Número de cursos seleccionados:",
 	"enrollment.fullEnrollment":"Inscripción completa",
 	"enrollment.quickEnrollment":"Inscripción Rápida",
 	"enrollment.welcomeBack":"Bienvenido de nuevo",
@@ -254,6 +255,7 @@
 	"enrollment.form.stateOrRegionOfBirth": "Estado/Región de nacimiento",
 	"enrollment.form.selectStateOrRegionOfBirth": "Seleccione el estado/región de nacionalidad de nacimiento",
 	"enrollment.form.languageLevelForCourse": "¿Cuál es tu nivel de idioma para este curso?",
+	"enrollment.form.languageLevelForCourseIn": "¿Cuál es su nivel de idioma",
 	"enrollment.form.selectLanguageLevelForCourse": "Porfavor seleccione su nivel de idioma para este curso",
 	"enrollment.form.languageLevel": "Nivel de idioma",
 	"enrollment.form.personalInfo": "Información personal",
@@ -271,6 +273,7 @@
 	"enrollment.form.termsAndConditions": "Términos y condiciones",
 	"enrollment.form.ofUseAndPrivacyPolicy": "de Uso y reconoce nuestra Política de Privacidad.",
 	"enrollment.form.submit": "Enviar",
+	"enrollment.form.goBackToCourseSelection": "Volver a la selección de cursos",
 	"enrollment.language.level.beginner":"Principiante",
 	"enrollment.language.level.basic":"Básico",
 	"enrollment.language.level.intermediate":"Intermedio",
@@ -314,8 +317,20 @@
 	"enrollment.coursesNotAvailableMessage":"Actualmente no tenemos ningún curso abierto, ¡pero no te preocupes! Aún puedes explorar los recursos gratuitos disponibles en nuestra página.",
 	"enrollment.coursesNotAvailableMessage2":"Estén atentos a las actualizaciones sobre los próximos cursos siguiendo nuestro.",
 	"enrollment.coursesNotAvailableMessage3": "Página de Facebook de Titulino",
+		"enrollment.weeklySelectionTitle": "📅 Selección semanal de cursos",
+	"enrollment.weeklySelectionInstruction": "Seleccione tocando o haciendo clic el curso o los cursos en los que desea inscribirse de la lista a continuación.",
+	"days.monday": "Lunes",
+	"days.tuesday": "Martes",
+	"days.wednesday": "Miércoles",
+	"days.thursday": "Jueves",
+	"days.friday": "Viernes",
+	"days.saturday": "Sábado",
+	"days.sunday": "Domingo",
+	"enrollment.continue": "Continuar",
+	"enrollment.timeConflictWarning": "El curso se superpone con un curso ya seleccionado.",
 	"classes.grammar.basic":"Básico",
 	"classes.grammar.advanced":"Avanzado"
+	
 }
 
   

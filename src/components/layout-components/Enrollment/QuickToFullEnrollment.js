@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee } from "redux/actions/Lrn";
-import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space  } from "antd";
+import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee, onSelectingEnrollmentCourses } from "redux/actions/Lrn";
+import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs  } from "antd";
 import moment from "moment";
 import Flag from "react-world-flags";
 import CourseCards from "./CourseCards";
@@ -12,12 +12,13 @@ import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
 import EnrollmentModal from "./EnrollmentModal";
+import { useHistory } from 'react-router-dom';
 
 const { Option } = Select;
 
 export const QuickToFullEnrollment = (props) => {
   const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedCourse, nativeLanguage,
-         onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, isToDoFullEnrollment } = props;
+         onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, isToDoFullEnrollment, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
   const [isEmailVisible, setEmailVisible] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(true);
@@ -40,6 +41,7 @@ export const QuickToFullEnrollment = (props) => {
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [submittedRecords, setSubmittingRecords] = useState([]);
+  const history = useHistory();
     
   const locale = true;
     const setLocale = (isLocaleOn, localeKey) => {
@@ -192,13 +194,16 @@ useEffect(() => {
     setSubmitEnabled(true);
   };
 
-  const formatSubmissionData = (values, props, isQuickEnrollment, matchedEnrolleeInfo) => {
-    const {
+  const formatSubmissionData = (
+    values,
+    {
       nativeLanguage,
-      selectedCourse,
-      availableCourses,
+      enrolledCourses,
       countries
-    } = props;
+    },
+    isQuickEnrollment,
+    matchedEnrolleeInfo
+  ) => {
   
     const {
       emailAddress,
@@ -245,6 +250,35 @@ useEffect(() => {
         enrolleeDob = formattedDateOfBirth
     }
 
+    const selectedCourseCodeIds = (enrolledCourses || []).map(c => c?.CourseCodeId);
+
+    const selectedCourseObjects = enrolledCourses || [];
+  
+    const distinctLanguageTargets = new Set(
+      selectedCourseObjects
+        ?.map(course => course?.TargetLanguageId)
+        .filter(Boolean)
+    );
+    
+    const languageProficiencies = [
+      {
+        languageId: nativeLanguage?.localizationId || 'na',
+        languageLevelAbbreviation: 'na',
+      },
+      ...Array.from(distinctLanguageTargets).map(languageId => {
+        const formKey =
+          distinctLanguageTargets.size === 1
+            ? 'languageLevelAbbreviation'
+            : `languageLevelAbbreviation_${languageId}`;
+    
+        return {
+          languageId,
+          languageLevelAbbreviation: values[formKey] || 'ba',
+        };
+      }),
+    ];
+        
+    
     // Define the base object
     const formattedData = {
       contactExternalId: matchedInfo?.contactExternalId ?? null,
@@ -260,19 +294,10 @@ useEffect(() => {
       countryDivisionOfBirth: countryDivisionOfBirth ?? (matchedInfo.countryDivisionBirthName || null),
       
       termsVersion: termsAndConditionsVersion || "1.0", // Default version
-      coursesCodeIds: (availableCourses || []).map((course) => ({
-        courseCodeId: course?.CourseCodeId || null,
+      coursesCodeIds: selectedCourseCodeIds.map(id => ({
+        courseCodeId: id,
       })),
-      languageProficiencies: [
-        {
-          languageId: nativeLanguage?.localizationId || 'es', // TODO: For now
-          languageLevelAbbreviation: "na", // Default for native language
-        },
-        {
-          languageId: selectedCourse?.localizationId || 'en',
-          languageLevelAbbreviation: languageLevelAbbreviation || "ba", // Form-provided or default
-        },
-      ]
+      languageProficiencies: languageProficiencies
     };
   
     const recordsToSubmit = formattedData ? [formattedData] : [];
@@ -285,12 +310,20 @@ useEffect(() => {
     try {
       // Trigger validation for the form during submit
       await form.validateFields(); // Ensure all fields are valid before proceeding
-      const formattedDatatoSubmit = formatSubmissionData(values, {
-        nativeLanguage,
-        selectedCourse,
-        availableCourses,
-        countries
-      }, !isToProceedToFullEnrollment, returningEnrolleeCountryDivisionInfo);
+      const enrolledCourses = selectedCoursesToEnroll?.length > 0
+      ? availableCourses?.filter(course => selectedCoursesToEnroll.includes(course.CourseCodeId))
+      : availableCourses;
+
+      const formattedDatatoSubmit = formatSubmissionData(
+        values,
+        {
+          nativeLanguage,
+          enrolledCourses, // full course objects
+          countries
+        },
+        !isToProceedToFullEnrollment,
+        returningEnrolleeCountryDivisionInfo
+      );
 
       setSubmittingLoading(true);
       setSubmittingRecords(formattedDatatoSubmit);
@@ -327,7 +360,9 @@ useEffect(() => {
     setResetChildStates(null);
     onResetSubmittingEnrollee(undefined);
     setSubmittingLoading(false);
-    setSubmittingRecords([]);    
+    setSubmittingRecords([]); 
+    onSelectingEnrollmentCourses([]);
+    history.push("/");
   };
   
 
@@ -349,12 +384,37 @@ useEffect(() => {
     }
   };
   
+  const handleGoBackSelection = () => {
+    // go back by resetting array
+    onSelectingEnrollmentCourses([]);
+    
+  }; 
+
+  const getLanguageName = (id) => {
+    const map = {
+      en: "English",
+      es: "Español",
+      pt: "Português"
+      // add more if needed
+    };
+    return map[id] || id;
+  };
+  
+
   const quickEnrollmentStyle = {
     maxWidth: 600,
     margin: "0 auto",
     padding: "20px",
   }
 
+  const coursesToDisplay =
+  availableCourses?.length === 1
+    ? availableCourses
+    : availableCourses?.filter(course =>
+        selectedCoursesToEnroll.includes(course.CourseCodeId)
+      );
+
+    
   const titleOfEnrollment = isToProceedToFullEnrollment
                             ? setLocale(locale, "enrollment.fullEnrollment")
                             : returningEnrolleeCountryDivisionInfo?.personalCommunicationName
@@ -362,7 +422,8 @@ useEffect(() => {
                             : setLocale(locale, "enrollment.quickEnrollment");
 
   const converUrl = "https://images.unsplash.com/photo-1519406596751-0a3ccc4937fe?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-  const enrollmentVersion = "v1.3.3";
+  const enrollmentVersion = "v2.0";
+ 
   return (
     <div className="container customerName">
       {isEnrollmentModalVisible && 
@@ -394,7 +455,58 @@ useEffect(() => {
               </h1>
             </Card>
 
-            {availableCourses?.map((course, index) => (
+            {coursesToDisplay?.length > 1 ? (
+              <Card
+                style={quickEnrollmentStyle}
+                bordered
+                title={setLocale(locale, "enrollment.courseDetails")}
+                loading={submittingLoading}
+              >
+                <h2>{setLocale(locale, "enrollment.numOfCoursesEnrolled")}  {coursesToDisplay?.length}</h2>
+                
+                <Tabs tabPosition="top" type="line">
+                  {coursesToDisplay.map((course, index) => (
+                    <Tabs.TabPane
+                      tab={course?.CourseDetails?.course || `Course ${index + 1}`}
+                      key={course?.CourseCodeId || index}
+                    >
+                      <Row gutter={[16, 16]}>
+                        {/* Image Column */}
+                        <Col xs={24} sm={24} lg={12}>
+                          <img
+                            src={
+                              course?.CourseDetails?.imageUrl ||
+                              process.env.PUBLIC_URL + '/img/avatars/tempProfile.jpg'
+                            }
+                            alt={`${course?.CourseDetails?.course} profile`}
+                            style={{
+                              width: 200,
+                              height: 200,
+                              borderRadius: '5%',
+                              marginBottom: '10px',
+                            }}
+                          />
+                        </Col>
+
+                        {/* Course Details Column */}
+                        <Col xs={24} sm={24} lg={12}>
+                          <CourseDetails course={course} />
+                        </Col>
+                      </Row>
+                    </Tabs.TabPane>
+                  ))}
+                </Tabs>
+                  {selectedCoursesToEnroll?.length > 0 && (                      
+                  <Button type="primary" block onClick={handleGoBackSelection} disabled={selectedCoursesToEnroll?.length === 0}>
+                  {setLocale(locale, "enrollment.form.goBackToCourseSelection")}
+                  </Button>
+                )
+              }
+
+              </Card>
+            ) : (
+              // If there's only one course, render it without tabs
+              coursesToDisplay.map((course, index) => (
                 <Card
                   key={course.id || index}
                   style={quickEnrollmentStyle}
@@ -402,8 +514,7 @@ useEffect(() => {
                   title={setLocale(locale, "enrollment.courseDetails")}
                   loading={submittingLoading}
                 >
-                     <Row gutter={[16,16]}>
-                    {/* Image Column */}
+                  <Row gutter={[16, 16]}>
                     <Col xs={24} sm={24} lg={12}>
                       <img
                         src={
@@ -419,14 +530,14 @@ useEffect(() => {
                         }}
                       />
                     </Col>
-
-                    {/* Course Details Column */}
-                    <Col xs={24} sm={24} lg={12} >
+                    <Col xs={24} sm={24} lg={12}>
                       <CourseDetails course={course} />
                     </Col>
-                    </Row>
+                  </Row>
                 </Card>
-            ))}
+              ))
+            )}
+
  
             {!isToProceedToFullEnrollment && (
               <Card style={quickEnrollmentStyle}
@@ -558,7 +669,7 @@ useEffect(() => {
                 )}
 
 
-        {( 
+          {( 
             !returningEnrolleeCountryDivisionInfo?.countryOfBirthId ||
             !returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth
           ) && (
@@ -614,32 +725,75 @@ useEffect(() => {
             )}
           </>
         )}
-              </Card>
-            )}
-            </>
-          )
+        </Card>
+      )}
+      </>
+    )
+    }
+
+        {(() => {
+          const distinctTargetLanguages = Array.from(
+            new Set(
+              (selectedCoursesToEnroll.length > 0
+                ? availableCourses.filter(course =>
+                    selectedCoursesToEnroll.includes(course.CourseCodeId)
+                  )
+                : availableCourses)?.map(course => course?.TargetLanguageId).filter(Boolean)
+            )
+          );
+
+          // Handle 1 or more language levels in a unified way
+          if (
+            !returningEnrolleeCountryDivisionInfo?.personalCommunicationName ||
+            isToProceedToFullEnrollment ||
+            !isGeographyInfoVisible
+          ) {
+            return null;
           }
 
-          {returningEnrolleeCountryDivisionInfo?.personalCommunicationName &&
-            !isToProceedToFullEnrollment &&
-            isGeographyInfoVisible && (
-              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.languageLevelForCourse")} loading={submittingLoading} bordered={true}>
-                <Form.Item
-                  name="languageLevelAbbreviation"
-                  rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectLanguageLevelForCourse") }]}
+          return (
+            <>
+              {distinctTargetLanguages.map((langId) => (
+                <Card
+                  key={langId}
+                  style={quickEnrollmentStyle}
+                  title={
+                    distinctTargetLanguages.length > 1
+                      ? <p>{setLocale(locale, "enrollment.form.languageLevelForCourseIn")} {getLanguageName(langId)}?</p>
+                      : setLocale(locale, "enrollment.form.languageLevelForCourse")
+                  }
+                  loading={submittingLoading}
+                  bordered
                 >
-                  <Radio.Group>
-                    <Space direction="vertical">
-                      {selfLanguageLevel?.map((level) => (
-                        <Radio key={level?.LevelAbbreviation} value={level?.LevelAbbreviation}>
-                          {setLocale(locale, level.LocalizationKey)}
-                        </Radio>
-                      ))}
-                    </Space>
-                  </Radio.Group>
-                </Form.Item>
-              </Card>
-            )}
+                  <Form.Item
+                    name={
+                      distinctTargetLanguages.length === 1
+                        ? "languageLevelAbbreviation"
+                        : `languageLevelAbbreviation_${langId}`
+                    }
+                    rules={[
+                      {
+                        required: true,
+                        message: setLocaleString(locale, "enrollment.form.selectLanguageLevelForCourse")
+                      },
+                    ]}
+                  >
+                    <Radio.Group>
+                      <Space direction="vertical">
+                        {selfLanguageLevel?.map((level) => (
+                          <Radio key={level?.LevelAbbreviation} value={level?.LevelAbbreviation}>
+                            {setLocale(locale, level.LocalizationKey)}
+                          </Radio>
+                        ))}
+                      </Space>
+                    </Radio.Group>
+                  </Form.Item>
+                </Card>
+              ))}
+            </>
+          );
+        })()}
+
 
           { isToProceedToFullEnrollment && (                         
               <ContactEnrollment 
@@ -658,13 +812,14 @@ useEffect(() => {
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
               <p>
-                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}-{enrollmentVersion}
+                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {enrollmentVersion} - 
                 <TermsModal />{" "}
-                {setLocale(locale, "enrollment.form.ofUseAndPrivacyPolicy")}
+                - {setLocale(locale, "enrollment.form.ofUseAndPrivacyPolicy")}
               </p>
               <Button
                 type="primary"
                 htmlType="submit"
+                block
                 disabled={!isSubmitEnabled}
               >
                 {setLocale(locale, "enrollment.form.submit")}
@@ -683,14 +838,15 @@ function mapDispatchToProps(dispatch) {
     onSearchingForAlreadyEnrolledContact,
     onRequestingGeographicalDivision,
     onSubmittingEnrollee,
-    onResetSubmittingEnrollee
+    onResetSubmittingEnrollee,
+    onSelectingEnrollmentCourses
   }, dispatch);
 }
 
-const mapStateToProps = ({ lrn, grant }) => {
+const mapStateToProps = ({ lrn }) => {
   const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = lrn;
   const { isToDoFullEnrollment } = grant;
-  return { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, isToDoFullEnrollment };
+  return { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(QuickToFullEnrollment);
