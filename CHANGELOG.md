@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.57](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.56...v0.1.57) (2025-06-24)
+
+### [0.1.54](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.53...v0.1.54) (2025-06-04)
+
+### [0.1.53](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.52...v0.1.53) (2025-06-03)
+
+### [0.1.52](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.51...v0.1.52) (2025-04-09)
+
+### [0.1.51](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.50...v0.1.51) (2025-04-03)
+
+### [0.1.50](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.49...v0.1.50) (2025-04-03)
+
+### [0.1.49](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.48...v0.1.49) (2025-04-03)
+
+### [0.1.48](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.47...v0.1.48) (2025-04-03)
+
+### [0.1.47](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.46...v0.1.47) (2025-04-02)
+
+### [0.1.46](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.45...v0.1.46) (2025-04-02)
+
 ### [0.1.56](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.55...v0.1.56) (2025-06-24)
 
 ### [0.1.55](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.45...v0.1.55) (2025-06-24)
