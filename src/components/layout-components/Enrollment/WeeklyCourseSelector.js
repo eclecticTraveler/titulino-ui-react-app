@@ -226,6 +226,7 @@ const WeeklyCourseSelector = (props) => {
             <h1>
               {setLocale(locale, "enrollment.weeklySelectionTitle")}
             </h1>
+            <p><b>{setLocale(locale, "enrollment.weeklySelectionInstruction")}</b></p>
           </Card>
         </Col>
 
