@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onSelectingEnrollmentCourses } from "redux/actions/Lrn";
 import { Form, Input, Radio, Select, Checkbox, Button, Card, Divider, Row, Col, Space, message  } from "antd";
-import { CheckCircleOutlined, LeftSquareTwoTone } from "@ant-design/icons";
+import { CheckCircleOutlined, MinusCircleOutlined } from "@ant-design/icons";
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 
@@ -287,12 +287,20 @@ const WeeklyCourseSelector = (props) => {
                           <br />
                           <small>{detail?.location}</small>
                         </div>
-                        {selected && (
+                        {selected ? (
                           <CheckCircleOutlined
                             style={{
                               color: "#f7caa5",
                               fontSize: 24,
-                              marginLeft: 12
+                              marginLeft: 12,
+                            }}
+                          />
+                        ) : (
+                          <MinusCircleOutlined
+                            style={{
+                              color: "#ccc",
+                              fontSize: 24,
+                              marginLeft: 12,
                             }}
                           />
                         )}
