@@ -843,7 +843,7 @@ function mapDispatchToProps(dispatch) {
   }, dispatch);
 }
 
-const mapStateToProps = ({ lrn }) => {
+const mapStateToProps = ({ lrn, grant }) => {
   const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = lrn;
   const { isToDoFullEnrollment } = grant;
   return { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful };
