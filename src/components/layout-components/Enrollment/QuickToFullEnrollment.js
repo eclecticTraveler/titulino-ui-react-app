@@ -462,7 +462,7 @@ useEffect(() => {
                 title={setLocale(locale, "enrollment.courseDetails")}
                 loading={submittingLoading}
               >
-                <h2>{setLocale(locale, "enrollment.numOfCoursesEnrolled")} - {coursesToDisplay?.length}</h2>
+                <h2>{setLocale(locale, "enrollment.numOfCoursesEnrolled")}  {coursesToDisplay?.length}</h2>
                 
                 <Tabs tabPosition="top" type="line">
                   {coursesToDisplay.map((course, index) => (
