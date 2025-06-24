@@ -27,16 +27,11 @@ export const getAllCourses = async() => {
 
 
 
-
-
-
-
-
 const getUserProfile = async (emailId, dobOrYob) => {
   const localStorageKey = `UserProfile_${emailId}_${dobOrYob}`;
 
   // 1. Try to get from encrypted localStorage
-  const cachedProfile = retrieveEncryptedObjectWithExpiry(localStorageKey);
+  const cachedProfile = LocalStorageService.retrieveEncryptedObjectWithExpiry(localStorageKey);
   if (cachedProfile) {
     return cachedProfile;
   }
@@ -47,7 +42,7 @@ const getUserProfile = async (emailId, dobOrYob) => {
 
     if (userProfile) {
       // 3. Store encrypted locally with TTL (e.g., 60 minutes)
-      storeEncryptedObjectWithExpiry(localStorageKey, userProfile, 60);
+      LocalStorageService.storeEncryptedObjectWithExpiry(localStorageKey, userProfile, 60);
       return userProfile;
     } else {
       console.warn("No user profile found for:", emailId, dobOrYob);

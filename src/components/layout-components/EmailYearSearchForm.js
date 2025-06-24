@@ -7,10 +7,11 @@ import getLocaleText from "components/util-components/IntString";
 import { useHistory } from 'react-router-dom';
 import { onRetrievingProfileByEmailIdAndYearOfBirth } from 'redux/actions/Lrn';
 import IntlMessage from "components/util-components/IntlMessage";
+import ContactEnrollment from 'components/layout-components/Enrollment/ContactEnrollment';
 
 const EmailYearSearchForm = (props) => {
   // Destructure props
-  const { emailId, onRetrievingProfileByEmailIdAndYearOfBirth } = props;
+  const { emailId, onRetrievingProfileByEmailIdAndYearOfBirth, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = props;
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [searchResult, setSearchResult] = useState(null);
@@ -22,6 +23,8 @@ const EmailYearSearchForm = (props) => {
   const [fullDateOfBirth, setFullDateOfBirth] = useState(null);
   const [submittedRecords, setSubmittingRecords] = useState([]);
   const [submittingLoading, setSubmittingLoading] = useState(false);
+  const [isToDisplayFullEnrollment, setIsToDisplayFullEnrollment] = useState(false);
+  const [returningEnrolleeCountryDivisionInfo, setReturningEnrolleeCountryDivisionInfo] = useState(null);
 
 
   const history = useHistory();
@@ -39,8 +42,7 @@ const EmailYearSearchForm = (props) => {
 
    const handleYearOfBirth = (year) => {
     if (year) {
-    //   setUserYearOfBirth(year)
-    setYearOfBirth(year);
+       setYearOfBirth(year);
     } else {
       console.log("No year selected");
     }
@@ -67,7 +69,7 @@ const EmailYearSearchForm = (props) => {
   setSubmitted(true);
 };
 
-  const formatSubmissionData = (values, props, isQuickEnrollment, matchedEnrolleeInfo) => {
+  const formatSubmissionData = (values, props, matchedEnrolleeInfo) => {
   const {
     nativeLanguage,
     selectedCourse,
@@ -123,7 +125,7 @@ const EmailYearSearchForm = (props) => {
     countryOfBirth: birthCountryName ?? (matchedInfo.countryOfBirthName || null),
     countryDivisionOfBirth: countryDivisionOfBirth ?? (matchedInfo.countryDivisionBirthName || null),
     
-    termsVersion: termsAndConditionsVersion || "2.0", // Default version
+    termsVersion: termsAndConditionsVersion || "2.0", 
     coursesCodeIds: (availableCourses || []).map((course) => ({
       courseCodeId: course?.CourseCodeId || null,
     })),
@@ -154,7 +156,7 @@ const EmailYearSearchForm = (props) => {
         selectedCourse,
         availableCourses,
         countries
-      }, !isToProceedToFullEnrollment, returningEnrolleeCountryDivisionInfo);
+      }, returningEnrolleeCountryDivisionInfo);
 
       setSubmittingLoading(true);
       setSubmittingRecords(formattedDatatoSubmit);
@@ -178,6 +180,7 @@ useEffect(() => {
     setLoading(false);
 
     if (result) {
+      console.log("Search result:", result);
       setSearchResult(result);
       setProfileData?.(result);
       history.push("/");
@@ -190,6 +193,7 @@ useEffect(() => {
       } else {
         // Second try failed → render ContactEnrollment (store full DOB in Redux)
         // You can dispatch something like: dispatch(setContactDob(searchParams.fullDate));
+        setIsToDisplayFullEnrollment(true);
         setSearchResult(null); // To trigger rendering <ContactEnrollment />
       }
     }
@@ -214,6 +218,9 @@ useEffect(() => {
       bordered
     >
       <Form layout="vertical" onFinish={handleSearch} form={form}>
+        {isToDisplayFullEnrollment && (
+          <>Hello</>
+        )}
         {/* Row for input fields */}
         <Row gutter={[16, 16]} justify="center">
         <Col xs={24} sm={24} lg={6}>
@@ -258,7 +265,17 @@ useEffect(() => {
                   }
                 />
               </Form.Item>
-              {/* Optional: render <ContactEnrollment /> or similar fallback */}
+
+                    {isToDisplayFullEnrollment && (
+                        <ContactEnrollment
+                        selectedEmail={emailId}
+                        selectedDateOfBirth={form?.getFieldValue("dateOfBirth")}
+                        form={form}
+                        onFormSubmit={onFormSubmit ?? (() => {})} // define this function if not already
+                        enrollmentStyle={{ maxWidth: 600, margin: "0 auto", padding: "20px" }}
+                        submittingLoading={loading}
+                      />
+                  )}
             </div>
           )}
 
@@ -278,16 +295,6 @@ useEffect(() => {
                     </Col>
                 </Row>
       </Form>
-      {askFullBirthDate && submitted && !searchResult && (
-            <ContactEnrollment
-            selectedEmail={emailId}
-            selectedDateOfBirth={form?.getFieldValue("dateOfBirth")}
-            form={form}
-            onFormSubmit={onFormSubmit ?? (() => {})} // define this function if not already
-            enrollmentStyle={{ maxWidth: 600, margin: "0 auto", padding: "20px" }}
-            submittingLoading={loading}
-          />
-      )}
     </Card>
   </Col>
 </Row>
@@ -305,9 +312,10 @@ function mapDispatchToProps(dispatch) {
     dispatch);
 }
 
-const mapStateToProps = ({ auth }) => {
-  const { emailId } = auth;
-  return { emailId };
+const mapStateToProps = ({ grant, lrn }) => {
+  const { emailId } = grant;
+  const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = lrn;
+  return { emailId, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EmailYearSearchForm);

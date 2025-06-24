@@ -63,7 +63,7 @@ export const onLoadingAllDashboardContents = async (courseCodeId, locationType, 
   }
 };
 
-export const onLoadingUserAuthenticatedProgressDashboard = (emailId, dobOrYob, course) => {
+export const onLoadingUserAuthenticatedProgressDashboard = (emailId, dob, course) => {
 
   // Use a manager to do 
 
@@ -75,7 +75,7 @@ export const onLoadingUserAuthenticatedProgressDashboard = (emailId, dobOrYob, c
   return {
     type: ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD,
     emailId: emailId,
-    dobOrYob: dobOrYob
+    dateOfBirth: dob
   };
 }
 

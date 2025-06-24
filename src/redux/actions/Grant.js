@@ -11,7 +11,7 @@ export const onRetrievingProfileByEmailIdAndYearOfBirth = (emailId, dobOrYob) =>
   const userProfile = TitulinoManager.getUserProfile(emailId, dobOrYob);
   return  {
       type: ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
-      userProfile: {
+      user: {
             generalLoading: false,
             userCourses: userProfile?.userCourses ?? null,
             contactId: userProfile?.contactId ?? null, 

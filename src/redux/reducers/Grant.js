@@ -6,17 +6,19 @@ import {
 } from '../constants/Grant';
 
 const initState = {
+	// refactor so that we do user?.
   generalLoading: false,
   message: '',
   showMessage: false,
   userCourses: null,
   contactId: null,
   emailId: null,	
-  dobOrYob: null,
+  dateOfBirth: null,
   communicationName: null,
   expirationDate: null,
   hasEverBeenFacilitator: false,
-  innerToken: localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
+  innerToken: localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN),
+  user: null
 }
 
 const grant = (state = initState, action) => {
@@ -35,18 +37,10 @@ const grant = (state = initState, action) => {
 			}
 		}
 		case ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH: {
-			state.generalLoading = action.userProfile.generalLoading;
-			state.message = action.userProfile.message;
-			state.userCourses = action.userProfile.userCourses;
-			state.contactId = action.userProfile.contactId;
-			state.communicationName = action.userProfile.communicationName;
-			state.expirationDate = action.userProfile.expirationDate;
-			state.hasEverBeenFacilitator = action.userProfile.hasEverBeenFacilitator;
-			state.showMessage = action.userProfile.showMessage;
 			return {
 				...state,
 				generalLoading: false,
-				userProfile: action.userProfile,
+				user: action.user
 			}
 		}
 		default:

@@ -6,6 +6,8 @@ import {
 	showLoading,
 	hideAuthMessage,
 	authenticated } from "redux/actions/Auth";
+
+import { onAuthenticatingWithSSO } from "redux/actions/Grant";
 import { AUTH_PREFIX_PATH, APP_PREFIX_PATH } from "configs/AppConfig";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -30,7 +32,8 @@ export const LoginAdapter = (props) => {
 			showAuthMessage,
 			token,
 			redirect,
-			allowRedirect
+			allowRedirect,
+			onAuthenticatingWithSSO
 		} = props
 	  
 
@@ -39,9 +42,11 @@ export const LoginAdapter = (props) => {
 			  const { data: { session } } = await supabase.auth.getSession();
 			  if (session) {
 				authenticated(session?.user);
+				onAuthenticatingWithSSO(session?.email);
 				// Push to modal asking for DOB by redux action.
+				history.push("/session-retrieval");
 				// history.push(AUTH_PREFIX_PATH);
-				history.push(APP_PREFIX_PATH);
+				// history.push(APP_PREFIX_PATH);
 				// history.push("/");
 				//   showLoading()
 			  }
@@ -52,7 +57,8 @@ export const LoginAdapter = (props) => {
 			const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
 			  if (session) {  // Only update if session exists
 				authenticated(session?.user);
-				history.push(APP_PREFIX_PATH);
+				history.push("/session-retrieval");
+				// history.push(APP_PREFIX_PATH);
 				// history.push(AUTH_PREFIX_PATH);
 				// history.push("/");
 							//   showLoading()
@@ -107,7 +113,8 @@ function mapDispatchToProps(dispatch) {
 		showAuthMessage,
 		showLoading,
 		hideAuthMessage,
-		authenticated
+		authenticated,
+		onAuthenticatingWithSSO
   }, dispatch);
 }
 

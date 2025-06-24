@@ -48,7 +48,7 @@ const analytics = (state = initState, action) => {
         ...state,
         generalLoading: false,
         emailId: action.emailId,
-        dobOrYob: action.dobOrYob
+        dateOfBirth: action.dateOfBirth
       }
     default:
       return state;
