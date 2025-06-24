@@ -210,7 +210,7 @@
 	"resources.myprogress.selectAparticipationType":"Selecione um tipo de participação para todas as categorias obrigatórias.",
 	"resources.userProgress.participationType":"Tipo de participação",
 
-
+	"enrollment.numOfCoursesEnrolled":"Número de cursos selecionados:",
 	"enrollment.fullEnrollment":"Inscrição Completa",
 	"enrollment.quickEnrollment":"Inscrição Rápida",
 	"enrollment.welcomeBack":"Bem-vindo de volta",
@@ -249,6 +249,7 @@
 	"enrollment.form.stateOrRegionOfBirth": "Estado/Região de Nascimento",
 	"enrollment.form.selectStateOrRegionOfBirth": "Selecione estado/região de nacionalidade de nascimento",
 	"enrollment.form.languageLevelForCourse": "Qual é o seu nível de idioma para este curso?",
+	"enrollment.form.languageLevelForCourseIn": "Qual é a sua proficiência no idioma",
 	"enrollment.form.selectLanguageLevelForCourse": "Por favor, selecione o seu nível de idioma para este curso",
 	"enrollment.selectDateOfBirth":"Selecione data de nascimento",
 	"enrollment.form.selectCountryOfBirth": "Selecione seu país de nascimento",
@@ -268,10 +269,11 @@
 	"enrollment.form.termsAndConditions": "Termos e Condições",
 	"enrollment.form.ofUseAndPrivacyPolicy": "de uso e reconhece nossa Política de Privacidade.",
 	"enrollment.form.submit": "Enviar",
+	"enrollment.form.goBackToCourseSelection": "Voltar para a seleção de cursos",
 	"enrollment.language.level.beginner":"Iniciante",
 	"enrollment.language.level.basic":"Básico",
 	"enrollment.language.level.intermediate":"Intermediário",
-	"enrollment.language.level.advance":"Avançar",
+	"enrollment.language.level.advance":"Avançado",
 	"enrollment.language.level.native":"Nativo",
 	"enrollment.form.selectGender": "Selecionar sexo",
 	"enrollment.form.close":"Fechar",
@@ -311,7 +313,18 @@
 	"enrollment.coursesNotAvailable":"Os cursos não estão disponíveis no momento",
 	"enrollment.coursesNotAvailableMessage":"Atualmente não temos cursos abertos, mas não se preocupe! Você ainda pode explorar os recursos gratuitos disponíveis em nossa página.",
 	"enrollment.coursesNotAvailableMessage2":"Fique atento às atualizações sobre os próximos cursos seguindo nosso.",
-	"enrollment.coursesNotAvailableMessage3":"Página do Facebook do Titulino"
+	"enrollment.coursesNotAvailableMessage3":"Página do Facebook do Titulino",
+	"enrollment.weeklySelectionTitle": "📅 Seleção Semanal de Cursos",
+	"enrollment.weeklySelectionInstruction": "Selecione tocando ou clicando no curso ou cursos nos quais deseja se inscrever na lista abaixo.",
+	"days.monday": "Segunda-feira",
+	"days.tuesday": "Terça-feira",
+	"days.wednesday": "Quarta-feira",
+	"days.thursday": "Quinta-feira",
+	"days.friday": "Sexta-feira",
+	"days.saturday": "Sábado",
+	"days.sunday": "Domingo",
+	"enrollment.continue": "Continuar",
+	"enrollment.timeConflictWarning": "O curso se sobrepõe a um curso já selecionado."
 
 
 }
