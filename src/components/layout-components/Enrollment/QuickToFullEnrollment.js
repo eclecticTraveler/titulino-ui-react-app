@@ -456,10 +456,11 @@ useEffect(() => {
               <Card
                 style={quickEnrollmentStyle}
                 bordered
-                title={setLocale(locale, "enrollment.courseDetails")}
+                title={setLocale(locale, "enrollment.numOfCoursesEnrolled")}
                 loading={submittingLoading}
               >
-                
+                {setLocale(locale, "enrollment.courseDetails")} 
+                {coursesToDisplay?.length}
                 <Tabs tabPosition="top" type="line">
                   {coursesToDisplay.map((course, index) => (
                     <Tabs.TabPane

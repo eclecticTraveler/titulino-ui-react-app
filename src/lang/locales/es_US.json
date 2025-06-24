@@ -210,6 +210,7 @@
 	"resources.myprogress.selectAparticipationType":"Seleccione un tipo de participación para todas las categorías requeridas.",
 	"resources.userProgress.participationType": "Tipo de participación",
 
+	"enrollment.numOfCoursesEnrolled": "Número de cursos seleccionados:",
 	"enrollment.fullEnrollment":"Inscripción completa",
 	"enrollment.quickEnrollment":"Inscripción Rápida",
 	"enrollment.welcomeBack":"Bienvenido de nuevo",

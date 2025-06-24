@@ -209,7 +209,7 @@
 	"resources.myprogress.submittingSuccesful":"Submission successful!",
 	"resources.myprogress.selectAparticipationType":"Please select a participation type for all required categories.",
 	"resources.userProgress.participationType":"Participation Type",
-
+	"enrollment.numOfCoursesEnrolled":"Number of courses selected:",
 	"enrollment.fullEnrollment":"Full Enrollment",
 	"enrollment.quickEnrollment":"Quick Enrollment",
 	"enrollment.welcomeBack":"Welcome back",
