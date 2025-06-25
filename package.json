@@ -1,7 +1,7 @@
 {
   "name": "lrn-ui-react-app",
   "homepage": "https://titulino.com",
-  "version": "0.1.59",
+  "version": "0.1.60",
   "private": true,
   "dependencies": {
     "@ant-design/charts": "^1.4.2",
@@ -67,7 +67,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "dev": "concurrently \"npm run start\" \"gulp watch\"",
-    "afterEachRelease": "git push --follow-tags origin $(git rev-parse --abbrev-ref HEAD)"
+    "afterEachReleaseManual": "git push --follow-tags origin BRANCHNAME",
+    "afterEachRelease": "node scripts/afterEachRelease.js"
   },
   "eslintConfig": {
     "extends": [
