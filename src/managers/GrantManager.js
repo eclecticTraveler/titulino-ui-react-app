@@ -39,14 +39,17 @@ const getUserProfile = async (emailId, dobOrYob) => {
     const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(emailId, dobOrYob);
     console.log("userProfile", userProfile);
     if (userProfile) {
+      console.log("IN IF");
       // 3. Store encrypted locally with TTL (e.g., 60 minutes)
       LocalStorageService.storeEncryptedObjectWithExpiry(localStorageKey, userProfile, 10);
       return userProfile;
     } else {
+      console.log("IN ELSE");
       console.warn("No user profile found for:", emailId, dobOrYob);
       return null;
     }
   } catch (err) {
+    console.log("ERROR");
     console.error("Error retrieving user profile:", err);
     return null;
   }

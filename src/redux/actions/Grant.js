@@ -20,7 +20,7 @@ export const onRetrievingUserProfile = (emailId, dobOrYob) => {
       hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
       innerToken: userProfile?.token,
       emailId: emailId,
-      dateOfBirth: dobOrYob
+      dateOfBirth: userProfile?.contactId ? dobOrYob : null
     },
     message: userProfile?.message ?? '',
     showMessage: false,
