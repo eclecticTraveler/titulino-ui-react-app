@@ -8,7 +8,7 @@ const commonConfig = {
 
 const dev = {
   ...commonConfig,
-  IS_SSO_ON: false,
+  IS_SSO_ON: true,
   ENVIROMENT: 'dev',  
 };
 
