@@ -1,4 +1,4 @@
-import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from '../../AppConfig';
+import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic';
 import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from '../../CourseThemeConfig';

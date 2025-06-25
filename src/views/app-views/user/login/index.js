@@ -8,7 +8,7 @@ import {
 	authenticated } from "redux/actions/Auth";
 
 import { onAuthenticatingWithSSO } from "redux/actions/Grant";
-import { AUTH_PREFIX_PATH, APP_PREFIX_PATH } from "configs/AppConfig";
+import { APP_PREFIX_PATH } from "configs/AppConfig";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
@@ -107,7 +107,7 @@ export const LoginAdapter = (props) => {
 				},
 			}}
 			providers={['google', 'facebook']}
-			redirectTo={window.location.origin + '/lrn/login'} // or your custom redirect route
+			redirectTo={"https://dev.titulino.com" + APP_PREFIX_PATH + '/login'} // or your custom redirect route
 			/>
 		</Card>
 		</div>

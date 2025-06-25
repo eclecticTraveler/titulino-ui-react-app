@@ -1,5 +1,5 @@
 import { Route, Redirect } from "react-router-dom";
-import { AUTH_PREFIX_PATH } from '../configs/AppConfig'
+import { APP_PREFIX_PATH } from '../configs/AppConfig'
 
  export function retry(fn, retriesLeft = 5, interval = 1000) {
     return new Promise((resolve, reject) => {
@@ -29,7 +29,7 @@ export function RouteInterceptor({ children, isAuthenticated, ...rest }) {
           ) : (
             <Redirect
               to={{
-                pathname: AUTH_PREFIX_PATH,
+                pathname: APP_PREFIX_PATH,
                 state: { from: location }
               }}
             />

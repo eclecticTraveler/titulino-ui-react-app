@@ -15,8 +15,7 @@ import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
 import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
 
-function RouteInterceptor({ children, isAuthenticated, ...rest }) {
-    const loginPath = `${AUTH_PREFIX_PATH}/test`; /// LOGIN
+function RouteInterceptor({ children, isAuthenticated, ...rest }) {    
     console.log("INTER", isAuthenticated);
     // If isAuthenticated then render components passed if not then redirect to pathname or login page
     return (
@@ -82,17 +81,6 @@ export const Views = (props) => {
             </IntlProvider>
         )
     }
-    console.log("user", user);
-    // if(user?.emailId && !user?.dateOfBirth){
-    //     console.log("INSIDE user", user);
-    //     return (
-    //         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
-    //             <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
-    //                 <EmailYearSearchForm />
-    //             </ConfigProvider>
-    //         </IntlProvider>
-    //     )
-    // }
 
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
