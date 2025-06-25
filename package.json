@@ -67,7 +67,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "dev": "concurrently \"npm run start\" \"gulp watch\"",
-    "afterEachReleaseManual": "git push --follow-tags origin BRANCHNAME",
+    "afterEachReleaseManual": "git push --follow-tags origin <ADD_BRANCHNAME>",
     "afterEachRelease": "node scripts/afterEachRelease.js"
   },
   "eslintConfig": {
