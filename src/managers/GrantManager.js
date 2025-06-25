@@ -25,8 +25,6 @@ export const getAllCourses = async() => {
 }
 
 
-
-
 const getUserProfile = async (emailId, dobOrYob) => {
   const localStorageKey = `UserProfile_${emailId}_${dobOrYob}`;
 

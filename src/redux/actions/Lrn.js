@@ -510,7 +510,7 @@ export const getWasUserConfigSetFlag = async () => {
 }
 
 export const getUpperNavigationBasedOnUserConfig = async (isAuthenticated) => {  
-  let isUserAuthenticated = true ?? false;
+  let isUserAuthenticated = isAuthenticated; //true ?? false;
   console.log("isUserAuthenticated: ", isUserAuthenticated);
   const selectedLanguageForCourse =  await LocalStorageService.getUserSelectedCourse();
   const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation, isUserAuthenticated);

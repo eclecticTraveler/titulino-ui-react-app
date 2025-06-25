@@ -5,13 +5,13 @@ import { Form, Row, Col, DatePicker, Input, Button, message, Card } from 'antd';
 import moment from 'moment';
 import getLocaleText from "components/util-components/IntString";
 import { useHistory } from 'react-router-dom';
-import { onRetrievingProfileByEmailIdAndYearOfBirth } from 'redux/actions/Lrn';
+import { onRetrievingUserProfile } from 'redux/actions/Grant';
 import IntlMessage from "components/util-components/IntlMessage";
 import ContactEnrollment from 'components/layout-components/Enrollment/ContactEnrollment';
 
 const EmailYearSearchForm = (props) => {
   // Destructure props
-  const { user, onRetrievingProfileByEmailIdAndYearOfBirth, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = props;
+  const { user, onRetrievingUserProfile, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = props;
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [searchResult, setSearchResult] = useState(null);
@@ -64,7 +64,6 @@ const EmailYearSearchForm = (props) => {
 
   const emailToSearch = email;
   const yob = fullDate ? fullDate.year() : year;
-
   setSearchParams({ email: emailToSearch, yob, fullDate }); // send fullDate for fallback
   setSubmitted(true);
 };
@@ -173,7 +172,7 @@ useEffect(() => {
     if (!submitted || !searchParams.email || !searchParams.yob) return;
 
     setLoading(true);
-    let result = await onRetrievingProfileByEmailIdAndYearOfBirth(
+    let result = await onRetrievingUserProfile(
       searchParams.email,
       searchParams.fullDate ? searchParams.fullDate.format("YYYY-MM-DD") : searchParams.yob
     );
@@ -200,7 +199,7 @@ useEffect(() => {
   };
 
   fetchProfile();
-}, [submitted, searchParams, onRetrievingProfileByEmailIdAndYearOfBirth, setProfileData, history, askFullBirthDate]);
+}, [submitted, searchParams, onRetrievingUserProfile, setProfileData, history, askFullBirthDate]);
 
 
   const selectedYearOfBirth = form?.getFieldValue("yearOfBirth")?.format("YYYY") ?? yearOfBirth?.format("YYYY");
@@ -208,12 +207,13 @@ useEffect(() => {
   return (
 	<>
       <Card bordered loading={loading}>
-        <h1>Load Session</h1>
+        <h1>{setLocale(locale, "resources.myprogress.searchbyEmailandYear")}</h1>
+        <h2>{user?.emailId}</h2>
        </Card>
   <Row justify="center" style={{ marginBottom: 20 }}>
   <Col xs={24}>
     <Card 
-      title={setLocale(locale, "resources.myprogress.searchbyEmailandYear")} 
+      title={setLocale(locale, "enrollment.yearOfBirth")} 
       loading={loading} 
       bordered
     >
@@ -224,6 +224,7 @@ useEffect(() => {
         {/* Row for input fields */}
         <Row gutter={[16, 16]} justify="center">
         <Col xs={24} sm={24} lg={6}>
+        {!askFullBirthDate && !isToDisplayFullEnrollment && 
             <Form.Item 
               name="yearOfBirth" 
               rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.pleaseSelectYearOfBirth") }]}
@@ -238,16 +239,11 @@ useEffect(() => {
                 onChange={(date, dateString) => handleYearOfBirth(date ? date.year() : null)}
               />
             </Form.Item>
-          </Col>
-          <Col xs={24} sm={24} lg={12}>
-                <Form.Item>
-                  <Input value={user?.emailId} disabled />
-                </Form.Item>
-          </Col>
-          
+        }
+          </Col>          
         </Row>
         
-          {askFullBirthDate && (
+          {askFullBirthDate && !isToDisplayFullEnrollment && (
             <div style={{ marginTop: 24 }}>
               <Form.Item
                 name="dateOfBirth"
@@ -266,7 +262,14 @@ useEffect(() => {
                 />
               </Form.Item>
 
-                    {isToDisplayFullEnrollment && (
+            </div>
+          )}
+
+       <Row justify="center">
+                <Col xs={24} sm={24} lg={8}>
+
+                
+                {isToDisplayFullEnrollment && (
                         <ContactEnrollment
                         selectedEmail={user?.emailId}
                         selectedDateOfBirth={form?.getFieldValue("dateOfBirth")}
@@ -276,11 +279,7 @@ useEffect(() => {
                         submittingLoading={loading}
                       />
                   )}
-            </div>
-          )}
 
-       <Row justify="center">
-                <Col xs={24} sm={24} lg={8}>
                 <Form.Item style={{ marginBottom: "10px" }}>
                 <Button 
                   type="primary" 
@@ -292,8 +291,8 @@ useEffect(() => {
                   {setLocale(locale, "resources.myprogress.search")}
                 </Button>
               </Form.Item>              
-                    </Col>
-                </Row>
+            </Col>
+        </Row>
       </Form>
     </Card>
   </Col>
@@ -307,7 +306,7 @@ useEffect(() => {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
-      onRetrievingProfileByEmailIdAndYearOfBirth,
+    onRetrievingUserProfile,
     },
     dispatch);
 }

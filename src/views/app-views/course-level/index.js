@@ -34,11 +34,18 @@ class CourseLevel extends Component {
         const searchTerms = ["supermarket", "household"]; // Array of search terms
         const isFound = searchTerms.some(term => this.props.location?.pathname?.includes(term));
         const selecting = true;
-        if(selecting){ //this.props.userCourses
+        console.log("-------M", (this.props.user?.emailId && !this.props.user?.dateOfBirth));
+
+        if(this.props.user?.emailId && !this.props.user?.dateOfBirth){
             return (
                 <div id="unathenticated-landing-page-margin">
-                    {/* <ProgressDashboardByEmailV4 /> */}
                     <EmailYearSearchForm/>
+                </div>
+            )
+        } else if(this.props.user?.emailId && this.props.user?.dateOfBirth) {
+            return (
+                <div id="unathenticated-landing-page-margin">
+                    <ProgressDashboardByEmailV4 />
                 </div>
             )
         }
@@ -73,8 +80,8 @@ function mapDispatchToProps(dispatch){
 const mapStateToProps = ({lrn, theme, grant}) => {
 	const { wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount } = lrn;
     const { locale, direction, course } =  theme;
-    const { userCourses } = grant;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userCourses }
+    const { user } = grant;
+	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);

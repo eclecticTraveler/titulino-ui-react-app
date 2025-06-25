@@ -30,7 +30,7 @@ const MenuContentTop = (props) => {
     localization,
     toggleUpperNavigationLevelSelection,
     getUpperNavigationBasedOnUserConfig,
-    innerToken
+    user
   } = props;
 
   useEffect(() => {
@@ -40,7 +40,7 @@ const MenuContentTop = (props) => {
   }, [isMobileView]);
 
   useEffect(() => {
-    getUpperNavigationBasedOnUserConfig(innerToken);
+    getUpperNavigationBasedOnUserConfig(user?.contactId ? true : false);
   }, []);
 
   toggleSelectedUpperNavigationTabOnLoad(
@@ -186,8 +186,8 @@ function mapDispatchToProps(dispatch) {
 
 const mapStateToProps = ({ lrn, grant }) => {
   const { dynamicUpperMainNavigation } = lrn;
-  const { innerToken } = grant;
-  return { dynamicUpperMainNavigation, innerToken };
+  const { user } = grant;
+  return { dynamicUpperMainNavigation, user };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MenuContentTop);

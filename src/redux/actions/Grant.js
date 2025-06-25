@@ -18,8 +18,9 @@ export const onRetrievingUserProfile = (emailId, dobOrYob) => {
       communicationName: userProfile?.communicationName ?? null,
       expirationDate: userProfile?.expirationDate ?? null,
       hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
+      innerToken: userProfile?.token,
       emailId: emailId,
-      dobOrYob: dobOrYob
+      dateOfBirth: dobOrYob
     },
     message: userProfile?.message ?? '',
     showMessage: false,

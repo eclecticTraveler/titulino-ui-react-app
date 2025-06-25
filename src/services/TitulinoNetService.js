@@ -35,7 +35,7 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
     body: raw,
     redirect: "follow"
   };
-
+  console.log("loginUrl", loginUrl);
   try {
     const response = await fetch(loginUrl, requestOptions);
     const apiResult = await response.json();

@@ -31,11 +31,11 @@ const setLocale = (isLocaleOn, localeKey) =>{
   return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
 }
 
-const configureMenuItems = (token) => {
+const configureMenuItems = (user) => {
 
   const menuLinks = [];
 
-  if(token){
+  if(user?.hasEverBeenFacilitator){
     menuLinks.push(
       {
         title: setLocale(locale,"profile.adminInsights"),
@@ -82,7 +82,7 @@ const configureMenuItems = (token) => {
 }
 
 export const NavProfile = (props) => {  
-  const { course, direction, mode, isMobile, setUserNativeLanguage, token, signOut } = props;
+  const { course, direction, mode, isMobile, setUserNativeLanguage, token, signOut, user } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
  
   const showDrawer = () => {
@@ -101,9 +101,9 @@ export const NavProfile = (props) => {
     signOut();
   }
 
-  const menuItems = configureMenuItems(token);
+  const menuItems = configureMenuItems(user);
   const profileImg = "/img/avatars/tempProfile-2.png";
-  const avatarImg = token?.user_metadata?.avatar_url ?? profileImg;
+  const avatarImg = token?.user_metadata?.avatar_url ?? token?.user_metadata?.picture ?? profileImg;
   const profileMenu = (
       <div className="nav-profile nav-dropdown">
         <div className="nav-profile-header">
@@ -207,8 +207,8 @@ export const NavProfile = (props) => {
 const mapStateToProps = ({ theme, auth, grant }) => {
 	const { course } =  theme;
   const { token } = auth;
-  const { innerToken } = grant;
-	return { course, token, innerToken }
+  const { user } = grant;
+	return { course, token, user }
 };
 
 export default connect(mapStateToProps, {signOut, setUserNativeLanguage, })(NavProfile)

@@ -82,16 +82,17 @@ export const Views = (props) => {
             </IntlProvider>
         )
     }
-
-        if(user?.emailId && !token){
-        return (
-            <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
-                <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
-                    <EmailYearSearchForm />
-                </ConfigProvider>
-            </IntlProvider>
-        )
-    }
+    console.log("user", user);
+    // if(user?.emailId && !user?.dateOfBirth){
+    //     console.log("INSIDE user", user);
+    //     return (
+    //         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
+    //             <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
+    //                 <EmailYearSearchForm />
+    //             </ConfigProvider>
+    //         </IntlProvider>
+    //     )
+    // }
 
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
