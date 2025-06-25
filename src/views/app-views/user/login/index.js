@@ -107,7 +107,7 @@ export const LoginAdapter = (props) => {
 				},
 			}}
 			providers={['google', 'facebook']}
-			redirectTo={"https://dev.titulino.com" + APP_PREFIX_PATH + '/login'} // or your custom redirect route
+			redirectTo={window.location.origin + APP_PREFIX_PATH + '/login'} // or your custom redirect route
 			/>
 		</Card>
 		</div>
