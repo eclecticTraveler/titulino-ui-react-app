@@ -6,7 +6,9 @@ let _results = [];
 // Helper function to create the headers
 const getHeaders = (token) => {
   const myHeaders = new Headers();
-  myHeaders.append("Authorization", `Bearer ${token}`);
+  if(token){
+    myHeaders.append("Authorization", `Bearer ${token}`);
+  }
   myHeaders.append("Content-Type", "application/json");
   myHeaders.append("TITULINO-COM-API-KEY", process.env.REACT_APP_BACKEND_NET_TITULINO_API_KEY);
   
@@ -31,7 +33,7 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
 
   const requestOptions = {
     method: "POST",
-    headers: myHeaders,
+    headers: getHeaders(),
     body: raw,
     redirect: "follow"
   };

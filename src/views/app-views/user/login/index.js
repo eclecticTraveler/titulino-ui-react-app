@@ -78,7 +78,7 @@ export const LoginAdapter = (props) => {
 
 	const converUrl = 'https://images.unsplash.com/photo-1603899122634-f086ca5f5ddd?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 	const titleOfEnrollment = 'login';
-//   return <Redirect to={`${AUTH_PREFIX_PATH}/login`} />;
+	console.log("window.location.origin", window.location.origin);
 	return (
 		<>
 			<div className="container customerName">
