@@ -49,7 +49,7 @@ const getUserProfile = async (emailId, dobOrYob) => {
       return null;
     }
   } catch (err) {
-    console.log("ERROR");
+    console.log("ERRO");
     console.error("Error retrieving user profile:", err);
     return null;
   }
