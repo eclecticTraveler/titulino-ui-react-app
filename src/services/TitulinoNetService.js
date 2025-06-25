@@ -39,6 +39,7 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
   };
   console.log("loginUrl", loginUrl);
   console.log("process.env.REACT_APP_BACKEND_NET_TITULINO_API_KEY", process.env.REACT_APP_BACKEND_NET_TITULINO_API_KEY);
+  console.log("ksksk");
   try {
     const response = await fetch(loginUrl, requestOptions);
     const apiResult = await response.json();

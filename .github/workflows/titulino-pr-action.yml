@@ -86,21 +86,21 @@ jobs:
           echo "REACT_APP_ENV=${ENV_INPUT}" > .env
 
           if [ "${ENV_INPUT}" = "development" ]; then
-            echo "REACT_APP_SUPABASE_BASE_API_URL=${{ secrets.SUPABASE_BASE_API_URL_DEV }}" >> .env
-            echo "REACT_APP_SUPABASE_URL=${{ secrets.SUPABASE_URL_DEV }}" >> .env
-            echo "REACT_APP_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY_DEV }}" >> .env
-            echo "REACT_APP_BACKEND_NET_SERVICE_USERNAME=${{ secrets.BACKEND_NET_SERVICE_USERNAME_DEV }}" >> .env
-            echo "REACT_APP_TITULINO_NET_API=${{ secrets.TITULINO_NET_API_DEV }}" >> .env
-            echo "REACT_APP_BACKEND_NET_TITULINO_API_KEY=${{ secrets.BACKEND_NET_TITULINO_API_KEY_DEV }}" >> .env
-            echo "REACT_APP_STORAGE_KEY=${{ secrets.REACT_APP_STORAGE_KEY_DEV }}" >> .env
+            echo "REACT_APP_SUPABASE_BASE_API_URL=\"${{ secrets.SUPABASE_BASE_API_URL_DEV }}\"" >> .env
+            echo "REACT_APP_SUPABASE_URL=\"${{ secrets.SUPABASE_URL_DEV }}\"" >> .env
+            echo "REACT_APP_SUPABASE_ANON_KEY=\"${{ secrets.SUPABASE_ANON_KEY_DEV }}\"" >> .env
+            echo "REACT_APP_BACKEND_NET_SERVICE_USERNAME=\"${{ secrets.BACKEND_NET_SERVICE_USERNAME_DEV }}\"" >> .env
+            echo "REACT_APP_TITULINO_NET_API=\"${{ secrets.TITULINO_NET_API_DEV }}\"" >> .env
+            echo "REACT_APP_BACKEND_NET_TITULINO_API_KEY=\"${{ secrets.BACKEND_NET_TITULINO_API_KEY_DEV }}\"" >> .env
+            echo "REACT_APP_STORAGE_KEY=\"${{ secrets.REACT_APP_STORAGE_KEY_DEV }}\"" >> .env
           else
-            echo "REACT_APP_SUPABASE_BASE_API_URL=${{ secrets.SUPABASE_BASE_API_URL_PROD }}" >> .env
-            echo "REACT_APP_SUPABASE_URL=${{ secrets.SUPABASE_URL_PROD }}" >> .env
-            echo "REACT_APP_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY_PROD }}" >> .env
-            echo "REACT_APP_BACKEND_NET_SERVICE_USERNAME=${{ secrets.BACKEND_NET_SERVICE_USERNAME_PROD }}" >> .env
-            echo "REACT_APP_TITULINO_NET_API=${{ secrets.TITULINO_NET_API_PROD }}" >> .env
-            echo "REACT_APP_BACKEND_NET_TITULINO_API_KEY=${{ secrets.BACKEND_NET_TITULINO_API_KEY_PROD }}" >> .env
-            echo "REACT_APP_STORAGE_KEY=${{ secrets.REACT_APP_STORAGE_KEY_PROD }}" >> .env
+            echo "REACT_APP_SUPABASE_BASE_API_URL=\"${{ secrets.SUPABASE_BASE_API_URL_PROD }}\"" >> .env
+            echo "REACT_APP_SUPABASE_URL=\"${{ secrets.SUPABASE_URL_PROD }}\"" >> .env
+            echo "REACT_APP_SUPABASE_ANON_KEY=\"${{ secrets.SUPABASE_ANON_KEY_PROD }}\"" >> .env
+            echo "REACT_APP_BACKEND_NET_SERVICE_USERNAME=\"${{ secrets.BACKEND_NET_SERVICE_USERNAME_PROD }}\"" >> .env
+            echo "REACT_APP_TITULINO_NET_API=\"${{ secrets.TITULINO_NET_API_PROD }}\"" >> .env
+            echo "REACT_APP_BACKEND_NET_TITULINO_API_KEY=\"${{ secrets.BACKEND_NET_TITULINO_API_KEY_PROD }}\"" >> .env
+            echo "REACT_APP_STORAGE_KEY=\"${{ secrets.REACT_APP_STORAGE_KEY_PROD }}\"" >> .env
           fi
       
           echo "✅ .env file generated!"
