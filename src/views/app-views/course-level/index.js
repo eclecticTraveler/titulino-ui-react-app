@@ -33,7 +33,6 @@ class CourseLevel extends Component {
     render() {
         const searchTerms = ["supermarket", "household"]; // Array of search terms
         const isFound = searchTerms.some(term => this.props.location?.pathname?.includes(term));
-        const selecting = true;
         let resul = (this.props.user?.emailId && !this.props.user?.dateOfBirth) ? "missing date" : "date provided";
         console.log("-------M", resul);
 

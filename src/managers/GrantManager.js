@@ -37,10 +37,10 @@ const getUserProfile = async (emailId, dobOrYob) => {
   // 2. Otherwise fetch from backend
   try {
     const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(emailId, dobOrYob);
-
+    console.log("userProfile", userProfile);
     if (userProfile) {
       // 3. Store encrypted locally with TTL (e.g., 60 minutes)
-      LocalStorageService.storeEncryptedObjectWithExpiry(localStorageKey, userProfile, 60);
+      LocalStorageService.storeEncryptedObjectWithExpiry(localStorageKey, userProfile, 10);
       return userProfile;
     } else {
       console.warn("No user profile found for:", emailId, dobOrYob);

@@ -38,15 +38,17 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
     redirect: "follow"
   };
   console.log("loginUrl", loginUrl);
+  console.log("process.env.REACT_APP_BACKEND_NET_TITULINO_API_KEY", process.env.REACT_APP_BACKEND_NET_TITULINO_API_KEY);
   try {
     const response = await fetch(loginUrl, requestOptions);
     const apiResult = await response.json();
+    console.log("apiResult", apiResult);
     return apiResult;
 
   } catch (error) {
-    console.log(`Error Retrieving API payload in getRegistrationToken: from ${whoCalledMe}`);
+    console.log(`Error Retrieving API payload in getUserProfileByEmailAndYearOfBirth: from ${whoCalledMe}`);
     console.error(error);
-    return "";
+    return null;
   }
 }
 
