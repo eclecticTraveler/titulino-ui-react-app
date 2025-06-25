@@ -20,7 +20,7 @@ import ConfettiExplosion from 'react-confetti-explosion';
 
 
 export const ProgressDashboardByEmailV4 = (props) => {
-  const { registeredProgressByEmailId,
+  const { registeredProgressByEmailId, user,
      nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId, isUserEmailRegisteredForCourse, onModalInteraction,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, hasUserInteractedWithModal } = props;
 
@@ -29,8 +29,6 @@ export const ProgressDashboardByEmailV4 = (props) => {
   const [selectedLessons, setSelectedLessons] = useState({});
   const [handleUserProgressSubmit, setHandleUserProgressSubmit] = useState(null); // To hold the child's submit function
   const [activeKey, setActiveKey] = useState('1');
-  const [email, setEmail] = useState("");
-  const [userYearOfBirth, setUserYearOfBirth] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [isMassiveConfettiVisible, setIsMassiveConfettiVisible] = useState(false);
@@ -43,41 +41,40 @@ export const ProgressDashboardByEmailV4 = (props) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   };
 
-  const setLocaleString = (isLocaleOn, localeKey, defaultMessage = "") => {
-    return isLocaleOn
-      ? getLocaleText(localeKey, defaultMessage) // Uses the new function
-      : localeKey.toString(); // Falls back to the key if localization is off
-  }; 
+
+  console.log("currentCourseCodeId", currentCourseCodeId);
+  console.log("user?.emailId", user?.emailId);
+  console.log("user?.yearOfBirth", user?.yearOfBirth);
+  console.log("courseConfiguration?.categories", courseConfiguration?.categories);
 
 
-  const resetState = () => {
-    //Local
-    setSelectedLessonsForSubmission({});
-    setSelectedLessons({});
-    setHandleUserProgressSubmit(null)
-    setEmail("");
-    setIsMassiveConfettiVisible(false);
-    setIsSmallConfettiVisible(false);
-    setLoading(false); 
-    setActiveKey("1");
-    setIsModalVisible(false);
-    onModalInteraction(false);
-    setUserYearOfBirth(0);
-    form?.resetFields();
-    // Global
-    onResetingProgressByEmailIdAndCourseCodeId();
 
-  }  
+
+  const handleSearch = () => {
+
+    // let sanitizedEmail = user?.emailId?.trim()?.toLowerCase();
+    let sanitizedEmail = "xl_189@yahoo.com.mx";
+    
+    if(currentCourseCodeId && (user?.yearOfBirth && user?.yearOfBirth > 0)){
+      setLoading(true);        
+      onVerifyingProgressByEmailIdAndCourseCodeId(user?.yearOfBirth, sanitizedEmail, currentCourseCodeId, selectedCourse?.localizationId);
+    }
+
+  };
+
+  useEffect(() => {
+    handleSearch();
+  }, [currentCourseCodeId, user?.emailId, user?.yearOfBirth ]);
 
   // Submit progress and refetch data
 useEffect(() => {
   if (selectedLessonsForSubmission?.length > 0) {
     // Submit user progress
-    onSubmittingUserCourseProgress(email, selectedLessonsForSubmission).then(() => {
+    onSubmittingUserCourseProgress(user?.emailId, selectedLessonsForSubmission).then(() => {
       // Refetch progress after submission completes
       onVerifyingProgressByEmailIdAndCourseCodeId(
-        userYearOfBirth,
-        email,
+        user?.yearOfBirth,
+        user?.emailId,
         currentCourseCodeId,
         selectedCourse?.localizationId
       );
@@ -112,7 +109,7 @@ useEffect(() => {
 useEffect(() => {
   if (isUserEmailRegisteredForCourse) {
     // Land on key "2" if results are found
-    setActiveKey("2");
+    setActiveKey("1"); // CLEAN UP LATER
   } else {
     setActiveKey("1");
   }
@@ -131,13 +128,6 @@ useEffect(() => {
 }, [selectedLessonsForSubmission]);
 
 
-useEffect(() => {
-
-  // Cleanup function for unmount
-  return () => {
-    resetState();
-  };
-}, [onModalInteraction]);
 
   const renderMessageResults = () => {
     if (!registeredProgressByEmailId || registeredProgressByEmailId?.length === 0) {
@@ -194,7 +184,7 @@ useEffect(() => {
           categories={courseConfiguration?.categories}
           setHandleUserProgressSubmit={setHandleUserProgressSubmit}
           setSelectedLessons={setSelectedLessons}
-          email={email}
+          email={user?.emailId}
           setIsSmallConfettiVisible={setIsSmallConfettiVisible}
           setSelectedLessonsForSubmission={setSelectedLessonsForSubmission}
         />
@@ -230,7 +220,7 @@ useEffect(() => {
   };
   
   const renderUpserUserProgressBottom = () => {
-    if (activeKey === '2' && email) {
+    if (activeKey === '2' && user?.emailId) {
       return renderUpsertUserProgressBottom()
     }
   }
@@ -241,10 +231,10 @@ useEffect(() => {
   };
   
   const renderDashboardTitle = () => {
-    if (email) {
+    if (user?.emailId) {
       return (
         <>
-          {setLocale(locale, "resources.myprogress.progressFor")}: {email}
+          {setLocale(locale, "resources.myprogress.progressFor")}: {user?.emailId}
         </>
       );
     }
@@ -273,8 +263,12 @@ useEffect(() => {
       )}
 
     <Card bordered loading={loading}>
-      <h1>{renderDashboardTitle()}</h1>
-      {registeredProgressByEmailId && <h2>{renderMessageResults()}</h2>}
+    {registeredProgressByEmailId && (
+      <>
+        <h1>{capitalizeFirstLetter(courseTheme)}: {renderMessageResults()}</h1>
+      </>
+    )} 
+      <h4>{renderDashboardTitle()}</h4>
      </Card>
 
       <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}>
@@ -317,10 +311,11 @@ function mapDispatchToProps(dispatch) {
   }, dispatch);
 }
 
-const mapStateToProps = ({ lrn, theme }) => {
+const mapStateToProps = ({ lrn, theme, grant }) => {
   const { course } =  theme;
+  const { user } = grant;
   const { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, isUserEmailRegisteredForCourse, hasUserInteractedWithModal } = lrn;
-  return { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, isUserEmailRegisteredForCourse, hasUserInteractedWithModal };
+  return { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, isUserEmailRegisteredForCourse, hasUserInteractedWithModal, user };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProgressDashboardByEmailV4));

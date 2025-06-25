@@ -315,7 +315,7 @@
 	"enrollment.coursesNotAvailableMessage":"Currently, we don't have any open courses, but don't worry! You can still explore the free resources available on our page.",
 	"enrollment.coursesNotAvailableMessage2":"Stay tuned for updates on upcoming courses by following our.",
 	"enrollment.coursesNotAvailableMessage3":"Titulino Facebook Page",
-"enrollment.weeklySelectionTitle": "📅 Weekly Course Selection",
+	"enrollment.weeklySelectionTitle": "📅 Weekly Course Selection",
 	"enrollment.weeklySelectionInstruction": "Select by tapping or clicking the course or courses you wish to enroll in from the list below.",
 	"days.monday": "Monday",
 	"days.tuesday": "Tuesday",
@@ -327,7 +327,8 @@
 	"enrollment.continue": "Continue",
 	"enrollment.timeConflictWarning": "Course overlaps with an already selected course.",
 	"classes.grammar.basic":"Basic",
-	"classes.grammar.advanced":"Advanced"
+	"classes.grammar.advanced":"Advanced",
+	"form.user.session.notFoundMessage":"We couldn't find you by your year of birth. Can you provide your full birth date?"
 
 	
 	

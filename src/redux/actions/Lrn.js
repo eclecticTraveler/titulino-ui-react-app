@@ -364,7 +364,7 @@ export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLan
   // Get courseId in Factory
  const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
  const courseConfiguration = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
-
+console.log("courseThemessss", courseTheme, nativeLanguage, course);
   return {
     type: ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
     currentCourseCodeId: courseCodeId,

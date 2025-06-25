@@ -1,7 +1,7 @@
 import React, {Component, Suspense} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
-import { geteBookUrl, onLoadingEnrolleeByRegion }  from 'redux/actions/Lrn';
+import { geteBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme }  from 'redux/actions/Lrn';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import {connect} from 'react-redux';
@@ -16,9 +16,10 @@ class CourseLevel extends Component {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
         const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname); 
         this.props.geteBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course );
-        this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme)
-
+        this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme)        
+        this.props.onLoadingUserResourcesByCourseTheme(pathTheme?.courseTheme, this.props.nativeLanguage?.localizationId, this.props.course)
     }
+
     
     componentDidMount() {                
         this.loadCourseLandingData();
@@ -33,16 +34,14 @@ class CourseLevel extends Component {
     render() {
         const searchTerms = ["supermarket", "household"]; // Array of search terms
         const isFound = searchTerms.some(term => this.props.location?.pathname?.includes(term));
-        let resul = (this.props.user?.emailId && !this.props.user?.dateOfBirth) ? "missing date" : "date provided";
-        console.log("-------M", resul);
 
-        if(this.props.user?.emailId && !this.props.user?.dateOfBirth){
+        if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
             return (
                 <div id="unathenticated-landing-page-margin">
                     <EmailYearSearchForm/>
                 </div>
             )
-        } else if(this.props.user?.emailId && this.props.user?.dateOfBirth) {
+        } else if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
             return (
                 <div id="unathenticated-landing-page-margin">
                     <ProgressDashboardByEmailV4 />
@@ -73,7 +72,8 @@ class CourseLevel extends Component {
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
         geteBookUrl: geteBookUrl,
-        onLoadingEnrolleeByRegion: onLoadingEnrolleeByRegion
+        onLoadingEnrolleeByRegion: onLoadingEnrolleeByRegion,
+        onLoadingUserResourcesByCourseTheme: onLoadingUserResourcesByCourseTheme
 	}, dispatch)
 }
 

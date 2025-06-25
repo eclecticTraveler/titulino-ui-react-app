@@ -167,6 +167,7 @@ const EmailYearSearchForm = (props) => {
     }
   };
 
+
 useEffect(() => {
   const fetchProfile = async () => {
     if (!submitted || !searchParams.email || !searchParams.yob) return;
@@ -176,19 +177,18 @@ useEffect(() => {
       searchParams.email,
       searchParams.fullDate ? searchParams.fullDate.format("YYYY-MM-DD") : searchParams.yob
     );
-    setLoading(false);
-
-    if (result) {
-      console.log("Search result:", result);
-      setSearchResult(result);
-      setProfileData?.(result);
+    setLoading(false);    
+    if (result?.user?.contactId) {
+      console.log("Search result:", result?.user);
+      setSearchResult(result?.user);
+      setProfileData?.(result?.user);
       history.push("/");
-    } else {
+    } else {      
       if (!askFullBirthDate) {
         // First try failed → prompt for full birth date
-        message.warning("We couldn't find you by your year of birth. Can you provide your full birth date?");
         setAskFullBirthDate(true);
         setSubmitted(false); // Reset so user can submit again
+        setIsToDisplayFullEnrollment(false);
       } else {
         // Second try failed → render ContactEnrollment (store full DOB in Redux)
         // You can dispatch something like: dispatch(setContactDob(searchParams.fullDate));
@@ -197,7 +197,7 @@ useEffect(() => {
       }
     }
   };
-
+  console.log("fetchss")
   fetchProfile();
 }, [submitted, searchParams, onRetrievingUserProfile, setProfileData, history, askFullBirthDate]);
 
@@ -213,14 +213,11 @@ useEffect(() => {
   <Row justify="center" style={{ marginBottom: 20 }}>
   <Col xs={24}>
     <Card 
-      title={setLocale(locale, "enrollment.yearOfBirth")} 
+      title={!askFullBirthDate && !isToDisplayFullEnrollment && setLocale(locale, "enrollment.yearOfBirth") } 
       loading={loading} 
       bordered
     >
       <Form layout="vertical" onFinish={handleSearch} form={form}>
-        {isToDisplayFullEnrollment && (
-          <>Hello</>
-        )}
         {/* Row for input fields */}
         <Row gutter={[16, 16]} justify="center">
         <Col xs={24} sm={24} lg={6}>
@@ -243,8 +240,10 @@ useEffect(() => {
           </Col>          
         </Row>
         
-          {askFullBirthDate && !isToDisplayFullEnrollment && (
-            <div style={{ marginTop: 24 }}>
+          {askFullBirthDate && !isToDisplayFullEnrollment && (  
+             <Row gutter={[16, 16]} justify="center">
+              <Col xs={24} sm={24} lg={6}>
+              <h3>{setLocaleString(locale, "form.user.session.notFoundMessage")}</h3>              
               <Form.Item
                 name="dateOfBirth"
                 label="Date of Birth"
@@ -261,8 +260,8 @@ useEffect(() => {
                   }
                 />
               </Form.Item>
-
-            </div>
+              </Col>
+            </Row>                 
           )}
 
        <Row justify="center">

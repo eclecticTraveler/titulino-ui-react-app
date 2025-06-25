@@ -27,7 +27,7 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
   const raw = JSON.stringify({
-    "userName": emailId,
+    "userName": "xl_189@yahoo.com.mx",
     "yearOfBirth": dobOrYob
   });
 
@@ -37,13 +37,21 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
     body: raw,
     redirect: "follow"
   };
-  console.log("loginUrl", loginUrl);
-  console.log("REACT_APP_BACKEND_NET_TITULINO_API_KEY", process.env.REACT_APP_BACKEND_NET_TITULINO_API_KEY);
-  console.log("End");
+
   try {
     const response = await fetch(loginUrl, requestOptions);
+    // If the API returns 404, return null early
+    if (response.status === 404) {
+      console.warn(`404 Not Found: ${loginUrl}`);
+      return null;
+    }
+  
+    // Optionally handle other non-success statuses
+    if (!response.ok) {
+      throw new Error(`API returned status ${response.status}`);
+    }
+  
     const apiResult = await response.json();
-    console.log("apiResult", apiResult);
     return apiResult;
 
   } catch (error) {

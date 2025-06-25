@@ -7,8 +7,8 @@ AUTH_TITULINO_INTERNAL_TOKEN,
 ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH
 } from '../constants/Grant';
 
-export const onRetrievingUserProfile = (emailId, dobOrYob) => {
-  const userProfile = TitulinoManager.getUserProfile(emailId, dobOrYob);
+export const onRetrievingUserProfile = async (emailId, dobOrYob) => {
+  const userProfile = await TitulinoManager.getUserProfile(emailId, dobOrYob);
 
   return {
     type: ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
@@ -20,7 +20,7 @@ export const onRetrievingUserProfile = (emailId, dobOrYob) => {
       hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
       innerToken: userProfile?.token,
       emailId: emailId,
-      dateOfBirth: userProfile?.contactId ? dobOrYob : null
+      yearOfBirth: userProfile?.yearOfBirth
     },
     message: userProfile?.message ?? '',
     showMessage: false,
@@ -29,14 +29,14 @@ export const onRetrievingUserProfile = (emailId, dobOrYob) => {
 };
 
 
-export const onAuthenticatingWithInternalResources = (innerToken) => {
+export const onAuthenticatingWithInternalResources = async (innerToken) => {
   return {
     type: ON_AUTHENTICATING_WITH_INTERNAL_RESOURCES,
     innerToken
   };
 }
 
-export const onAuthenticatingWithSSO = (emailId) => {
+export const onAuthenticatingWithSSO = async (emailId) => {
   return {
     type: ON_AUTHENTICATING_WITH_SSO,
     emailId
@@ -45,7 +45,7 @@ export const onAuthenticatingWithSSO = (emailId) => {
 
 
 ///
-export const setAuthInnerToken = (token) => {
+export const setAuthInnerToken = async (token) => {
   localStorage.setItem(AUTH_TITULINO_INTERNAL_TOKEN, token);
   return {
     type: AUTH_TITULINO_INTERNAL_TOKEN,

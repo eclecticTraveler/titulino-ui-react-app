@@ -73,7 +73,9 @@ const lrn = (state = initState, action) => {
       return {
         ...state,
         enrolleeCountByRegion: action.enrolleeCountByRegion,
-        totalEnrolleeCount: action.totalEnrolleeCount
+        totalEnrolleeCount: action.totalEnrolleeCount,
+        currentCourseCodeId: action.currentCourseCodeId,
+        courseTitle: action.courseTitle
       }
     case GET_LISTENING_PRACTICE_MODULE:
       return {

@@ -125,7 +125,7 @@ export const getDerivedCategoriesFromCourseStructureData = async (selectedCourse
 };
 
 export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
-  switch (courseTheme.toLowerCase()) {
+  switch (courseTheme?.toLowerCase()) {
     case 'supermarket':
       return 'SUPERMARKET_SEP_2024_COURSE_01';      
     case 'household':      

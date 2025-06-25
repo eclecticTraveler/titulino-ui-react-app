@@ -317,7 +317,7 @@
 	"enrollment.coursesNotAvailableMessage":"Actualmente no tenemos ningún curso abierto, ¡pero no te preocupes! Aún puedes explorar los recursos gratuitos disponibles en nuestra página.",
 	"enrollment.coursesNotAvailableMessage2":"Estén atentos a las actualizaciones sobre los próximos cursos siguiendo nuestro.",
 	"enrollment.coursesNotAvailableMessage3": "Página de Facebook de Titulino",
-		"enrollment.weeklySelectionTitle": "📅 Selección semanal de cursos",
+	"enrollment.weeklySelectionTitle": "📅 Selección semanal de cursos",
 	"enrollment.weeklySelectionInstruction": "Seleccione tocando o haciendo clic el curso o los cursos en los que desea inscribirse de la lista a continuación.",
 	"days.monday": "Lunes",
 	"days.tuesday": "Martes",
@@ -329,7 +329,8 @@
 	"enrollment.continue": "Continuar",
 	"enrollment.timeConflictWarning": "El curso se superpone con un curso ya seleccionado.",
 	"classes.grammar.basic":"Básico",
-	"classes.grammar.advanced":"Avanzado"
+	"classes.grammar.advanced":"Avanzado",
+	"form.user.session.notFoundMessage": "No pudimos encontrarle por su año de nacimiento. ¿Podría proporcionarnos su fecha de nacimiento completa?"
 	
 }
 
