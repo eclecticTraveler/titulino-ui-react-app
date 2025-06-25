@@ -15,8 +15,8 @@ import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
 import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
 
-function RouteInterceptor({ children, isAuthenticated, ...rest }) {    
-    console.log("INTER", isAuthenticated);
+function RouteInterceptor({ children, isAuthenticated, ...rest }) {
+    const loginPath = `${APP_PREFIX_PATH}/test`; /// LOGIN
     // If isAuthenticated then render components passed if not then redirect to pathname or login page
     return (
       <Route
