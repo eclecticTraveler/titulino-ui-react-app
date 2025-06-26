@@ -105,12 +105,14 @@ export const EnrollmentWrapper = (props) => {
         )
     }else{
         if(availableCourses?.length > 1 && selectedCoursesToEnroll?.length === 0){
+          console.log("WeeklyCourseSelector");
             return (
                 <div>
                      <WeeklyCourseSelector/>
                 </div>
             );
         }else{
+          console.log("QuickToFullEnrollment");
             return (
                 <div>
                      <QuickToFullEnrollment/>
