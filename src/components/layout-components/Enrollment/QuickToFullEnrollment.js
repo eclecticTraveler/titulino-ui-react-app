@@ -232,11 +232,6 @@ useEffect(() => {
       ?.find(country => country.CountryId === countryOfResidence)
       ?.CountryName || null;
  
-      console.log("birthCountryName", birthCountryName, countryOfBirth);
-      console.log("residencyCountryName", residencyCountryName, countryOfResidence);
-      console.log("matchedInfo.countryDivisionBirthName", matchedInfo);
-      console.log("countryDivisionOfBirth", countryDivisionOfBirth)
-
     let enrolleeDob;
     if(isQuickEnrollment){
         // Convert dateOfBirth to year if it's a Moment object
@@ -330,7 +325,7 @@ useEffect(() => {
       );
 
       setSubmittingLoading(true);
-      // setSubmittingRecords(formattedDatatoSubmit);
+      setSubmittingRecords(formattedDatatoSubmit);
 
     } catch (error) {
       // Handle validation failure
