@@ -227,11 +227,15 @@ useEffect(() => {
     const birthCountryName = countries
     ?.find(country => country.CountryId === countryOfBirth)
     ?.CountryName || null;
-  
+    
     const residencyCountryName = countries
       ?.find(country => country.CountryId === countryOfResidence)
       ?.CountryName || null;
-  
+ 
+      console.log("birthCountryName", birthCountryName, countryOfBirth);
+      console.log("residencyCountryName", residencyCountryName, countryOfResidence);
+      console.log("matchedInfo.countryDivisionBirthName", matchedInfo);
+      console.log("countryDivisionOfBirth", countryDivisionOfBirth)
 
     let enrolleeDob;
     if(isQuickEnrollment){
@@ -289,9 +293,9 @@ useEffect(() => {
       dateOfBirth: enrolleeDob || null,
 
       countryOfResidence: residencyCountryName ?? (matchedInfo.countryOfResidencyName || null),
-      countryDivisionOfResidence: countryDivisionOfResidence ?? (matchedInfo.countryDivisionResidencyName || null),
+      countryDivisionOfResidence: countryDivisionOfResidence ?? (matchedInfo.countryDivisionIdResidency || null),
       countryOfBirth: birthCountryName ?? (matchedInfo.countryOfBirthName || null),
-      countryDivisionOfBirth: countryDivisionOfBirth ?? (matchedInfo.countryDivisionBirthName || null),
+      countryDivisionOfBirth: countryDivisionOfBirth ?? (matchedInfo.countryDivisionIdBirth || null),
       
       termsVersion: termsAndConditionsVersion || "1.0", // Default version
       coursesCodeIds: selectedCourseCodeIds.map(id => ({
@@ -326,7 +330,7 @@ useEffect(() => {
       );
 
       setSubmittingLoading(true);
-      setSubmittingRecords(formattedDatatoSubmit);
+      // setSubmittingRecords(formattedDatatoSubmit);
 
     } catch (error) {
       // Handle validation failure
