@@ -16,6 +16,7 @@ import GoogleService from "services/GoogleService";
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import StudentProgress from "lob/StudentProgress";
+import TitulinoManager from "managers/LrnManager";
 import $ from 'jquery'; 
 
 import axios from 'axios';
@@ -66,7 +67,8 @@ import {
   ON_LOADING_ENROLEE_BY_REGION,
   ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
   ON_MODAL_INTERACTION,
-  ON_LOADING_VIDEO_CLASS_ARRAY_URLS
+  ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
+  ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -586,5 +588,19 @@ export const onSelectingCorrectionToEdit = async(record) => {
   return {
     type: ON_SELECTING_CORRECTION_RECORD,
     selectedCorrectionRecord: record,
+  }
+}
+
+// Authenticated Section
+
+export const onFetchingUserAuthenticatedProgressForCourse = async (courseCodeId, emailId) => {
+  const { courseProgress, studentPercentagesForCourse, studentCategoriesCompletedForCourse } =
+  await TitulinoManager.getUserCourseProgress(courseCodeId, emailId);
+
+  return {
+    type: ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
+    registeredProgress: courseProgress,
+    studentPercentagesForCourse: studentPercentagesForCourse,
+    studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse
   }
 }

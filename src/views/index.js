@@ -13,7 +13,10 @@ import { getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage }
 import { onLocaleChange, onCourseChange, onLoadingUserSelectedTheme } from '../redux/actions/Theme'
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
+import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
 import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
+import { authenticated } from "redux/actions/Auth";
+import { onAuthenticatingWithSSO } from "redux/actions/Grant";
 
 function RouteInterceptor({ children, isAuthenticated, ...rest }) {
     const loginPath = `${APP_PREFIX_PATH}/test`; /// LOGIN
@@ -35,20 +38,30 @@ function RouteInterceptor({ children, isAuthenticated, ...rest }) {
         }
       />
     );
-  }
+}
 
 export const Views = (props) => { 
-    const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token, user,
+    const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token, user, authenticated, onAuthenticatingWithSSO,
         wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, subNavPosition } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
+    
+    // Load the cookie for Authentication if there was any
+    useSupabaseSessionSync((session) => {
+        authenticated(session.user);
+        onAuthenticatingWithSSO(session.user.email);
+    });
 
+    
     useBodyClass(`dir-${direction}`);
 
     // Effect to load user selected theme and locale
     useEffect(() => {
         onLoadingUserSelectedTheme();
-        getWasUserConfigSetFlag();
+        if((!wasUserConfigSet) || wasUserConfigSet === false){
+            getWasUserConfigSetFlag();
+        }
+ 
 
         if (currentTheme) {
             switcher({ theme: themes[currentTheme] });
@@ -67,10 +80,6 @@ export const Views = (props) => {
         }
 
     }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);
-
-    console.log("tokennow",token);
-
-    // if token is available 
 
     if(!wasUserConfigSet){
         return (
@@ -108,7 +117,9 @@ function mapDispatchToProps(dispatch) {
         onCourseChange,
         getUserNativeLanguage,
         onLocaleChange,
-        onLoadingUserSelectedTheme
+        onLoadingUserSelectedTheme,
+        onAuthenticatingWithSSO,
+        authenticated
     }, dispatch);
 }
 

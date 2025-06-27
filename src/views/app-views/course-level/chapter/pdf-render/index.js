@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage, getPdfPathUrl}  from 'redux/actions/Lrn';
+import {getUserSelectedCourse, getUserNativeLanguage, getPdfPathUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { env } from '../../../../../configs/EnvironmentConfig';
 import Loading from '../../../../../components/shared-components/Loading';
@@ -48,7 +48,6 @@ class PdfRender extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getWasUserConfigSetFlag: getWasUserConfigSetFlag, 
         getUserSelectedCourse: getUserSelectedCourse,
         getUserNativeLanguage: getUserNativeLanguage,
         getPdfPathUrl: getPdfPathUrl

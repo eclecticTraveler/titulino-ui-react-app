@@ -1,6 +1,6 @@
 import React, {Component, Suspense} from 'react'
 import {connect} from 'react-redux';
-import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage}  from '../../../../redux/actions/Lrn';
+import {getUserSelectedCourse, getUserNativeLanguage}  from '../../../../redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import InternalIFrame from '../../../../components/layout-components/InternalIFrame';
 import { env } from '../../../../configs/EnvironmentConfig';
@@ -39,7 +39,6 @@ class CourseLevel extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getWasUserConfigSetFlag: getWasUserConfigSetFlag, 
         getUserSelectedCourse: getUserSelectedCourse,
         getUserNativeLanguage: getUserNativeLanguage
 	}, dispatch)
