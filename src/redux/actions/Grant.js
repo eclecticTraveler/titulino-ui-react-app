@@ -4,7 +4,8 @@ import {
 ON_AUTHENTICATING_WITH_INTERNAL_RESOURCES,
 ON_AUTHENTICATING_WITH_SSO,
 AUTH_TITULINO_INTERNAL_TOKEN,
-ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH
+ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
+ON_LOADING_AUTHENTICATED_LANDING_PAGE
 } from '../constants/Grant';
 
 export const onRetrievingUserProfile = async (emailId, dobOrYob) => {
@@ -28,6 +29,13 @@ export const onRetrievingUserProfile = async (emailId, dobOrYob) => {
   };
 };
 
+export const onLoadingAuthenticatedLandingPage = async (emailId) => {
+  const userProfile = await TitulinoManager.getCachedUserProfile(emailId);
+  return {
+    type: ON_LOADING_AUTHENTICATED_LANDING_PAGE,
+    user: userProfile
+  }
+}
 
 export const onAuthenticatingWithInternalResources = async (innerToken) => {
   return {

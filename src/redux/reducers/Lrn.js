@@ -43,7 +43,8 @@ import {
   ON_LOADING_ENROLEE_BY_REGION,
   ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
   ON_MODAL_INTERACTION,
-  ON_LOADING_VIDEO_CLASS_ARRAY_URLS
+  ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
+  ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE
 } from "../constants/Lrn";
 
 const initState = {
@@ -68,6 +69,13 @@ const lrn = (state = initState, action) => {
         studentPercentagesForCourse: action.studentPercentagesForCourse,
         studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse,
         isUserEmailRegisteredForCourse: action.isUserEmailRegisteredForCourse
+      }
+    case ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE:
+      return {
+        ...state,
+        registeredProgress: action.registeredProgress,
+        studentPercentagesForCourse: action.studentPercentagesForCourse,
+        studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse
       }
     case ON_LOADING_ENROLEE_BY_REGION:
       return {

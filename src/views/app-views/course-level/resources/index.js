@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { connect } from 'react-redux';
-import { getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage, onLoadingUserResourcesByCourseTheme  } from 'redux/actions/Lrn';
+import { getUserSelectedCourse, getUserNativeLanguage, onLoadingUserResourcesByCourseTheme  } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import Loading from 'components/shared-components/Loading';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
@@ -100,7 +100,6 @@ const ExternalFormSection = (props) => {
 };
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({
-    getWasUserConfigSetFlag,
     getUserSelectedCourse,
     getUserNativeLanguage,
     onLoadingUserResourcesByCourseTheme

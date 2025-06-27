@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { onModalInteraction, onVerifyingProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId } from 'redux/actions/Lrn';
+import { onVerifyingProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseProgress } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs, DatePicker } from 'antd';
@@ -14,14 +14,12 @@ import useWindowSize from 'react-use/lib/useWindowSize';
 import { faRoad, faPieChart } from '@fortawesome/free-solid-svg-icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
-import getLocaleText from "components/util-components/IntString";
-import EnrollInvitationMessage from "components/admin-components/ModalMessages/EnrollInvitationMessage";
 import ConfettiExplosion from 'react-confetti-explosion';
 
 
 export const ProgressDashboardByEmailV4 = (props) => {
   const { registeredProgressByEmailId, user,
-     nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId, isUserEmailRegisteredForCourse, onModalInteraction,
+     nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, isUserEmailRegisteredForCourse,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, hasUserInteractedWithModal } = props;
 
   const [form] = Form.useForm();
@@ -305,9 +303,7 @@ useEffect(() => {
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     onSubmittingUserCourseProgress: onSubmittingUserCourseProgress,
-    onResetingProgressByEmailIdAndCourseCodeId: onResetingProgressByEmailIdAndCourseCodeId,
-    onVerifyingProgressByEmailIdAndCourseCodeId: onVerifyingProgressByEmailIdAndCourseCodeId,
-    onModalInteraction: onModalInteraction
+    onVerifyingProgressByEmailIdAndCourseCodeId: onVerifyingProgressByEmailIdAndCourseCodeId
   }, dispatch);
 }
 

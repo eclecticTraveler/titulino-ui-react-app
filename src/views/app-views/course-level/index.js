@@ -2,6 +2,7 @@ import React, {Component, Suspense} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
 import { geteBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme }  from 'redux/actions/Lrn';
+import { onLoadingAuthenticatedLandingPage } from 'redux/actions/Grant';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import {connect} from 'react-redux';
@@ -16,8 +17,14 @@ class CourseLevel extends Component {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
         const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname); 
         this.props.geteBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course );
-        this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme)        
-        this.props.onLoadingUserResourcesByCourseTheme(pathTheme?.courseTheme, this.props.nativeLanguage?.localizationId, this.props.course)
+        this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme);
+        this.props.onLoadingUserResourcesByCourseTheme(pathTheme?.courseTheme, this.props.nativeLanguage?.localizationId, this.props.course);
+        // check if there is a user object saved and valid and fetch it
+        if(this.props.token?.email){
+            console.log("this.props.token?.email", this.props.token?.email);
+            this.props.onLoadingAuthenticatedLandingPage(this.props.token?.email);
+        }
+
     }
 
     
@@ -73,15 +80,17 @@ function mapDispatchToProps(dispatch){
 	return bindActionCreators({
         geteBookUrl: geteBookUrl,
         onLoadingEnrolleeByRegion: onLoadingEnrolleeByRegion,
-        onLoadingUserResourcesByCourseTheme: onLoadingUserResourcesByCourseTheme
+        onLoadingUserResourcesByCourseTheme: onLoadingUserResourcesByCourseTheme,
+        onLoadingAuthenticatedLandingPage: onLoadingAuthenticatedLandingPage
 	}, dispatch)
 }
 
-const mapStateToProps = ({lrn, theme, grant}) => {
+const mapStateToProps = ({lrn, theme, grant, auth}) => {
 	const { wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount } = lrn;
     const { locale, direction, course } =  theme;
     const { user } = grant;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user }
+    const { token } = auth; 
+	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);

@@ -26,7 +26,7 @@ export const getAllCourses = async() => {
 
 
 const getUserProfile = async (emailId, dobOrYob) => {
-  const localStorageKey = `UserProfile_${emailId}_${dobOrYob}`;
+  const localStorageKey = `UserProfile_${emailId}`;
 
   // 1. Try to get from encrypted localStorage
   const cachedProfile = LocalStorageService.retrieveEncryptedObjectWithExpiry(localStorageKey);
@@ -38,13 +38,11 @@ const getUserProfile = async (emailId, dobOrYob) => {
   try {
     const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(emailId, dobOrYob);
     console.log("userProfile", userProfile);
-    if (userProfile) {
-      console.log("IN IF");
+    if (userProfile) {      
       // 3. Store encrypted locally with TTL (e.g., 60 minutes)
       LocalStorageService.storeEncryptedObjectWithExpiry(localStorageKey, userProfile, 10);
       return userProfile;
-    } else {
-      console.log("IN ELSE");
+    } else {      
       console.warn("No user profile found for:", emailId, dobOrYob);
       return null;
     }
@@ -55,10 +53,16 @@ const getUserProfile = async (emailId, dobOrYob) => {
   }
 };
 
+const getCachedUserProfile = (emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;
+  const savedUserProfile = LocalStorageService.retrieveEncryptedObjectWithExpiry(localStorageKey);  
+  return savedUserProfile
+};
 
 
 const GrantManager = {
   getUserProfile,
+  getCachedUserProfile
 };
 
 export default GrantManager;
