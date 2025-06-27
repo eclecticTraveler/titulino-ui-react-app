@@ -1,14 +1,19 @@
-import { APP_PREFIX_PATH, SELECTED_COURSE_PATH, AUTH_PREFIX_PATH } from '../../AppConfig'
+import { APP_PREFIX_PATH } from '../../AppConfig'
 import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic' 
 import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
 import { getCourseSubNavigationHighBasic } from '../Submenus/CourseSubNavigationHighBasic';
 import { CourseSubNavigationHouseholdTheme } from '../Submenus/CourseSubNavigationHouseholdTheme';
 import { CourseSubNavigationSupermarketTheme } from '../Submenus/CourseSubNavigationSupermarketTheme';
+import { AuthCourseSubNavigationHouseholdTheme } from '../Submenus/AuthCourseSubNavigationHouseholdTheme';
+import { AuthCourseSubNavigationSupermarketTheme } from '../Submenus/AuthCourseSubNavigationSupermarketTheme';
 import { getTopSubmenuForEnglishConnect } from '../Submenus/Top-Submenus/EConnectTopSubmenus';
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from 'configs/CourseThemeConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
-const dashBoardNavTree = [
+export const getEnglishCourseMainNavigationConfig = (isAuthenticated) => {
+	return EnglishCourseMainNavigationConfig(isAuthenticated);
+}
+const EnglishCourseMainNavigationConfig  = (isAuthenticated) => [
 	{
 		key: 'level-1-eng-inactive',
 		path: `${APP_PREFIX_PATH}/eng/level-1`,
@@ -86,7 +91,10 @@ const dashBoardNavTree = [
 		course: "English",
 		topSubmenu: [],
 		submenu: [
-			...CourseSubNavigationHouseholdTheme("eng")
+			...(isAuthenticated 
+				? AuthCourseSubNavigationHouseholdTheme("eng") 
+				: CourseSubNavigationHouseholdTheme("eng")
+			)
 		]
 	},
 	{
@@ -106,7 +114,10 @@ const dashBoardNavTree = [
 		course: "English",
 		topSubmenu: [],
 		submenu: [
-			...CourseSubNavigationSupermarketTheme("eng")
+			...(isAuthenticated 
+				? AuthCourseSubNavigationSupermarketTheme("eng") 
+				: CourseSubNavigationSupermarketTheme("eng")
+			)
 		]
 	},
 	{
@@ -131,8 +142,3 @@ const dashBoardNavTree = [
 	},
 ]
 
-const englishCourseMainNavigationConfig = [
-  ...dashBoardNavTree
-]
-
-export default englishCourseMainNavigationConfig;

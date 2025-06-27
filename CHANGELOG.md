@@ -2,7 +2,167 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.1.57](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.56...v0.1.57) (2025-06-26)
+### [0.1.72](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.57...v0.1.72) (2025-06-27)
+
+### [0.1.70](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.69...v0.1.70) (2025-06-25)
+
+### [0.1.69](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.68...v0.1.69) (2025-06-25)
+
+### [0.1.68](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.67...v0.1.68) (2025-06-25)
+
+### [0.1.67](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.66...v0.1.67) (2025-06-25)
+
+### [0.1.66](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.65...v0.1.66) (2025-06-25)
+
+### [0.1.65](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.64...v0.1.65) (2025-06-25)
+
+### [0.1.64](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.63...v0.1.64) (2025-06-25)
+
+### [0.1.63](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.62...v0.1.63) (2025-06-25)
+
+### [0.1.62](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.61...v0.1.62) (2025-06-25)
+
+### [0.1.61](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.60...v0.1.61) (2025-06-25)
+
+### [0.1.60](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.59...v0.1.60) (2025-06-25)
+
+### [0.1.59](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.56...v0.1.59) (2025-06-25)
+
+### [0.1.54](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.53...v0.1.54) (2025-06-04)
+
+### [0.1.53](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.52...v0.1.53) (2025-06-03)
+
+### [0.1.52](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.50...v0.1.52) (2025-04-09)
+
+### [0.1.50](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.49...v0.1.50) (2025-04-03)
+
+### [0.1.49](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.48...v0.1.49) (2025-04-03)
+
+### [0.1.48](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.47...v0.1.48) (2025-04-03)
+
+### [0.1.47](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.46...v0.1.47) (2025-04-02)
+
+### [0.1.46](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.45...v0.1.46) (2025-04-02)
+
+### [0.1.71](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.57...v0.1.71) (2025-06-27)
+
+### [0.1.70](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.69...v0.1.70) (2025-06-25)
+
+### [0.1.69](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.68...v0.1.69) (2025-06-25)
+
+### [0.1.68](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.67...v0.1.68) (2025-06-25)
+
+### [0.1.67](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.66...v0.1.67) (2025-06-25)
+
+### [0.1.66](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.65...v0.1.66) (2025-06-25)
+
+### [0.1.65](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.64...v0.1.65) (2025-06-25)
+
+### [0.1.64](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.63...v0.1.64) (2025-06-25)
+
+### [0.1.63](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.62...v0.1.63) (2025-06-25)
+
+### [0.1.62](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.61...v0.1.62) (2025-06-25)
+
+### [0.1.61](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.60...v0.1.61) (2025-06-25)
+
+### [0.1.60](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.59...v0.1.60) (2025-06-25)
+
+### [0.1.59](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.56...v0.1.59) (2025-06-25)
+
+### [0.1.54](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.53...v0.1.54) (2025-06-04)
+
+### [0.1.53](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.52...v0.1.53) (2025-06-03)
+
+### [0.1.52](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.50...v0.1.52) (2025-04-09)
+
+### [0.1.50](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.49...v0.1.50) (2025-04-03)
+
+### [0.1.49](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.48...v0.1.49) (2025-04-03)
+
+### [0.1.48](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.47...v0.1.48) (2025-04-03)
+
+### [0.1.47](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.46...v0.1.47) (2025-04-02)
+
+### [0.1.46](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.45...v0.1.46) (2025-04-02)
+
+### [0.1.70](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.69...v0.1.70) (2025-06-25)
+
+### [0.1.69](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.68...v0.1.69) (2025-06-25)
+
+### [0.1.68](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.67...v0.1.68) (2025-06-25)
+
+### [0.1.67](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.66...v0.1.67) (2025-06-25)
+
+### [0.1.66](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.65...v0.1.66) (2025-06-25)
+
+### [0.1.65](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.64...v0.1.65) (2025-06-25)
+
+### [0.1.64](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.63...v0.1.64) (2025-06-25)
+
+### [0.1.63](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.62...v0.1.63) (2025-06-25)
+
+### [0.1.62](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.61...v0.1.62) (2025-06-25)
+
+### [0.1.61](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.60...v0.1.61) (2025-06-25)
+
+### [0.1.60](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.59...v0.1.60) (2025-06-25)
+
+### [0.1.59](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.56...v0.1.59) (2025-06-25)
+
+### [0.1.54](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.53...v0.1.54) (2025-06-04)
+
+### [0.1.53](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.52...v0.1.53) (2025-06-03)
+
+### [0.1.52](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.50...v0.1.52) (2025-04-09)
+
+### [0.1.50](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.49...v0.1.50) (2025-04-03)
+
+### [0.1.49](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.48...v0.1.49) (2025-04-03)
+
+### [0.1.48](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.47...v0.1.48) (2025-04-03)
+
+### [0.1.47](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.46...v0.1.47) (2025-04-02)
+
+### [0.1.46](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.45...v0.1.46) (2025-04-02)
+
+### [0.1.58](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.56...v0.1.58) (2025-06-25)
+
+### [0.1.54](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.53...v0.1.54) (2025-06-04)
+
+### [0.1.53](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.52...v0.1.53) (2025-06-03)
+
+### [0.1.52](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.50...v0.1.52) (2025-04-09)
+
+### [0.1.50](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.49...v0.1.50) (2025-04-03)
+
+### [0.1.49](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.48...v0.1.49) (2025-04-03)
+
+### [0.1.48](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.47...v0.1.48) (2025-04-03)
+
+### [0.1.47](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.46...v0.1.47) (2025-04-02)
+
+### [0.1.46](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.45...v0.1.46) (2025-04-02)
+
+### [0.1.57](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.56...v0.1.57) (2025-06-24)
+
+### [0.1.54](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.53...v0.1.54) (2025-06-04)
+
+### [0.1.53](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.52...v0.1.53) (2025-06-03)
+
+### [0.1.52](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.51...v0.1.52) (2025-04-09)
+
+### [0.1.51](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.50...v0.1.51) (2025-04-03)
+
+### [0.1.50](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.49...v0.1.50) (2025-04-03)
+
+### [0.1.49](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.48...v0.1.49) (2025-04-03)
+
+### [0.1.48](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.47...v0.1.48) (2025-04-03)
+
+### [0.1.47](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.46...v0.1.47) (2025-04-02)
+
+### [0.1.46](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.45...v0.1.46) (2025-04-02)
 
 ### [0.1.56](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.55...v0.1.56) (2025-06-24)
 

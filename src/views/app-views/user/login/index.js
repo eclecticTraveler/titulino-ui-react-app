@@ -6,7 +6,9 @@ import {
 	showLoading,
 	hideAuthMessage,
 	authenticated } from "redux/actions/Auth";
-import { AUTH_PREFIX_PATH, APP_PREFIX_PATH } from "configs/AppConfig";
+
+import { onAuthenticatingWithSSO } from "redux/actions/Grant";
+import { APP_PREFIX_PATH } from "configs/AppConfig";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
@@ -30,41 +32,53 @@ export const LoginAdapter = (props) => {
 			showAuthMessage,
 			token,
 			redirect,
-			allowRedirect
+			allowRedirect,
+			onAuthenticatingWithSSO
 		} = props
 	  
 
+		const handleSuccessfulLogin = (session) => {
+			const user = session.user;
+			const email = user.email;
+		  
+			if (!email) return;
+		  
+			// Dispatch redux actions
+			props.authenticated(user);
+			props.onAuthenticatingWithSSO(email);
+		  
+			// Redirect after login
+			history.push(APP_PREFIX_PATH);
+		  };
+
+		  
 		  useEffect(() => {
-			const getSession = async () => {
-			  const { data: { session } } = await supabase.auth.getSession();
-			  if (session) {
-				authenticated(session?.user);
-				// history.push(AUTH_PREFIX_PATH);
-				history.push(APP_PREFIX_PATH);
-				// history.push("/");
-							//   showLoading()
+			console.log("LoginAdapter mounted");
+		  
+			const checkInitialSession = async () => {
+			  await new Promise(res => setTimeout(res, 500)); // optional wait
+			  const { data } = await supabase.auth.getSession();
+			  if (data?.session) {
+				console.log("Initial session");
+				handleSuccessfulLogin(data.session);
 			  }
 			};
 		  
-			getSession();
+			checkInitialSession();
 		  
-			const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-			  if (session) {  // Only update if session exists
-				authenticated(session?.user);
-				history.push(APP_PREFIX_PATH);
-				// history.push(AUTH_PREFIX_PATH);
-				// history.push("/");
-							//   showLoading()
-			  }
+			const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+			  console.log("Auth event:", event, session);
+			  if (session) handleSuccessfulLogin(session);
 			});
 		  
-			return () => authListener?.subscription?.unsubscribe();
-		  }, [authenticated, history]);
-  
+			return () => listener.subscription.unsubscribe();
+		  }, []);
+		  
+		  
 
 	const converUrl = 'https://images.unsplash.com/photo-1603899122634-f086ca5f5ddd?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 	const titleOfEnrollment = 'login';
-//   return <Redirect to={`${AUTH_PREFIX_PATH}/login`} />;
+	console.log("window.location.origin", window.location.origin);
 	return (
 		<>
 			<div className="container customerName">
@@ -93,6 +107,7 @@ export const LoginAdapter = (props) => {
 				},
 			}}
 			providers={['google', 'facebook']}
+			redirectTo={window.location.origin + APP_PREFIX_PATH + '/login'} // or your custom redirect route
 			/>
 		</Card>
 		</div>
@@ -106,7 +121,8 @@ function mapDispatchToProps(dispatch) {
 		showAuthMessage,
 		showLoading,
 		hideAuthMessage,
-		authenticated
+		authenticated,
+		onAuthenticatingWithSSO
   }, dispatch);
 }
 

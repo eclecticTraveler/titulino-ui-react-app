@@ -18,7 +18,7 @@ const { Option } = Select;
 
 export const QuickToFullEnrollment = (props) => {
   const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedCourse, nativeLanguage,
-         onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
+         onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, isToDoFullEnrollment, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
   const [isEmailVisible, setEmailVisible] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(true);
@@ -32,7 +32,7 @@ export const QuickToFullEnrollment = (props) => {
   const [birthDivisions, setBirthDivisions] = useState([]);
   const [isSubmitEnabled, setSubmitEnabled] = useState(false);
   const [isFindMeSubmitted, setIsFindMeSubmitted] = useState(false);
-  const [isToProceedToFullEnrollment, setIsToProceedToFullEnrollment] = useState(false);
+  const [isToProceedToFullEnrollment, setIsToProceedToFullEnrollment] = useState(isToDoFullEnrollment ?? false);
   const [loading, setLoading] = useState(false);
   const [returningEnrolleeCountryDivisionInfo, setReturningEnrolleeCountryDivisionInfo] = useState(null);
   const [resetChildStates, setResetChildStates] = useState(null);
@@ -112,7 +112,7 @@ useEffect(() => {
       setDivisions(divisionList);
       
       // Clear the field if no divisions are available
-      if (divisionList.length === 0) {
+      if (divisionList?.length === 0) {
         form.setFieldsValue({ countryDivisionOfResidence: null });
       }
     };
@@ -130,7 +130,7 @@ useEffect(() => {
       setBirthDivisions(divisionList);
 
       // Clear the field if no divisions are available
-      if (divisionList.length === 0) {
+      if (divisionList?.length === 0) {
         form.setFieldsValue({ countryDivisionOfBirth: null });
       }
     };
@@ -310,7 +310,7 @@ useEffect(() => {
       // Trigger validation for the form during submit
       await form.validateFields(); // Ensure all fields are valid before proceeding
       const enrolledCourses = selectedCoursesToEnroll?.length > 0
-      ? availableCourses?.filter(course => selectedCoursesToEnroll.includes(course.CourseCodeId))
+      ? availableCourses?.filter(course => selectedCoursesToEnroll?.includes(course.CourseCodeId))
       : availableCourses;
 
       const formattedDatatoSubmit = formatSubmissionData(
@@ -410,7 +410,7 @@ useEffect(() => {
   availableCourses?.length === 1
     ? availableCourses
     : availableCourses?.filter(course =>
-        selectedCoursesToEnroll.includes(course.CourseCodeId)
+        selectedCoursesToEnroll?.includes(course.CourseCodeId)
       );
 
     
@@ -464,7 +464,7 @@ useEffect(() => {
                 <h2>{setLocale(locale, "enrollment.numOfCoursesEnrolled")}  {coursesToDisplay?.length}</h2>
                 
                 <Tabs tabPosition="top" type="line">
-                  {coursesToDisplay.map((course, index) => (
+                  {coursesToDisplay?.map((course, index) => (
                     <Tabs.TabPane
                       tab={course?.CourseDetails?.course || `Course ${index + 1}`}
                       key={course?.CourseCodeId || index}
@@ -505,7 +505,7 @@ useEffect(() => {
               </Card>
             ) : (
               // If there's only one course, render it without tabs
-              coursesToDisplay.map((course, index) => (
+              coursesToDisplay?.map((course, index) => (
                 <Card
                   key={course.id || index}
                   style={quickEnrollmentStyle}
@@ -733,9 +733,9 @@ useEffect(() => {
         {(() => {
           const distinctTargetLanguages = Array.from(
             new Set(
-              (selectedCoursesToEnroll.length > 0
+              (selectedCoursesToEnroll?.length > 0
                 ? availableCourses.filter(course =>
-                    selectedCoursesToEnroll.includes(course.CourseCodeId)
+                    selectedCoursesToEnroll?.includes(course.CourseCodeId)
                   )
                 : availableCourses)?.map(course => course?.TargetLanguageId).filter(Boolean)
             )
@@ -752,12 +752,12 @@ useEffect(() => {
 
           return (
             <>
-              {distinctTargetLanguages.map((langId) => (
+              {distinctTargetLanguages?.map((langId) => (
                 <Card
                   key={langId}
                   style={quickEnrollmentStyle}
                   title={
-                    distinctTargetLanguages.length > 1
+                    distinctTargetLanguages?.length > 1
                       ? <p>{setLocale(locale, "enrollment.form.languageLevelForCourseIn")} {getLanguageName(langId)}?</p>
                       : setLocale(locale, "enrollment.form.languageLevelForCourse")
                   }
@@ -766,7 +766,7 @@ useEffect(() => {
                 >
                   <Form.Item
                     name={
-                      distinctTargetLanguages.length === 1
+                      distinctTargetLanguages?.length === 1
                         ? "languageLevelAbbreviation"
                         : `languageLevelAbbreviation_${langId}`
                     }
@@ -842,9 +842,10 @@ function mapDispatchToProps(dispatch) {
   }, dispatch);
 }
 
-const mapStateToProps = ({ lrn }) => {
-  const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll } = lrn;
-  return { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll};
+const mapStateToProps = ({ lrn, grant }) => {
+  const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = lrn;
+  const { isToDoFullEnrollment } = grant;
+  return { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(QuickToFullEnrollment);

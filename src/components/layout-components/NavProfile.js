@@ -20,7 +20,6 @@ import { APP_PREFIX_PATH } from '../../configs/AppConfig';
 import { Link } from "react-router-dom";
 import IntlMessage from "../../components/util-components/IntlMessage";
 import ProfileNavPanelConfig from './ProfileNavPanelConfig';
-import ThemeConfigurator from './ThemeConfigurator';
 import { DIR_RTL } from 'constants/ThemeConstant';
 import NavSearchWrapper from './NavSearchWrapper';
 import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
@@ -32,43 +31,44 @@ const setLocale = (isLocaleOn, localeKey) =>{
   return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
 }
 
-const configureMenuItems = (token) => {
+const configureMenuItems = (user) => {
 
-  const menuLinks = [
-    // {
-    //   title: setLocale(locale,"sidenav.login"),
-    //   icon: LoginOutlined ,
-    //   path: "login"
-    // },
-    // {
-    // title: setLocale(locale,"profile.edit.profile"),
-    // icon: EditOutlined ,
-    // path: "edit-profile"
-    // },
-    // {
-    //   title: setLocale(locale, "profile.help.center"),
-    //   icon: QuestionCircleOutlined,
-    //   path: ""
-    // },
-    // {
-    //   title: setLocale(locale, "profile.switch.course"),
-    //   icon: SwapOutlined,
-    //   path: "switch-course"
-    // }
-    
-  ];
+  const menuLinks = [];
 
-  if(env.IS_ADMIN_DASHBOARD_FEAT_ON){
+  if(user?.hasEverBeenFacilitator){
     menuLinks.push(
       {
         title: setLocale(locale,"profile.adminInsights"),
         icon: RadarChartOutlined ,
         path: "insight"
       }
-    )
-  }
+            
+      // },
+      // {
+      // title: setLocale(locale, ""),
+      // icon: EditOutlined ,
+      // path: ""
+      // },      
+      // {
+      //   title: setLocale(locale, ""),
+      // icon: SettingOutlined,
+      // path: ""
+      // },
+      // {
+      //   title: setLocale(locale, "profile.switch.course"),
+      //   icon: SwapOutlined,
+      //   path: "switch-course"
+      // },
+      // {
+      // title: setLocale(locale,"profile.edit.profile"),
+      // icon: EditOutlined ,
+      // path: "edit-profile"
+      // },
+  );
 
-  if(env.IS_ENROLLMENT_FEAT_ON){
+  }
+  
+    if(env.IS_ENROLLMENT_FEAT_ON){
     menuLinks.push(
       {
         title: setLocale(locale,"profile.enroll"),
@@ -78,31 +78,11 @@ const configureMenuItems = (token) => {
     )
   }
 
-  const authorized = false;
-  if(authorized){
-    menuLinks.push({
-      title: setLocale(locale, ""),
-      icon: EditOutlined ,
-      path: ""
-      },      
-      {
-        title: setLocale(locale, ""),
-      icon: SettingOutlined,
-      path: ""
-      },
-      {
-        title: setLocale(locale, ""),
-      icon: ShopOutlined ,
-      path: ""
-    });
-  }
-  
-
   return menuLinks;
 }
 
 export const NavProfile = (props) => {  
-  const { course, direction, mode, isMobile, setUserNativeLanguage, token, signOut } = props;
+  const { course, direction, mode, isMobile, setUserNativeLanguage, token, signOut, user } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
  
   const showDrawer = () => {
@@ -121,9 +101,9 @@ export const NavProfile = (props) => {
     signOut();
   }
 
-  const menuItems = configureMenuItems(token);
+  const menuItems = configureMenuItems(user);
   const profileImg = "/img/avatars/tempProfile-2.png";
-  const avatarImg = token?.user_metadata?.avatar_url ?? profileImg;
+  const avatarImg = token?.user_metadata?.avatar_url ?? token?.user_metadata?.picture ?? profileImg;
   const profileMenu = (
       <div className="nav-profile nav-dropdown">
         <div className="nav-profile-header">
@@ -164,16 +144,17 @@ export const NavProfile = (props) => {
           >
             <ProfileNavLanguagePanelConfig />
           </Menu.SubMenu>
-
+          { token && (
           <Menu.Item key={menuItems?.length + 3} onClick={showDrawer}>
             <span>
               <SettingOutlined className="mr-3 profile-accomdation" />
               <span className="font-weight-normal"> {setLocale(locale, "settings.menu.main.title")}</span>
             </span>
           </Menu.Item>
+          )}
 
           {/* Conditional rendering for Login and Logout */}
-                  {env.IS_SSO_ON && !token ? (
+          {env.IS_SSO_ON && !token ? (
           <>
             <Menu.Divider />
             <Menu.Item key="login" className="menu-highlight">
@@ -192,17 +173,12 @@ export const NavProfile = (props) => {
             </Menu.Item>
           </>
         ) : null}
-
         </Menu>
-
         </div>
       </div>
   );
   return (
     <>
-   
-      
-
       <Dropdown placement="bottomRight" overlay={profileMenu} trigger={["click"]}>
         <div className="avatar-menu d-flex align-items-center" mode="horizontal">
           <Avatar size={40} src={avatarImg} />
@@ -215,16 +191,22 @@ export const NavProfile = (props) => {
         title='settings.menu.main.title' // Adjust the title key as needed
         direction={direction}
       />
+      
+      {token && (
+        <>
+          {!isMobile && <NavSearchWrapper isMobile={false} mode={mode}/>}
+        </>
+      )}
 
-      {!isMobile && <NavSearchWrapper isMobile={false} mode={mode}/>}
     </>
   );
 }
 
-const mapStateToProps = ({ theme, auth }) => {
+const mapStateToProps = ({ theme, auth, grant }) => {
 	const { course } =  theme;
   const { token } = auth;
-	return { course, token }
+  const { user } = grant;
+	return { course, token, user }
 };
 
 export default connect(mapStateToProps, {signOut, setUserNativeLanguage, })(NavProfile)

@@ -9,6 +9,9 @@
 	"profile.sign.out":"Sign Out",
 	"profile.donate":"Donate",
 	"sidenav.class":"Class",
+	"sidenav.exercises":"Exercises",
+	"sidenav.generalGathering":"General Gathering",
+	"sidenav.grammarClass":"Grammar Class",
 	"sidenav.welcome":"Welcome",
 	"sidenav.speaking":"Speaking",
 	"sidenav.listening": "Listening",
@@ -322,7 +325,10 @@
 	"days.saturday": "Saturday",
 	"days.sunday": "Sunday",
 	"enrollment.continue": "Continue",
-	"enrollment.timeConflictWarning": "Course overlaps with an already selected course."
+	"enrollment.timeConflictWarning": "Course overlaps with an already selected course.",
+	"classes.grammar.basic":"Basic",
+	"classes.grammar.advanced":"Advanced",
+	"form.user.session.notFoundMessage":"We couldn't find you by your year of birth. Can you provide your full birth date?"
 
 	
 	

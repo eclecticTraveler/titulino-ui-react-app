@@ -10,7 +10,7 @@ import getLocaleText from "components/util-components/IntString";
 const { Option } = Select;
 
 export const ContactEnrollment = (props) => {
-  const { countries, selfLanguageLevel, onRequestingGeographicalDivision, selectedEmail, selectedYearOfBirth,
+  const { countries, selfLanguageLevel, onRequestingGeographicalDivision, selectedEmail, selectedYearOfBirth, selectedDateOfBirth,
      onEmailChange, onFormSubmit, form, setResetChildStates, enrollmentStyle, submittingLoading, selectedCoursesToEnroll, availableCourses } = props;
   const [selectedCountryOfResidence, setSelectedCountryOfResidence] = useState(null);
   const [selectedBirthCountry, setSelectedBirthCountry] = useState(null);
@@ -177,12 +177,19 @@ export const ContactEnrollment = (props) => {
             <Input placeholder="Enter your first and/or middle name" />
           </Form.Item>
 
-          <Form.Item name="dateOfBirth" label={setLocale(locale, "enrollment.form.dateOfBirth")} 
-            rules={[{ required: true, message: setLocaleString(locale, "enrollment.selectDateOfBirth") }]}>
+        <Form.Item name="dateOfBirth" label={setLocale(locale, "enrollment.form.dateOfBirth")}
+          rules={[{ required: true, message: setLocaleString(locale, "enrollment.selectDateOfBirth") }]}
+        >
           <DatePicker
             style={{ width: "100%" }}
             disabledDate={(current) => current && current > moment().endOf("day")}
-            defaultPickerValue={moment(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")} // Opens on selected year from parent component by default
+            defaultPickerValue={
+              selectedDateOfBirth
+                ? moment(selectedDateOfBirth)
+                : selectedYearOfBirth
+                ? moment(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")
+                : undefined // Opens on selected date or year from parent component by default
+            }
           />
         </Form.Item>
 

@@ -1,10 +1,10 @@
-import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from '../../AppConfig';
+import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic';
 import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from '../../CourseThemeConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
-const dashBoardNavTree = [
+const PortugueseCourseMainNavigationConfig = (isAuthenticated) => [
 	{
 		key: 'level-1-por',
 		path: `${APP_PREFIX_PATH}/por/nivel-1`,
@@ -64,8 +64,4 @@ const dashBoardNavTree = [
 	}
 ]
 
-const portugueseCourseMainNavigationConfig = [
-  ...dashBoardNavTree
-]
-
-export default portugueseCourseMainNavigationConfig;
+export default PortugueseCourseMainNavigationConfig;

@@ -1,4 +1,41 @@
- 
+import CryptoJS from "crypto-js";
+const SECRET_KEY = process.env.REACT_APP_STORAGE_KEY;
+
+export const storeEncryptedObject = (key, value) => {
+  const encrypted = CryptoJS.AES.encrypt(JSON.stringify(value), SECRET_KEY).toString();
+  localStorage.setItem(key, encrypted);
+};
+
+export const retrieveEncryptedObject = (key) => {
+  const encrypted = localStorage.getItem(key);
+  if (!encrypted) return null;
+
+  try {
+    const bytes = CryptoJS.AES.decrypt(encrypted, SECRET_KEY);
+    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+    return JSON.parse(decrypted);
+  } catch (err) {
+    console.error("Error decrypting token:", err);
+    return null;
+  }
+};
+
+export const storeEncryptedObjectWithExpiry = (key, value, ttlMinutes = 60) => {
+  const expiry = Date.now() + ttlMinutes * 60 * 1000;
+  storeEncryptedObject(key, { value, expiry });
+};
+
+export const retrieveEncryptedObjectWithExpiry = (key) => {
+  const item = retrieveEncryptedObject(key);
+  if (!item) return null;
+  if (Date.now() > item.expiry) {
+    localStorage.removeItem(key);
+    return null;
+  }
+  return item.value;
+};
+
+
 const setLocalStorageObject = async(objectToStore, localStorageKey) => {
   localStorage.setItem(localStorageKey, JSON.stringify(objectToStore));
 }
@@ -192,7 +229,12 @@ const LocalStorageService = {
   getChapterClassData,
   setChapterClassData,
   getLocalStorageObjectWithExpiry,
-  setLocalStorageObjectWithExpiry
+  setLocalStorageObjectWithExpiry,
+  storeEncryptedObject,
+  retrieveEncryptedObject,
+  storeEncryptedObjectWithExpiry,
+  retrieveEncryptedObjectWithExpiry
+  
 };
 
 export default LocalStorageService;

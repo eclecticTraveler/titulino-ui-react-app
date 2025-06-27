@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { AUTH_PREFIX_PATH } from "../../../../configs/AppConfig";
 import RegisterOne from "../../../auth-views/authentication/register-1";
 import { createClient } from '@supabase/supabase-js';
 import { Auth } from '@supabase/auth-ui-react';

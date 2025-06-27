@@ -3,7 +3,8 @@ import {
   ON_RENDERING_ADMIN_INSIGHTS_DASHBOARD,
   ON_RENDERING_LOCATION_TYPE_SELECTIONS,
   ON_GETTING_COUNTRIES_BY_LOCATION_TYPE,
-  ON_LOADING_ALL_DASHBOARD_CONTENTS
+  ON_LOADING_ALL_DASHBOARD_CONTENTS,
+  ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD,
 } from '../constants/Analytics';
 
 const initState = {
@@ -41,6 +42,13 @@ const analytics = (state = initState, action) => {
       return {
         ...state,
         defaultValue: action.defaultValue
+      }
+    case ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD:
+      return {
+        ...state,
+        generalLoading: false,
+        emailId: action.emailId,
+        dateOfBirth: action.dateOfBirth
       }
     default:
       return state;

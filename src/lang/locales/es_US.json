@@ -8,6 +8,9 @@
 	"profile.switch.course":"Cambiar de curso",
 	"profile.sign.out":"Salir",
 	"sidenav.class":"Clase",
+	"sidenav.exercises": "Ejercicios",
+	"sidenav.generalGathering":"Reunión General",
+	"sidenav.grammarClass":"Gramática",
 	"sidenav.speaking":"Pronunciación",
 	"sidenav.listening": "Comprensión",
 	"sidenav.review": "Repaso",
@@ -313,7 +316,7 @@
 	"enrollment.coursesNotAvailable":"Los cursos no están disponibles en este momento",
 	"enrollment.coursesNotAvailableMessage":"Actualmente no tenemos ningún curso abierto, ¡pero no te preocupes! Aún puedes explorar los recursos gratuitos disponibles en nuestra página.",
 	"enrollment.coursesNotAvailableMessage2":"Estén atentos a las actualizaciones sobre los próximos cursos siguiendo nuestro.",
-	"enrollment.coursesNotAvailableMessage3": "Página de Facebook de Titulolino",
+	"enrollment.coursesNotAvailableMessage3": "Página de Facebook de Titulino",
 	"enrollment.weeklySelectionTitle": "📅 Selección semanal de cursos",
 	"enrollment.weeklySelectionInstruction": "Seleccione tocando o haciendo clic el curso o los cursos en los que desea inscribirse de la lista a continuación.",
 	"days.monday": "Lunes",
@@ -324,8 +327,10 @@
 	"days.saturday": "Sábado",
 	"days.sunday": "Domingo",
 	"enrollment.continue": "Continuar",
-	"enrollment.timeConflictWarning": "El curso se superpone con un curso ya seleccionado."
-
+	"enrollment.timeConflictWarning": "El curso se superpone con un curso ya seleccionado.",
+	"classes.grammar.basic":"Básico",
+	"classes.grammar.advanced":"Avanzado",
+	"form.user.session.notFoundMessage": "No pudimos encontrarle por su año de nacimiento. ¿Podría proporcionarnos su fecha de nacimiento completa?"
 	
 }
 

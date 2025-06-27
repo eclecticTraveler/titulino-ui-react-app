@@ -1,6 +1,7 @@
 import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
-import { getCoursePracticeInnerSubMenuV2, getCoursePracticeResourcesInnerSubMenu, getCoursePracticeInnerSubMenuV2Light } from './CoursePracticeInnerSubMenu';
+import { getCoursePracticeResourcesInnerSubMenu, getCoursePracticeInnerSubMenuV2Light } from './CoursePracticeInnerSubMenu';
+import { getAuthCourseInnerSubMenuV1 } from './AuthCourseInnerSubMenu';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
 	faCarrot,
@@ -18,12 +19,22 @@ import {
 	faBoxes,
 	faTv,
    } from '@fortawesome/free-solid-svg-icons';
-   
-   import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
+      
 
-export const CourseSubNavigationHouseholdTheme = (lang) => {
+export const AuthCourseSubNavigationHouseholdTheme = (lang) => {
 	const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-household/${getLocalizedConfig(lang)?.chapter}`;
 	return [
+		{
+			key: 'chapter-sidenav-theme-household-intro',
+			path: `${commonPath}-0`,
+			title: 'sidenav.chapter.intro',
+			icon: faTv,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+			breadcrumb: false,
+			submenu: [
+				...getCoursePracticeInnerSubMenuV2Light(lang, 'household', 0)
+			]
+		},
 		{
 			key: 'chapter-sidenav-theme-household-1',
 			path: `${commonPath}-1`,
@@ -32,7 +43,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 1)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 1)
 			]
 		},
 		{
@@ -43,7 +54,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 2)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 2)
 			]
 		},
 		{
@@ -54,7 +65,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 3)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 3)
 			]
 		},
 		{
@@ -65,7 +76,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 4)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 4)
 			]
 		},
 		{
@@ -76,7 +87,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 5)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 5)
 			]
 		},
 		{
@@ -87,7 +98,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 6)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 6)
 			]
 		},
 		{
@@ -98,7 +109,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 7)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 7)
 			]
 		},
 		{
@@ -109,7 +120,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 8)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 8)
 			]
 		},
 		{
@@ -120,7 +131,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 9)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 9)
 			]
 		},
 		{
@@ -131,7 +142,7 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 10)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 10)
 			]
 		},
 		{
@@ -142,7 +153,18 @@ export const CourseSubNavigationHouseholdTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'household', 11)
+				...getAuthCourseInnerSubMenuV1(lang, 'household', 11)
+			]
+		},
+		{
+			key: 'chapter-sidenav-theme-household-resources',
+			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-household/${getLocalizedConfig(lang)?.resources}`,
+			title: 'module.resources',
+			icon: faBoxes,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+			breadcrumb: false,
+			submenu: [
+				...getCoursePracticeResourcesInnerSubMenu(lang, 'household', 'resources')
 			]
 		}
 	]

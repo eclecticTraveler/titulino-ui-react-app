@@ -12,6 +12,7 @@ class VideoClass extends Component {
 
     loadUrl = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
+        console.log("VideoClass pathInfo: ", this.props.location, pathInfo);
         this.props.getVideoClassUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
     }
     

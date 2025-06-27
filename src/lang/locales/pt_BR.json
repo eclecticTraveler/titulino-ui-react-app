@@ -8,6 +8,9 @@
 	"profile.switch.course":"Mudar de curso",
 	"profile.sign.out":"Sair",
 	"sidenav.class":"Classe",
+	"sidenav.exercises":"Exercícios",
+	"sidenav.generalGathering":"Reunião Geral",
+	"sidenav.grammarClass":"Gramática",
 	"sidenav.speaking":"Pronúncia",
 	"profile.donate":"Faça uma doação",
 	"sidenav.listening": "Compreensão",
@@ -314,6 +317,8 @@
 	"enrollment.coursesNotAvailableMessage":"Atualmente não temos cursos abertos, mas não se preocupe! Você ainda pode explorar os recursos gratuitos disponíveis em nossa página.",
 	"enrollment.coursesNotAvailableMessage2":"Fique atento às atualizações sobre os próximos cursos seguindo nosso.",
 	"enrollment.coursesNotAvailableMessage3":"Página do Facebook do Titulino",
+	"classes.grammar.basic":"Básico",
+	"classes.grammar.advanced":"Avançado",
 	"enrollment.weeklySelectionTitle": "📅 Seleção Semanal de Cursos",
 	"enrollment.weeklySelectionInstruction": "Selecione tocando ou clicando no curso ou cursos nos quais deseja se inscrever na lista abaixo.",
 	"days.monday": "Segunda-feira",
@@ -324,7 +329,9 @@
 	"days.saturday": "Sábado",
 	"days.sunday": "Domingo",
 	"enrollment.continue": "Continuar",
-	"enrollment.timeConflictWarning": "O curso se sobrepõe a um curso já selecionado."
+	"enrollment.timeConflictWarning": "O curso se sobrepõe a um curso já selecionado.",
+	"form.user.session.notFoundMessage": "Não conseguimos encontrá-lo no ano de nascimento. Você poderia fornecer a data de nascimento completa?"
+
 
 
 }

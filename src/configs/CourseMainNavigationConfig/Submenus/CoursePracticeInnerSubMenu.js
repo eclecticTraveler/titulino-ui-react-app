@@ -132,20 +132,6 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 				submenu: [],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'class')
 			},
-			...(levelNo === "household"
-				? [			{
-					key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
-					path: `${commonPath}/${getLocalizedConfig(lang)?.speaking}`,
-					title: 'sidenav.speaking',
-					icon: faMicrophone,
-					iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-					breadcrumb: false,
-					isRootMenuItem: false,
-					submenu: [],
-					keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'speaking')
-				}]
-				: []
-			),
 			{
 				key: `module-quizlet-${levelNo}-${chapterNo}-${uuidv4()}`,
 				path: `${commonPath}/${getLocalizedConfig(lang)?.quizlet}`,
@@ -158,28 +144,6 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizlet')
 			},
 			{
-				key: `module-quizlet-pdf-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${commonPath}/${getLocalizedConfig(lang)?.quizletpdf}`,
-				title: 'sidenav.quizletpdf',
-				icon: faFilePdf,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizletpdf')
-			},
-			{
-				key: `module-review-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${commonPath}/${getLocalizedConfig(lang)?.quizletpdf}`,
-				title: 'sidenav.review',
-				icon: faFileLines,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizletpdf')
-			},
-			{
 				key: `module-play-${levelNo}-${chapterNo}-${uuidv4()}`,	
 				path: `${commonPath}/${getLocalizedConfig(lang)?.play}`,
 				title: 'sidenav.match',
@@ -189,28 +153,6 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 				isRootMenuItem: false,				
 				submenu: [],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'play')
-			},
-			{
-				key: `module-spell-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${commonPath}/${getLocalizedConfig(lang)?.spell}`,
-				title: 'sidenav.spell',
-				icon: faPencilAlt,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'spell')
-			},
-			{
-				key: `module-test-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${commonPath}/${getLocalizedConfig(lang)?.test}`,
-				title: 'sidenav.test',
-				icon: faUserClock,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'test')
 			}
 		]
 	
@@ -249,17 +191,6 @@ export const getCoursePracticeInnerSubMenuV2Light = (lang, levelNo, chapterNo) =
 
 export const getCoursePracticeResourcesInnerSubMenu = (lang, levelNo, chapterNo) => {
 		  return [
-			{
-				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.resources}/${getLocalizedConfig(lang)?.myProgress}`,
-				title: 'sidenav.findMyprogress',
-				icon: faChartSimple,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'myProgress')
-			},
 			{
 				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
 				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.resources}/${getLocalizedConfig(lang)?.test}`,

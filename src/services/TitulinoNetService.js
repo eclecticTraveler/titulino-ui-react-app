@@ -6,20 +6,68 @@ let _results = [];
 // Helper function to create the headers
 const getHeaders = (token) => {
   const myHeaders = new Headers();
-  myHeaders.append("Authorization", `Bearer ${token}`);
+  if(token){
+    myHeaders.append("Authorization", `Bearer ${token}`);
+  }
   myHeaders.append("Content-Type", "application/json");
+  myHeaders.append("TITULINO-COM-API-KEY", process.env.REACT_APP_BACKEND_NET_TITULINO_API_KEY);
   
   return myHeaders;
 };
 
+
+export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, whoCalledMe) => {
+
+  if (!emailId || !dobOrYob) {
+    console.error("Email ID or Year of Birth is missing");
+    return ""
+  }
+
+  const loginUrl = `${titulinoNetApiUri}/login`;
+  const myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  const raw = JSON.stringify({
+    "userName": "xl_189@yahoo.com.mx",
+    "yearOfBirth": dobOrYob
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: getHeaders(),
+    body: raw,
+    redirect: "follow"
+  };
+
+  try {
+    const response = await fetch(loginUrl, requestOptions);
+    // If the API returns 404, return null early
+    if (response.status === 404) {
+      console.warn(`404 Not Found: ${loginUrl}`);
+      return null;
+    }
+  
+    // Optionally handle other non-success statuses
+    if (!response.ok) {
+      throw new Error(`API returned status ${response.status}`);
+    }
+  
+    const apiResult = await response.json();
+    return apiResult;
+
+  } catch (error) {
+    console.log(`Error Retrieving API payload in getUserProfileByEmailAndYearOfBirth: from ${whoCalledMe}`);
+    console.error(error);
+    return null;
+  }
+}
+
 export const getRegistrationToken = async (whoCalledMe, userName) => {
  
-const loginUrl = `${titulinoNetApiUri}/login`;
+const loginUrl = `${titulinoNetApiUri}/auth`;
 const myHeaders = new Headers();
 myHeaders.append("Content-Type", "application/json");
-
 const raw = JSON.stringify({
-  "userName": "titulinoUiSystem"
+  "userName": process.env.REACT_APP_BACKEND_NET_SERVICE_USERNAME
 });
 
 const requestOptions = {
@@ -87,7 +135,8 @@ const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
 
 const TitulinoNetService = {
   getRegistrationToken,
-  upsertEnrollment
+  upsertEnrollment,
+  getUserProfileByEmailAndYearOfBirth
 };
 
 export default TitulinoNetService;
