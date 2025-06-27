@@ -227,12 +227,11 @@ useEffect(() => {
     const birthCountryName = countries
     ?.find(country => country.CountryId === countryOfBirth)
     ?.CountryName || null;
-  
+    
     const residencyCountryName = countries
       ?.find(country => country.CountryId === countryOfResidence)
       ?.CountryName || null;
-  
-
+ 
     let enrolleeDob;
     if(isQuickEnrollment){
         // Convert dateOfBirth to year if it's a Moment object
@@ -289,9 +288,9 @@ useEffect(() => {
       dateOfBirth: enrolleeDob || null,
 
       countryOfResidence: residencyCountryName ?? (matchedInfo.countryOfResidencyName || null),
-      countryDivisionOfResidence: countryDivisionOfResidence ?? (matchedInfo.countryDivisionResidencyName || null),
+      countryDivisionOfResidence: countryDivisionOfResidence ?? (matchedInfo.countryDivisionIdResidency || null),
       countryOfBirth: birthCountryName ?? (matchedInfo.countryOfBirthName || null),
-      countryDivisionOfBirth: countryDivisionOfBirth ?? (matchedInfo.countryDivisionBirthName || null),
+      countryDivisionOfBirth: countryDivisionOfBirth ?? (matchedInfo.countryDivisionIdBirth || null),
       
       termsVersion: termsAndConditionsVersion || "1.0", // Default version
       coursesCodeIds: selectedCourseCodeIds.map(id => ({
