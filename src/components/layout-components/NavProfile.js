@@ -154,7 +154,7 @@ export const NavProfile = (props) => {
           )}
 
           {/* Conditional rendering for Login and Logout */}
-          {!token ? (
+          {env.IS_SSO_ON && !token ? (
           <>
             <Menu.Divider />
             <Menu.Item key="login" className="menu-highlight">
@@ -164,7 +164,7 @@ export const NavProfile = (props) => {
               </Link>
             </Menu.Item>
           </>
-        ) : token ? (
+        ) : env.IS_SSO_ON && token ? (
           <>
             <Menu.Divider />
             <Menu.Item key="logout" className="menu-highlight" onClick={handleSigningOut}>
@@ -173,9 +173,7 @@ export const NavProfile = (props) => {
             </Menu.Item>
           </>
         ) : null}
-
         </Menu>
-
         </div>
       </div>
   );
