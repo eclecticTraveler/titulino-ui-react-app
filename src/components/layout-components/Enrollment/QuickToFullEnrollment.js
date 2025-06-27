@@ -464,7 +464,7 @@ useEffect(() => {
                 <h2>{setLocale(locale, "enrollment.numOfCoursesEnrolled")}  {coursesToDisplay?.length}</h2>
                 
                 <Tabs tabPosition="top" type="line">
-                  {coursesToDisplay.map((course, index) => (
+                  {coursesToDisplay?.map((course, index) => (
                     <Tabs.TabPane
                       tab={course?.CourseDetails?.course || `Course ${index + 1}`}
                       key={course?.CourseCodeId || index}
@@ -505,7 +505,7 @@ useEffect(() => {
               </Card>
             ) : (
               // If there's only one course, render it without tabs
-              coursesToDisplay.map((course, index) => (
+              coursesToDisplay?.map((course, index) => (
                 <Card
                   key={course.id || index}
                   style={quickEnrollmentStyle}
