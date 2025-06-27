@@ -112,7 +112,7 @@ useEffect(() => {
       setDivisions(divisionList);
       
       // Clear the field if no divisions are available
-      if (divisionList.length === 0) {
+      if (divisionList?.length === 0) {
         form.setFieldsValue({ countryDivisionOfResidence: null });
       }
     };
@@ -130,7 +130,7 @@ useEffect(() => {
       setBirthDivisions(divisionList);
 
       // Clear the field if no divisions are available
-      if (divisionList.length === 0) {
+      if (divisionList?.length === 0) {
         form.setFieldsValue({ countryDivisionOfBirth: null });
       }
     };
@@ -310,7 +310,7 @@ useEffect(() => {
       // Trigger validation for the form during submit
       await form.validateFields(); // Ensure all fields are valid before proceeding
       const enrolledCourses = selectedCoursesToEnroll?.length > 0
-      ? availableCourses?.filter(course => selectedCoursesToEnroll.includes(course.CourseCodeId))
+      ? availableCourses?.filter(course => selectedCoursesToEnroll?.includes(course.CourseCodeId))
       : availableCourses;
 
       const formattedDatatoSubmit = formatSubmissionData(
@@ -410,7 +410,7 @@ useEffect(() => {
   availableCourses?.length === 1
     ? availableCourses
     : availableCourses?.filter(course =>
-        selectedCoursesToEnroll.includes(course.CourseCodeId)
+        selectedCoursesToEnroll?.includes(course.CourseCodeId)
       );
 
     
@@ -733,9 +733,9 @@ useEffect(() => {
         {(() => {
           const distinctTargetLanguages = Array.from(
             new Set(
-              (selectedCoursesToEnroll.length > 0
+              (selectedCoursesToEnroll?.length > 0
                 ? availableCourses.filter(course =>
-                    selectedCoursesToEnroll.includes(course.CourseCodeId)
+                    selectedCoursesToEnroll?.includes(course.CourseCodeId)
                   )
                 : availableCourses)?.map(course => course?.TargetLanguageId).filter(Boolean)
             )
@@ -752,12 +752,12 @@ useEffect(() => {
 
           return (
             <>
-              {distinctTargetLanguages.map((langId) => (
+              {distinctTargetLanguages?.map((langId) => (
                 <Card
                   key={langId}
                   style={quickEnrollmentStyle}
                   title={
-                    distinctTargetLanguages.length > 1
+                    distinctTargetLanguages?.length > 1
                       ? <p>{setLocale(locale, "enrollment.form.languageLevelForCourseIn")} {getLanguageName(langId)}?</p>
                       : setLocale(locale, "enrollment.form.languageLevelForCourse")
                   }
@@ -766,7 +766,7 @@ useEffect(() => {
                 >
                   <Form.Item
                     name={
-                      distinctTargetLanguages.length === 1
+                      distinctTargetLanguages?.length === 1
                         ? "languageLevelAbbreviation"
                         : `languageLevelAbbreviation_${langId}`
                     }
