@@ -591,8 +591,9 @@ export const onSelectingCorrectionToEdit = async(record) => {
   }
 }
 
+/////////////////////////////
 // Authenticated Section
-
+/////////////////////////////
 export const onFetchingUserAuthenticatedProgressForCourse = async (courseCodeId, emailId) => {
   const { courseProgress, studentPercentagesForCourse, studentCategoriesCompletedForCourse } =
   await TitulinoManager.getUserCourseProgress(courseCodeId, emailId);

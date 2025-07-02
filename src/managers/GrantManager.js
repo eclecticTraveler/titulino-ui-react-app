@@ -40,7 +40,7 @@ const getUserProfile = async (emailId, dobOrYob) => {
     console.log("userProfile", userProfile);
     if (userProfile) {      
       // 3. Store encrypted locally with TTL (e.g., 60 minutes)
-      LocalStorageService.storeEncryptedObjectWithExpiry(localStorageKey, userProfile, 10);
+      LocalStorageService.storeEncryptedObjectWithExpiry(localStorageKey, userProfile, 60);
       return userProfile;
     } else {      
       console.warn("No user profile found for:", emailId, dobOrYob);

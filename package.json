@@ -26,7 +26,6 @@
     "crypto-js": "^4.2.0",
     "firebase": "^11.3.1",
     "framer-motion": "^6.2.6",
-    "gulp": "^5.0.0",
     "jquery": "^3.6.0",
     "js-cookie": "^2.2.1",
     "lottie-react": "^2.4.0",
@@ -91,6 +90,7 @@
   "devDependencies": {
     "@types/react-router-dom": "^5.3.3",
     "autoprefixer": "^10.4.2",
+    "gulp": "^4.0.2",
     "gulp-csso": "^4.0.1",
     "gulp-debug": "^3.2.0",
     "gulp-less": "^4.0.1",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { onVerifyingProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseProgress } from 'redux/actions/Lrn';
+import { onVerifyingProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseProgress, onFetchingUserAuthenticatedProgressForCourse } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs, DatePicker } from 'antd';
@@ -19,7 +19,7 @@ import ConfettiExplosion from 'react-confetti-explosion';
 
 export const ProgressDashboardByEmailV4 = (props) => {
   const { registeredProgressByEmailId, user,
-     nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, isUserEmailRegisteredForCourse,
+     nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, isUserEmailRegisteredForCourse, onFetchingUserAuthenticatedProgressForCourse,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, hasUserInteractedWithModal } = props;
 
   const [form] = Form.useForm();
@@ -48,20 +48,20 @@ export const ProgressDashboardByEmailV4 = (props) => {
 
 
 
-  const handleSearch = () => {
-
-    // let sanitizedEmail = user?.emailId?.trim()?.toLowerCase();
-    let sanitizedEmail = "xl_189@yahoo.com.mx";
-    
-    if(currentCourseCodeId && (user?.yearOfBirth && user?.yearOfBirth > 0)){
+  const handleSearch = () => {    
+    if(currentCourseCodeId && user?.emailId && (user?.yearOfBirth && user?.yearOfBirth > 0)){
       setLoading(true);        
-      onVerifyingProgressByEmailIdAndCourseCodeId(user?.yearOfBirth, sanitizedEmail, currentCourseCodeId, selectedCourse?.localizationId);
+      onVerifyingProgressByEmailIdAndCourseCodeId(user?.yearOfBirth, user?.emailId, currentCourseCodeId, selectedCourse?.localizationId);
+      // onFetchingUserAuthenticatedProgressForCourse(currentCourseCodeId, sanitizedEmail)
     }
 
   };
 
   useEffect(() => {
-    handleSearch();
+    if(user?.emailId && user?.yearOfBirth){
+      handleSearch();
+    }
+
   }, [currentCourseCodeId, user?.emailId, user?.yearOfBirth ]);
 
   // Submit progress and refetch data
@@ -303,7 +303,8 @@ useEffect(() => {
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     onSubmittingUserCourseProgress: onSubmittingUserCourseProgress,
-    onVerifyingProgressByEmailIdAndCourseCodeId: onVerifyingProgressByEmailIdAndCourseCodeId
+    onVerifyingProgressByEmailIdAndCourseCodeId: onVerifyingProgressByEmailIdAndCourseCodeId,
+    onFetchingUserAuthenticatedProgressForCourse: onFetchingUserAuthenticatedProgressForCourse
   }, dispatch);
 }
 

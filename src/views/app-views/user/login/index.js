@@ -5,7 +5,9 @@ import {
 	showAuthMessage,
 	showLoading,
 	hideAuthMessage,
-	authenticated } from "redux/actions/Auth";
+	authenticated,
+	signIn
+} from "redux/actions/Auth";
 
 import { onAuthenticatingWithSSO } from "redux/actions/Grant";
 import { APP_PREFIX_PATH } from "configs/AppConfig";
@@ -33,19 +35,29 @@ export const LoginAdapter = (props) => {
 			token,
 			redirect,
 			allowRedirect,
-			onAuthenticatingWithSSO
+			onAuthenticatingWithSSO,
+			signIn
 		} = props
 	  
 
 		const handleSuccessfulLogin = (session) => {
 			const user = session.user;
 			const email = user.email;
+			const token = session.data.session?.access_token;
 		  
 			if (!email) return;
 		  
 			// Dispatch redux actions
-			props.authenticated(user);
-			props.onAuthenticatingWithSSO(email);
+			authenticated(token);
+			onAuthenticatingWithSSO(email);
+			signIn(user);
+			if (token) {
+				const payload = JSON.parse(atob(token.split('.')[1]));
+				const expiresAt = payload.exp * 1000; // Convert to ms
+				const isExpired = Date.now() > expiresAt;
+				console.log("Token expired?", isExpired);
+			}
+
 		  
 			// Redirect after login
 			history.push(APP_PREFIX_PATH);
@@ -79,11 +91,17 @@ export const LoginAdapter = (props) => {
 	const converUrl = 'https://images.unsplash.com/photo-1603899122634-f086ca5f5ddd?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 	const titleOfEnrollment = 'login';
 	console.log("window.location.origin", window.location.origin);
+	const loginStyle = {
+		maxWidth: 600,
+		margin: "0 auto",
+		padding: "20px",
+	  }
 	return (
 		<>
 			<div className="container customerName">
 		<Card
 			bordered
+			style={loginStyle}
 			cover={
 			<img
 				alt={titleOfEnrollment}
@@ -122,7 +140,8 @@ function mapDispatchToProps(dispatch) {
 		showLoading,
 		hideAuthMessage,
 		authenticated,
-		onAuthenticatingWithSSO
+		onAuthenticatingWithSSO,
+		signIn
   }, dispatch);
 }
 

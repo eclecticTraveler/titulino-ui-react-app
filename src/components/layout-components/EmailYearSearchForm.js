@@ -201,6 +201,11 @@ useEffect(() => {
   fetchProfile();
 }, [submitted, searchParams, onRetrievingUserProfile, setProfileData, history, askFullBirthDate]);
 
+  const emailYearStyle = {
+    maxWidth: 600,
+    margin: "0 auto",
+    padding: "20px",
+    }
 
   const selectedYearOfBirth = form?.getFieldValue("yearOfBirth")?.format("YYYY") ?? yearOfBirth?.format("YYYY");
 

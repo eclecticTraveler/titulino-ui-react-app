@@ -3,9 +3,11 @@ import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationL
 import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
 import { getCourseSubNavigationHighBasic } from '../Submenus/CourseSubNavigationHighBasic';
 import { CourseSubNavigationHouseholdTheme } from '../Submenus/CourseSubNavigationHouseholdTheme';
+import { CourseSubNavigationWorkNJobsTheme } from '../Submenus/CourseSubNavigationWorkNJobsTheme';
 import { CourseSubNavigationSupermarketTheme } from '../Submenus/CourseSubNavigationSupermarketTheme';
 import { AuthCourseSubNavigationHouseholdTheme } from '../Submenus/AuthCourseSubNavigationHouseholdTheme';
 import { AuthCourseSubNavigationSupermarketTheme } from '../Submenus/AuthCourseSubNavigationSupermarketTheme';
+import { AuthCourseSubNavigationWorkNJobsTheme } from '../Submenus/AuthCourseSubNavigationWorknJobsTheme';
 import { getTopSubmenuForEnglishConnect } from '../Submenus/Top-Submenus/EConnectTopSubmenus';
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from 'configs/CourseThemeConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
@@ -55,23 +57,26 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated) => [
 		]
 	},
 	{
-		key: 'level-3-eng-inactive',
-		path: `${APP_PREFIX_PATH}/eng/level-3`,
-		title: 'main.upper.nav.level.3',
-		sideTitle: 'Upper Beginner',
+		key: 'level-work-and-jobs-part-eng',
+		path: `${APP_PREFIX_PATH}/eng/level-work-n-jobs`,
+		title: 'main.upper.nav.theme.level.workNjobs',
+		sideTitle: 'Work & Jobs',
 		icon: COURSE_ICON_CONFIG.default,
 		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
-		color: COURSE_COLOR_CONFIG.upperBeginner,
+		color: COURSE_COLOR_CONFIG.workNjobsTheme,
 		current: false,
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
 		isServiceAvailableForUser: false,
-		isToDisplayInNavigation: false,
+		isToDisplayInNavigation: true,
 		isFree: false,
 		course: "English",
 		topSubmenu: [],
 		submenu: [
-			...getCourseSubNavigationHighBasic("eng")
+			...(isAuthenticated 
+				? AuthCourseSubNavigationWorkNJobsTheme("eng") 
+				: CourseSubNavigationWorkNJobsTheme("eng")
+			)
 		]
 	},
 	{
