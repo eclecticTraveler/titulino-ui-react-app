@@ -42,37 +42,39 @@ class CourseLevel extends Component {
         const searchTerms = ["supermarket", "household", "work-n-jobs"]; // Array of search terms
         const isFound = searchTerms.some(term => this.props.location?.pathname?.includes(term));
 
-        if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
-            return (
-                <div id="unathenticated-landing-page-margin">
-                    <EmailYearSearchForm/>
-                </div>
-            )
-        } else if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
-            return (
-                <div id="unathenticated-landing-page-margin">
-                    <ProgressDashboardByEmailV4 />
-                </div>
-            )
-        }
-
-        if(isFound && this.props.ebookUrl){
-            return (
-                <div id="unathenticated-landing-page-margin">
-                     {/* <InternalIFrame iFrameUrl={this.props.ebookUrl}/>                  */}
-                     <CourseLandingDashboard course={this.props?.match?.params?.level} 
-                                             url={this.props.ebookUrl} 
-                                             totalStudentsCount={this.props.totalEnrolleeCount} 
-                                             enrolleeRegion={this.props.enrolleeCountByRegion}/>
-                </div>
-            ) 
+        if(this.props.token){
+            if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
+                return (
+                    <div id="unathenticated-landing-page-margin">
+                        <EmailYearSearchForm/>
+                    </div>
+                )
+            } else if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
+                return (
+                    <div id="unathenticated-landing-page-margin">
+                        <ProgressDashboardByEmailV4 />
+                    </div>
+                )
+            }
         }else{
-            return (
-                <div id="unathenticated-landing-page-margin">
-                     <LandingWrapper course={this.props?.match?.params?.level} coursePath={this.props?.location.pathname}/>              
-                </div>
-            ) 
-        }      
+            if(isFound && this.props.ebookUrl){
+                return (
+                    <div id="unathenticated-landing-page-margin">
+                         {/* <InternalIFrame iFrameUrl={this.props.ebookUrl}/>                  */}
+                         <CourseLandingDashboard course={this.props?.match?.params?.level} 
+                                                 url={this.props.ebookUrl} 
+                                                 totalStudentsCount={this.props.totalEnrolleeCount} 
+                                                 enrolleeRegion={this.props.enrolleeCountByRegion}/>
+                    </div>
+                ) 
+            }else{
+                return (
+                    <div id="unathenticated-landing-page-margin">
+                         <LandingWrapper course={this.props?.match?.params?.level} coursePath={this.props?.location.pathname}/>              
+                    </div>
+                ) 
+            }  
+        }    
     }
 }
 

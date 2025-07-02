@@ -7,7 +7,7 @@ import {
 	SIGNUP_SUCCESS,
 	SHOW_LOADING,
 	SIGNIN_WITH_GOOGLE_AUTHENTICATED,
-  SIGNIN_WITH_FACEBOOK_AUTHENTICATED
+	SIGNIN_WITH_FACEBOOK_AUTHENTICATED
 } from '../constants/Auth';
 
 const initState = {
@@ -74,7 +74,7 @@ const auth = (state = initState, action) => {
 				loading: false,
 				token: action.token
 			}
-		}
+		}		
 		default:
 			return state;
 	}

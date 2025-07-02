@@ -55,8 +55,8 @@ export const calculatePercentageForSupermarketCertificates = async(userProgressB
   };
 };
 
-export const calculateUserCourseProgressPercentageForCertificates = async(userProgressByEmailId) => {
-  const userProgress = [...userProgressByEmailId];
+export const calculateUserCourseProgressPercentageForCertificates = async(userProgressByEmailId) => {  
+  const userProgress = userProgressByEmailId?.length > 0 ? [...userProgressByEmailId] : [];
 
   const totalClasses = 8;
   
@@ -90,7 +90,7 @@ export const calculateUserCourseProgressPercentageForCertificates = async(userPr
 };
 
 export const getUserCourseProgressCategories = async(userProgressByEmailId) => {
-  const userProgress = [...userProgressByEmailId];
+  const userProgress = userProgressByEmailId?.length > 0 ? [...userProgressByEmailId] : [];
 
   // Filter by category
   const category1Progress = userProgress?.filter(record => record?.CategoryId === 1); // Gatherings

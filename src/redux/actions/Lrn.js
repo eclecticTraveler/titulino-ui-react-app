@@ -595,13 +595,23 @@ export const onSelectingCorrectionToEdit = async(record) => {
 // Authenticated Section
 /////////////////////////////
 export const onFetchingUserAuthenticatedProgressForCourse = async (courseCodeId, emailId) => {
-  const { courseProgress, studentPercentagesForCourse, studentCategoriesCompletedForCourse } =
+  const { courseFilteredProgress, studentPercentagesForCourse, studentCategoriesCompletedForCourse } =
   await TitulinoManager.getUserCourseProgress(courseCodeId, emailId);
 
   return {
     type: ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
-    registeredProgress: courseProgress,
+    userRegisteredProgressByCourse: courseFilteredProgress,
     studentPercentagesForCourse: studentPercentagesForCourse,
     studentCategoriesCompletedForCourse: studentCategoriesCompletedForCourse
+  }
+}
+
+
+export const onSubmittingUserAuthenticatedProgressForCourse = async (courseProgress, courseCodeId, emailId) => {
+  const submittedUserCourseProgress = await TitulinoManager.upsertUserCourseProgress(courseProgress, courseCodeId, emailId);
+  
+  return {
+    type: ON_SUBMITTING_USER_COURSE_PROGRESS,
+    submittedUserCourseProgress:submittedUserCourseProgress,
   }
 }

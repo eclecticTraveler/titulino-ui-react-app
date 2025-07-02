@@ -40,25 +40,16 @@ export const LoginAdapter = (props) => {
 		} = props
 	  
 
-		const handleSuccessfulLogin = (session) => {
-			const user = session.user;
-			const email = user.email;
-			const token = session.data.session?.access_token;
+		const handleSuccessfulLogin = (session) => {  
+			const accessToken = session?.data?.session?.access_token;
+			const email = session?.user?.email;
 		  
-			if (!email) return;
-		  
-			// Dispatch redux actions
-			authenticated(token);
-			onAuthenticatingWithSSO(email);
-			signIn(user);
-			if (token) {
-				const payload = JSON.parse(atob(token.split('.')[1]));
-				const expiresAt = payload.exp * 1000; // Convert to ms
-				const isExpired = Date.now() > expiresAt;
-				console.log("Token expired?", isExpired);
-			}
+			if (accessToken && email) {
+			  authenticated(accessToken);
+			  onAuthenticatingWithSSO(email);
+			  signIn(session?.user);
 
-		  
+			}
 			// Redirect after login
 			history.push(APP_PREFIX_PATH);
 		  };

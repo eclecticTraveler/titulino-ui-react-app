@@ -31,8 +31,12 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
   const isFullDate = /^\d{4}-\d{2}-\d{2}$/.test(dobOrYob); // e.g. "2001-04-16"
   const isYear = /^\d{4}$/.test(dobOrYob); // e.g. 2001
 
+  // const payload = {
+  //   userName: emailId,
+  // };
+
   const payload = {
-    userName: emailId,
+    userName: "xl_189@yahoo.com.mx",
   };
 
   if (isFullDate) {

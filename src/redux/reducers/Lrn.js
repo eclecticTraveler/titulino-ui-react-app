@@ -73,7 +73,7 @@ const lrn = (state = initState, action) => {
     case ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE:
       return {
         ...state,
-        registeredProgress: action.registeredProgress,
+        userRegisteredProgressByCourse: action.userRegisteredProgressByCourse,
         studentPercentagesForCourse: action.studentPercentagesForCourse,
         studentCategoriesCompletedForCourse: action.studentCategoriesCompletedForCourse
       }
