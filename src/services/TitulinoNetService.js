@@ -26,17 +26,13 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
   const loginUrl = `${titulinoNetApiUri}/login`;
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
-  //"xl_189@yahoo.com.mx"
+  
   // Decide whether it's a date or a year
   const isFullDate = /^\d{4}-\d{2}-\d{2}$/.test(dobOrYob); // e.g. "2001-04-16"
   const isYear = /^\d{4}$/.test(dobOrYob); // e.g. 2001
 
-  // const payload = {
-  //   userName: emailId,
-  // };
-
   const payload = {
-    userName: "xl_189@yahoo.com.mx",
+    userName: emailId,
   };
 
   if (isFullDate) {

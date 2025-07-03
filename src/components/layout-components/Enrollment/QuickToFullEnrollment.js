@@ -17,12 +17,12 @@ import { useHistory } from 'react-router-dom';
 const { Option } = Select;
 
 export const QuickToFullEnrollment = (props) => {
-  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedCourse, nativeLanguage,
+  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedCourse, nativeLanguage, passedEmail, passedDateOfBirth, passedSubmitBtnEnabled,
          onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, isToDoFullEnrollment, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
   const [isEmailVisible, setEmailVisible] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(true);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(passedEmail || "");
   const [isFindMeVisible, setFindMeVisible] = useState(false);
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const [isGeographyInfoVisible, setGeographyInfoVisible] = useState(false);
@@ -30,7 +30,7 @@ export const QuickToFullEnrollment = (props) => {
   const [selectedBirthCountry, setSelectedBirthCountry] = useState(null);
   const [residencyDivisions, setDivisions] = useState([]); // Load divisions based on selected country
   const [birthDivisions, setBirthDivisions] = useState([]);
-  const [isSubmitEnabled, setSubmitEnabled] = useState(false);
+  const [isSubmitEnabled, setSubmitEnabled] = useState(passedSubmitBtnEnabled ?? false);
   const [isFindMeSubmitted, setIsFindMeSubmitted] = useState(false);
   const [isToProceedToFullEnrollment, setIsToProceedToFullEnrollment] = useState(isToDoFullEnrollment ?? false);
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export const QuickToFullEnrollment = (props) => {
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [submittedRecords, setSubmittingRecords] = useState([]);
   const history = useHistory();
-    
+    console.log("passedEmail ", passedEmail, passedDateOfBirth);
   const locale = true;
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -326,6 +326,7 @@ useEffect(() => {
 
       setSubmittingLoading(true);
       setSubmittingRecords(formattedDatatoSubmit);
+      console.log("formattedDatatoSubmit", formattedDatatoSubmit);
 
     } catch (error) {
       // Handle validation failure
@@ -796,7 +797,7 @@ useEffect(() => {
 
           { isToProceedToFullEnrollment && (                         
               <ContactEnrollment 
-                selectedEmail={form?.getFieldValue("emailAddress")}
+                selectedEmail={passedEmail ?? form?.getFieldValue("emailAddress")}
                 onEmailChange={handleEmailChange}
                 selectedYearOfBirth={form?.getFieldValue("yearOfBirth")?.format("YYYY")}
                 onFormSubmit={onFormSubmit}
@@ -804,6 +805,7 @@ useEffect(() => {
                 setResetChildStates={setResetChildStates} // Pass the delegate setter to the child
                 enrollmentStyle={quickEnrollmentStyle}
                 submittingLoading={submittingLoading}
+                selectedDateOfBirth={passedDateOfBirth}
                 />
 
             )

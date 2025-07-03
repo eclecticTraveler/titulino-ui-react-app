@@ -10,13 +10,10 @@ const getUserCourseProgress = async(courseCodeId, emailId) => {
   const localStorageKey = `UserProfile_${emailId}`;
   const user = LocalStorageService.retrieveEncryptedObjectWithExpiry(localStorageKey)
   const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
-  courseProgress = await TitulinoAuthService.getCourseProgress(courseCodeId, token, "onFetchingUserAuthenticatedProgressForCourse");
-
-  // For now if the user is facilitador filter to its own results: TODO
-  if(user?.hasEverBeenFacilitador && courseProgress?.length > 0){
+  if(token){
+    courseProgress = await TitulinoAuthService.getCourseProgress(courseCodeId, token, "onFetchingUserAuthenticatedProgressForCourse");
+        // For now if the user is facilitador filter to its own results: TODO
     courseFilteredProgress = courseProgress?.filter(item => item?.EmailId === user?.email);
-  }else{
-    courseFilteredProgress = courseProgress?.length > 0 ? [...courseProgress] : [];    
   }
 
   const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
@@ -32,16 +29,23 @@ const getUserCourseProgress = async(courseCodeId, emailId) => {
 }
 
 const upsertUserCourseProgress = async(courseProgress, courseCodeId, emailId) => {
-const localStorageKey = `UserProfile_${emailId}`;
-  const user = LocalStorageService.retrieveEncryptedObjectWithExpiry(localStorageKey)
-  const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
+  const token = await getCourseToken(courseCodeId, emailId);
   courseProgress = await TitulinoAuthService.upsertUserCourseProgress(courseProgress, token, "upsertUserCourseProgress");
   return courseProgress;
 }
 
+
+const getCourseToken = async(courseCodeId, emailId) => {
+    const localStorageKey = `UserProfile_${emailId}`;
+    const user = LocalStorageService.retrieveEncryptedObjectWithExpiry(localStorageKey);
+    const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
+    return token;
+  }
+
 const LrnManager = {
   getUserCourseProgress,
-  upsertUserCourseProgress
+  upsertUserCourseProgress,
+  getCourseToken
 };
 
 export default LrnManager;

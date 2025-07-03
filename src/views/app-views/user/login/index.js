@@ -16,7 +16,8 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
 import { Card } from 'antd';
 import { useHistory } from "react-router-dom";
-import JwtAuthService from 'services/JwtAuthService'
+import JwtAuthService from 'services/JwtAuthService';
+import Loading from 'components/shared-components/Loading';
 
 export const LoginAdapter = (props) => {
 		let history = useHistory();	
@@ -87,41 +88,50 @@ export const LoginAdapter = (props) => {
 		margin: "0 auto",
 		padding: "20px",
 	  }
-	return (
-		<>
-			<div className="container customerName">
-		<Card
-			bordered
-			style={loginStyle}
-			cover={
-			<img
-				alt={titleOfEnrollment}
-				src={converUrl}
-				style={{ height: 100, objectFit: 'cover' }}
-			/>
-			}
-		>
-			<Auth
-			className="supabase-auth-ui"
-			supabaseClient={supabase}
-			appearance={{
-				theme: ThemeSupa,
-				variables: {
-				default: {
-					colors: {
-					brand: "#e79547", // Primary button color
-					brandAccent: "#d27c3f", // Hover color
+	if(!token){
+		return (
+			<>
+				<div className="container customerName">
+			<Card
+				bordered
+				style={loginStyle}
+				cover={
+				<img
+					alt={titleOfEnrollment}
+					src={converUrl}
+					style={{ height: 100, objectFit: 'cover' }}
+				/>
+				}
+			>
+				<Auth
+				className="supabase-auth-ui"
+				supabaseClient={supabase}
+				appearance={{
+					theme: ThemeSupa,
+					variables: {
+					default: {
+						colors: {
+						brand: "#e79547", // Primary button color
+						brandAccent: "#d27c3f", // Hover color
+						},
 					},
-				},
-				},
-			}}
-			providers={['google', 'facebook']}
-			redirectTo={window.location.origin + APP_PREFIX_PATH + '/login'} // or your custom redirect route
-			/>
-		</Card>
-		</div>
-		</>
+					},
+				}}
+				providers={['google', 'facebook']}
+				redirectTo={window.location.origin + APP_PREFIX_PATH + '/login'} // or your custom redirect route
+				/>
+			</Card>
+			</div>
+			</>
+			)
+	}else{
+		return (
+			<>
+				<Loading cover="content"/>
+			</>
 		)
+	}
+
 	};
 
 

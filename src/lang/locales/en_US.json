@@ -329,9 +329,9 @@
 	"enrollment.timeConflictWarning": "Course overlaps with an already selected course.",
 	"classes.grammar.basic":"Basic",
 	"classes.grammar.advanced":"Advanced",
-	"form.user.session.notFoundMessage":"We couldn't find you by your year of birth. Can you provide your full birth date?"
-
-	
-	
+	"form.user.session.notFoundMessage":"We couldn't find you by your year of birth. Can you provide your full birth date?",
+	"search.NoRecordsFound":"No records found",
+	"search.WouldYouLikeToEnroll":"Would you like to enroll?",
+	"search.TakeMeToEnroll":"Yes, take me to enroll"
 	
 }

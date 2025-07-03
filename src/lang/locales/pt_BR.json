@@ -331,7 +331,10 @@
 	"days.sunday": "Domingo",
 	"enrollment.continue": "Continuar",
 	"enrollment.timeConflictWarning": "O curso se sobrepõe a um curso já selecionado.",
-	"form.user.session.notFoundMessage": "Não conseguimos encontrá-lo no ano de nascimento. Você poderia fornecer a data de nascimento completa?"
+	"form.user.session.notFoundMessage": "Não conseguimos encontrá-lo no ano de nascimento. Você poderia fornecer a data de nascimento completa?",
+	"search.NoRecordsFound":"Nenhum registro encontrado",
+	"search.WouldYouLikeToEnroll":"Você gostaria de se inscrever?",
+	"search.TakeMeToEnroll":"Sim, leve-me para me inscrever"
 
 
 

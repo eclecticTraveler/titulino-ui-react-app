@@ -10,6 +10,7 @@ import CourseSelection from "./CourseSelection";
 import WeeklyCourseSelector from "./WeeklyCourseSelector";
 import QuickToFullEnrollment from "./QuickToFullEnrollment";
 import CoursesNotAvailableMessage from "components/admin-components/ModalMessages/CoursesNotAvailableMessage";
+import { useLocation } from "react-router-dom";
 
 let courseData = [
     {
@@ -84,6 +85,8 @@ let courseData = [
  
 export const EnrollmentWrapper = (props) => {
 	const { mobileNav, onMobileNavToggle, toggleCollapsedNav, navCollapsed, onRenderingCourseRegistration, availableCourses, onLoginForEnrollment, apiToken, selectedCoursesToEnroll } = props;
+  const location = useLocation();
+  const { email, dateOfBirth, isToDoFullEnrollment, isSubmitBtnEnabled } = location.state || {};
     // If you need componentDidMount/componentDidUpdate-like behavior, you can use useEffect:
     useEffect(() => {
         // This runs once on mount (componentDidMount)
@@ -104,7 +107,7 @@ export const EnrollmentWrapper = (props) => {
             </>
         )
     }else{
-        if(availableCourses?.length > 1 && selectedCoursesToEnroll?.length === 0){
+        if((availableCourses && availableCourses?.length > 1) && (selectedCoursesToEnroll && selectedCoursesToEnroll?.length === 0)){
             return (
                 <div>
                      <WeeklyCourseSelector/>
@@ -113,7 +116,12 @@ export const EnrollmentWrapper = (props) => {
         }else{
             return (
                 <div>
-                     <QuickToFullEnrollment/>
+                     <QuickToFullEnrollment
+                        passedEmail={email}
+                        passedDateOfBirth={dateOfBirth}
+                        isToDoFullEnrollment={isToDoFullEnrollment}
+                        passedSubmitBtnEnabled={isSubmitBtnEnabled}
+                      />
                 </div>
             );
         }

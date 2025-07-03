@@ -44,7 +44,8 @@ import {
   ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
   ON_MODAL_INTERACTION,
   ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
-  ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE
+  ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
+  ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE
 } from "../constants/Lrn";
 
 const initState = {
@@ -57,6 +58,11 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE:
+      return {
+        ...state,
+        userIsEnrolledInCourse: action.userIsEnrolledInCourse
+      }
     case ON_MODAL_INTERACTION:
       return {
         ...state,

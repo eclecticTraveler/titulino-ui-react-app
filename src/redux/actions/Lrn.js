@@ -68,7 +68,8 @@ import {
   ON_VERIFYING_FOR_PROGRESS_BY_EMAIL_ID_COURSE_CODE_ID,
   ON_MODAL_INTERACTION,
   ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
-  ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE
+  ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
+  ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE
 } from "../constants/Lrn";
 
 export const onRequestingGraphForLandingDashboard = async() => {
@@ -366,7 +367,6 @@ export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLan
   // Get courseId in Factory
  const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
  const courseConfiguration = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
-console.log("courseThemessss", courseTheme, nativeLanguage, course);
   return {
     type: ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
     currentCourseCodeId: courseCodeId,
@@ -613,5 +613,17 @@ export const onSubmittingUserAuthenticatedProgressForCourse = async (courseProgr
   return {
     type: ON_SUBMITTING_USER_COURSE_PROGRESS,
     submittedUserCourseProgress:submittedUserCourseProgress,
+  }
+}
+
+export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) => {
+
+  // Get courseId in Factory
+ const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
+ const userIsEnrolled = await TitulinoManager.getCourseToken(courseCodeId, emailId)
+ 
+  return {
+    type: ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
+    userIsEnrolledInCourse: !!userIsEnrolled
   }
 }

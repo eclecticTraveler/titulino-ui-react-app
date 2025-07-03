@@ -9,21 +9,12 @@ ON_LOADING_AUTHENTICATED_LANDING_PAGE
 } from '../constants/Grant';
 
 export const onRetrievingUserProfile = async (emailId, dobOrYob) => {
-  const userProfile = await TitulinoManager.getUserProfile(emailId, dobOrYob);
+  const user = await TitulinoManager.getUserProfile(emailId, dobOrYob);
 
   return {
     type: ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
-    user: {
-      userCourses: userProfile?.userCourses ?? null,
-      contactId: userProfile?.contactId ?? null,
-      communicationName: userProfile?.communicationName ?? null,
-      expirationDate: userProfile?.expirationDate ?? null,
-      hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
-      innerToken: userProfile?.token,
-      emailId: emailId,
-      yearOfBirth: userProfile?.yearOfBirth
-    },
-    message: userProfile?.message ?? '',
+    user,
+    message: user?.message ?? '',
     showMessage: false,
     generalLoading: false
   };

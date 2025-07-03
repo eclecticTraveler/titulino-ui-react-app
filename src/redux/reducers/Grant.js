@@ -13,6 +13,7 @@ const initState = {
   user: {
     userCourses: null,
     contactId: null,
+    contactInternalId: null,
     emailId: null,
     yearOfBirth: null,
     communicationName: null,

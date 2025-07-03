@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
@@ -15,8 +15,9 @@ import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
 import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
 import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
-import { authenticated } from "redux/actions/Auth";
+import { authenticated, signIn } from "redux/actions/Auth";
 import { onAuthenticatingWithSSO } from "redux/actions/Grant";
+import SupabaseAuthService from "services/SupabaseAuthService";
 
 function RouteInterceptor({ children, isAuthenticated, ...rest }) {
     const loginPath = `${APP_PREFIX_PATH}/test`; /// LOGIN
@@ -42,16 +43,30 @@ function RouteInterceptor({ children, isAuthenticated, ...rest }) {
 
 export const Views = (props) => { 
     const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token, user, authenticated, onAuthenticatingWithSSO,
-        wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, subNavPosition } = props;
+        wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, subNavPosition, signIn } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
     
     // Load the cookie for Authentication if there was any
     useSupabaseSessionSync((session) => {
-        authenticated(session.user);
-        onAuthenticatingWithSSO(session.user.email);
+        if(!user?.emailId){
+            authenticated(session?.user);
+            onAuthenticatingWithSSO(session?.user?.email);
+        }
     });
-
+      
+      
+    //   useEffect(() => {
+    //     const syncInternalToken = async () => {
+    //       await SupabaseAuthService.refreshInternalTokenIfValidSupabase(user?.yearOfBirth);
+    //     };
+      
+    //     if (user?.email && user?.yearOfBirth) {
+    //         console.log("INN")
+    //       syncInternalToken();
+    //     }
+    //   }, [user?.email, user?.yearOfBirth]);
+      
     
     useBodyClass(`dir-${direction}`);
 
@@ -119,7 +134,8 @@ function mapDispatchToProps(dispatch) {
         onLocaleChange,
         onLoadingUserSelectedTheme,
         onAuthenticatingWithSSO,
-        authenticated
+        authenticated,
+        signIn
     }, dispatch);
 }
 

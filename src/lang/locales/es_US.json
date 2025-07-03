@@ -331,7 +331,10 @@
 	"enrollment.timeConflictWarning": "El curso se superpone con un curso ya seleccionado.",
 	"classes.grammar.basic":"Básico",
 	"classes.grammar.advanced":"Avanzado",
-	"form.user.session.notFoundMessage": "No pudimos encontrarle por su año de nacimiento. ¿Podría proporcionarnos su fecha de nacimiento completa?"
+	"form.user.session.notFoundMessage": "No pudimos encontrarle por su año de nacimiento. ¿Podría proporcionarnos su fecha de nacimiento completa?",
+	"search.NoRecordsFound": "No se encontraron registros",
+	"search.WouldYouLikeToEnroll": "¿Te gustaría inscribirte?",
+	"search.TakeMeToEnroll": "Sí, inscríbeme"
 	
 }
 

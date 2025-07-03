@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { onSubmittingUserCourseProgress, onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse } from 'redux/actions/Lrn';
+import { onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs, DatePicker } from 'antd';
@@ -19,7 +19,7 @@ import ConfettiExplosion from 'react-confetti-explosion';
 
 export const ProgressDashboardByEmailV4 = (props) => {
   const { userRegisteredProgressByCourse, user,
-     nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse,
+     nativeLanguage, currentCourseCodeId, courseConfiguration, onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme, hasUserInteractedWithModal } = props;
 
   const [form] = Form.useForm();
@@ -58,7 +58,7 @@ export const ProgressDashboardByEmailV4 = (props) => {
   // Submit progress and refetch data
 useEffect(() => {
   if (selectedLessonsForSubmission?.length > 0) {
-    console.log("HERE");
+    console.log("HERE", selectedLessonsForSubmission);
     // Submit user progress        
     onSubmittingUserAuthenticatedProgressForCourse(selectedLessonsForSubmission, currentCourseCodeId, user?.emailId).then(() => {
       // Refetch progress after submission completes
@@ -165,10 +165,10 @@ useEffect(() => {
           categories={courseConfiguration?.categories}
           setHandleUserProgressSubmit={setHandleUserProgressSubmit}
           setSelectedLessons={setSelectedLessons}
-          email={user?.emailId}
+          emailId={user?.emailId}
           setIsSmallConfettiVisible={setIsSmallConfettiVisible}
           setSelectedLessonsForSubmission={setSelectedLessonsForSubmission}
-          contactId={user?.contactExternalId}
+          contactId={user?.contactInternalId}
         />
       </>
     )
@@ -252,7 +252,7 @@ useEffect(() => {
     )} 
       <h4>{renderDashboardTitle()}</h4>
      </Card>
-
+     {renderUpserUserProgressBottom()}
       <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}>
       <TabPane 
         tab={
@@ -286,7 +286,6 @@ useEffect(() => {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
-    onSubmittingUserCourseProgress: onSubmittingUserCourseProgress,
     onFetchingUserAuthenticatedProgressForCourse: onFetchingUserAuthenticatedProgressForCourse,
     onSubmittingUserAuthenticatedProgressForCourse: onSubmittingUserAuthenticatedProgressForCourse
   }, dispatch);

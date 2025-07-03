@@ -133,7 +133,7 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
     case 'work-n-jobs':
       return 'WORK_AND_JOBS_JULY_2025_COURSE_01';
     default:
-      return 'HOUSEHOLD_ITEMS_PART_1_JAN_2025_COURSE_01' // TODO find a better way to do this!
+      return 'NOT_FOUND' // TODO find a better way to do this!
       // throw new Error(`Invalid course theme: ${courseTheme}`);
   }
 };
