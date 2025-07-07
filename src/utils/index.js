@@ -349,6 +349,22 @@ class Utils {
 	  }
 
 	/**
+   * Retrieves the course token from the userCourses object by courseCodeId.
+   * @param {Object} userCourses
+   * @param {string} courseCodeId
+   * @returns {string|null}
+   */
+	static getuserLanguageProficiencyOrderIdForCourse(userCourses, courseCodeId) {
+		if (!userCourses || typeof userCourses !== "object") {
+		  console.warn("Invalid userCourses object.");
+		  return null;
+		}
+	
+		const course = userCourses[courseCodeId];
+		return course?.userLanguageProficiencyOrderIdForCourse || null;
+	  }
+
+	/**
 	 * Get Breakpoint
 	 * @param {Object} screens - Grid.useBreakpoint() from antd
 	 * @return {Array} array of breakpoint size

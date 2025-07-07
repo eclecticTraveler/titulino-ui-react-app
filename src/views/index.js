@@ -16,7 +16,7 @@ import { bindActionCreators } from 'redux';
 import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
 import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
 import { authenticated, signIn } from "redux/actions/Auth";
-import { onAuthenticatingWithSSO } from "redux/actions/Grant";
+import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
 import SupabaseAuthService from "services/SupabaseAuthService";
 
 function RouteInterceptor({ children, isAuthenticated, ...rest }) {
@@ -43,7 +43,7 @@ function RouteInterceptor({ children, isAuthenticated, ...rest }) {
 
 export const Views = (props) => { 
     const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token, user, authenticated, onAuthenticatingWithSSO,
-        wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, subNavPosition, signIn } = props;
+        wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage, subNavPosition, signIn } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
     
@@ -53,6 +53,8 @@ export const Views = (props) => {
             authenticated(session?.user);
             onAuthenticatingWithSSO(session?.user?.email);
         }
+        console.log("--->user", user?.contactId)
+
     });
       
       
@@ -135,7 +137,8 @@ function mapDispatchToProps(dispatch) {
         onLoadingUserSelectedTheme,
         onAuthenticatingWithSSO,
         authenticated,
-        signIn
+        signIn,
+        onLoadingAuthenticatedLandingPage
     }, dispatch);
 }
 

@@ -247,7 +247,8 @@ const lrn = (state = initState, action) => {
     case ON_LOADING_VIDEO_CLASS_ARRAY_URLS:
       return {
         ...state,
-        videoClassUrls: action.videoClassUrls
+        videoClassUrls: action.videoClassUrls,
+        userProficiencyOrder: action.userProficiencyOrder
       }
     case GET_QUIZLET_URL:
       return {

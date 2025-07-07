@@ -71,6 +71,7 @@ import {
   ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
   ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE
 } from "../constants/Lrn";
+import LrnManager from "managers/LrnManager";
 
 export const onRequestingGraphForLandingDashboard = async() => {
   const graph = await GraphService.getDashboardData();
@@ -144,12 +145,12 @@ const url = await VideoClassService.getVideoClassUrl(levelNo, chapterNo, nativeL
 }
 
 export const ongettingVideoClassArrayUrls = async (levelNo, chapterNo, nativeLanguage, course) => {
-const urls = await GrammarClassService.getGrammarClassUrlsByChapter(levelNo, chapterNo, nativeLanguage, course);
-  return {
-    type: ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
-    videoClassUrls: urls
+  const urls = await GrammarClassService.getGrammarClassUrlsByChapter(levelNo, chapterNo, nativeLanguage, course);
+    return {
+      type: ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
+      videoClassUrls: urls
+    }
   }
-}
 
 export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, course) => {
   const url = await BookChapterService.getBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course);
@@ -362,19 +363,6 @@ export const onSearchingForProgressByEmailId = async (email) => {
   }
 }
 
-export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLanguage, course) => {
-
-  // Get courseId in Factory
- const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
- const courseConfiguration = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
-  return {
-    type: ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
-    currentCourseCodeId: courseCodeId,
-    courseConfiguration: courseConfiguration,
-    courseTheme: courseTheme
-  }
-}
-
 
 export const onModalInteraction = async (hasUserInteractedWithModal) => {
   return {
@@ -512,10 +500,7 @@ export const getWasUserConfigSetFlag = async () => {
 }
 
 export const getUpperNavigationBasedOnUserConfig = async (isAuthenticated) => {  
-  let isUserAuthenticated = isAuthenticated; //true ?? false;
-  console.log("isUserAuthenticated: ", isUserAuthenticated);
-  const selectedLanguageForCourse =  await LocalStorageService.getUserSelectedCourse();
-  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation, isUserAuthenticated);
+  const upperMainNavigation = await LrnManager.getUserUpperNavigationConfig(isAuthenticated);
   return {
     type: GET_UPPER_NAV_BASED_ON_USER_CONFIG,
     upperMainNavigation: upperMainNavigation
@@ -625,5 +610,24 @@ export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) 
   return {
     type: ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
     userIsEnrolledInCourse: !!userIsEnrolled
+  }
+}
+
+export const ongettingUserVideoClassArrayUrls = async (levelNo, chapterNo, nativeLanguage, course, emailId) => {
+  const { urls, proficiencyLevel } = await LrnManager.getGrammarClasses(levelNo, chapterNo, nativeLanguage, course, emailId);
+  return {
+    type: ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
+    videoClassUrls: urls,
+    userProficiencyOrder: proficiencyLevel
+  }
+}
+
+export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLanguage, course) => {
+ const { courseCodeId, courseConfiguration } = await LrnManager.getCourseProgress(courseTheme, nativeLanguage, course)
+  return {
+    type: ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
+    currentCourseCodeId: courseCodeId,
+    courseConfiguration: courseConfiguration,
+    courseTheme: courseTheme
   }
 }

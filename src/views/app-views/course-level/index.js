@@ -48,9 +48,6 @@ class CourseLevel extends Component {
       }
 
     render() {
-        const searchTerms = ["supermarket", "household", "work-n-jobs"]; // Array of search terms
-        const isFound = searchTerms.some(term => this.props.location?.pathname?.includes(term));
-
         if(this.props.token){
             if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
                 return (
@@ -98,10 +95,9 @@ class CourseLevel extends Component {
                 )
             }
         }else{
-            if(isFound && this.props.ebookUrl){
+            if(this.props.ebookUrl){
                 return (
                     <div id="unathenticated-landing-page-margin">
-                         {/* <InternalIFrame iFrameUrl={this.props.ebookUrl}/>                  */}
                          <CourseLandingDashboard course={this.props?.match?.params?.level} 
                                                  url={this.props.ebookUrl} 
                                                  totalStudentsCount={this.props.totalEnrolleeCount} 

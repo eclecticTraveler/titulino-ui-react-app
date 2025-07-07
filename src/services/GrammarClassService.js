@@ -7,7 +7,7 @@ const loadGrammarClassData = async () => {
   return rawData;
 };
 
-const getGrammarCategory = (proficiencyOrderId) => {
+const getGrammarCategory = async (proficiencyOrderId) => {
   if (proficiencyOrderId === null || proficiencyOrderId === undefined) return 'basic';
   return proficiencyOrderId <= 1 ? 'basic' : 'advanced';
 };
@@ -88,7 +88,8 @@ export const getGrammarClassUrlsByChapter = async (
 
 const GrammarClassService = {
   getGrammarClassUrl,
-  getGrammarClassUrlsByChapter
+  getGrammarClassUrlsByChapter,
+  getGrammarCategory
 };
 
 export default GrammarClassService;

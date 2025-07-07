@@ -1,4 +1,5 @@
 import CryptoJS from "crypto-js";
+import { env } from 'configs/EnvironmentConfig';
 const SECRET_KEY = process.env.REACT_APP_STORAGE_KEY;
 
 export const storeEncryptedObject = (key, value) => {
@@ -209,7 +210,21 @@ export const getOnLocale = async() => {
   return transformedObj
 }
 
+export const getCachedObject = (key) => {
+  return env.ENVIROMENT === "local"
+    ? getLocalStorageObjectWithExpiry(key)
+    : retrieveEncryptedObjectWithExpiry(key);
+};
+
+export const setCachedObject = (key, value, ttlInMinutes) => {
+  return env.ENVIROMENT === "local"
+    ? setLocalStorageObjectWithExpiry(value, key, ttlInMinutes)
+    : storeEncryptedObjectWithExpiry(key, value, ttlInMinutes);
+};
+
 const LocalStorageService = {
+  getCachedObject,
+  setCachedObject,
   setUserConfiguration,
   getUserSelectedNativeLanguage,
   getUserSelectedCourse,
