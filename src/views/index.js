@@ -55,6 +55,9 @@ export const Views = (props) => {
         }
         console.log("--->user", user?.contactId)
 
+        if(token?.email && !user?.contactId){            
+            onLoadingAuthenticatedLandingPage(token?.email);
+        }
     });
       
       
