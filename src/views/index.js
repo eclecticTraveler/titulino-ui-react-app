@@ -55,12 +55,15 @@ export const Views = (props) => {
         }
         console.log("--->user", user?.contactId)
 
-        if(token?.email && !user?.contactId){            
-            onLoadingAuthenticatedLandingPage(token?.email);
-        }
     });
       
-      
+    useEffect(() => {
+        if(token?.email && !user?.contactId){  
+        console.log("--->inside Effect", user?.contactId)          
+        onLoadingAuthenticatedLandingPage(token?.email);
+    }
+    }, [user?.contactId]);
+
     //   useEffect(() => {
     //     const syncInternalToken = async () => {
     //       await SupabaseAuthService.refreshInternalTokenIfValidSupabase(user?.yearOfBirth);
