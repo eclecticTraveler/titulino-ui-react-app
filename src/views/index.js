@@ -54,12 +54,12 @@ export const Views = (props) => {
             onAuthenticatingWithSSO(session?.user?.email);
         }
         console.log("--->user", user?.contactId)
-
     });
       
     useEffect(() => {
+        console.log("--->outside Effect", user?.contactId);
         if(token?.email && !user?.contactId){  
-        console.log("--->inside Effect", user?.contactId)          
+        console.log("--->inside Effect", user?.contactId);         
         onLoadingAuthenticatedLandingPage(token?.email);
     }
     }, [user?.contactId]);
