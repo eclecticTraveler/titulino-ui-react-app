@@ -102,22 +102,23 @@ export const NavProfile = (props) => {
   }
 
   const menuItems = configureMenuItems(user, token);
-  const profileImg = "/img/avatars/tempProfile-2.png";
-  const avatarImg = token?.user_metadata?.avatar_url ?? token?.user_metadata?.picture ?? profileImg;
+  const authenticatedProfileImg = "/img/avatars/tempProfile-2.png";
+  const unauthenticatedprofileImgDefault = "/img/avatars/tempProfile.jpg";
+  const avatarImg = token ? (token?.user_metadata?.avatar_url ?? token?.user_metadata?.picture ?? authenticatedProfileImg) :  unauthenticatedprofileImgDefault;
   const profileMenu = (
       <div className="nav-profile nav-dropdown">
         <div className="nav-profile-header">
           <div className="d-flex">
             <Avatar size={50} src={avatarImg} />
             <div className="pl-3">
-            {(user?.communicationName || token?.user_metadata?.full_name || token?.email) && (
+            {((token && user?.communicationName) || token?.user_metadata?.full_name || token?.email) && (
               <h4 className="mb-0">
-                {user?.communicationName || token?.user_metadata?.full_name || token?.email}
+                {(token && user?.communicationName) || token?.user_metadata?.full_name || token?.email}
               </h4>
             )}
-            {(user?.email || token?.email) && (
+            {((token && user?.email) || token?.email) && (
                <span className="text-muted">
-                {user?.email ||  token?.email}
+                {(token && user?.email) ||  token?.email}
               </span>
             )}
             </div>
