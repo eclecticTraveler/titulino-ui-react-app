@@ -26,10 +26,25 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
   const loginUrl = `${titulinoNetApiUri}/login`;
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
-  const raw = JSON.stringify({
-    "userName": "xl_189@yahoo.com.mx",
-    "yearOfBirth": dobOrYob
-  });
+  
+  // Decide whether it's a date or a year
+  const isFullDate = /^\d{4}-\d{2}-\d{2}$/.test(dobOrYob); // e.g. "2001-04-16"
+  const isYear = /^\d{4}$/.test(dobOrYob); // e.g. 2001
+
+  const payload = {
+    userName: emailId,
+  };
+
+  if (isFullDate) {
+    payload.dateOfBirth = dobOrYob;
+  } else if (isYear) {
+    payload.yearOfBirth = parseInt(dobOrYob, 10);
+  } else {
+    console.warn("Invalid DOB or YOB format:", dobOrYob);
+    return "";
+  }
+
+  const raw = JSON.stringify(payload);
 
   const requestOptions = {
     method: "POST",
@@ -88,7 +103,7 @@ const requestOptions = {
   }
 }
 
-const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
+export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
   const recordsToSubmit = enrolle ? [...enrolle] : [];
   if (recordsToSubmit?.length > 0 && token) {
     // Base URL

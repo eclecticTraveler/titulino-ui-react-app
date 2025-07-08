@@ -17,7 +17,8 @@ export const ContactEnrollment = (props) => {
   const [divisions, setDivisions] = useState([]);
   const [birthDivisions, setBirthDivisions] = useState([]);
   const locale = true;
-    
+    console.log("----->selectedDateOfBirth", selectedDateOfBirth)
+    console.log("selectedCoursesToEnroll", selectedCoursesToEnroll);
   const getLanguageName = (id) => {
     const map = {
       en: "English",
@@ -115,9 +116,9 @@ export const ContactEnrollment = (props) => {
       <>
         {Array.from(
           new Set(
-            (selectedCoursesToEnroll.length > 0
-              ? availableCourses.filter(course =>
-                  selectedCoursesToEnroll.includes(course.CourseCodeId)
+            (selectedCoursesToEnroll?.length > 0
+              ? availableCourses?.filter(course =>
+                  selectedCoursesToEnroll?.includes(course.CourseCodeId)
                 )
               : availableCourses
             )?.map(course => course?.TargetLanguageId).filter(Boolean)
@@ -184,8 +185,8 @@ export const ContactEnrollment = (props) => {
             style={{ width: "100%" }}
             disabledDate={(current) => current && current > moment().endOf("day")}
             defaultPickerValue={
-              selectedDateOfBirth
-                ? moment(selectedDateOfBirth)
+              selectedDateOfBirth 
+                ? moment(selectedDateOfBirth, "YYYY-MM-DD")
                 : selectedYearOfBirth
                 ? moment(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")
                 : undefined // Opens on selected date or year from parent component by default

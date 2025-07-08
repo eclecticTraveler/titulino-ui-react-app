@@ -249,26 +249,40 @@ const WeeklyCourseSelector = (props) => {
             >
             {courses.map((detail) => {
               const selected = selectedCourses.includes(detail.CourseCodeId);
+              const course = availableCoursesToSelectFrom.find(
+                (c) => c.CourseCodeId === detail.CourseCodeId
+              );
+              const alreadyEnrolled = course?.alreadyEnrolled;
+
               return (
                 <Card
                   key={`${detail.CourseCodeId}-${detail.gatheringDay}`}
-                  hoverable
+                  hoverable={!alreadyEnrolled}
                   style={{
                     marginBottom: 12,
-                    backgroundColor: selected ? "#e79547" : "white",
-                    borderColor: selected ? "#f7caa5" : "#f0f0f0",
-                    boxShadow: selected ? "0 0 0 2px #f7caa5" : "none"
+                    backgroundColor: alreadyEnrolled
+                      ? "#f0f0f0"
+                      : selected
+                      ? "#e79547"
+                      : "white",
+                    borderColor: alreadyEnrolled
+                      ? "#ccc"
+                      : selected
+                      ? "#f7caa5"
+                      : "#f0f0f0",
+                    boxShadow: selected ? "0 0 0 2px #f7caa5" : "none",
+                    cursor: alreadyEnrolled ? "not-allowed" : "pointer",
+                    opacity: alreadyEnrolled ? 0.6 : 1
                   }}
-                  onClick={() => toggleSelection(detail)}
+                  onClick={() => {
+                    if (!alreadyEnrolled) toggleSelection(detail);
+                  }}
                 >
                   <Row gutter={12} align="middle">
                     <Col flex="100px">
                       <img
                         alt={detail?.course}
-                        src={
-                          detail?.imageUrl ||
-                          process.env.PUBLIC_URL + "/img/avatars/tempProfile.jpg"
-                        }
+                        src={detail?.imageUrl || process.env.PUBLIC_URL + "/img/avatars/tempProfile.jpg"}
                         style={{
                           width: 80,
                           height: 80,
@@ -281,28 +295,21 @@ const WeeklyCourseSelector = (props) => {
                     <Col flex="auto">
                       <div style={{ display: "flex", justifyContent: "space-between" }}>
                         <div>
-                          <strong>{detail?.course}</strong>
-                          <br />
-                          <small>{detail?.gatheringTime}</small>
-                          <br />
-                          <small>{detail?.location}</small>
+                          <strong>{detail?.course}</strong><br />
+                          <small>{detail?.gatheringTime}</small><br />
+                          <small>{detail?.location}</small><br />
+                          {alreadyEnrolled && (
+                            <h4 style={{ color: "#888", fontWeight: "bold" }}>                              
+                              {setLocale(locale, "weekly.enrollment.course")}
+                            </h4>
+                          )}
                         </div>
                         {selected ? (
-                          <CheckCircleOutlined
-                            style={{
-                              color: "#f7caa5",
-                              fontSize: 24,
-                              marginLeft: 12,
-                            }}
-                          />
+                          <CheckCircleOutlined style={{ color: "#f7caa5", fontSize: 24 }} />
                         ) : (
-                          <MinusCircleOutlined
-                            style={{
-                              color: "#ccc",
-                              fontSize: 24,
-                              marginLeft: 12,
-                            }}
-                          />
+                          !alreadyEnrolled && (
+                            <MinusCircleOutlined style={{ color: "#ccc", fontSize: 24 }} />
+                          )
                         )}
                       </div>
                     </Col>
@@ -310,6 +317,7 @@ const WeeklyCourseSelector = (props) => {
                 </Card>
               );
             })}
+
 
 
             </Card>

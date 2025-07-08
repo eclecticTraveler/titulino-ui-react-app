@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Tabs } from 'antd';
 import { connect } from 'react-redux';
-import { ongettingVideoClassArrayUrls } from 'redux/actions/Lrn';
+import { ongettingUserVideoClassArrayUrls } from 'redux/actions/Lrn';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import UnderConstruccion from 'components/layout-components/UnderConstruccion';
 import utils from 'utils';
@@ -11,17 +11,13 @@ import { faLevelDown, faLevelUp } from '@fortawesome/free-solid-svg-icons';
 import IntlMessage from "components/util-components/IntlMessage";
 import IconAdapter from "components/util-components/IconAdapter";
 
-const getGrammarCategory = (proficiencyOrderId) => {
-  if (proficiencyOrderId === null || proficiencyOrderId === undefined) return 'basic';
-  return proficiencyOrderId <= 1 ? 'basic' : 'advanced';
-};
-
 const VideoClasses = ({
   videoClassUrls,
-  ongettingVideoClassArrayUrls,
+  ongettingUserVideoClassArrayUrls,
   nativeLanguage,
   course,
-  userProficiencyOrder
+  userProficiencyOrder,
+  user
 }) => {
   const location = useLocation();
  const { TabPane } = Tabs;
@@ -32,21 +28,24 @@ const VideoClasses = ({
 
   useEffect(() => {
     const pathInfo = utils.getCourseInfoFromUrl(location?.pathname);
-    ongettingVideoClassArrayUrls(
-      pathInfo?.levelNo,
-      pathInfo?.chapterNo,
-      nativeLanguage?.localizationId,
-      course
-    );
-  }, [location?.pathname, ongettingVideoClassArrayUrls, nativeLanguage?.localizationId, course]);
+    if(user?.emailId){
+      ongettingUserVideoClassArrayUrls(
+        pathInfo?.levelNo,
+        pathInfo?.chapterNo,
+        nativeLanguage?.localizationId,
+        course,
+        user?.emailId
+      );
+    }
+
+  }, [location?.pathname, nativeLanguage?.localizationId, course, user?.emailId]);
 
   if (!videoClassUrls || videoClassUrls.length === 0) {
     return <UnderConstruccion />;
   }
 
     const videoClass = videoClassUrls;
-    const rawCategory = getGrammarCategory(userProficiencyOrder);
-    const activeCategory = (rawCategory === 'basic' || rawCategory === 'advanced') ? rawCategory : 'basic';
+    console.log("userProficiencyOrder", userProficiencyOrder);
 
     // for V5 ANTD Tabs
     // const items = ['basic', 'advanced']?.map(category => ({
@@ -58,7 +57,7 @@ const VideoClasses = ({
   return (
     <div id="iframed-double-page">
       {/* <Tabs defaultActiveKey={activeCategory} items={items} /> for V5 */}
-        <Tabs type="card" defaultActiveKey={activeCategory}>
+        <Tabs type="card" defaultActiveKey={userProficiencyOrder}>
         {['basic', 'advanced'].map(category => (
             <TabPane
             tab={
@@ -79,10 +78,11 @@ const VideoClasses = ({
   );
 };
 
-const mapStateToProps = ({ lrn, theme }) => {
+const mapStateToProps = ({ lrn, theme, grant }) => {
   const { videoClassUrls, nativeLanguage, userProficiencyOrder } = lrn;
   const { course } = theme;
-  return { videoClassUrls, nativeLanguage, userProficiencyOrder, course };
+  const { user } = grant;
+  return { videoClassUrls, nativeLanguage, userProficiencyOrder, course, user };
 };
 
-export default connect(mapStateToProps, { ongettingVideoClassArrayUrls })(VideoClasses);
+export default connect(mapStateToProps, { ongettingUserVideoClassArrayUrls })(VideoClasses);

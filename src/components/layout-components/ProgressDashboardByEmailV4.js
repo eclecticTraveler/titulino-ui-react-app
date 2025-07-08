@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { onModalInteraction, onVerifyingProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId } from 'redux/actions/Lrn';
+import { onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs, DatePicker } from 'antd';
@@ -14,15 +14,13 @@ import useWindowSize from 'react-use/lib/useWindowSize';
 import { faRoad, faPieChart } from '@fortawesome/free-solid-svg-icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
-import getLocaleText from "components/util-components/IntString";
-import EnrollInvitationMessage from "components/admin-components/ModalMessages/EnrollInvitationMessage";
 import ConfettiExplosion from 'react-confetti-explosion';
 
 
 export const ProgressDashboardByEmailV4 = (props) => {
-  const { registeredProgressByEmailId, user,
-     nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId, isUserEmailRegisteredForCourse, onModalInteraction,
-     studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, hasUserInteractedWithModal } = props;
+  const { userRegisteredProgressByCourse, user,
+     nativeLanguage, currentCourseCodeId, courseConfiguration, onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse,
+     studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme, hasUserInteractedWithModal } = props;
 
   const [form] = Form.useForm();
   const [selectedLessonsForSubmission, setSelectedLessonsForSubmission] = useState({});
@@ -42,42 +40,29 @@ export const ProgressDashboardByEmailV4 = (props) => {
   };
 
 
-  console.log("currentCourseCodeId", currentCourseCodeId);
-  console.log("user?.emailId", user?.emailId);
-  console.log("user?.yearOfBirth", user?.yearOfBirth);
-  console.log("courseConfiguration?.categories", courseConfiguration?.categories);
-
-
-
-
-  const handleSearch = () => {
-
-    // let sanitizedEmail = user?.emailId?.trim()?.toLowerCase();
-    let sanitizedEmail = "xl_189@yahoo.com.mx";
-    
-    if(currentCourseCodeId && (user?.yearOfBirth && user?.yearOfBirth > 0)){
-      setLoading(true);        
-      onVerifyingProgressByEmailIdAndCourseCodeId(user?.yearOfBirth, sanitizedEmail, currentCourseCodeId, selectedCourse?.localizationId);
+  const handleSearch = () => {    
+    if(currentCourseCodeId && user?.emailId && (user?.yearOfBirth && user?.yearOfBirth > 0)){
+      setLoading(true);              
+      onFetchingUserAuthenticatedProgressForCourse(currentCourseCodeId, user?.emailId)
     }
 
   };
 
   useEffect(() => {
-    handleSearch();
+    if(user?.emailId && user?.yearOfBirth){
+      handleSearch();
+    }
+
   }, [currentCourseCodeId, user?.emailId, user?.yearOfBirth ]);
 
   // Submit progress and refetch data
 useEffect(() => {
   if (selectedLessonsForSubmission?.length > 0) {
-    // Submit user progress
-    onSubmittingUserCourseProgress(user?.emailId, selectedLessonsForSubmission).then(() => {
+    console.log("HERE", selectedLessonsForSubmission);
+    // Submit user progress        
+    onSubmittingUserAuthenticatedProgressForCourse(selectedLessonsForSubmission, currentCourseCodeId, user?.emailId).then(() => {
       // Refetch progress after submission completes
-      onVerifyingProgressByEmailIdAndCourseCodeId(
-        user?.yearOfBirth,
-        user?.emailId,
-        currentCourseCodeId,
-        selectedCourse?.localizationId
-      );
+      onFetchingUserAuthenticatedProgressForCourse(currentCourseCodeId, user?.emailId);
     });
   }
 }, [selectedLessonsForSubmission]);
@@ -89,7 +74,7 @@ useEffect(() => {
   }
 
   // Make the search button not to spin after getting results
-    if(registeredProgressByEmailId){
+    if(userRegisteredProgressByCourse){
       setLoading(false);
     }
 
@@ -103,22 +88,18 @@ useEffect(() => {
       clearTimeout(timeoutId);
     }
   };
-}, [studentPercentagesForCourse, registeredProgressByEmailId ]);
+}, [studentPercentagesForCourse, userRegisteredProgressByCourse ]);
 
 
 useEffect(() => {
-  if (isUserEmailRegisteredForCourse) {
+  if (userRegisteredProgressByCourse?.length > 0) {
     // Land on key "2" if results are found
     setActiveKey("1"); // CLEAN UP LATER
   } else {
     setActiveKey("1");
   }
 
-  if (isUserEmailRegisteredForCourse === false && !hasUserInteractedWithModal) {
-    setIsModalVisible(true);
-  }
-
-}, [isUserEmailRegisteredForCourse, hasUserInteractedWithModal]);
+}, [userRegisteredProgressByCourse]);
 
 
 useEffect(() => {
@@ -130,11 +111,11 @@ useEffect(() => {
 
 
   const renderMessageResults = () => {
-    if (!registeredProgressByEmailId || registeredProgressByEmailId?.length === 0) {
+    if (!userRegisteredProgressByCourse || userRegisteredProgressByCourse?.length === 0) {
       return <div>{setLocale(locale, "resources.myprogress.readyToRegister")}</div>;
     }
 
-    return <div>{registeredProgressByEmailId?.length} {setLocale(locale, "resources.myprogress.recordsFound")}.</div>
+    return <div>{userRegisteredProgressByCourse?.length} {setLocale(locale, "resources.myprogress.recordsFound")}.</div>
   }
 
   const ProgressDashboardByEmailStyle = {
@@ -176,17 +157,18 @@ useEffect(() => {
 
 
   const renderProgressTracking = () => (
-    registeredProgressByEmailId && (
+    userRegisteredProgressByCourse && (
       <>
         <UserProgress
-          progressData={registeredProgressByEmailId}
+          progressData={userRegisteredProgressByCourse}
           courseCodeId={currentCourseCodeId}
           categories={courseConfiguration?.categories}
           setHandleUserProgressSubmit={setHandleUserProgressSubmit}
           setSelectedLessons={setSelectedLessons}
-          email={user?.emailId}
+          emailId={user?.emailId}
           setIsSmallConfettiVisible={setIsSmallConfettiVisible}
           setSelectedLessonsForSubmission={setSelectedLessonsForSubmission}
+          contactId={user?.contactInternalId}
         />
       </>
     )
@@ -263,14 +245,14 @@ useEffect(() => {
       )}
 
     <Card bordered loading={loading}>
-    {registeredProgressByEmailId && (
+    {userRegisteredProgressByCourse && (
       <>
         <h1>{capitalizeFirstLetter(courseTheme)}: {renderMessageResults()}</h1>
       </>
     )} 
       <h4>{renderDashboardTitle()}</h4>
      </Card>
-
+     {renderUpserUserProgressBottom()}
       <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}>
       <TabPane 
         tab={
@@ -304,18 +286,16 @@ useEffect(() => {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
-    onSubmittingUserCourseProgress: onSubmittingUserCourseProgress,
-    onResetingProgressByEmailIdAndCourseCodeId: onResetingProgressByEmailIdAndCourseCodeId,
-    onVerifyingProgressByEmailIdAndCourseCodeId: onVerifyingProgressByEmailIdAndCourseCodeId,
-    onModalInteraction: onModalInteraction
+    onFetchingUserAuthenticatedProgressForCourse: onFetchingUserAuthenticatedProgressForCourse,
+    onSubmittingUserAuthenticatedProgressForCourse: onSubmittingUserAuthenticatedProgressForCourse
   }, dispatch);
 }
 
 const mapStateToProps = ({ lrn, theme, grant }) => {
   const { course } =  theme;
   const { user } = grant;
-  const { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, isUserEmailRegisteredForCourse, hasUserInteractedWithModal } = lrn;
-  return { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, isUserEmailRegisteredForCourse, hasUserInteractedWithModal, user };
+  const { userRegisteredProgressByCourse, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, hasUserInteractedWithModal } = lrn;
+  return { userRegisteredProgressByCourse, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, hasUserInteractedWithModal, user };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProgressDashboardByEmailV4));

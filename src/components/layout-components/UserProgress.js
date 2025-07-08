@@ -23,7 +23,7 @@ const { Meta } = Card;
 const { Option } = Select;
 
 export const UserProgress = ({ progressData, courseCodeId, categories, setHandleUserProgressSubmit,
-   setSelectedLessons, email, setIsSmallConfettiVisible, setSelectedLessonsForSubmission }) => {
+   setSelectedLessons, emailId, setIsSmallConfettiVisible, setSelectedLessonsForSubmission, contactId }) => {
   const [selectedLessons, internalSetSelectedLessons] = useState({});
   const [userProgressLessonsToUpsert, internalSetUserProgressLessonsToUpsert] = useState({});
   const locale = true;
@@ -84,20 +84,22 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
       );
       return;
     }
-
+ 
     const formattedData = Object.values(selectedLessons)?.map(
       ({ categoryId, classNumber, participationTypeId }) => ({
-        rawEmail: email,
+        contactId,
         classNumber,
         categoryId,
         participationTypeId:
           participationTypeId ||
           categories?.find((cat) => cat?.categoryId === categoryId)
-            .participationIds[0].participationTypeId,
+            ?.participationIds?.[0]?.participationTypeId,
         createdAt: new Date().toISOString(),
         courseCodeId,
+        emailId
       })
     );
+    
 
     console.log('Data to submit:', formattedData);
     internalSetUserProgressLessonsToUpsert(formattedData);

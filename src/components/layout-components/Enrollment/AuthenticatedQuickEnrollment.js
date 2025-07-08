@@ -7,7 +7,6 @@ import moment from "moment";
 import Flag from "react-world-flags";
 import CourseCards from "./CourseCards";
 import CourseDetails from "./CourseDetails";
-import ContactEnrollment from './ContactEnrollment';
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
@@ -16,14 +15,10 @@ import { useHistory } from 'react-router-dom';
 
 const { Option } = Select;
 
-export const QuickToFullEnrollment = (props) => {
-  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedCourse, nativeLanguage, passedEmail, passedDateOfBirth, passedSubmitBtnEnabled,
-         onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, isToDoFullEnrollment, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
+export const AuthenticatedQuickEnrollment = (props) => {
+  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedCourse, nativeLanguage, passedSubmitBtnEnabled,
+         onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, user, token, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
-  const [isEmailVisible, setEmailVisible] = useState(false);
-  const [isEmailValid, setIsEmailValid] = useState(true);
-  const [email, setEmail] = useState(passedEmail || "");
-  const [isFindMeVisible, setFindMeVisible] = useState(false);
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const [isGeographyInfoVisible, setGeographyInfoVisible] = useState(false);
   const [selectedCountryOfResidence, setSelectedCountryOfResidence] = useState(null);
@@ -31,19 +26,17 @@ export const QuickToFullEnrollment = (props) => {
   const [residencyDivisions, setDivisions] = useState([]); // Load divisions based on selected country
   const [birthDivisions, setBirthDivisions] = useState([]);
   const [isSubmitEnabled, setSubmitEnabled] = useState(passedSubmitBtnEnabled ?? false);
-  const [isFindMeSubmitted, setIsFindMeSubmitted] = useState(false);
-  const [isToProceedToFullEnrollment, setIsToProceedToFullEnrollment] = useState(isToDoFullEnrollment ?? false);
   const [loading, setLoading] = useState(false);
   const [returningEnrolleeCountryDivisionInfo, setReturningEnrolleeCountryDivisionInfo] = useState(null);
-  const [resetChildStates, setResetChildStates] = useState(null);
   const [enrolleeResidencyDivision, setEnrolleeResidencyDivision] = useState("");
   const [enrolleeBirthDivision, setEnrolleeBirthDivision] = useState("");
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [submittedRecords, setSubmittingRecords] = useState([]);
   const history = useHistory();
-    console.log("passedEmail ", passedEmail, passedDateOfBirth);
   const locale = true;
+
+
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
     };
@@ -55,10 +48,8 @@ export const QuickToFullEnrollment = (props) => {
     };  
     
     useEffect(() => {
-      if (submittedRecords?.length > 0) {
-        
+      if (submittedRecords?.length > 0) {    
         const upsertFormattedData = async () => {
-          // onSubmittingEnrollee(formattedDatatoSubmit, isToProceedToFullEnrollment);
           const upsertedRecords = await onSubmittingEnrollee(submittedRecords, null);
           const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
           if (wasSuccessful === true) {
@@ -140,83 +131,55 @@ useEffect(() => {
   }
 }, [selectedBirthCountry]);
 
-  const onBirthDateSelect = () => setEmailVisible(true);
+useEffect(() => {
 
-  const onFindMe = async () => {
-    setSubmitEnabled(false);
-    setIsFindMeSubmitted(true);
-    setLoading(true); // Start loading
-  
-    const values = form.getFieldsValue();
-    const year = values.yearOfBirth ? values.yearOfBirth.format("YYYY") : null;
-    const email = values.emailAddress;
-  
-    if (year && email) {
-      try {
-        const enrolleeInformation = await onSearchingForAlreadyEnrolledContact(email, year);
-        setReturningEnrolleeCountryDivisionInfo(enrolleeInformation?.returningEnrollee ?? null);
-      } catch (error) {
-        console.error("Error searching for enrollee:", error);
-        setReturningEnrolleeCountryDivisionInfo(null); // Handle errors gracefully
-      }
-    } else {
-      alert("Please enter both date of birth and email.");
-    }
-  
-    setLoading(false); // Stop loading
-  };
+  if (token && user?.contactId) {
+    const onFindMe = async () => {
+      setSubmitEnabled(false);
+      setLoading(true); // Start loading
+      const year = user?.yearOfBirth;
+      const email = user?.emailId;
+      if (year && email) {
+        try {
+          const enrolleeInformation = await onSearchingForAlreadyEnrolledContact(email, year);
+          setReturningEnrolleeCountryDivisionInfo(enrolleeInformation?.returningEnrollee ?? null);          
+          if(enrolleeInformation?.returningEnrollee?.contactExternalId){
+            setGeographyInfoVisible(true);
+            setSubmitEnabled(true);
+          }
+        } catch (error) {
+          console.error("Error searching for enrollee:", error);
+          setReturningEnrolleeCountryDivisionInfo(null); // Handle errors gracefully
+        }
+      } 
+      setLoading(false); // Stop loading
+    };
 
-  const onYesConfirm = () => {
-    setConfirmVisible(false);
-    // If there is no missing data then dont display update?
-    setGeographyInfoVisible(true);
-    // if((!returningEnrolleeCountryDivisionInfo?.countryDivisionResidencyName ||
-    //    !returningEnrolleeCountryDivisionInfo?.countryDivisionBirthName ||
-    //    !returningEnrolleeCountryDivisionInfo?.countryOfResidencyName ||
-    //    !returningEnrolleeCountryDivisionInfo?.countryOfBirthName )){
-    //     setGeographyInfoVisible(true);
-    //    }else{
-    //     setGeographyInfoVisible(false);
-    //    }
-    setFindMeVisible(false);
-    setSubmitEnabled(true);
-  };
+    onFindMe();
+  }
+}, [token, user?.contactId]);
 
-  const onProceedForFullEnrollment = () => {
-    setIsToProceedToFullEnrollment(true);
-    setSubmitEnabled(true);
-  };
-
-  const onNoConfirm = () => {
-    setConfirmVisible(false);
-    setIsToProceedToFullEnrollment(true);
-    setFindMeVisible(false)
-    setSubmitEnabled(true);
-  };
-
-  const formatSubmissionData = (
+ 
+const formatSubmissionData = (
     values,
     {
       nativeLanguage,
       enrolledCourses,
       countries
     },
-    isQuickEnrollment,
-    matchedEnrolleeInfo
+    matchedEnrolleeInfo,
+    user
   ) => {
   
     const {
-      emailAddress,
       lastNames,
       names,
       sex,
-      yearOfBirth,
       countryOfResidence,
       countryOfBirth,
       languageLevelAbbreviation,
       countryDivisionOfResidence,
       countryDivisionOfBirth,
-      dateOfBirth,
       termsAndConditionsVersion
     } = values;
     
@@ -233,20 +196,13 @@ useEffect(() => {
       ?.CountryName || null;
  
     let enrolleeDob;
-    if(isQuickEnrollment){
-        // Convert dateOfBirth to year if it's a Moment object
-        const submittedYear = yearOfBirth ? yearOfBirth.year() : null;
-        const matchedYearOfBirth = matchedInfo?.dateOfBirth 
-        ? new Date(matchedInfo.dateOfBirth).getUTCFullYear()
-        : null;
-        if(submittedYear === matchedYearOfBirth){
-          enrolleeDob = matchedInfo?.dateOfBirth
-        }
-    }else{
-        const formattedDateOfBirth = dateOfBirth
-        ? dateOfBirth.format("YYYY-MM-DD")
-        : null;
-        enrolleeDob = formattedDateOfBirth
+    // Convert dateOfBirth to year if it's a Moment object
+    const submittedYear = user?.yearOfBirth ? user?.yearOfBirth : null;
+    const matchedYearOfBirth = matchedInfo?.dateOfBirth 
+    ? new Date(matchedInfo.dateOfBirth).getUTCFullYear()
+    : null;
+    if(submittedYear === matchedYearOfBirth){
+      enrolleeDob = matchedInfo?.dateOfBirth
     }
 
     const selectedCourseCodeIds = (enrolledCourses || []).map(c => c?.CourseCodeId);
@@ -280,8 +236,8 @@ useEffect(() => {
     
     // Define the base object
     const formattedData = {
-      contactExternalId: matchedInfo?.contactExternalId ?? null,
-      emailAddress: emailAddress ?? (matchedInfo?.email || null),
+      contactExternalId: user?.contactId ?? matchedInfo?.contactExternalId ?? null,
+      emailAddress: user?.emailId ?? (matchedInfo?.email || null),
       lastNames: lastNames ?? (matchedInfo?.lastNames || null),
       names: names ?? (matchedInfo?.names || null),
       sex: sex ?? (matchedInfo?.sex || null),
@@ -310,7 +266,7 @@ useEffect(() => {
       // Trigger validation for the form during submit
       await form.validateFields(); // Ensure all fields are valid before proceeding
       const enrolledCourses = selectedCoursesToEnroll?.length > 0
-      ? availableCourses?.filter(course => selectedCoursesToEnroll?.includes(course.CourseCodeId))
+      ? availableCourses?.filter(course => selectedCoursesToEnroll?.includes(course?.CourseCodeId))
       : availableCourses;
 
       const formattedDatatoSubmit = formatSubmissionData(
@@ -320,8 +276,8 @@ useEffect(() => {
           enrolledCourses, // full course objects
           countries
         },
-        !isToProceedToFullEnrollment,
-        returningEnrolleeCountryDivisionInfo
+        returningEnrolleeCountryDivisionInfo,
+        user
       );
 
       setSubmittingLoading(true);
@@ -340,10 +296,6 @@ useEffect(() => {
     form?.resetFields();
   
     // Reset all the states
-    setEmailVisible(false);
-    setIsEmailValid(true); // Reset email validity to default (true)
-    setEmail(""); // Clear email input
-    setFindMeVisible(false);
     setConfirmVisible(false);
     setGeographyInfoVisible(false);
     setSelectedCountryOfResidence(null);
@@ -351,13 +303,10 @@ useEffect(() => {
     setDivisions([]); // Reset residency divisions
     setBirthDivisions([]); // Reset birth divisions
     setSubmitEnabled(false); // Disable submit button
-    setIsFindMeSubmitted(false); // Reset 'Find Me' submission state
-    setIsToProceedToFullEnrollment(false); // Reset enrollment proceed state
     setLoading(false); // Reset loading state
     setReturningEnrolleeCountryDivisionInfo(null); // Clear returning enrollee info
     setEnrolleeResidencyDivision("");
     setEnrolleeBirthDivision("");
-    setResetChildStates(null);
     onResetSubmittingEnrollee(undefined);
     setSubmittingLoading(false);
     setSubmittingRecords([]); 
@@ -366,24 +315,6 @@ useEffect(() => {
   };
   
 
-  const handleEmailChange = (email) => {
-    const emailValue = email?.trim()?.toLowerCase(); // Trim spaces and convert to lowercase
-    const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-    const isValid = emailRegex.test(emailValue); // Validate the processed email
-    
-    form.setFieldsValue({ emailAddress: emailValue }); // Update form state
-    setEmail(emailValue); // Update the parent component state
-    setIsEmailValid(isValid); // Update email validity
-    
-    if (isValid) {
-      setFindMeVisible(true);
-    } else {
-      setFindMeVisible(false);
-      setReturningEnrolleeCountryDivisionInfo(null);
-      setIsFindMeSubmitted(false);
-    }
-  };
-  
   const handleGoBackSelection = () => {
     // go back by resetting array
     onSelectingEnrollmentCourses([]);
@@ -414,25 +345,20 @@ useEffect(() => {
         selectedCoursesToEnroll?.includes(course.CourseCodeId)
       );
 
-    
-  const titleOfEnrollment = isToProceedToFullEnrollment
-                            ? setLocale(locale, "enrollment.fullEnrollment")
-                            : returningEnrolleeCountryDivisionInfo?.personalCommunicationName
-                            ? setLocale(locale, "enrollment.welcomeBack")
-                            : setLocale(locale, "enrollment.quickEnrollment");
-
-  const converUrl = "https://images.unsplash.com/photo-1519406596751-0a3ccc4937fe?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-  const enrollmentVersion = "v2.0";
+  console.log("coursesToDisplay", coursesToDisplay, availableCourses, selectedCoursesToEnroll);
+  const titleOfEnrollment = setLocale(locale, "enrollment.quickEnrollment");
+  const converUrl = "https://images.unsplash.com/photo-1655800466797-8ab2598b4274?q=80&w=1690&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+  const enrollmentVersion = "v3.0";
  
   return (
     <div className="container customerName">
-      {isEnrollmentModalVisible && 
-            <EnrollmentModal             
-            closeEnrollmentModal={handleCloseModal}
-            visibleModal={isEnrollmentModalVisible} // Pass the modal visibility
-            courses={availableCourses}
-          />
-      }
+      {isEnrollmentModalVisible && (
+        <EnrollmentModal
+          closeEnrollmentModal={handleCloseModal}
+          visibleModal={isEnrollmentModalVisible}
+          courses={coursesToDisplay}
+        />
+      )}
 
       <Form
           form={form}
@@ -451,7 +377,7 @@ useEffect(() => {
               }
             >
               <h1 style={{ marginBottom: "10px", textAlign: "left" }}>
-                {titleOfEnrollment} - ({enrollmentVersion})
+                {titleOfEnrollment} - {user?.communicationName} - ({enrollmentVersion})
               </h1>
             </Card>
 
@@ -462,8 +388,11 @@ useEffect(() => {
                 title={setLocale(locale, "enrollment.courseDetails")}
                 loading={submittingLoading}
               >
-                <h2>{setLocale(locale, "enrollment.numOfCoursesEnrolled")}  {coursesToDisplay?.length}</h2>
-                
+                <h2>
+                  {setLocale(locale, "enrollment.numOfCoursesEnrolled")}{" "}
+                  {coursesToDisplay?.length}
+                </h2>
+
                 <Tabs tabPosition="top" type="line">
                   {coursesToDisplay?.map((course, index) => (
                     <Tabs.TabPane
@@ -471,24 +400,21 @@ useEffect(() => {
                       key={course?.CourseCodeId || index}
                     >
                       <Row gutter={[16, 16]}>
-                        {/* Image Column */}
                         <Col xs={24} sm={24} lg={12}>
                           <img
                             src={
                               course?.CourseDetails?.imageUrl ||
-                              process.env.PUBLIC_URL + '/img/avatars/tempProfile.jpg'
+                              process.env.PUBLIC_URL + "/img/avatars/tempProfile.jpg"
                             }
                             alt={`${course?.CourseDetails?.course} profile`}
                             style={{
                               width: 200,
                               height: 200,
-                              borderRadius: '5%',
-                              marginBottom: '10px',
+                              borderRadius: "5%",
+                              marginBottom: "10px",
                             }}
                           />
                         </Col>
-
-                        {/* Course Details Column */}
                         <Col xs={24} sm={24} lg={12}>
                           <CourseDetails course={course} />
                         </Col>
@@ -496,16 +422,20 @@ useEffect(() => {
                     </Tabs.TabPane>
                   ))}
                 </Tabs>
-                  {selectedCoursesToEnroll?.length > 0 && (                      
-                  <Button type="dashed" block onClick={handleGoBackSelection} disabled={selectedCoursesToEnroll?.length === 0}>
-                  {setLocale(locale, "enrollment.form.goBackToCourseSelection")}
-                  </Button>
-                )
-              }
 
+                {selectedCoursesToEnroll?.length > 0 && (
+                  <Button
+                    type="dashed"
+                    block
+                    onClick={handleGoBackSelection}
+                    disabled={selectedCoursesToEnroll?.length === 0}
+                    style={{ marginTop: 16 }}
+                  >
+                    {setLocale(locale, "enrollment.form.goBackToCourseSelection")}
+                  </Button>
+                )}
               </Card>
             ) : (
-              // If there's only one course, render it without tabs
               coursesToDisplay?.map((course, index) => (
                 <Card
                   key={course.id || index}
@@ -519,14 +449,14 @@ useEffect(() => {
                       <img
                         src={
                           course?.CourseDetails?.imageUrl ||
-                          process.env.PUBLIC_URL + '/img/avatars/tempProfile.jpg'
+                          process.env.PUBLIC_URL + "/img/avatars/tempProfile.jpg"
                         }
                         alt={`${course?.CourseDetails?.course} profile`}
                         style={{
                           width: 200,
                           height: 200,
-                          borderRadius: '5%',
-                          marginBottom: '10px',
+                          borderRadius: "5%",
+                          marginBottom: "10px",
                         }}
                       />
                     </Col>
@@ -534,91 +464,26 @@ useEffect(() => {
                       <CourseDetails course={course} />
                     </Col>
                   </Row>
+
+                  {selectedCoursesToEnroll?.length > 0 && (
+                    <Button
+                      type="dashed"
+                      block
+                      onClick={handleGoBackSelection}
+                      disabled={selectedCoursesToEnroll?.length === 0}
+                      style={{ marginTop: 16 }}
+                    >
+                      {setLocale(locale, "enrollment.form.goBackToCourseSelection")}
+                    </Button>
+                  )}
                 </Card>
               ))
             )}
 
- 
-            {!isToProceedToFullEnrollment && (
-              <Card style={quickEnrollmentStyle}
-                    title={setLocale(locale, "enrollment.personalInfo")}
-                    loading={submittingLoading}
-                    bordered>
-              <Form.Item name="yearOfBirth" label={setLocale(locale, "enrollment.yearOfBirth")} 
-              rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.pleaseSelectYearOfBirth") }]}>
-                <DatePicker
-                  style={{ width: "100%" }}
-                  picker="year" // Restrict picker to year only
-                  defaultPickerValue={moment("1990", "YYYY")} // Open to the 1990-1999 range
-                  disabledDate={(current) =>
-                    current &&
-                    (current.year() > 2014 || // No years beyond 2014
-                      current.year() < 1900) // No years earlier than 1900
-                  }
-                  onChange={onBirthDateSelect}
-                />
-              </Form.Item>
-            </Card>
-            )}
- 
+          
 
-            {isEmailVisible && !isToProceedToFullEnrollment && (
-              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} loading={submittingLoading} bordered>
-                <Form.Item 
-                  name="emailAddress" 
-                  rules={[
-                    { required: true, message: setLocaleString(locale, "profile.login.validEmail") },
-                    { type: "email", message: setLocaleString(locale, "enrollment.invalidEmail") },
-                  ]}
-                  >
-                  <Input
-                    onChange={(e) => handleEmailChange(e.target.value)}
-                    placeholder="Enter your contact email"
-                    style={{ marginBottom: 10 }}
-                    status={!isEmailValid ? 'error email not valid' : ''}
-                  />                      
-                </Form.Item>
-
-                {loading ? (
-                  <Spin tip={setLocale(locale, "enrollment.form.searchingRecord")} />
-                ) : isFindMeSubmitted && !returningEnrolleeCountryDivisionInfo?.personalCommunicationName ? (
-                  <h4>
-                    {setLocale(locale, "enrollment.form.unableToFindRecord")}{` ${form.getFieldValue("emailAddress") || "N/A"} `}
-                    {setLocale(locale, "enrollment.form.andYearOfBirth")} {` ${form.getFieldValue("yearOfBirth") ? form.getFieldValue("yearOfBirth").format("YYYY") : "N/A"}`}
-                  </h4>
-                ) : null}
-
-                
-                {isFindMeVisible && (
-                  <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-                    <Button type="primary" onClick={onFindMe}>{setLocale(locale, "enrollment.form.findMe")}</Button>
-                    <Button type="default" onClick={resetQuickEnrollmentInputValues}>{setLocale(locale, "resources.myprogress.reset")}</Button>
-                  </div>
-                )}
-
-                {!loading && isFindMeSubmitted && !returningEnrolleeCountryDivisionInfo?.personalCommunicationName && !isToProceedToFullEnrollment && (
-                  <div style={quickEnrollmentStyle}>
-                    <h3>{setLocale(locale, "enrollment.form.noRecordsProceedEnrollment")}</h3>
-                    <Button type="primary" onClick={onProceedForFullEnrollment}>{setLocale(locale, "enrollment.form.yes")}</Button>
-                    <Button type="default" onClick={resetQuickEnrollmentInputValues} style={{ marginLeft: 10 }}>{setLocale(locale, "enrollment.form.no")}</Button>
-                  </div>
-                )}
-
-              </Card>
-            )}
-         
-
-          { returningEnrolleeCountryDivisionInfo?.personalCommunicationName && !isToProceedToFullEnrollment && (
+          { user?.contactId && returningEnrolleeCountryDivisionInfo?.personalCommunicationName && (
             <>
-              {isConfirmVisible && (
-              <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>                
-                <h3><Flag code={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId} style={{ width: 20, marginRight: 10 }} />
-                 {returningEnrolleeCountryDivisionInfo?.names}?</h3>
-                <Button onClick={onYesConfirm}>{setLocale(locale, "enrollment.form.yes")}</Button>
-                <Button onClick={onNoConfirm} style={{ marginLeft: 10 }}>{setLocale(locale, "enrollment.form.no")}</Button>
-              </Card>
-            )}
-
             {isGeographyInfoVisible && (
               <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} loading={submittingLoading} bordered>
                 <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
@@ -745,7 +610,6 @@ useEffect(() => {
           // Handle 1 or more language levels in a unified way
           if (
             !returningEnrolleeCountryDivisionInfo?.personalCommunicationName ||
-            isToProceedToFullEnrollment ||
             !isGeographyInfoVisible
           ) {
             return null;
@@ -795,22 +659,6 @@ useEffect(() => {
         })()}
 
 
-          { isToProceedToFullEnrollment && (                         
-              <ContactEnrollment 
-                selectedEmail={passedEmail ?? form?.getFieldValue("emailAddress")}
-                onEmailChange={handleEmailChange}
-                selectedYearOfBirth={form?.getFieldValue("yearOfBirth")?.format("YYYY")}
-                onFormSubmit={onFormSubmit}
-                form={form}
-                setResetChildStates={setResetChildStates} // Pass the delegate setter to the child
-                enrollmentStyle={quickEnrollmentStyle}
-                submittingLoading={submittingLoading}
-                selectedDateOfBirth={passedDateOfBirth}
-                />
-
-            )
-          }
-
             <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
               <p>
                 {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {enrollmentVersion} - 
@@ -844,10 +692,11 @@ function mapDispatchToProps(dispatch) {
   }, dispatch);
 }
 
-const mapStateToProps = ({ lrn, grant }) => {
+const mapStateToProps = ({ lrn, grant, auth }) => {
   const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll } = lrn;
-  const { isToDoFullEnrollment } = grant;
-  return { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll };
+  const { user } = grant;
+  const { token } = auth;
+  return { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, user, token, selectedCoursesToEnroll };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(QuickToFullEnrollment);
+export default connect(mapStateToProps, mapDispatchToProps)(AuthenticatedQuickEnrollment);

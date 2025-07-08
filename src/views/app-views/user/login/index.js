@@ -5,7 +5,9 @@ import {
 	showAuthMessage,
 	showLoading,
 	hideAuthMessage,
-	authenticated } from "redux/actions/Auth";
+	authenticated,
+	signIn
+} from "redux/actions/Auth";
 
 import { onAuthenticatingWithSSO } from "redux/actions/Grant";
 import { APP_PREFIX_PATH } from "configs/AppConfig";
@@ -14,7 +16,8 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
 import { Card } from 'antd';
 import { useHistory } from "react-router-dom";
-import JwtAuthService from 'services/JwtAuthService'
+import JwtAuthService from 'services/JwtAuthService';
+import Loading from 'components/shared-components/Loading';
 
 export const LoginAdapter = (props) => {
 		let history = useHistory();	
@@ -33,20 +36,21 @@ export const LoginAdapter = (props) => {
 			token,
 			redirect,
 			allowRedirect,
-			onAuthenticatingWithSSO
+			onAuthenticatingWithSSO,
+			signIn
 		} = props
 	  
 
-		const handleSuccessfulLogin = (session) => {
-			const user = session.user;
-			const email = user.email;
+		const handleSuccessfulLogin = (session) => {  
+			const accessToken = session?.data?.session?.access_token;
+			const email = session?.user?.email;
 		  
-			if (!email) return;
-		  
-			// Dispatch redux actions
-			props.authenticated(user);
-			props.onAuthenticatingWithSSO(email);
-		  
+			if (accessToken && email) {
+			  authenticated(accessToken);
+			  onAuthenticatingWithSSO(email);
+			  signIn(session?.user);
+
+			}
 			// Redirect after login
 			history.push(APP_PREFIX_PATH);
 		  };
@@ -79,40 +83,55 @@ export const LoginAdapter = (props) => {
 	const converUrl = 'https://images.unsplash.com/photo-1603899122634-f086ca5f5ddd?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 	const titleOfEnrollment = 'login';
 	console.log("window.location.origin", window.location.origin);
-	return (
-		<>
-			<div className="container customerName">
-		<Card
-			bordered
-			cover={
-			<img
-				alt={titleOfEnrollment}
-				src={converUrl}
-				style={{ height: 100, objectFit: 'cover' }}
-			/>
-			}
-		>
-			<Auth
-			className="supabase-auth-ui"
-			supabaseClient={supabase}
-			appearance={{
-				theme: ThemeSupa,
-				variables: {
-				default: {
-					colors: {
-					brand: "#e79547", // Primary button color
-					brandAccent: "#d27c3f", // Hover color
+	const loginStyle = {
+		maxWidth: 600,
+		margin: "0 auto",
+		padding: "20px",
+	  }
+	if(!token){
+		return (
+			<>
+				<div className="container customerName">
+			<Card
+				bordered
+				style={loginStyle}
+				cover={
+				<img
+					alt={titleOfEnrollment}
+					src={converUrl}
+					style={{ height: 100, objectFit: 'cover' }}
+				/>
+				}
+			>
+				<Auth
+				className="supabase-auth-ui"
+				supabaseClient={supabase}
+				appearance={{
+					theme: ThemeSupa,
+					variables: {
+					default: {
+						colors: {
+						brand: "#e79547", // Primary button color
+						brandAccent: "#d27c3f", // Hover color
+						},
 					},
-				},
-				},
-			}}
-			providers={['google', 'facebook']}
-			redirectTo={window.location.origin + APP_PREFIX_PATH + '/login'} // or your custom redirect route
-			/>
-		</Card>
-		</div>
-		</>
+					},
+				}}
+				providers={['google', 'facebook']}
+				redirectTo={window.location.origin + APP_PREFIX_PATH + '/login'} // or your custom redirect route
+				/>
+			</Card>
+			</div>
+			</>
+			)
+	}else{
+		return (
+			<>
+				<Loading cover="content"/>
+			</>
 		)
+	}
+
 	};
 
 
@@ -122,7 +141,8 @@ function mapDispatchToProps(dispatch) {
 		showLoading,
 		hideAuthMessage,
 		authenticated,
-		onAuthenticatingWithSSO
+		onAuthenticatingWithSSO,
+		signIn
   }, dispatch);
 }
 

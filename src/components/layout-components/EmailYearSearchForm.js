@@ -7,7 +7,6 @@ import getLocaleText from "components/util-components/IntString";
 import { useHistory } from 'react-router-dom';
 import { onRetrievingUserProfile } from 'redux/actions/Grant';
 import IntlMessage from "components/util-components/IntlMessage";
-import ContactEnrollment from 'components/layout-components/Enrollment/ContactEnrollment';
 
 const EmailYearSearchForm = (props) => {
   // Destructure props
@@ -46,6 +45,20 @@ const EmailYearSearchForm = (props) => {
     } else {
       console.log("No year selected");
     }
+  };
+
+  const handleRedirectToEnrollment = () => {
+    const dobString = fullDateOfBirth?.format("YYYY-MM-DD"); 
+    console.log("fullDateOfBirth", dobString, user?.emailId)
+    history.push({
+      pathname: "/lrn/enroll",
+      state: {
+        email: user?.emailId,
+        dateOfBirth: dobString,
+        isToDoFullEnrollment: true,
+        isSubmitBtnEnabled: true
+      }
+    });
   };
 
   const handleSearch = () => {
@@ -197,10 +210,15 @@ useEffect(() => {
       }
     }
   };
-  console.log("fetchss")
+
   fetchProfile();
 }, [submitted, searchParams, onRetrievingUserProfile, setProfileData, history, askFullBirthDate]);
 
+  const emailYearStyle = {
+    maxWidth: 600,
+    margin: "0 auto",
+    padding: "20px",
+    }
 
   const selectedYearOfBirth = form?.getFieldValue("yearOfBirth")?.format("YYYY") ?? yearOfBirth?.format("YYYY");
 
@@ -261,35 +279,44 @@ useEffect(() => {
                 />
               </Form.Item>
               </Col>
-            </Row>                 
+            </Row>    
+            
+            
+
+
+            
           )}
 
        <Row justify="center">
                 <Col xs={24} sm={24} lg={8}>
-
-                
                 {isToDisplayFullEnrollment && (
-                        <ContactEnrollment
-                        selectedEmail={user?.emailId}
-                        selectedDateOfBirth={form?.getFieldValue("dateOfBirth")}
-                        form={form}
-                        onFormSubmit={onFormSubmit ?? (() => {})} // define this function if not already
-                        enrollmentStyle={{ maxWidth: 600, margin: "0 auto", padding: "20px" }}
-                        submittingLoading={loading}
-                      />
+                  <>               
+                  <Card bordered>
+                    <h3>{setLocale(locale, "search.NoRecordsFound")}</h3>
+                    <p>{setLocale(locale, "search.WouldYouLikeToEnroll")}</p>
+                    <Button type="primary" onClick={handleRedirectToEnrollment}>
+                      {setLocale(locale, "search.TakeMeToEnroll")}
+                    </Button>
+                  </Card>
+                  </>
                   )}
 
-                <Form.Item style={{ marginBottom: "10px" }}>
-                <Button 
-                  type="primary" 
-                  htmlType="submit" 
-                  loading={loading} 
-                  style={{ width: "100%" }} 
-                  disabled={!(yearOfBirth && user?.emailId)}
-                >
-                  {setLocale(locale, "resources.myprogress.search")}
-                </Button>
-              </Form.Item>              
+              {!isToDisplayFullEnrollment && (
+
+              <Form.Item style={{ marginBottom: "10px" }}>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                loading={loading} 
+                style={{ width: "100%" }} 
+                disabled={!(yearOfBirth && user?.emailId)}
+              >
+                {setLocale(locale, "resources.myprogress.search")}
+              </Button>
+              </Form.Item>   
+
+              )}
+           
             </Col>
         </Row>
       </Form>
@@ -310,8 +337,9 @@ function mapDispatchToProps(dispatch) {
     dispatch);
 }
 
-const mapStateToProps = ({ grant, lrn }) => {
+const mapStateToProps = ({ grant, lrn, auth }) => {
   const { user } = grant;
+  const { token } = auth; 
   const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = lrn;
   return { user, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful };
 };

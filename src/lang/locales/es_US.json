@@ -133,6 +133,7 @@
 	"main.upper.nav.theme.level.pilot": "Piloto",
 	"main.upper.nav.theme.level.supermarket": "Supermercado",
 	"main.upper.nav.theme.level.household": "Artículos del hogar",
+	"main.upper.nav.theme.level.workNjobs": "Trabajo y Oficios",
 	"main.upper.nav.theme.level.ec": "EC",
 	"sidenav.book": "Libro",
 	"sidenav.progress": "Progreso",
@@ -330,7 +331,11 @@
 	"enrollment.timeConflictWarning": "El curso se superpone con un curso ya seleccionado.",
 	"classes.grammar.basic":"Básico",
 	"classes.grammar.advanced":"Avanzado",
-	"form.user.session.notFoundMessage": "No pudimos encontrarle por su año de nacimiento. ¿Podría proporcionarnos su fecha de nacimiento completa?"
+	"form.user.session.notFoundMessage": "No pudimos encontrarle por su año de nacimiento. ¿Podría proporcionarnos su fecha de nacimiento completa?",
+	"search.NoRecordsFound": "No se encontraron registros",
+	"search.WouldYouLikeToEnroll": "¿Te gustaría inscribirte?",
+	"search.TakeMeToEnroll": "Sí, inscríbeme",
+	"weekly.enrollment.course":"Ya esta inscrito"
 	
 }
 

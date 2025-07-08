@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.78](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.77...v0.1.78) (2025-07-08)
+
+### [0.1.77](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.76...v0.1.77) (2025-07-08)
+
+### [0.1.76](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.75...v0.1.76) (2025-07-08)
+
+### [0.1.75](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.74...v0.1.75) (2025-07-08)
+
+### [0.1.74](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.73...v0.1.74) (2025-07-07)
+
+### [0.1.73](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.72...v0.1.73) (2025-06-27)
+
 ### [0.1.72](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.57...v0.1.72) (2025-06-27)
 
 ### [0.1.70](https://github.com/eclecticTraveler/titulino-ui-react-app/compare/v0.1.69...v0.1.70) (2025-06-25)

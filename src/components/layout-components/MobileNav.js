@@ -9,6 +9,7 @@ import LogoAlt from "./LogoAlt";
 import Flex from "../../components/shared-components/Flex";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import WidgetAction from 'components/shared-components/WidgetAction';
+import DonationCenter from "components/shared-components/DonationCenter";
 
 export const MobileNav = ({
 	sideNavTheme,
@@ -17,9 +18,10 @@ export const MobileNav = ({
 	routeInfo,
 	hideGroupTitle,
 	localization = true,
-	dynamicUpperMainNavigation
+	dynamicUpperMainNavigation,
+	token
 }) => {
-	const props = { sideNavTheme, routeInfo, hideGroupTitle, localization, dynamicUpperMainNavigation };
+	const props = { sideNavTheme, routeInfo, hideGroupTitle, localization, dynamicUpperMainNavigation, token };
 
 	const onClose = () => {
 		onMobileNavToggle(false);
@@ -50,17 +52,18 @@ export const MobileNav = ({
 				</Scrollbars>
 			</div>
 			<div className="mobile-donate">
-				<WidgetAction />			
+				<DonationCenter/>
 			</div>
 		</Flex>
 	</Drawer>
 	);
 };
 
-const mapStateToProps = ({ theme, lrn}) => {
+const mapStateToProps = ({ theme, lrn, auth}) => {
 	const {dynamicUpperMainNavigation} = lrn;
+	const { token } = auth;
 	const { navCollapsed, sideNavTheme, mobileNav } = theme;
-	return { navCollapsed, sideNavTheme, mobileNav, dynamicUpperMainNavigation };
+	return { navCollapsed, sideNavTheme, mobileNav, dynamicUpperMainNavigation, token };
 };
 
 export default connect(mapStateToProps, { onMobileNavToggle })(MobileNav);

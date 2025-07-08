@@ -55,8 +55,8 @@ export const calculatePercentageForSupermarketCertificates = async(userProgressB
   };
 };
 
-export const calculateUserCourseProgressPercentageForCertificates = async(userProgressByEmailId) => {
-  const userProgress = [...userProgressByEmailId];
+export const calculateUserCourseProgressPercentageForCertificates = async(userProgressByEmailId) => {  
+  const userProgress = userProgressByEmailId?.length > 0 ? [...userProgressByEmailId] : [];
 
   const totalClasses = 8;
   
@@ -90,7 +90,7 @@ export const calculateUserCourseProgressPercentageForCertificates = async(userPr
 };
 
 export const getUserCourseProgressCategories = async(userProgressByEmailId) => {
-  const userProgress = [...userProgressByEmailId];
+  const userProgress = userProgressByEmailId?.length > 0 ? [...userProgressByEmailId] : [];
 
   // Filter by category
   const category1Progress = userProgress?.filter(record => record?.CategoryId === 1); // Gatherings
@@ -129,12 +129,11 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
     case 'supermarket':
       return 'SUPERMARKET_SEP_2024_COURSE_01';      
     case 'household':      
-      return 'HOUSEHOLD_ITEMS_PART_1_JAN_2025_COURSE_01'
-    // Add more cases as needed
-    case 'electronics':
-      return 'ELECTRONICS_MAR_2025_COURSE_01';
+      return 'HOUSEHOLD_ITEMS_PART_1_JAN_2025_COURSE_01'    
+    case 'work-n-jobs':
+      return 'WORK_AND_JOBS_JULY_2025_COURSE_01';
     default:
-      return 'HOUSEHOLD_ITEMS_PART_1_JAN_2025_COURSE_01' // TODO find a better way to do this!
+      return 'NOT_FOUND' // TODO find a better way to do this!
       // throw new Error(`Invalid course theme: ${courseTheme}`);
   }
 };

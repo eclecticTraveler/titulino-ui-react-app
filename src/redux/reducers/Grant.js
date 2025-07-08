@@ -2,7 +2,8 @@ import {
   ON_AUTHENTICATING_WITH_INTERNAL_RESOURCES,
   ON_AUTHENTICATING_WITH_SSO,
   AUTH_TITULINO_INTERNAL_TOKEN,
-  ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH
+  ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
+  ON_LOADING_AUTHENTICATED_LANDING_PAGE
 } from '../constants/Grant';
 
 const initState = {
@@ -12,6 +13,7 @@ const initState = {
   user: {
     userCourses: null,
     contactId: null,
+    contactInternalId: null,
     emailId: null,
     yearOfBirth: null,
     communicationName: null,
@@ -41,8 +43,12 @@ const grant = (state = initState, action) => {
           ...state.user,
           emailId: action.emailId
         }
+      };    
+    case ON_LOADING_AUTHENTICATED_LANDING_PAGE:
+      return {
+        ...state,
+        user: action.user
       };
-
     case ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH:
       return {
         ...state,

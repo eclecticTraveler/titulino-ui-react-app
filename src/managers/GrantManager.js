@@ -3,14 +3,13 @@ import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import GoogleService from "services/GoogleService";
 import AdminInsights from "lob/AdminInsights";
-import StudentProgress from "lob/StudentProgress";
 
 
 export const getAllCourses = async() => {
   const localStorageKey = `adminAllCourses`;
-  const cachedData = await LocalStorageService.getLocalStorageObjectWithExpiry(localStorageKey);
-  if (cachedData) {
-    return cachedData;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  if (user) {
+    return user;
   }
 
   const allCourses = await TitulinoRestService.getAllCourses("getAllCourses");
@@ -26,25 +25,36 @@ export const getAllCourses = async() => {
 
 
 const getUserProfile = async (emailId, dobOrYob) => {
-  const localStorageKey = `UserProfile_${emailId}_${dobOrYob}`;
-
+  const localStorageKey = `UserProfile_${emailId}`;
   // 1. Try to get from encrypted localStorage
-  const cachedProfile = LocalStorageService.retrieveEncryptedObjectWithExpiry(localStorageKey);
-  if (cachedProfile) {
-    return cachedProfile;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+
+  if (user) {
+    return user;
   }
 
   // 2. Otherwise fetch from backend
   try {
-    const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(emailId, dobOrYob);
-    console.log("userProfile", userProfile);
-    if (userProfile) {
-      console.log("IN IF");
+    const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(emailId, dobOrYob);    
+    if (userProfile) {      
       // 3. Store encrypted locally with TTL (e.g., 60 minutes)
-      LocalStorageService.storeEncryptedObjectWithExpiry(localStorageKey, userProfile, 10);
-      return userProfile;
-    } else {
-      console.log("IN ELSE");
+      const user = {
+        userCourses: userProfile?.userCourses ?? null,
+        contactId: userProfile?.contactId ?? null,
+        contactInternalId: userProfile?.contactInternalId ?? null,
+        communicationName: userProfile?.communicationName ?? null,
+        expirationDate: userProfile?.expirationDate ?? null,
+        hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
+        innerToken: userProfile?.token,
+        emailId: emailId,
+        yearOfBirth: userProfile?.yearOfBirth
+      };
+      
+      LocalStorageService.setCachedObject(localStorageKey, user, 60);       
+
+      return user;
+      
+    } else {      
       console.warn("No user profile found for:", emailId, dobOrYob);
       return null;
     }
@@ -55,10 +65,16 @@ const getUserProfile = async (emailId, dobOrYob) => {
   }
 };
 
+const getCachedUserProfile = async (emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  return user
+};
 
 
 const GrantManager = {
   getUserProfile,
+  getCachedUserProfile
 };
 
 export default GrantManager;

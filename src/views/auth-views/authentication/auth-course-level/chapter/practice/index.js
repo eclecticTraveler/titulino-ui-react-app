@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage, getQuizletUrl}  from 'redux/actions/Lrn';
+import {getUserSelectedCourse, getUserNativeLanguage, getQuizletUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { env } from 'configs/EnvironmentConfig';
 import Loading from 'components/shared-components/Loading';
@@ -24,7 +24,6 @@ class QuizletPractice extends Component {
     }
 
     render() {  
-        console.log("YOOOOOOO", pathInfo)
         if(!this.props.quizletUrl) {
             return (
                 <div>
@@ -44,7 +43,6 @@ class QuizletPractice extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getWasUserConfigSetFlag: getWasUserConfigSetFlag, 
         getUserSelectedCourse: getUserSelectedCourse,
         getUserNativeLanguage: getUserNativeLanguage,
         getQuizletUrl: getQuizletUrl
