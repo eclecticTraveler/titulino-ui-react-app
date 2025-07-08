@@ -18,6 +18,7 @@ import EmailYearSearchForm from "components/layout-components/EmailYearSearchFor
 import { authenticated, signIn } from "redux/actions/Auth";
 import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
 import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
+import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPolicy";
 
 import SupabaseAuthService from "services/SupabaseAuthService";
   
@@ -51,7 +52,8 @@ export const Views = (props) => {
     
     const PUBLIC_ROUTE_COMPONENTS = {
         [`${APP_PREFIX_PATH}/terms-conditions`]: TermsConditionsCancelSubscription,
-    };
+        [`${APP_PREFIX_PATH}/privacy-policy`]: PrivacyPolicy,
+      };
           
     const PUBLIC_ROUTES = Object.keys(PUBLIC_ROUTE_COMPONENTS);
       
