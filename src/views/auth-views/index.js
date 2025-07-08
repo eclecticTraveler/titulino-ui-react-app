@@ -3,6 +3,7 @@ import { Switch, Route, Redirect } from "react-router-dom";
 import Loading from '../../components/shared-components/Loading';
 import { AUTH_PREFIX_PATH } from '../../configs/AppConfig'
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
+import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 import { connect } from "react-redux";
 import { bindActionCreators } from 'redux';
 import { retry } from '../../helpers/index';
@@ -14,6 +15,7 @@ export const AuthViews = (props) => {
     <Suspense fallback={<Loading cover="page"/>}>
       <Switch>
         {/* <Route exact path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}`} component={lazy(() => retry(() => import(`./authentication/auth-course-level`)))} /> */}
+        <Route exact path={`${AUTH_PREFIX_PATH}/terms-conditions`} component={TermsConditionsCancelSubscription} />
         <Route exact path={`${AUTH_PREFIX_PATH}/test`} component={lazy(() => retry(() => import(`./authentication/auth-course-level`)))} />
         {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/login`))} /> */}
         {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/login`))} /> */}

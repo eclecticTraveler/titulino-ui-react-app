@@ -17,8 +17,10 @@ import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
 import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
 import { authenticated, signIn } from "redux/actions/Auth";
 import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
-import SupabaseAuthService from "services/SupabaseAuthService";
+import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 
+import SupabaseAuthService from "services/SupabaseAuthService";
+  
 function RouteInterceptor({ children, isAuthenticated, ...rest }) {
     const loginPath = `${APP_PREFIX_PATH}/test`; /// LOGIN
     // If isAuthenticated then render components passed if not then redirect to pathname or login page
@@ -47,13 +49,22 @@ export const Views = (props) => {
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
     
+    const PUBLIC_ROUTE_COMPONENTS = {
+        [`${APP_PREFIX_PATH}/terms-conditions`]: TermsConditionsCancelSubscription,
+    };
+          
+    const PUBLIC_ROUTES = Object.keys(PUBLIC_ROUTE_COMPONENTS);
+      
+    const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
+    console.log("location.pathname", location.pathname, isPublicRoute)
+
+
     // Load the cookie for Authentication if there was any
     useSupabaseSessionSync((session) => {
         if(!user?.emailId){
             authenticated(session?.user);
             onAuthenticatingWithSSO(session?.user?.email);
         }
-        console.log("--->user", user?.contactId)
     });
       
     useEffect(() => {
@@ -102,6 +113,21 @@ export const Views = (props) => {
 
     }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);
 
+
+    if (isPublicRoute && !wasUserConfigSet) {
+        const Component = PUBLIC_ROUTE_COMPONENTS[location.pathname];      
+        if (!Component) return null; // Or a fallback message or loading screen      
+        return (
+          <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
+            <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
+              <Component />
+            </ConfigProvider>
+          </IntlProvider>
+        );
+      }
+           
+
+      
     if(!wasUserConfigSet){
         return (
             <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
