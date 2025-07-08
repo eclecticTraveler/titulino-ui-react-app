@@ -4,11 +4,12 @@ import { bindActionCreators } from 'redux';
 import { Row, Col } from 'antd';
 import ContactEnrollment from './ContactEnrollment';
 import {toggleCollapsedNav, onMobileNavToggle} from 'redux/actions/Theme';
-import { onRenderingCourseRegistration, onLoginForEnrollment } from "redux/actions/Lrn";
+import { onRenderingCourseRegistration, onLoginForEnrollment, onRenderingUserCoursesAvailableForRegistration } from "redux/actions/Lrn";
 import Loading from "components/shared-components/Loading";
 import CourseSelection from "./CourseSelection";
 import WeeklyCourseSelector from "./WeeklyCourseSelector";
 import QuickToFullEnrollment from "./QuickToFullEnrollment";
+import AuthenticatedQuickEnrollment from "./AuthenticatedQuickEnrollment";
 import CoursesNotAvailableMessage from "components/admin-components/ModalMessages/CoursesNotAvailableMessage";
 import { useLocation } from "react-router-dom";
 
@@ -84,16 +85,21 @@ let courseData = [
   ];
  
 export const EnrollmentWrapper = (props) => {
-	const { mobileNav, onMobileNavToggle, toggleCollapsedNav, navCollapsed, onRenderingCourseRegistration, availableCourses, onLoginForEnrollment, apiToken, selectedCoursesToEnroll } = props;
+	const { user, token, mobileNav, onMobileNavToggle, toggleCollapsedNav, navCollapsed, onRenderingUserCoursesAvailableForRegistration, 
+         onRenderingCourseRegistration, availableCourses, onLoginForEnrollment, apiToken, selectedCoursesToEnroll } = props;
   const location = useLocation();
   const { email, dateOfBirth, isToDoFullEnrollment, isSubmitBtnEnabled } = location.state || {};
     // If you need componentDidMount/componentDidUpdate-like behavior, you can use useEffect:
     useEffect(() => {
         // This runs once on mount (componentDidMount)
-        // If you have code that should run on component update, add dependencies to the array.
-        onRenderingCourseRegistration();
+        if(token && user?.contactId){
+          onRenderingUserCoursesAvailableForRegistration(user?.emailId);
+        }else{
+          onRenderingCourseRegistration();
+        }
+
     }, []); // Empty array ensures this runs only once, similar to componentDidMount.
-    console.log("selectedCoursesToEnroll", selectedCoursesToEnroll)
+
     if(!availableCourses){
         return (
             <>
@@ -113,7 +119,15 @@ export const EnrollmentWrapper = (props) => {
                      <WeeklyCourseSelector/>
                 </div>
             );
-        }else{
+        }
+        else if(token && user?.contactId && (selectedCoursesToEnroll && selectedCoursesToEnroll?.length !== 0)){
+          return (
+            <div>
+              <AuthenticatedQuickEnrollment/>
+          </div>
+          )
+        }          
+        else{
             return (
                 <div>
                      <QuickToFullEnrollment
@@ -132,15 +146,18 @@ function mapDispatchToProps(dispatch){
 	return bindActionCreators({
 		toggleCollapsedNav: toggleCollapsedNav,
 		onMobileNavToggle: onMobileNavToggle,
-        onRenderingCourseRegistration: onRenderingCourseRegistration,
-        onLoginForEnrollment: onLoginForEnrollment
+    onRenderingCourseRegistration: onRenderingCourseRegistration,
+    onLoginForEnrollment: onLoginForEnrollment,
+    onRenderingUserCoursesAvailableForRegistration: onRenderingUserCoursesAvailableForRegistration
 	}, dispatch)
 }
 
-const mapStateToProps = ({ theme, lrn }) => {
+const mapStateToProps = ({ theme, lrn, auth, grant }) => {
 	const {currentRoute, availableCourses, apiToken, selectedCoursesToEnroll} = lrn;
 	const { sideNavTheme, topNavColor, navCollapsed } = theme;
-	return { sideNavTheme, topNavColor, currentRoute, navCollapsed, availableCourses, apiToken, selectedCoursesToEnroll };
+  const { token } = auth;
+  const { user } = grant
+	return { sideNavTheme, topNavColor, currentRoute, navCollapsed, availableCourses, apiToken, selectedCoursesToEnroll, token, user };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EnrollmentWrapper);

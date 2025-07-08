@@ -334,7 +334,8 @@
 	"form.user.session.notFoundMessage": "No pudimos encontrarle por su año de nacimiento. ¿Podría proporcionarnos su fecha de nacimiento completa?",
 	"search.NoRecordsFound": "No se encontraron registros",
 	"search.WouldYouLikeToEnroll": "¿Te gustaría inscribirte?",
-	"search.TakeMeToEnroll": "Sí, inscríbeme"
+	"search.TakeMeToEnroll": "Sí, inscríbeme",
+	"weekly.enrollment.course":"Ya esta inscrito"
 	
 }
 

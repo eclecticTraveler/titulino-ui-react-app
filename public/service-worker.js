@@ -1,9 +1,9 @@
-const CACHE_NAME = 'v0.1.76'; // Increment with every deployment
+const CACHE_NAME = 'v0.1.77'; // Increment with every deployment
 const CACHE_ASSETS = [
   '/',
   '/index.html',
-  '/main.js?v=0.1.76',
-  '/styles.css?v=0.1.76',
+  '/main.js?v=0.1.77',
+  '/styles.css?v=0.1.77',
 ];
 
 // Install event: Cache initial assets

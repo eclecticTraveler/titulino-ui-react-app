@@ -57,23 +57,21 @@ export const Views = (props) => {
     });
       
     useEffect(() => {
-        console.log("--->outside Effect", user?.contactId);
-        if(token?.email && !user?.contactId){  
-        console.log("--->inside Effect", user?.contactId);         
+        if(token?.email && !user?.contactId){        
         onLoadingAuthenticatedLandingPage(token?.email);
     }
-    }, [user?.contactId]);
+    }, [user?.contactId, token?.email]);
 
     //   useEffect(() => {
     //     const syncInternalToken = async () => {
     //       await SupabaseAuthService.refreshInternalTokenIfValidSupabase(user?.yearOfBirth);
     //     };
       
-    //     if (user?.email && user?.yearOfBirth) {
+    //     if (user?.emailId && user?.yearOfBirth) {
     //         console.log("INN")
     //       syncInternalToken();
     //     }
-    //   }, [user?.email, user?.yearOfBirth]);
+    //   }, [user?.emailId, user?.yearOfBirth]);
       
     
     useBodyClass(`dir-${direction}`);

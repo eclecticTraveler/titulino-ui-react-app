@@ -331,6 +331,21 @@ class Utils {
 		return list;
 	}
 
+	/**
+   * Retrieves the courseCodeIds the userCourses object.
+   * @param {Object} userCourses
+   * @returns {array|empty}
+   */
+	static getAllCourseCodeIdsFromUserCourses(userCourses) {
+		if (!userCourses || typeof userCourses !== "object") {
+		  console.warn("Invalid userCourses object.");
+		  return [];
+		}
+	  
+		return Object.keys(userCourses);
+	}
+	  
+
 
   /**
    * Retrieves the course token from the userCourses object by courseCodeId.
@@ -346,7 +361,7 @@ class Utils {
 	
 		const course = userCourses[courseCodeId];
 		return course?.courseToken || null;
-	  }
+	}
 
 	/**
    * Retrieves the course token from the userCourses object by courseCodeId.

@@ -116,9 +116,9 @@ export const NavProfile = (props) => {
                 {(token && user?.communicationName) || token?.user_metadata?.full_name || token?.email}
               </h4>
             )}
-            {((token && user?.email) || token?.email) && (
+            {((token && user?.emailId) || token?.email) && (
                <span className="text-muted">
-                {(token && user?.email) ||  token?.email}
+                {(token && user?.emailId) ||  token?.email}
               </span>
             )}
             </div>

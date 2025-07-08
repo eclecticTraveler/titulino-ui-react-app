@@ -591,7 +591,6 @@ export const onFetchingUserAuthenticatedProgressForCourse = async (courseCodeId,
   }
 }
 
-
 export const onSubmittingUserAuthenticatedProgressForCourse = async (courseProgress, courseCodeId, emailId) => {
   const submittedUserCourseProgress = await TitulinoManager.upsertUserCourseProgress(courseProgress, courseCodeId, emailId);
   
@@ -622,6 +621,7 @@ export const ongettingUserVideoClassArrayUrls = async (levelNo, chapterNo, nativ
   }
 }
 
+
 export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLanguage, course) => {
  const { courseCodeId, courseConfiguration } = await LrnManager.getCourseProgress(courseTheme, nativeLanguage, course)
   return {
@@ -631,3 +631,14 @@ export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLan
     courseTheme: courseTheme
   }
 }
+
+
+export const onRenderingUserCoursesAvailableForRegistration = async (emailId) => {
+  const {countries, userCoursesAvailableForUserToRegistered, selfLanguageLevel} = await LrnManager.getUserCoursesForEnrollment(emailId);
+    return {
+      type: ON_RENDERING_COURSE_REGISTRATION,
+      countries: countries,
+      availableCourses: userCoursesAvailableForUserToRegistered,
+      selfLanguageLevel: selfLanguageLevel
+    }
+  }

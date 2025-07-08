@@ -16,10 +16,10 @@ const getUserCourseProgress = async(courseCodeId, emailId) => {
   const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
 
   if (token) {
-    courseProgress = await TitulinoAuthService.getCourseProgress(courseCodeId, token, "onFetchingUserAuthenticatedProgressForCourse");
+    courseProgress = await TitulinoAuthService.getCourseProgress(courseCodeId, token, "getUserCourseProgress");
 
     // For now if the user is facilitador, filter to its own results: TODO
-    courseFilteredProgress = courseProgress?.filter(item => item?.EmailId === user?.email);
+    courseFilteredProgress = courseProgress?.filter(item => item?.EmailId === user?.emailId);
   }
 
   const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
@@ -51,7 +51,6 @@ const getCourseToken = async(courseCodeId, emailId) => {
 
 const getUserUpperNavigationConfig = async (isAuthenticated) => {  
   const isUserAuthenticated = !!isAuthenticated;
-  console.log("UpperNavigation-isUserAuthenticated", isUserAuthenticated);
   const selectedLanguageForCourse =  await LocalStorageService.getUserSelectedCourse();
   const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation, isUserAuthenticated);
   return upperMainNavigation;
@@ -82,6 +81,30 @@ const getCourseProgress = async(courseTheme, nativeLanguage, course) => {
     };
 }
 
+const getUserCoursesForEnrollment = async(emailId) => {  
+    const localStorageKey = `UserProfile_${emailId}`;  
+    const user = await LocalStorageService.getCachedObject(localStorageKey);
+
+    const [countries, availableCourses, selfLanguageLevel] = await Promise.all([
+      TitulinoRestService.getCountries("getUserCoursesForEnrollment"),
+      TitulinoRestService.getAvailableCourses(null, "getUserCoursesForEnrollment"),
+      TitulinoRestService.getSelfDeterminedLanguageLevelCriteria("getUserCoursesForEnrollment")
+    ]);
+  
+    const userEnrolledCourseIds = utils.getAllCourseCodeIdsFromUserCourses(user?.userCourses);
+
+    const userCoursesAvailableForUserToRegistered = availableCourses?.map(course => ({
+      ...course,
+      alreadyEnrolled: userEnrolledCourseIds.includes(course.CourseCodeId)
+    }));
+    
+  
+    return {
+      countries,
+      userCoursesAvailableForUserToRegistered,
+      selfLanguageLevel
+    };
+}
 
 
 const LrnManager = {
@@ -90,7 +113,8 @@ const LrnManager = {
   getCourseToken,
   getUserUpperNavigationConfig,
   getGrammarClasses,
-  getCourseProgress
+  getCourseProgress,
+  getUserCoursesForEnrollment
 };
 
 export default LrnManager;

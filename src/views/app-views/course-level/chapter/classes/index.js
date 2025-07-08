@@ -37,13 +37,8 @@ const VideoClasses = ({
         user?.emailId
       );
     }
-    // ongettingVideoClassArrayUrls(
-    //   pathInfo?.levelNo,
-    //   pathInfo?.chapterNo,
-    //   nativeLanguage?.localizationId,
-    //   course
-    // );
-  }, [location?.pathname, nativeLanguage?.localizationId, course, user?.email]);
+
+  }, [location?.pathname, nativeLanguage?.localizationId, course, user?.emailId]);
 
   if (!videoClassUrls || videoClassUrls.length === 0) {
     return <UnderConstruccion />;

@@ -332,6 +332,7 @@
 	"form.user.session.notFoundMessage":"We couldn't find you by your year of birth. Can you provide your full birth date?",
 	"search.NoRecordsFound":"No records found",
 	"search.WouldYouLikeToEnroll":"Would you like to enroll?",
-	"search.TakeMeToEnroll":"Yes, take me to enroll"
+	"search.TakeMeToEnroll":"Yes, take me to enroll",
+	"weekly.enrollment.course":"Already Enrolled"
 	
 }
