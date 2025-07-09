@@ -19,7 +19,6 @@ import { authenticated, signIn } from "redux/actions/Auth";
 import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
 import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPolicy";
-
 import SupabaseAuthService from "services/SupabaseAuthService";
   
 function RouteInterceptor({ children, isAuthenticated, ...rest }) {
@@ -55,11 +54,10 @@ export const Views = (props) => {
         [`${APP_PREFIX_PATH}/privacy-policy`]: PrivacyPolicy,
       };
           
-    const PUBLIC_ROUTES = Object.keys(PUBLIC_ROUTE_COMPONENTS);
-      
-    const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
-    console.log("location.pathname", location.pathname, isPublicRoute)
-
+      const normalizePath = path => path.replace(/\/+$/, '');
+      const PUBLIC_ROUTES = Object.keys(PUBLIC_ROUTE_COMPONENTS);
+      const normalizedPath = normalizePath(location.pathname);
+      const isPublicRoute = PUBLIC_ROUTES.includes(normalizedPath);
 
     // Load the cookie for Authentication if there was any
     useSupabaseSessionSync((session) => {
@@ -115,8 +113,7 @@ export const Views = (props) => {
 
     }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);
 
-
-    if (isPublicRoute && !wasUserConfigSet) {
+    if (isPublicRoute) {
         const Component = PUBLIC_ROUTE_COMPONENTS[location.pathname];      
         if (!Component) return null; // Or a fallback message or loading screen      
         return (
