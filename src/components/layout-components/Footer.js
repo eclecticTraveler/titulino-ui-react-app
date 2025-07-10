@@ -15,6 +15,10 @@ export default function Footer() {
 				<Link to="/lrn/terms-conditions" className="footer-link">
 					Terms & Conditions
 				</Link>
+				{' - '}
+				<Link to="/lrn/privacy-policy" className="footer-link">
+					Privacy Policy
+				</Link>
 			</span>
 		</footer>
 	);
