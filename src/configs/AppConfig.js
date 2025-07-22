@@ -7,7 +7,7 @@ export const API_BASE_URL = env.TITULINO_NET_API
 export const APP_PREFIX_PATH = '/lrn';
 export const AUTH_PREFIX_PATH = '/lrn-auth';
 export const DEFAULT_PREFIX_VIEW = '/';
-export const DEFAULT_LANDING_COURSE = 'household';
+export const DEFAULT_LANDING_COURSE = 'work-n-jobs';
 
 export const THEME_CONFIG = {
 	navCollapsed: false,
