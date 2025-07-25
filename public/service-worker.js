@@ -1,20 +1,21 @@
-const CACHE_NAME = 'v0.1.94'; // Increment with every deployment
+const CACHE_NAME = 'v0.1.95'; // Increment with every deployment
 const CACHE_ASSETS = [
   '/',
   '/index.html',
-  '/main.js?v=0.1.94',
-  '/styles.css?v=0.1.94',
+  '/main.js?v=0.1.95',
+  '/styles.css?v=0.1.95',
 ];
 
 // Install event: Cache initial assets
 self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Install');
+  self.skipWaiting(); // <-- Force the waiting SW to become active
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Caching initial files');
+      console.log('[Service Worker] Caching files');
       return cache.addAll(CACHE_ASSETS);
     })
   );
-  self.skipWaiting(); // Force the new service worker to activate
 });
 
 // Fetch event: Serve from cache if available, otherwise fetch from network
@@ -60,4 +61,12 @@ self.addEventListener('activate', (event) => {
     )
   );
   self.clients.claim(); // Take control of all open clients immediately
+});
+
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[Service Worker] Skip waiting triggered');
+    self.skipWaiting();
+  }
 });
