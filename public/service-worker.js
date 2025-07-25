@@ -1,19 +1,29 @@
-const CACHE_NAME = 'v0.1.95'; // Increment with every deployment
+const CACHE_NAME = 'v0.1.96'; // Increment with every deployment
 const CACHE_ASSETS = [
   '/',
   '/index.html',
-  '/main.js?v=0.1.95',
-  '/styles.css?v=0.1.95',
+  '/main.js',
+  '/styles.css',
+  '/manifest.json'
 ];
 
 // Install event: Cache initial assets
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Install');
-  self.skipWaiting(); // <-- Force the waiting SW to become active
+  self.skipWaiting();
+
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Caching files');
-      return cache.addAll(CACHE_ASSETS);
+      return Promise.all(
+        CACHE_ASSETS.map(async (asset) => {
+          try {
+            await cache.add(asset);
+          } catch (err) {
+            console.warn(`[Service Worker] Failed to cache ${asset}`, err);
+          }
+        })
+      );
     })
   );
 });
@@ -22,29 +32,29 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // Serve from cache if available
       if (cachedResponse) return cachedResponse;
 
-      // Fetch from network if not found in cache
       return fetch(event.request)
         .then((fetchResponse) => {
-          // Only cache GET requests for resources on the same origin
           if (
             event.request.method === 'GET' &&
             event.request.url.startsWith(self.location.origin)
           ) {
             return caches.open(CACHE_NAME).then((cache) => {
-              // Cache the fetched response
               cache.put(event.request, fetchResponse.clone());
               return fetchResponse;
             });
           }
           return fetchResponse;
         })
-        .catch(() => caches.match('/index.html')); // Fallback to index.html in case of failure
+        .catch((err) => {
+          console.warn('[Service Worker] Fetch failed:', event.request.url, err);
+          return caches.match('/index.html');
+        });
     })
   );
 });
+
 
 // Activate event: Remove old caches
 self.addEventListener('activate', (event) => {
