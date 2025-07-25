@@ -133,10 +133,10 @@ jobs:
           gsutil -m setmeta -h "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" gs://${GCP_BUCKET_NAME}/service-worker.js
 
           # Add a content hash to service worker (optional, but better)
-          # SW_HASH=$(sha256sum build/service-worker.js | awk '{ print $1 }')
-          # gsutil cp build/service-worker.js gs://${GCP_BUCKET_NAME}/service-worker-${SW_HASH}.js
-          # sed -i "s|service-worker.js|service-worker-${SW_HASH}.js|g" build/index.html
+          SW_HASH=$(sha256sum build/service-worker.js | awk '{ print $1 }')
+          gsutil cp build/service-worker.js gs://${GCP_BUCKET_NAME}/service-worker-${SW_HASH}.js
+          sed -i "s|service-worker.js|service-worker-${SW_HASH}.js|g" build/index.html
 
           # Ensure the app loads the correct service worker dynamically
-          # sed -i "s|service-worker.js|service-worker-${SW_HASH}.js|g" build/index.html
-          # gsutil cp build/index.html gs://${GCP_BUCKET_NAME}/index.html
+          sed -i "s|service-worker.js|service-worker-${SW_HASH}.js|g" build/index.html
+          gsutil cp build/index.html gs://${GCP_BUCKET_NAME}/index.html

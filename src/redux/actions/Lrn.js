@@ -642,3 +642,12 @@ export const onRenderingUserCoursesAvailableForRegistration = async (emailId) =>
       selfLanguageLevel: selfLanguageLevel
     }
   }
+
+
+  export const getUserEBookUrl = async (levelTheme, nativeLanguage, course, emailId) => {   
+    const url = await LrnManager.getUserBookBaseUrl(levelTheme, nativeLanguage, course, emailId);
+      return {
+        type: ON_LOADING_EBOOK_URL,
+        ebookUrl: url
+      }
+    }
