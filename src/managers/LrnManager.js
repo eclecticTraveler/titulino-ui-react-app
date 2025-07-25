@@ -1,6 +1,7 @@
 import LocalStorageService from "services/LocalStorageService";
 import TitulinoAuthService from "services/TitulinoAuthService";
 import GrammarClassService from "services/GrammarClassService";
+import BookChapterService  from "services/BookChapterService";
 import DynamicNavigationRouter from "services/DynamicNavigationRouter";
 import TitulinoRestService from "services/TitulinoRestService";
 import StudentProgress from "lob/StudentProgress";
