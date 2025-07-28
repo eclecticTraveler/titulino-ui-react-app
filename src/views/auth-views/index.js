@@ -10,7 +10,7 @@ import { retry } from '../../helpers/index';
 import Login from '../auth-views/authentication/login';
 
 export const AuthViews = (props) => {
-  const { course } = props;
+  const { course, token } = props;
   return (
     <Suspense fallback={<Loading cover="page"/>}>
       <Switch>
