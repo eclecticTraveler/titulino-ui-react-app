@@ -30,9 +30,11 @@ export const AppViews = (props) => {
 			<Route exact path={`${APP_PREFIX_PATH}/terms-conditions`} component={TermsConditionsCancelSubscription} />
 			<Route exact path={`${APP_PREFIX_PATH}/private-policy`} component={PrivacyPolicy} />
 			<Route exact path={`${APP_PREFIX_PATH}/enroll`} component={lazy(() => import(`./user/enrollment`))} />
+			<Route exact path={`${APP_PREFIX_PATH}/signup`} component={lazy(() => import(`./user/redirect-signup`))} />
 			<Route exact path={`${APP_PREFIX_PATH}/switch-course`} component={lazy(() => retry(() => import(`./course-selection`)))} />	
 			<Route exact path={`${APP_PREFIX_PATH}/session-retrieval`} component={lazy(() => import(`./user/session-retrieval`))} />   
-			<Route exact path={`${APP_PREFIX_PATH}/login`} component={lazy(() => import(`./user/login`))} />		
+			<Route exact path={`${APP_PREFIX_PATH}/login`} component={lazy(() => import(`./user/login`))} />
+			<Route exact path={`${APP_PREFIX_PATH}/logout`} component={lazy(() => import(`./user/logout`))} />	
 			<Redirect exact from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
 		</Switch>
 	</Suspense>

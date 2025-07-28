@@ -7,7 +7,8 @@ import {
 	SIGNUP_SUCCESS,
 	SHOW_LOADING,
 	SIGNIN_WITH_GOOGLE_AUTHENTICATED,
-	SIGNIN_WITH_FACEBOOK_AUTHENTICATED
+	SIGNIN_WITH_FACEBOOK_AUTHENTICATED,
+	SIGNOUT
 } from '../constants/Auth';
 
 const initState = {
@@ -41,6 +42,14 @@ const auth = (state = initState, action) => {
 				showMessage: false,
 			}
 		case SIGNOUT_SUCCESS: {
+			return {
+				...state,
+				token: null,
+				redirect: '/',
+				loading: false
+			}
+		}
+		case SIGNOUT: {
 			return {
 				...state,
 				token: null,

@@ -19,13 +19,13 @@ export const AuthViews = (props) => {
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/${getLocalizedConfig(course)?.resources}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`../shared-views/course-level/resources`)))} />
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.book}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/book`)))} />
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.class}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/class`)))} />
+        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.grammarClass}`} component={lazy(() => retry(() => import(`./course-level/chapter/classes`)))} />
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/practice`)))} />	
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.quizletpdf}`} component={lazy(() => retry(() => import(`./course-level/chapter/pdf-render`)))} />		
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.grammarClass}`} component={lazy(() => retry(() => import(`./course-level/chapter/classes`)))} />
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.speaking}`} component={lazy(() => retry(() => import(`./course-level/chapter/speaking`)))} />
-        <Route exact path={`${AUTH_PREFIX_PATH}/logout`} component={lazy(() => import(`./user/logout`))} />
+        {/* <Route exact path={`${AUTH_PREFIX_PATH}/logout`} component={lazy(() => import(`./user/logout`))} /> */}
         {/* <Route exact path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./user/login`))} /> */}
-        <Route exact path={`${AUTH_PREFIX_PATH}/signup`} component={lazy(() => import(`./user/redirect-signup`))} />
+        {/* <Route exact path={`${AUTH_PREFIX_PATH}/signup`} component={lazy(() => import(`./user/redirect-signup`))} /> */}
         {/* <Route exact path={`${AUTH_PREFIX_PATH}/enroll`} component={lazy(() => import(`./user/enrollment`))} /> */}
         {/* <Route exact path={`${AUTH_PREFIX_PATH}/session-retrieval`} component={lazy(() => import(`./user/session-retrieval`))} />    */}
         <Route exact path={`${AUTH_PREFIX_PATH}/terms-conditions`} component={TermsConditionsCancelSubscription} />
