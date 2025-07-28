@@ -16,7 +16,7 @@ import {
 } from '@ant-design/icons';
 import Icon from '../../components/util-components/Icon';
 import { signOut } from 'redux/actions/Auth';
-import { APP_PREFIX_PATH } from '../../configs/AppConfig';
+import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from 'configs/AppConfig';
 import { Link } from "react-router-dom";
 import IntlMessage from "../../components/util-components/IntlMessage";
 import ProfileNavPanelConfig from './ProfileNavPanelConfig';
@@ -40,7 +40,8 @@ const configureMenuItems = (user, token) => {
       {
         title: setLocale(locale,"profile.adminInsights"),
         icon: RadarChartOutlined ,
-        path: "insight"
+        path: "insight",
+        isAuth: true
       }
             
       // },
@@ -73,7 +74,8 @@ const configureMenuItems = (user, token) => {
       {
         title: setLocale(locale,"profile.enroll"),
         icon: UsergroupAddOutlined ,
-        path: "enroll"
+        path: "enroll",
+        isAuth: false
       }
     )
   }
@@ -128,7 +130,7 @@ export const NavProfile = (props) => {
         <Menu>
           {menuItems.map((el, i) => (
             <Menu.Item key={i}>
-              <Link id={el.id} to={`${APP_PREFIX_PATH}/${el.path}`}>
+              <Link id={el.id} to={`${el?.isAuth ? AUTH_PREFIX_PATH : APP_PREFIX_PATH}/${el.path}`}>
                 <Icon className="mr-3 profile-accomdation" type={el.icon} />
                 <span className="font-weight-normal">{el.title}</span>
               </Link>
