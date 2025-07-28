@@ -52,7 +52,7 @@ export const LoginAdapter = (props) => {
 
 			}
 			// Redirect after login
-			history.push(AUTH_PREFIX_PATH);
+			history.push(APP_PREFIX_PATH);
 		  };
 
 		  
@@ -118,7 +118,7 @@ export const LoginAdapter = (props) => {
 					},
 				}}
 				providers={['google', 'facebook']}
-				redirectTo={window.location.origin + AUTH_PREFIX_PATH + '/login'} // or your custom redirect route
+				redirectTo={window.location.origin + APP_PREFIX_PATH + '/login'} // or your custom redirect route
 				/>
 			</Card>
 			</div>

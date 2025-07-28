@@ -22,7 +22,6 @@ import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPol
 import SupabaseAuthService from "services/SupabaseAuthService";
   
 function RouteInterceptor({ children, isAuthenticated, ...rest }) {
-    const loginPath = `${APP_PREFIX_PATH}/test`; /// LOGIN
     // If isAuthenticated then render components passed if not then redirect to pathname or login page
     return (
       <Route
@@ -33,7 +32,7 @@ function RouteInterceptor({ children, isAuthenticated, ...rest }) {
           ) : (
             <Redirect
               to={{
-                pathname: loginPath,
+                pathname: AUTH_PREFIX_PATH,
                 state: { from: location }
               }}
             />

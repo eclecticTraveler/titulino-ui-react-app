@@ -77,7 +77,7 @@ export const AuthLayout = ({ navCollapsed, navType, location, direction, dynamic
 			{(isNavTop && !isMobile) ? <TopNav routeInfo={currentRouteInfo}/> : null}
 			
 			<Layout className="app-container">		
-		{(isNavSide && !isMobile) ? <SideNav navColor={currentRouteInfo?.color} routeInfo={currentRouteInfo}/> : null }
+			{(isNavSide && !isMobile) ? <SideNav navColor={currentRouteInfo?.color} routeInfo={currentRouteInfo}/> : null }
 				<Layout className="app-layout" style={getLayoutDirectionGutter()}>
 					<div className={`app-content ${isNavTop ? 'layout-top-nav' : ''}`}>
 						<PageHeader display={true} title={currentRouteInfo?.title} />				
