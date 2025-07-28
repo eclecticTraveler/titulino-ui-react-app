@@ -32,7 +32,7 @@ function RouteInterceptor({ children, isAuthenticated, ...rest }) {
           ) : (
             <Redirect
               to={{
-                pathname: AUTH_PREFIX_PATH,
+                pathname: `${AUTH_PREFIX_PATH}/login`,
                 state: { from: location }
               }}
             />
@@ -135,7 +135,7 @@ export const Views = (props) => {
             </IntlProvider>
         )
     }
-
+console.log("token", token);
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
             <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
