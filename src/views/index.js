@@ -47,7 +47,7 @@ export const Views = (props) => {
         wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage, subNavPosition, signIn } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
-    
+    const isAuthResolved = token !== undefined;
     const PUBLIC_ROUTE_COMPONENTS = {
         [`${APP_PREFIX_PATH}/terms-conditions`]: TermsConditionsCancelSubscription,
         [`${APP_PREFIX_PATH}/privacy-policy`]: PrivacyPolicy,
@@ -146,9 +146,11 @@ console.log("token", token);
                     <Route path={APP_PREFIX_PATH}>
                         <AppLayout direction={direction} location={location} />
                     </Route>
-                    <RouteInterceptor path={AUTH_PREFIX_PATH} isAuthenticated={token}>
-                        <AuthLayout direction={direction} location={location}/>
+                    {isAuthResolved && (
+                    <RouteInterceptor path={AUTH_PREFIX_PATH} isAuthenticated={!!token}>
+                        <AuthLayout direction={direction} location={location} />
                     </RouteInterceptor>
+                    )}
                 </Switch>                            
             </ConfigProvider>
         </IntlProvider>  
