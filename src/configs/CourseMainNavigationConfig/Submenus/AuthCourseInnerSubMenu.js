@@ -1,4 +1,4 @@
-import { APP_PREFIX_PATH } from '../../AppConfig';
+import { AUTH_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
@@ -23,7 +23,7 @@ const uuidv4 = () => {
   }
 
 const getCommonUrl = (lang, levelNo, chapterNo) => {
-	const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}`;
+	const commonPath = `${AUTH_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.chapter}-${chapterNo}`;
 	return commonPath;
 }
 
@@ -212,7 +212,7 @@ export const getCoursePracticeResourcesInnerSubMenu = (lang, levelNo, chapterNo)
 		  return [
 			{
 				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.resources}/${getLocalizedConfig(lang)?.test}`,
+				path: `${AUTH_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-${levelNo}/${getLocalizedConfig(lang)?.resources}/${getLocalizedConfig(lang)?.test}`,
 				title: 'sidenav.finaltest',
 				icon: faUserClock,
 				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,

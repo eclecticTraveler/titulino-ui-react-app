@@ -1,4 +1,4 @@
-import { APP_PREFIX_PATH } from '../../AppConfig';
+import { AUTH_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 import { getCoursePracticeResourcesInnerSubMenu, getCoursePracticeInnerSubMenuV2Light } from './CoursePracticeInnerSubMenu';
 import { getAuthCourseInnerSubMenuV1 } from './AuthCourseInnerSubMenu';
@@ -22,7 +22,7 @@ import {
       
 
 export const AuthCourseSubNavigationHouseholdTheme = (lang) => {
-	const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-household/${getLocalizedConfig(lang)?.chapter}`;
+	const commonPath = `${AUTH_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-household/${getLocalizedConfig(lang)?.chapter}`;
 	return [
 		{
 			key: 'chapter-sidenav-theme-household-intro',
@@ -158,7 +158,7 @@ export const AuthCourseSubNavigationHouseholdTheme = (lang) => {
 		},
 		{
 			key: 'chapter-sidenav-theme-household-resources',
-			path: `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-household/${getLocalizedConfig(lang)?.resources}`,
+			path: `${AUTH_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-household/${getLocalizedConfig(lang)?.resources}`,
 			title: 'module.resources',
 			icon: faBoxes,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
