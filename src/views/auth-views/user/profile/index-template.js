@@ -1,13 +1,14 @@
 import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
-import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage}  from '../../../redux/actions/Lrn';
-import IconFallback from "../../../components/util-components/IconFallback";
+import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
+import PageHeaderAlt from '../../../../components/layout-components/PageHeaderAlt'
+import IconFallback from "../../../../components/util-components/IconFallback";
 import { withRouter } from "react-router-dom";
-import { onLocaleChange, onCourseChange } from '../../../redux/actions/Theme'
-import IntlMessage from "../../../components/util-components/IntlMessage";
+import { onLocaleChange, onCourseChange } from '../../../../redux/actions/Theme'
+import Flex from '../../../../components/shared-components/Flex'
+import IntlMessage from "../../../../components/util-components/IntlMessage";
 import Accordion from 'react-bootstrap/Accordion';
-import RenderOnlyOnAuthenticated from "../../../components/RenderOnlyOnAuthenticated"
 import { 
 	UserAddOutlined, 
 	FileExcelOutlined, 
@@ -20,7 +21,7 @@ import {
 	SettingOutlined
   } from '@ant-design/icons'; 
 import { Row, Col, Button, Card, Avatar, Dropdown, Table, Menu, Tag } from 'antd';
-import AvatarStatus from '../../../components/shared-components/AvatarStatus';
+import AvatarStatus from '../../../../components/shared-components/AvatarStatus';
 const { Meta } = Card;
 
 class Profile extends Component {
@@ -101,6 +102,7 @@ class Profile extends Component {
 			title: "Compliance Manager",
 			name: "Samantha Phillips",
 		}]
+		
 		const newJoinMemberOption = (
 			<Menu>
 			  <Menu.Item key="0">
@@ -122,6 +124,27 @@ class Profile extends Component {
 			</Menu>
 		  )
 
+		  const tabListNoTitle = [
+			{
+			  key: 'article',
+			  tab: 'article',
+			},
+			{
+			  key: 'app',
+			  tab: 'app',
+			},
+			{
+			  key: 'project',
+			  tab: 'project',
+			},
+		  ];
+
+		  const contentListNoTitle = {
+			article: <p>article content</p>,
+			app: <p>app content</p>,
+			project: <p>project content</p>,
+		  };
+
         return(	
 			<div>
 				{/* <div className="single-web-account-modal">
@@ -130,50 +153,87 @@ class Profile extends Component {
 				<h1>Profile</h1>						
 				</div>
 				</div> */}
-				<Row gutter={16}>
-					<Col xs={24} sm={24} md={24} lg={7}>
-						<Card title="Profile" hoverable
-    					cover={<img alt="example" src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />}>
-							<h2>Hello World card 1</h2>
-							<Meta title="Hello World card" description="Hello World!!" />
+								<div className="container">
+	
+
+				<Row gutter={16}>				
+				<Card className="border-bottom" overlap>
+					<div className="container">
+						<Flex className="py-2" mobileFlex={false} justifyContent="between" alignItems="center">
+							<h2 className="mb-3">"Add New Product" </h2>
+							<div className="mb-3">
+								<Button className="mr-2">Discard</Button>
+								<Button type="primary">
+									Add
+								</Button>
+							</div>
+						</Flex>
+					</div>
+				</Card>
+
+					<Col lg={8}>
+						<Card title="Card title" bordered={true}>
+						Card content
+						
+							<Card type="inner" title="Inner Card title" actions={[
+								<SettingOutlined key="setting" />,
+								<EditOutlined key="edit" />,
+								<EllipsisOutlined key="ellipsis" />,
+								]}
+								cover={
+									<img
+									  alt="example"
+									  src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
+									/>
+								  }>
+							Inner Card content
+
+							</Card>
+							<Card
+							style={{ marginTop: 16 }}
+							type="inner"
+							title="Inner Card title"
+							extra={<a href="#">More</a>}
+							>
+							Inner Card content
+							</Card>
 						</Card>
 					</Col>
-					<Col xs={24} sm={24} md={24} lg={17}>					
-						<Card title="Industry" hoverable extra={this.cardDropdown(newJoinMemberOption)}>
-							<h2>Industry </h2>
+					<Col lg={8}>
+						<Card title="Card title" bordered={true}>
+						Card content
 						</Card>
-						<Card title="Addresses" extra={this.cardDropdown(newJoinMemberOption)}>
-							<Row gutter={16}>
-								<Col lg={8}>
-									<Card title="Address 1" hoverable extra={this.cardDropdown(newJoinMemberOption)}>
-									<h2>Address 1 </h2>
-									</Card>
-								</Col>
-								<Col lg={8}>
-									<Card title="Address 2" hoverable extra={this.cardDropdown(newJoinMemberOption)}>
-									<h2>Address 2 </h2>
-									</Card>
-								</Col>
-								<Col lg={8}>
-									<Card title="Address 3" hoverable actions={[
-										<SettingOutlined key="setting" />,
-										<EditOutlined key="edit" />,
-										this.cardDropdown(newJoinMemberOption),
-										]}>
-									<h2>Address 3 </h2>
-									<Meta
-									avatar={
-									<Avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />
-									}
-									title="Card title"
-									description="This is the description"
-									/>
-									</Card>
-								</Col>
-							</Row>
+						<Card title="Card title" bordered={true}>
+							<Card
+							style={{ width: '100%' }}
+							tabList={tabListNoTitle}
+							activeTabKey={this.noTitleKey}
+							onTabChange={key => {
+								this.onTabChange(key, 'noTitleKey');
+							}}
+							>
+							{/* {contentListNoTitle[this.state.noTitleKey]} */}
+							</Card>
+						</Card>
+					</Col>
+					<Col span={8}>
+						<Card title="Card title" bordered={true}>
+						Card content
+							<Card
+							style={{ width: '100%' }}
+							tabList={tabListNoTitle}
+							activeTabKey={this.noTitleKey}
+							onTabChange={key => {
+								this.onTabChange(key, 'noTitleKey');
+							}}
+							>
+							{contentListNoTitle["article"]}
+							</Card>
 						</Card>
 					</Col>
 				</Row>
+				</div>
+				
 			</div>		
 		)
     }

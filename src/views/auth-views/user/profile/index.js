@@ -1,12 +1,12 @@
 import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
-import {onShippingKeyTabChange, onIsToEditShippingAddressChange, onIsToEditUserProfileChange, onAddressRequestLoad}  from '../../../redux/actions/Lrn';
+import {onShippingKeyTabChange, onIsToEditShippingAddressChange, onIsToEditUserProfileChange, onAddressRequestLoad}  from '../../../../redux/actions/Lrn';
 import { withRouter } from "react-router-dom";
-import IntlMessage from "../../../components/util-components/IntlMessage";
-import Address from "../../../components/layout-components/User-profile/Address";
-import BillingView from "../../../components/layout-components/User-profile/BillingView";
-import PrimaryIndustry from "../../../components/layout-components/User-profile/PrimaryIndustry";
+import IntlMessage from "../../../../components/util-components/IntlMessage";
+import Address from "../../../../components/layout-components/User-profile/Address";
+import BillingView from "../../../../components/layout-components/User-profile/BillingView";
+import PrimaryIndustry from "../../../../components/layout-components/User-profile/PrimaryIndustry";
 import { 
 	EllipsisOutlined, 
   } from '@ant-design/icons'; 

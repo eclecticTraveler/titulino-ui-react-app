@@ -1,17 +1,17 @@
 import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
-import { ImageSvg } from '../../../assets/svg/icon';
-import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage}  from '../../../redux/actions/Lrn';
-import PageHeaderAlt from '../../../components/layout-components/PageHeaderAlt'
-import IconFallback from "../../../components/util-components/IconFallback";
+import { ImageSvg } from '../../../../assets/svg/icon';
+import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
+import PageHeaderAlt from '../../../../components/layout-components/PageHeaderAlt'
+import IconFallback from "../../../../components/util-components/IconFallback";
 import { withRouter } from "react-router-dom";
-import { onLocaleChange, onCourseChange } from '../../../redux/actions/Theme'
-import Flex from '../../../components/shared-components/Flex'
-import IntlMessage from "../../../components/util-components/IntlMessage";
+import { onLocaleChange, onCourseChange } from '../../../../redux/actions/Theme'
+import Flex from '../../../../components/shared-components/Flex'
+import IntlMessage from "../../../../components/util-components/IntlMessage";
 import Accordion from 'react-bootstrap/Accordion';
-import RenderOnlyOnAuthenticated from "../../../components/RenderOnlyOnAuthenticated"
-import CustomIcon from '../../../components/util-components/CustomIcon';
+import RenderOnlyOnAuthenticated from "../../../../components/RenderOnlyOnAuthenticated"
+import CustomIcon from '../../../../components/util-components/CustomIcon';
 import { 
 	UserAddOutlined, 
 	FileExcelOutlined, 
@@ -25,7 +25,7 @@ import {
 	LoadingOutlined
   } from '@ant-design/icons'; 
 import { Input, Row, Col, Card, Form, Upload, InputNumber, message, Select } from 'antd';
-import AvatarStatus from '../../../components/shared-components/AvatarStatus';
+import AvatarStatus from '../../../../components/shared-components/AvatarStatus';
 const { Dragger } = Upload;
 const { Option } = Select;
 

@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import Loading from '../../components/shared-components/Loading';
-import { AUTH_PREFIX_PATH } from '../../configs/AppConfig'
+import { AUTH_PREFIX_PATH, APP_PREFIX_PATH, DEFAULT_LANDING_COURSE } from '../../configs/AppConfig'
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 import { connect } from "react-redux";
@@ -14,14 +14,22 @@ export const AuthViews = (props) => {
   return (
     <Suspense fallback={<Loading cover="page"/>}>
       <Switch>
-        <Route exact path={`${AUTH_PREFIX_PATH}/insight`} component={lazy(() => import(`./user-auth/analytics`))} />
+        <Route exact path={`${AUTH_PREFIX_PATH}/insight`} component={lazy(() => import(`./user/analytics`))} />
+        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/${getLocalizedConfig(course)?.resources}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`../shared-views/course-level/resources`)))} />
+        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.book}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/book`)))} />
+        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.class}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/class`)))} />
+        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.quizletpdf}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/pdf-render`)))} />		
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.grammarClass}`} component={lazy(() => retry(() => import(`./course-level/chapter/classes`)))} />
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.speaking}`} component={lazy(() => retry(() => import(`./course-level/chapter/speaking`)))} />
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.quizletpdf}`} component={lazy(() => retry(() => import(`./course-level/chapter/pdf-render`)))} />		
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`./course-level/chapter/practice`)))} />
-        {/* <Route exact path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}`} component={lazy(() => retry(() => import(`./authentication/auth-course-level`)))} /> */}
+        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`./course-level/chapter/practice`)))} />	
+        <Route exact path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}`} component={lazy(() => retry(() => import(`./course-level`)))} />
+        <Route exact path={`${AUTH_PREFIX_PATH}/logout`} component={lazy(() => import(`./user/logout`))} />
+        <Route exact path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./user/login`))} />
+        <Route exact path={`${AUTH_PREFIX_PATH}/signup`} component={lazy(() => import(`./user/redirect-signup`))} />
+        <Route exact path={`${AUTH_PREFIX_PATH}/enroll`} component={lazy(() => import(`./user/enrollment`))} />
+        <Route exact path={`${AUTH_PREFIX_PATH}/session-retrieval`} component={lazy(() => import(`./user/session-retrieval`))} />   
         <Route exact path={`${AUTH_PREFIX_PATH}/terms-conditions`} component={TermsConditionsCancelSubscription} />
-        <Route exact path={`${AUTH_PREFIX_PATH}/test`} component={lazy(() => retry(() => import(`./authentication/auth-course-level`)))} />
+        {/* <Route exact path={`${AUTH_PREFIX_PATH}/profile/edit-profile`} component={lazy(() => retry(() => import(`./profile/index`)))} />		 */}
         {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/login`))} /> */}
         {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/login`))} /> */}
         {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={Login} /> */}
@@ -32,8 +40,7 @@ export const AuthViews = (props) => {
         <Route path={`${AUTH_PREFIX_PATH}/error-1`} component={lazy(() => import(`./errors/error-page-1`))} />
         <Route path={`${AUTH_PREFIX_PATH}/error-2`} component={lazy(() => import(`./errors/error-page-2`))} />
         {/* <Redirect from={`${AUTH_PREFIX_PATH}`} to={`${AUTH_PREFIX_PATH}/login`} /> */}
-        <Redirect from={`${AUTH_PREFIX_PATH}`} to={`${AUTH_PREFIX_PATH}/test`} />
-        <Redirect from={`${AUTH_PREFIX_PATH}/`} to={`${AUTH_PREFIX_PATH}/test`} />
+        <Redirect exact from={`${AUTH_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
       </Switch>
     </Suspense>
   )

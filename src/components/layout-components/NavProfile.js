@@ -169,7 +169,7 @@ export const NavProfile = (props) => {
           <>
             <Menu.Divider />
             <Menu.Item key="login" className="menu-highlight">
-              <Link to={`${APP_PREFIX_PATH}/login`}>
+              <Link to={`${AUTH_PREFIX_PATH}/login`}>
                 <LoginOutlined className="mr-3 profile-accomdation" />
                 <span className="font-weight-bold">{setLocale(locale, "sidenav.login")}</span>
               </Link>
