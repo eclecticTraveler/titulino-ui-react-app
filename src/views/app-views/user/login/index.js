@@ -23,6 +23,7 @@ import Loading from 'components/shared-components/Loading';
 export const LoginAdapter = (props) => {
 		let history = useHistory();	
 		const location = useLocation();
+		const hasRedirected = useRef(false); // ✅ prevent infinite loop
 
 		const getRedirectPath = () => {
 		return location.state?.from || new URLSearchParams(location.search).get('redirectTo') || APP_PREFIX_PATH;
@@ -50,6 +51,13 @@ export const LoginAdapter = (props) => {
 	  
 
 		const handleSuccessfulLogin = (session) => {  
+			  if (hasRedirected.current) {
+				console.log("Skipping redirect, already done.");
+				return;
+			}
+
+			console.log("Redirecting to", getRedirectPath());
+
 			const accessToken = session?.data?.session?.access_token;
 			const email = session?.user?.email;
 		  
