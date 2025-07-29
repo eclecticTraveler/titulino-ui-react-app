@@ -26,7 +26,7 @@ import SupabaseAuthService from "services/SupabaseAuthService";
 function RouteInterceptor({ children, isAuthenticated, token, ...rest }) {
   const location = useLocation();
   const isLrnAuthPath = location.pathname.startsWith(AUTH_PREFIX_PATH);
-
+console.log("isLrnAuthPath", isLrnAuthPath, "token", token, "location", location.pathname);
   // Block access if it's an auth-protected path and there's no token
   if (isLrnAuthPath && !token) {
     return (
@@ -39,23 +39,23 @@ function RouteInterceptor({ children, isAuthenticated, token, ...rest }) {
     );
   }
 
-  return (
-    <Route
-      {...rest}
-      render={() =>
-        isAuthenticated ? (
-          children
-        ) : (
-          <Redirect
-            to={{
-              pathname: APP_PREFIX_PATH,
-              state: { from: location.pathname }
-            }}
-          />
-        )
-      }
-    />
-  );
+    return (
+      <Route
+        {...rest}
+        render={({ location }) =>
+          isAuthenticated ? (
+            children
+          ) : (
+            <Redirect
+              to={{
+                pathname: APP_PREFIX_PATH,
+                state: { from: location }
+              }}
+            />
+          )
+        }
+      />
+    );
 }
 
 export const Views = (props) => { 

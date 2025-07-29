@@ -15,12 +15,20 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
 import { Card } from 'antd';
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import JwtAuthService from 'services/JwtAuthService';
 import Loading from 'components/shared-components/Loading';
 
+
 export const LoginAdapter = (props) => {
 		let history = useHistory();	
+		const location = useLocation();
+
+		const getRedirectPath = () => {
+		return location.state?.from || new URLSearchParams(location.search).get('redirectTo') || APP_PREFIX_PATH;
+		};
+
+
 		const { 
 			otherSignIn = true, 
 			showForgetPassword = false, 
@@ -51,8 +59,8 @@ export const LoginAdapter = (props) => {
 			  signIn(session?.user);
 
 			}
-			// Redirect after login
-			history.push(APP_PREFIX_PATH);
+			// Redirect to original destination or fallback
+			history.replace(getRedirectPath());
 		  };
 
 		  
@@ -118,7 +126,9 @@ export const LoginAdapter = (props) => {
 					},
 				}}
 				providers={['google', 'facebook']}
-				redirectTo={window.location.origin + APP_PREFIX_PATH + '/login'} // or your custom redirect route
+				// redirectTo={window.location.origin + APP_PREFIX_PATH + '/login'} // or your custom redirect route
+				redirectTo={`${window.location.origin}/lrn/login?redirectTo=${encodeURIComponent(location.state?.from || '')}`}
+
 				/>
 			</Card>
 			</div>
