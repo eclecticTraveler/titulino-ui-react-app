@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { IntlProvider } from "react-intl";
 import { ConfigProvider } from "antd";
 import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH, AUTH_PREFIX_PATH } from "../configs/AppConfig";
-import { Route, Switch, Redirect, withRouter } from "react-router-dom";
+import { Route, Switch, Redirect, withRouter, useLocation  } from "react-router-dom";
 import AuthLayout from '../layouts/auth-layout';
 import AppLayout from "../layouts/app-layout";
 import CourseSelection from './app-views/course-selection';
@@ -15,39 +15,54 @@ import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
 import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
 import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
-import { authenticated, signIn } from "redux/actions/Auth";
+import { authenticated, signIn, onResolvingAuthenticationWhenRefreshing } from "redux/actions/Auth";
 import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
 import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPolicy";
+
+import Loading from 'components/shared-components/Loading';
 import SupabaseAuthService from "services/SupabaseAuthService";
   
-function RouteInterceptor({ children, isAuthenticated, ...rest }) {
-    // If isAuthenticated then render components passed if not then redirect to pathname or login page
+function RouteInterceptor({ children, isAuthenticated, token, ...rest }) {
+  const location = useLocation();
+  const isLrnAuthPath = location.pathname.startsWith(AUTH_PREFIX_PATH);
+
+  // Block access if it's an auth-protected path and there's no token
+  if (isLrnAuthPath && !token) {
     return (
-      <Route
-        {...rest}
-        render={({ location }) =>
-          isAuthenticated ? (
-            children
-          ) : (
-            <Redirect
-              to={{
-                pathname: APP_PREFIX_PATH,
-                state: { from: location }
-              }}
-            />
-          )
-        }
+      <Redirect
+        to={{
+          pathname: `${APP_PREFIX_PATH}/login`,
+          state: { from: location.pathname }
+        }}
       />
     );
+  }
+
+  return (
+    <Route
+      {...rest}
+      render={() =>
+        isAuthenticated ? (
+          children
+        ) : (
+          <Redirect
+            to={{
+              pathname: APP_PREFIX_PATH,
+              state: { from: location.pathname }
+            }}
+          />
+        )
+      }
+    />
+  );
 }
 
 export const Views = (props) => { 
-    const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token, user, authenticated, onAuthenticatingWithSSO,
+    const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token, user, authenticated, onAuthenticatingWithSSO, isAuthResolved, onResolvingAuthenticationWhenRefreshing,
         wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage, subNavPosition, signIn } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
-    const isAuthResolved = token !== undefined;
     const PUBLIC_ROUTE_COMPONENTS = {
         [`${APP_PREFIX_PATH}/terms-conditions`]: TermsConditionsCancelSubscription,
         [`${APP_PREFIX_PATH}/privacy-policy`]: PrivacyPolicy,
@@ -59,17 +74,30 @@ export const Views = (props) => {
       const isPublicRoute = PUBLIC_ROUTES.includes(normalizedPath);
 
     // Load the cookie for Authentication if there was any
-    useSupabaseSessionSync((session) => {
-        if(!user?.emailId){
-            authenticated(session?.user);
-            onAuthenticatingWithSSO(session?.user?.email);
+     useSupabaseSessionSync((session) => {
+        const userFromSession = session?.user;
+
+        if (!session) {
+            // 🚫 No session: dispatch unauthenticated and stop loading
+            // onResolvingAuthenticationWhenRefreshing(false);
+        }
+
+        if (userFromSession && !user?.emailId) {
+            // ✅ User is authenticated and not already in Redux
+            authenticated(userFromSession);
+            onAuthenticatingWithSSO(userFromSession.email);
+            // onResolvingAuthenticationWhenRefreshing(true);
         }
     });
+
       
     useEffect(() => {
         if(token?.email && !user?.contactId){        
-        onLoadingAuthenticatedLandingPage(token?.email);
-    }
+            onLoadingAuthenticatedLandingPage(token?.email);
+            onResolvingAuthenticationWhenRefreshing(true);
+        }else{
+            onResolvingAuthenticationWhenRefreshing(false);
+        }
     }, [user?.contactId, token?.email]);
 
     //   useEffect(() => {
@@ -135,7 +163,11 @@ export const Views = (props) => {
             </IntlProvider>
         )
     }
-console.log("token", token);
+
+    if (isAuthResolved === undefined) {
+        return <Loading cover="content" />;
+    }
+
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
             <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
@@ -146,11 +178,9 @@ console.log("token", token);
                     <Route path={APP_PREFIX_PATH}>
                         <AppLayout direction={direction} location={location} />
                     </Route>
-                    {isAuthResolved && (
-                    <RouteInterceptor path={AUTH_PREFIX_PATH} isAuthenticated={!!token}>
+                    <RouteInterceptor path={AUTH_PREFIX_PATH} isAuthenticated={token}>
                         <AuthLayout direction={direction} location={location} />
                     </RouteInterceptor>
-                    )}
                 </Switch>                            
             </ConfigProvider>
         </IntlProvider>  
@@ -168,16 +198,17 @@ function mapDispatchToProps(dispatch) {
         onAuthenticatingWithSSO,
         authenticated,
         signIn,
-        onLoadingAuthenticatedLandingPage
+        onLoadingAuthenticatedLandingPage,
+        onResolvingAuthenticationWhenRefreshing
     }, dispatch);
 }
 
 const mapStateToProps = ({ theme, lrn, auth, grant }) => {
     const { wasUserConfigSet, selectedCourse, nativeLanguage } = lrn;
     const { locale, direction, course, currentTheme, subNavPosition } = theme;
-    const { token } = auth;
+    const { token, isAuthResolved } = auth;
     const { user } = grant;
-    return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, currentTheme, subNavPosition, token, user };
+    return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, currentTheme, subNavPosition, token, user, isAuthResolved };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Views));
