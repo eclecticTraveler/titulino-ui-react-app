@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
@@ -23,40 +23,47 @@ import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPol
 import Loading from 'components/shared-components/Loading';
 import SupabaseAuthService from "services/SupabaseAuthService";
   
-function RouteInterceptor({ children, isAuthenticated, token, ...rest }) {
+const RouteInterceptor = ({ children, isAuthenticated, token, ...rest }) => {
   const location = useLocation();
+  const hasRedirected = useRef(false);
+
   const isLrnAuthPath = location.pathname.startsWith(AUTH_PREFIX_PATH);
-console.log("isLrnAuthPath", isLrnAuthPath, "token", token, "location", location.pathname);
-  // Block access if it's an auth-protected path and there's no token
-  if (isLrnAuthPath && !token) {
-    return (
-      <Redirect
-        to={{
-          pathname: `${APP_PREFIX_PATH}/login`,
-          state: { from: location.pathname }
-        }}
-      />
-    );
+  const redirectPath = {
+    pathname: "/lrn/login",
+    state: { from: location.pathname },
+  };
+
+  useEffect(() => {
+    // Prevent redirect loop
+    if (isLrnAuthPath && !token && !hasRedirected.current) {
+      hasRedirected.current = true;
+      window.location.replace(`/lrn/login?redirect=${encodeURIComponent(location.pathname)}`);
+    }
+  }, [isLrnAuthPath, token, location.pathname]);
+
+  // Render null during the redirect to avoid rendering children momentarily
+  if (isLrnAuthPath && !token && hasRedirected.current) {
+    return null;
   }
 
-    return (
-      <Route
-        {...rest}
-        render={({ location }) =>
-          isAuthenticated ? (
-            children
-          ) : (
-            <Redirect
-              to={{
-                pathname: APP_PREFIX_PATH,
-                state: { from: location }
-              }}
-            />
-          )
-        }
-      />
-    );
-}
+  return (
+    <Route
+      {...rest}
+      render={() =>
+        isAuthenticated ? (
+          children
+        ) : (
+          <Redirect
+            to={{
+              pathname: APP_PREFIX_PATH,
+              state: { from: location },
+            }}
+          />
+        )
+      }
+    />
+  );
+};
 
 export const Views = (props) => { 
     const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token, user, authenticated, onAuthenticatingWithSSO, isAuthResolved, onResolvingAuthenticationWhenRefreshing,
@@ -75,6 +82,7 @@ export const Views = (props) => {
 
     // Load the cookie for Authentication if there was any
      useSupabaseSessionSync((session) => {
+        console.log("🧠 Supabase session received in sync hook:", session);
         const userFromSession = session?.user;
 
         if (!session) {

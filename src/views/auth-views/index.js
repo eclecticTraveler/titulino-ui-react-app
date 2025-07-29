@@ -14,6 +14,7 @@ export const AuthViews = (props) => {
   return (
     <Suspense fallback={<Loading cover="page"/>}>
       <Switch>                
+        <Route exact path={`${AUTH_PREFIX_PATH}/insight`} component={lazy(() => import(`./user/analytics`))} />
         <Route exact path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}`} component={lazy(() => retry(() => import(`../shared-views/course-level`)))} />
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/${getLocalizedConfig(course)?.resources}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`../shared-views/course-level/resources`)))} />
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.book}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/book`)))} />
@@ -23,7 +24,6 @@ export const AuthViews = (props) => {
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.quizletpdf}`} component={lazy(() => retry(() => import(`./course-level/chapter/pdf-render`)))} />		
         <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/practice`)))} />
         <Route exact path={`${AUTH_PREFIX_PATH}/terms-conditions`} component={TermsConditionsCancelSubscription} />
-        { (user?.hasEverBeenFacilitator && token) && <Route exact path={`${AUTH_PREFIX_PATH}/insight`} component={lazy(() => import(`./user/analytics`))} />}
         {/* <Route exact path={`${AUTH_PREFIX_PATH}/profile/edit-profile`} component={lazy(() => retry(() => import(`./profile/index`)))} />		 */}
         {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/login`))} /> */}
         {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/login`))} /> */}
