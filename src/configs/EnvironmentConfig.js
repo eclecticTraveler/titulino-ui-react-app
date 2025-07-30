@@ -14,7 +14,7 @@ const dev = {
 
 const prod = {
   ...commonConfig,
-  IS_SSO_ON: true,
+  IS_SSO_ON: false,
   ENVIROMENT: 'prod'
 };
 
