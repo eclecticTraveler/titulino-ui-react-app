@@ -22,58 +22,33 @@ import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPol
 
 import Loading from 'components/shared-components/Loading';
 import SupabaseAuthService from "services/SupabaseAuthService";
-  
-const RouteInterceptor = ({ children, isAuthenticated, token, ...rest }) => {
-  const location = useLocation();
-  const hasRedirected = useRef(false);
+ 
+function RouteInterceptor({ children, isAuthenticated, ...rest }) {
+  const { pathname } = useLocation();
 
-  const isLrnAuthPath = location.pathname.startsWith(AUTH_PREFIX_PATH);
-  const redirectPath = {
-    pathname: "/lrn/login",
-    state: { from: location.pathname },
-  };
-
-  useEffect(() => {
-    // Prevent redirect loop
-    if (isLrnAuthPath && !token && !hasRedirected.current) {
-      hasRedirected.current = true;
-      window.location.replace(`/lrn/login?redirect=${encodeURIComponent(location.pathname)}`);
-    }
-  }, [isLrnAuthPath, token, location.pathname]);
-
-  // Render null during the redirect to avoid rendering children momentarily
-  if (isLrnAuthPath && !token && hasRedirected.current) {
-    return null;
+  // Only protect `/lrn-auth/...` routes
+  if (pathname.startsWith(AUTH_PREFIX_PATH) && !isAuthenticated) {
+    // redirect to /lrn/login?redirect=/lrn-auth/whatever
+    return (
+      <Redirect
+        to={{
+          pathname: `${APP_PREFIX_PATH}/login`,
+          search: `?redirect=${encodeURIComponent(pathname)}`,
+        }}
+      />
+    );
   }
 
-  return (
-    <Route
-      {...rest}
-      render={() =>
-        isAuthenticated ? (
-          children
-        ) : (
-          <Redirect
-            to={{
-              pathname: APP_PREFIX_PATH,
-              state: { from: location },
-            }}
-          />
-        )
-      }
-    />
-  );
-};
+  // Otherwise just render the route as normal
+  return <Route {...rest} render={() => children} />;
+}
 
 export const Views = (props) => { 
     const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token, user, authenticated, onAuthenticatingWithSSO, isAuthResolved, onResolvingAuthenticationWhenRefreshing,
         wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
-      console.log("VIEWS1 wasUserConfigSet", wasUserConfigSet)
-      console.log("VIEWS2 nativeLanguage", nativeLanguage)
-      console.log("VIEWS3 selectedCourse", selectedCourse)
-      console.log("VIEWS4 course-", course)
+
     // Load the cookie for Authentication if there was any
      useSupabaseSessionSync((session) => {
         console.log("🧠 Supabase session received in sync hook:", session);
