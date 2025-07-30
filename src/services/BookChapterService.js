@@ -9,6 +9,7 @@ const loadBookData = async() => {
 }
 
 const loadRequestedBook = async(rawBookData, levelTheme, course, nativeLanguage) => {
+  // TODO HANDLE FOR POR SPEAKING  
   return await rawBookData?.books?.find(c => (c.theme === levelTheme && c.course === course && c.nativeLanguage === nativeLanguage));
 }
 

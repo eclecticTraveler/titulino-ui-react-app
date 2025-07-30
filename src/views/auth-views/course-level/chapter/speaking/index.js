@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getUserSelectedCourse, getUserNativeLanguage, getSpeakingPracticeModule}  from 'redux/actions/Lrn';
+import {getUserNativeLanguage, getSpeakingPracticeModule}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { env } from 'configs/EnvironmentConfig';
 import Loading from 'components/shared-components/Loading';
@@ -48,16 +48,15 @@ class SpeakingSection extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getUserSelectedCourse: getUserSelectedCourse,
         getUserNativeLanguage: getUserNativeLanguage,
         getSpeakingPracticeModule: getSpeakingPracticeModule
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { wasUserConfigSet, selectedCourse, nativeLanguage, speakingChapterModule, gcBucketUri } = lrn;
+	const { nativeLanguage, speakingChapterModule, gcBucketUri } = lrn;
     const { locale, direction, course } =  theme;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, speakingChapterModule, gcBucketUri }
+	return { locale, direction, course, nativeLanguage, speakingChapterModule, gcBucketUri }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SpeakingSection);

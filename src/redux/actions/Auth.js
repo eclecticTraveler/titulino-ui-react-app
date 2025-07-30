@@ -11,7 +11,8 @@ import {
   SIGNIN_WITH_GOOGLE,
   SIGNIN_WITH_GOOGLE_AUTHENTICATED,
   SIGNIN_WITH_FACEBOOK,
-  SIGNIN_WITH_FACEBOOK_AUTHENTICATED
+  SIGNIN_WITH_FACEBOOK_AUTHENTICATED,
+  AUTH_RESOLVED
 } from '../constants/Auth';
 
 export const signIn = (user) => {
@@ -20,6 +21,13 @@ export const signIn = (user) => {
     payload: user
   }
 };
+
+export const onResolvingAuthenticationWhenRefreshing = (isAuthResolved)=> {
+  return {
+    type: AUTH_RESOLVED,
+    isAuthResolved: isAuthResolved
+  }
+}
 
 export const authenticated = (token) => {
   return {

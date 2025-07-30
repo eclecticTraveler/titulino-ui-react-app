@@ -1,13 +1,13 @@
 import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
-import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage}  from '../../../redux/actions/Lrn';
-import PageHeaderAlt from '../../../components/layout-components/PageHeaderAlt'
-import IconFallback from "../../../components/util-components/IconFallback";
+import {getAllLanguageCourses, setUserCourseConfiguration, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
+import PageHeaderAlt from '../../../../components/layout-components/PageHeaderAlt'
+import IconFallback from "../../../../components/util-components/IconFallback";
 import { withRouter } from "react-router-dom";
-import { onLocaleChange, onCourseChange } from '../../../redux/actions/Theme'
-import Flex from '../../../components/shared-components/Flex'
-import IntlMessage from "../../../components/util-components/IntlMessage";
+import { onLocaleChange, onCourseChange } from '../../../../redux/actions/Theme'
+import Flex from '../../../../components/shared-components/Flex'
+import IntlMessage from "../../../../components/util-components/IntlMessage";
 import Accordion from 'react-bootstrap/Accordion';
 import { 
 	UserAddOutlined, 
@@ -21,7 +21,7 @@ import {
 	SettingOutlined
   } from '@ant-design/icons'; 
 import { Row, Col, Button, Card, Avatar, Dropdown, Table, Menu, Tag } from 'antd';
-import AvatarStatus from '../../../components/shared-components/AvatarStatus';
+import AvatarStatus from '../../../../components/shared-components/AvatarStatus';
 const { Meta } = Card;
 
 class Profile extends Component {
@@ -243,7 +243,6 @@ function mapDispatchToProps(dispatch){
 	return bindActionCreators({
 		setUserCourseConfiguration: setUserCourseConfiguration,
 		getAllLanguageCourses: getAllLanguageCourses,
-		setUserSelectedCourse: setUserSelectedCourse,
 		onCourseChange: onCourseChange,
 		setUserNativeLanguage: setUserNativeLanguage,
 		onLocaleChange: onLocaleChange

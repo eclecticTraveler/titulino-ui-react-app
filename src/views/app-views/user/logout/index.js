@@ -1,9 +1,9 @@
 import React, {Component, useEffect} from 'react'
-import UserService from '../../../services/UserService';
-import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH } from "../../../configs/AppConfig";
+import UserService from '../../../../services/UserService';
+import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH } from "../../../../configs/AppConfig";
 import { Redirect } from "react-router-dom";
-import { env } from '../../../configs/EnvironmentConfig';
-import InternalIFrame from '../../../components/layout-components/InternalIFrame';
+import { env } from '../../../../configs/EnvironmentConfig';
+import InternalIFrame from '../../../../components/layout-components/InternalIFrame';
 
 
 function executeLogout(){
@@ -21,7 +21,7 @@ class Logout extends Component {
 	render(){		
 		return (
 			<div>                        
-				<div><InternalIFrame iFrameUrl={`${env.VANTAGE_URI}/login/login/logout`}/></div>                                                                 
+				<div>Logout</div>                                                                 
 			</div>    
 		)
 	}

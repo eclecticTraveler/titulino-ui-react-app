@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { 		
@@ -6,8 +6,7 @@ import {
 	showLoading,
 	hideAuthMessage,
 	authenticated,
-	signIn,
-	onResolvingAuthenticationWhenRefreshing
+	signIn
 } from "redux/actions/Auth";
 
 import { onAuthenticatingWithSSO } from "redux/actions/Grant";
@@ -16,46 +15,12 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
 import { Card } from 'antd';
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import JwtAuthService from 'services/JwtAuthService';
 import Loading from 'components/shared-components/Loading';
 
-function stripNestedRedirect(url) {
-  try {
-    const parsedUrl = new URL(url, window.location.origin);
-    if (parsedUrl.pathname === '/lrn/login') {
-      return APP_PREFIX_PATH;
-    }
-    return url;
-  } catch {
-    return APP_PREFIX_PATH;
-  }
-}
-
-
 export const LoginAdapter = (props) => {
 		let history = useHistory();	
-		const location = useLocation();
-		const hasRedirected = useRef(false); // ✅ prevent infinite loop
-
-		const currentPath = `${location.pathname}${location.search}`;
-
-		// Avoid redirecting back to login itself
-		const safeRedirectPath = currentPath.startsWith('/lrn/login') ? APP_PREFIX_PATH : currentPath;
-
-
-		
-		const getRedirectPath = () => {
-			const searchParams = new URLSearchParams(location.search);
-			const rawRedirect = searchParams.get('redirectTo') || location.state?.from || APP_PREFIX_PATH;
-			const cleanRedirect = decodeURIComponent(rawRedirect);
-
-			// Never redirect back to login
-			return cleanRedirect.includes('/lrn/login') ? APP_PREFIX_PATH : cleanRedirect;
-		};
-
-
-
 		const { 
 			otherSignIn = true, 
 			showForgetPassword = false, 
@@ -72,19 +37,11 @@ export const LoginAdapter = (props) => {
 			redirect,
 			allowRedirect,
 			onAuthenticatingWithSSO,
-			signIn,
-			onResolvingAuthenticationWhenRefreshing
+			signIn
 		} = props
 	  
 
 		const handleSuccessfulLogin = (session) => {  
-			  if (hasRedirected.current) {
-				console.log("Skipping redirect, already done.");
-				return;
-			}
-
-			console.log("Redirecting to", getRedirectPath());
-
 			const accessToken = session?.data?.session?.access_token;
 			const email = session?.user?.email;
 		  
@@ -92,12 +49,10 @@ export const LoginAdapter = (props) => {
 			  authenticated(accessToken);
 			  onAuthenticatingWithSSO(email);
 			  signIn(session?.user);
-			  onResolvingAuthenticationWhenRefreshing(true);
 
 			}
-			// Redirect to original destination or fallback
-			hasRedirected.current = true;
-			history.replace(getRedirectPath());
+			// Redirect after login
+			history.push(AUTH_PREFIX_PATH);
 		  };
 
 		  
@@ -163,8 +118,7 @@ export const LoginAdapter = (props) => {
 					},
 				}}
 				providers={['google', 'facebook']}
-				// redirectTo={window.location.origin + APP_PREFIX_PATH + '/login'} // or your custom redirect route
-				redirectTo={`${window.location.origin}/lrn/login?redirectTo=${encodeURIComponent(safeRedirectPath)}`}
+				redirectTo={window.location.origin + AUTH_PREFIX_PATH + '/login'} // or your custom redirect route
 				/>
 			</Card>
 			</div>
@@ -188,8 +142,7 @@ function mapDispatchToProps(dispatch) {
 		hideAuthMessage,
 		authenticated,
 		onAuthenticatingWithSSO,
-		signIn,
-		onResolvingAuthenticationWhenRefreshing
+		signIn
   }, dispatch);
 }
 

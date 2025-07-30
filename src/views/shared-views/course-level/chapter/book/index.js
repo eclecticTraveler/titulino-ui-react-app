@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getUserSelectedCourse, getUserNativeLanguage, getPdfPathUrl}  from 'redux/actions/Lrn';
+import {getUserNativeLanguage, getBookChapterUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { env } from '../../../../../configs/EnvironmentConfig';
 import Loading from '../../../../../components/shared-components/Loading';
@@ -8,25 +8,25 @@ import InternalIFrame from '../../../../../components/layout-components/Internal
 import UnderConstruccion from '../../../../../components/layout-components/UnderConstruccion';
 import utils from 'utils';
 
-class PdfRender extends Component {
+class BookSection extends Component {
 
-    loadLocalPathUrl = () => {
+    loadUrl = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
-        this.props.getPdfPathUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course);
+        this.props.getBookChapterUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
     }
     
     componentDidMount() {                
-        this.loadLocalPathUrl();
+        this.loadUrl();
     }
 
     componentDidUpdate(prevProps) {       
         if (prevProps?.location?.pathname !== this.props.location?.pathname) {
-            this.loadLocalPathUrl();
+            this.loadUrl();
         }
       }
 
     render() {  
-        if(!this.props.pdfPathUrl) {
+        if(!this.props.bookChapterUrl) {
             return (
                 <div>
                     <div>
@@ -38,7 +38,7 @@ class PdfRender extends Component {
         }else{
             return (
                 <div>
-                    <InternalIFrame iFrameUrl={`${this.props.pdfPathUrl}`}/>                    
+                    <InternalIFrame iFrameUrl={`${this.props.bookChapterUrl}`}/>                    
                 </div>
             )
         }    
@@ -48,16 +48,15 @@ class PdfRender extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getUserSelectedCourse: getUserSelectedCourse,
         getUserNativeLanguage: getUserNativeLanguage,
-        getPdfPathUrl: getPdfPathUrl
+        getBookChapterUrl: getBookChapterUrl
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { wasUserConfigSet, selectedCourse, nativeLanguage, pdfPathUrl } = lrn;
+	const { nativeLanguage, bookChapterUrl } = lrn;
     const { locale, direction, course } =  theme;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, pdfPathUrl }
+	return { locale, direction, course, nativeLanguage, bookChapterUrl }
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(PdfRender);
+export default connect(mapStateToProps, mapDispatchToProps)(BookSection);

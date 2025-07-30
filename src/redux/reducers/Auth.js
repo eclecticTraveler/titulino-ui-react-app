@@ -7,7 +7,9 @@ import {
 	SIGNUP_SUCCESS,
 	SHOW_LOADING,
 	SIGNIN_WITH_GOOGLE_AUTHENTICATED,
-	SIGNIN_WITH_FACEBOOK_AUTHENTICATED
+	SIGNIN_WITH_FACEBOOK_AUTHENTICATED,
+	SIGNOUT,
+	AUTH_RESOLVED
 } from '../constants/Auth';
 
 const initState = {
@@ -15,11 +17,16 @@ const initState = {
   message: '',
   showMessage: false,
   redirect: '',
-  token: localStorage.getItem(AUTH_TOKEN),
+  token: localStorage.getItem(AUTH_TOKEN)
 }
 
 const auth = (state = initState, action) => {
 	switch (action.type) {
+		case AUTH_RESOLVED:
+		return {
+			...state,
+			isAuthResolved: action.isAuthResolved,
+		};
 		case AUTHENTICATED:
 			return {
 				...state,
@@ -41,6 +48,14 @@ const auth = (state = initState, action) => {
 				showMessage: false,
 			}
 		case SIGNOUT_SUCCESS: {
+			return {
+				...state,
+				token: null,
+				redirect: '/',
+				loading: false
+			}
+		}
+		case SIGNOUT: {
 			return {
 				...state,
 				token: null,
