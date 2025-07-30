@@ -51,7 +51,7 @@ export const Views = (props) => {
 
     // Load the cookie for Authentication if there was any
      useSupabaseSessionSync((session) => {
-        console.log("🧠 Supabase session received in sync hook:", session);
+        // console.log("🧠 Supabase session received in sync hook:", session);
         const userFromSession = session?.user;
 
         if (!session) {

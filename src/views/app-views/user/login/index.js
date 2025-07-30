@@ -47,10 +47,11 @@ export const LoginAdapter = (props) => {
 		const fromQuery = searchParams.get('redirect') || searchParams.get('redirectTo');
 		const fromState = location.state?.from;
 		const fromStorage = localStorage.getItem('postLoginRedirect');
+		console.log("searchParams", searchParams, "fromQuery", fromQuery, "fromState", fromState, "fromStorage", fromStorage)
 	
 		const rawRedirect = fromQuery || fromState || fromStorage || APP_PREFIX_PATH;
 		const cleanRedirect = decodeURIComponent(rawRedirect);
-	
+		console.log("cleanRedirect", cleanRedirect);
 		// Prevent redirecting back to login page
 		return cleanRedirect.includes('/lrn/login') ? APP_PREFIX_PATH : cleanRedirect;
 	};
@@ -97,19 +98,19 @@ export const LoginAdapter = (props) => {
 	};
 	
 	useEffect(() => {
-		console.log("🔐 LoginAdapter mounted");
+		// console.log("🔐 LoginAdapter mounted");
 	
 		// ✅ Step 1: Check for Supabase redirect hash tokens
 		const hashParams = parseHashParams(window.location.hash);
 		const accessToken = hashParams.access_token;
 	
 		if (accessToken) {
-			console.log("🧪 Supabase token found in URL hash, verifying...");
+			// console.log("🧪 Supabase token found in URL hash, verifying...");
 	
 			// ✅ Supabase stores it in memory automatically, we just need to use getSession to confirm
 			supabase.auth.getSession().then(({ data }) => {
 				if (data?.session) {
-					console.log("✅ Supabase session restored from hash");
+					// console.log("✅ Supabase session restored from hash");
 					handleSuccessfulLogin(data.session);
 	
 					// ✅ Clean the URL (removes the #access_token)
@@ -126,7 +127,7 @@ export const LoginAdapter = (props) => {
 			await new Promise(res => setTimeout(res, 300));
 			const { data } = await supabase.auth.getSession();
 			if (data?.session) {
-				console.log("✅ Initial session found (no hash)");
+				// console.log("✅ Initial session found (no hash)");
 				handleSuccessfulLogin(data.session);
 			}
 		};
@@ -135,7 +136,7 @@ export const LoginAdapter = (props) => {
 	
 		// ✅ Step 3: Listen to auth changes
 		const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-			console.log("🟡 Auth event:", event, session);
+			// console.log("🟡 Auth event:", event, session);
 			if (session) handleSuccessfulLogin(session);
 		});
 	
@@ -154,6 +155,7 @@ export const LoginAdapter = (props) => {
 
 	useEffect(() => {
 		if (!token && safeRedirectPath) {
+			console.log("---------safeRedirectPath", safeRedirectPath)
 			localStorage.setItem('postLoginRedirect', safeRedirectPath);
 		}
 	}, [token, safeRedirectPath]);
