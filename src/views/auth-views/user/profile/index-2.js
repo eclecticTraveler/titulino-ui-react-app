@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
-import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
+import {getAllLanguageCourses, setUserCourseConfiguration, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
 import IconFallback from "../../../../components/util-components/IconFallback";
 import { withRouter } from "react-router-dom";
 import { onLocaleChange, onCourseChange } from '../../../../redux/actions/Theme'
@@ -183,7 +183,6 @@ function mapDispatchToProps(dispatch){
 	return bindActionCreators({
 		setUserCourseConfiguration: setUserCourseConfiguration,
 		getAllLanguageCourses: getAllLanguageCourses,
-		setUserSelectedCourse: setUserSelectedCourse,
 		onCourseChange: onCourseChange,
 		setUserNativeLanguage: setUserNativeLanguage,
 		onLocaleChange: onLocaleChange

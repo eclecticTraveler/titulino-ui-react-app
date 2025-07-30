@@ -24,7 +24,7 @@ import { DIR_RTL } from 'constants/ThemeConstant';
 import NavSearchWrapper from './NavSearchWrapper';
 import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
 import { env } from "configs/EnvironmentConfig";
-import { setUserNativeLanguage } from 'redux/actions/Lrn';
+import { getWasUserConfigSetFlag, onUserSelectingCourse } from 'redux/actions/Lrn';
 
 const locale = true;
 const setLocale = (isLocaleOn, localeKey) =>{		
@@ -84,7 +84,7 @@ const configureMenuItems = (user, token) => {
 }
 
 export const NavProfile = (props) => {  
-  const { course, direction, mode, isMobile, setUserNativeLanguage, token, signOut, user } = props;
+  const { course, direction, mode, isMobile, getWasUserConfigSetFlag, onUserSelectingCourse, token, signOut, user } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
  
   const showDrawer = () => {
@@ -96,7 +96,10 @@ export const NavProfile = (props) => {
   };
 
   const resetBaseCourseLanguage = () => {
-    setUserNativeLanguage(null);
+    // TODO THIS NEEDS TO BE CLEANED UP AND DONE BETTER WHEN NEW COURSES ARE AVAILABLE
+    // BUT LETS WORRY WHEN IT COMES TO MORE COURSES, THIS IS DEBT
+    getWasUserConfigSetFlag("reset");
+    onUserSelectingCourse(null);
   }
 
   const handleSigningOut = () => {
@@ -220,4 +223,4 @@ const mapStateToProps = ({ theme, auth, grant }) => {
 	return { course, token, user }
 };
 
-export default connect(mapStateToProps, {signOut, setUserNativeLanguage, })(NavProfile)
+export default connect(mapStateToProps, {signOut, getWasUserConfigSetFlag, onUserSelectingCourse})(NavProfile)

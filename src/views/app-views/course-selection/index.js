@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
-import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage}  from 'redux/actions/Lrn';
+import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage, onUserSelectingCourse}  from 'redux/actions/Lrn';
 import IconAdapter from 'components/util-components/IconAdapter';
 import { withRouter } from "react-router-dom";
 import { onLocaleChange, onCourseChange } from 'redux/actions/Theme'
@@ -22,11 +22,14 @@ class CourseSelection extends Component {
 		this.props.getAllLanguageCourses();
 	}
 
-	processSelectedCourse = (course) => {	
-
+	processSelectedCourse = (course) => {			
+		
 		if(this.props.nativeLanguage){		
+			console.log("------>Course-selection", course)
 			this.props.onCourseChange(course?.courseAbbreviation);
 			this.props.setUserSelectedCourse(course);
+			this.props.onUserSelectingCourse(course);
+			
 		}
 					
 	}
@@ -46,51 +49,49 @@ class CourseSelection extends Component {
 		let listOfBasedLanguages = null;
 		let listOfCoursesBySelectedNativeLanguage = null;
 		if(this.props.languageCourses?.length > 0 ){
-			listOfBasedLanguages =  this.props.languageCourses.map((language, i) =>	{
-				return language?.isAvailable && (
-					<div key={i} className="single-web-account" onClick={() => this.processUserNativeLanguage(language)}>
-					<div>
-						<div className='antd-icon-arrow'>
-							<ArrowRightOutlined />
-						</div>
-						<div className="course">
-							<div className="course-flag course-selection-flag">
-								<Flag code={language.flagCodeName} />
+				listOfBasedLanguages =  this.props.languageCourses.map((language, i) =>	{
+					return language?.isAvailable && (
+						<div key={i} className="single-web-account" onClick={() => this.processUserNativeLanguage(language)}>
+						<div>
+							<div className='antd-icon-arrow'>
+								<ArrowRightOutlined />
 							</div>
-							<h5 className="course-name">{language.basedlanguage}</h5>
+							<div className="course">
+								<div className="course-flag course-selection-flag">
+									<Flag code={language.flagCodeName} />
+								</div>
+								<h5 className="course-name">{language.basedlanguage}</h5>
+							</div>
 						</div>
-					</div>
-				</div>	
-				)
-			}			
+					</div>	
+					)
+				}			
 			)	
 
 			if(this.props.nativeLanguage){	
-				listOfCoursesBySelectedNativeLanguage =  this.props.nativeLanguage?.courses?.map((course, j) => 
-				{
-					return course?.isAvailable && (
-						<div key={j} className="single-web-account" onClick={() => this.processSelectedCourse(course)}>
-							<div>
-								<div className='antd-icon-arrow'>
-									<ArrowRightOutlined />
-								</div>
-								<div className="course">
-									<div className="course-flag course-selection-flag">
-										<Flag code={course.courseFlagCodeName} />
+					listOfCoursesBySelectedNativeLanguage =  this.props.nativeLanguage?.courses?.map((course, j) => 
+					{
+						return course?.isAvailable && (
+							<div key={j} className="single-web-account" onClick={() => this.processSelectedCourse(course)}>
+								<div>
+									<div className='antd-icon-arrow'>
+										<ArrowRightOutlined />
 									</div>
-									<h5 className="course-name">{course.courseTitle}</h5>
+									<div className="course">
+										<div className="course-flag course-selection-flag">
+											<Flag code={course.courseFlagCodeName} />
+										</div>
+										<h5 className="course-name">{course.courseTitle}</h5>
+									</div>
 								</div>
 							</div>
-						</div>
-					)
-				}
-	
-
+						)
+					}	
 				)
 			}
-
 		}
-		
+		console.log("MMMM----this.props.nativeLanguage", this.props.nativeLanguage);
+		console.log("MMMM----this.props.wasUserConfigSet", this.props.wasUserConfigSet);
         return(	
 			<div>
 				<div className="single-web-account-modal">
@@ -113,7 +114,7 @@ class CourseSelection extends Component {
 						}
 
 						{
-						(this.props.nativeLanguage) && 						
+						(this.props.nativeLanguage) &&
 							<div id="native-language-selection-modal">
 								<div className="information-account">
 									<h2>{this.setLocale(locale, "select.course.modal.title")}</h2>
@@ -153,13 +154,14 @@ function mapDispatchToProps(dispatch){
 		setUserSelectedCourse: setUserSelectedCourse,
 		onCourseChange: onCourseChange,
 		setUserNativeLanguage: setUserNativeLanguage,
-		onLocaleChange: onLocaleChange
+		onLocaleChange: onLocaleChange,
+		onUserSelectingCourse: onUserSelectingCourse
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn}) => {
-	const {languageCourses, nativeLanguage} = lrn;
-	return {languageCourses, nativeLanguage} 
+	const {languageCourses, nativeLanguage, wasUserConfigSet} = lrn;
+	return {languageCourses, nativeLanguage, wasUserConfigSet} 
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(CourseSelection));

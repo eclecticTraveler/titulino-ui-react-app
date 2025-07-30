@@ -69,7 +69,8 @@ import {
   ON_MODAL_INTERACTION,
   ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
   ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
-  ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE
+  ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
+  ON_USER_SELECTING_COURSE
 } from "../constants/Lrn";
 import LrnManager from "managers/LrnManager";
 
@@ -451,12 +452,34 @@ export const getQuizletUrl = async (modality, chapterNo, levelNo, nativeLanguage
 }
 
 export const getUserSelectedCourse = async () => {
-  const selectedCourse =  await LocalStorageService.getUserSelectedCourse();
+  const selectedCourse = await LocalStorageService.getUserSelectedCourse();
+  console.log("HERE ACTIONS getUserSelectedCourse", selectedCourse);
   return {
     type: GET_USER_SELECTED_COURSE,
     selectedCourse: selectedCourse
   }
 }
+
+export const setUserSelectedCourse = async (courseSelected) => {
+  console.log("HERE ACTIONS setUserSelectedCourse", courseSelected);
+  LocalStorageService.setUserSelectedCourse(courseSelected);
+  return {
+    type: SET_USER_SELECTED_COURSE
+  }
+}
+
+export const onUserSelectingCourse = async (courseSelected) => { 
+  // Save selected course
+  await LocalStorageService.setUserSelectedCourse(courseSelected);
+
+  // Retrieve course after setting it
+  const selectedCourse = await LocalStorageService.getUserSelectedCourse();
+ 
+  return {
+    type: ON_USER_SELECTING_COURSE,
+    selectedCourse: selectedCourse
+  };
+};
 
 export const getUserNativeLanguage = async () => {
   const nativeLanguage = await LocalStorageService.getUserSelectedNativeLanguage();
@@ -467,7 +490,7 @@ export const getUserNativeLanguage = async () => {
 }
 
 export const setUserNativeLanguage = async (lang) => {	
-  LocalStorageService.setUserSelectedNativeLanguage(lang);
+  LocalStorageService.setUserSelectedNativeLanguage(lang);  
   return {
     type: SET_USER_NATIVE_LANGUAGE,
     nativeLanguage: lang
@@ -482,20 +505,21 @@ export const setUserCourseConfiguration = async (nativeLanguage, courseToLearn) 
   }
 }
 
-export const setUserSelectedCourse = async (courseSelected) => {
-  LocalStorageService.setUserSelectedCourse(courseSelected);
-  return {
-    type: SET_USER_SELECTED_COURSE
-  }
-}
-
-export const getWasUserConfigSetFlag = async () => {   
+export const getWasUserConfigSetFlag = async (keyword) => {     
   const nativeLanguage = await LocalStorageService.getUserSelectedNativeLanguage();
   const selectedCourse =  await LocalStorageService.getUserSelectedCourse();
   const wasUserConfigSet = (selectedCourse && nativeLanguage) ? true : false;
-  return {
-    type: GET_WAS_USER_CONFIG_SET_FLAG,
-    wasUserConfigSet: wasUserConfigSet
+  console.log("ACTONS", "keyword", keyword, "wasUserConfigSet", wasUserConfigSet)
+  if(keyword === "reset"){
+    return {
+      type: GET_WAS_USER_CONFIG_SET_FLAG,
+      wasUserConfigSet: undefined
+    }
+  }else{
+    return {
+      type: GET_WAS_USER_CONFIG_SET_FLAG,
+      wasUserConfigSet: wasUserConfigSet
+    }
   }
 }
 

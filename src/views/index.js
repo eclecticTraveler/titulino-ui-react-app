@@ -67,19 +67,13 @@ const RouteInterceptor = ({ children, isAuthenticated, token, ...rest }) => {
 
 export const Views = (props) => { 
     const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token, user, authenticated, onAuthenticatingWithSSO, isAuthResolved, onResolvingAuthenticationWhenRefreshing,
-        wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage, subNavPosition, signIn } = props;
+        wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
-    const PUBLIC_ROUTE_COMPONENTS = {
-        [`${APP_PREFIX_PATH}/terms-conditions`]: TermsConditionsCancelSubscription,
-        [`${APP_PREFIX_PATH}/privacy-policy`]: PrivacyPolicy,
-      };
-          
-      const normalizePath = path => path.replace(/\/+$/, '');
-      const PUBLIC_ROUTES = Object.keys(PUBLIC_ROUTE_COMPONENTS);
-      const normalizedPath = normalizePath(location.pathname);
-      const isPublicRoute = PUBLIC_ROUTES.includes(normalizedPath);
-
+      console.log("VIEWS1 wasUserConfigSet", wasUserConfigSet)
+      console.log("VIEWS2 nativeLanguage", nativeLanguage)
+      console.log("VIEWS3 selectedCourse", selectedCourse)
+      console.log("VIEWS4 course-", course)
     // Load the cookie for Authentication if there was any
      useSupabaseSessionSync((session) => {
         console.log("🧠 Supabase session received in sync hook:", session);
@@ -124,16 +118,15 @@ export const Views = (props) => {
 
     // Effect to load user selected theme and locale
     useEffect(() => {
-        onLoadingUserSelectedTheme();
-        if((!wasUserConfigSet) || wasUserConfigSet === false){
-            getWasUserConfigSetFlag();
+        onLoadingUserSelectedTheme();        
+        if((!wasUserConfigSet) || wasUserConfigSet === false){                 
+            getWasUserConfigSetFlag();            
         }
  
-
         if (currentTheme) {
             switcher({ theme: themes[currentTheme] });
         }
-
+        
         if (wasUserConfigSet && !course) {
             getUserNativeLanguage();
             if (nativeLanguage) {
@@ -146,22 +139,9 @@ export const Views = (props) => {
             }
         }
 
-    }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);
+    }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);          
 
-    if (isPublicRoute) {
-        const Component = PUBLIC_ROUTE_COMPONENTS[location.pathname];      
-        if (!Component) return null; // Or a fallback message or loading screen      
-        return (
-          <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
-            <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
-              <Component />
-            </ConfigProvider>
-          </IntlProvider>
-        );
-      }
-           
 
-      
     if(!wasUserConfigSet){
         return (
             <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
@@ -216,7 +196,7 @@ const mapStateToProps = ({ theme, lrn, auth, grant }) => {
     const { locale, direction, course, currentTheme, subNavPosition } = theme;
     const { token, isAuthResolved } = auth;
     const { user } = grant;
-    return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, currentTheme, subNavPosition, token, user, isAuthResolved };
+    return { locale, direction, course, selectedCourse, nativeLanguage, currentTheme, subNavPosition, token, user, isAuthResolved, wasUserConfigSet };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Views));

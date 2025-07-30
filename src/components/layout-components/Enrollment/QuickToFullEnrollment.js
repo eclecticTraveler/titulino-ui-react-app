@@ -17,7 +17,7 @@ import { useHistory } from 'react-router-dom';
 const { Option } = Select;
 
 export const QuickToFullEnrollment = (props) => {
-  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedCourse, nativeLanguage, passedEmail, passedDateOfBirth, passedSubmitBtnEnabled,
+  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, nativeLanguage, passedEmail, passedDateOfBirth, passedSubmitBtnEnabled,
          onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, isToDoFullEnrollment, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
   const [isEmailVisible, setEmailVisible] = useState(false);
@@ -845,9 +845,9 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ lrn, grant }) => {
-  const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll } = lrn;
+  const { availableCourses, selfLanguageLevel, countries, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll } = lrn;
   const { isToDoFullEnrollment } = grant;
-  return { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll };
+  return { availableCourses, selfLanguageLevel, countries, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(QuickToFullEnrollment);

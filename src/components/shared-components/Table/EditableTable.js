@@ -41,7 +41,7 @@ const EditableCell = ({
 };
 
 const EditableTable = props => {
-    const { tableData, tableColumns, isAllowedToEditTableData,isCorrectionModalOpened, onSelectingCorrectionToEdit, selectedCourse  } = props;
+    const { tableData, tableColumns, isAllowedToEditTableData,isCorrectionModalOpened, onSelectingCorrectionToEdit  } = props;
 
   const [form] = Form.useForm();
 
@@ -184,8 +184,8 @@ const EditableTable = props => {
 
 
 const mapStateToProps = ({lrn}) => {
-	const {selectedCorrectionRecord, isCorrectionModalOpened, selectedCourse, onSelectingCorrectionToEdit } = lrn;
-	return {selectedCorrectionRecord, isCorrectionModalOpened, selectedCourse, onSelectingCorrectionToEdit} 
+	const {selectedCorrectionRecord, isCorrectionModalOpened, onSelectingCorrectionToEdit } = lrn;
+	return {selectedCorrectionRecord, isCorrectionModalOpened, onSelectingCorrectionToEdit} 
 };
 
 export default withRouter(connect(mapStateToProps, {onSelectingCorrectionToEdit})(EditableTable));

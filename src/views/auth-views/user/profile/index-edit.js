@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import { ImageSvg } from '../../../../assets/svg/icon';
-import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
+import {getAllLanguageCourses, setUserCourseConfiguration, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
 import PageHeaderAlt from '../../../../components/layout-components/PageHeaderAlt'
 import IconFallback from "../../../../components/util-components/IconFallback";
 import { withRouter } from "react-router-dom";
@@ -257,7 +257,6 @@ function mapDispatchToProps(dispatch){
 	return bindActionCreators({
 		setUserCourseConfiguration: setUserCourseConfiguration,
 		getAllLanguageCourses: getAllLanguageCourses,
-		setUserSelectedCourse: setUserSelectedCourse,
 		onCourseChange: onCourseChange,
 		setUserNativeLanguage: setUserNativeLanguage,
 		onLocaleChange: onLocaleChange

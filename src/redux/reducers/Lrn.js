@@ -45,7 +45,8 @@ import {
   ON_MODAL_INTERACTION,
   ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
   ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
-  ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE
+  ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
+  ON_USER_SELECTING_COURSE
 } from "../constants/Lrn";
 
 const initState = {
@@ -58,6 +59,11 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
+    case ON_USER_SELECTING_COURSE:
+      return {
+        ...state,
+        selectedCourse: action.selectedCourse
+      }
     case ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE:
       return {
         ...state,
@@ -262,6 +268,7 @@ const lrn = (state = initState, action) => {
 
       }
     case GET_USER_SELECTED_COURSE:
+      console.log("action.selectedCourse", action.selectedCourse)
       return {
         ...state,
         selectedCourse: action.selectedCourse

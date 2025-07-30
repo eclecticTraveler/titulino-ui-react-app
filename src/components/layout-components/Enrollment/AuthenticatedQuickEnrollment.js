@@ -16,7 +16,7 @@ import { useHistory } from 'react-router-dom';
 const { Option } = Select;
 
 export const AuthenticatedQuickEnrollment = (props) => {
-  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedCourse, nativeLanguage, passedSubmitBtnEnabled,
+  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, nativeLanguage, passedSubmitBtnEnabled,
          onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, user, token, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
   const [isConfirmVisible, setConfirmVisible] = useState(false);
@@ -693,10 +693,10 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ lrn, grant, auth }) => {
-  const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll } = lrn;
+  const { availableCourses, selfLanguageLevel, countries, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll } = lrn;
   const { user } = grant;
   const { token } = auth;
-  return { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, user, token, selectedCoursesToEnroll };
+  return { availableCourses, selfLanguageLevel, countries, nativeLanguage, wasSubmittingEnrolleeSucessful, user, token, selectedCoursesToEnroll };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AuthenticatedQuickEnrollment);

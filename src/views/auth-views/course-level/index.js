@@ -127,11 +127,11 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn, theme, grant, auth}) => {
-	const { wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse } = lrn;
+	const { nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse } = lrn;
     const { locale, direction, course } =  theme;
     const { user } = grant;
     const { token } = auth; 
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse }
+	return { locale, direction, course, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);

@@ -42,9 +42,9 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { selectedCourse, nativeLanguage, fiveMinuteLesson } = lrn;
+	const { nativeLanguage, fiveMinuteLesson } = lrn;
     const { locale, direction, course } =  theme;
-	return { locale, direction, course, selectedCourse, nativeLanguage, fiveMinuteLesson }
+	return { locale, direction, course, nativeLanguage, fiveMinuteLesson }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(FiveMinLesson);

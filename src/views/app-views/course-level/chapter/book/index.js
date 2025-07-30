@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getUserSelectedCourse, getUserNativeLanguage, getBookChapterUrl}  from 'redux/actions/Lrn';
+import { getUserNativeLanguage, getBookChapterUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { env } from '../../../../../configs/EnvironmentConfig';
 import Loading from '../../../../../components/shared-components/Loading';
@@ -48,16 +48,15 @@ class BookSection extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getUserSelectedCourse: getUserSelectedCourse,
         getUserNativeLanguage: getUserNativeLanguage,
         getBookChapterUrl: getBookChapterUrl
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { wasUserConfigSet, selectedCourse, nativeLanguage, bookChapterUrl } = lrn;
+	const { nativeLanguage, bookChapterUrl } = lrn;
     const { locale, direction, course } =  theme;
-	return { locale, direction, course, wasUserConfigSet, selectedCourse, nativeLanguage, bookChapterUrl }
+	return { locale, direction, course, nativeLanguage, bookChapterUrl }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(BookSection);
