@@ -90,8 +90,7 @@ class CourseSelection extends Component {
 				)
 			}
 		}
-		console.log("MMMM----this.props.nativeLanguage", this.props.nativeLanguage);
-		console.log("MMMM----this.props.wasUserConfigSet", this.props.wasUserConfigSet);
+
         return(	
 			<div>
 				<div className="single-web-account-modal">

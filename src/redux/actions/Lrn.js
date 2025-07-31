@@ -453,7 +453,6 @@ export const getQuizletUrl = async (modality, chapterNo, levelNo, nativeLanguage
 
 export const getUserSelectedCourse = async () => {
   const selectedCourse = await LocalStorageService.getUserSelectedCourse();
-  console.log("HERE ACTIONS getUserSelectedCourse", selectedCourse);
   return {
     type: GET_USER_SELECTED_COURSE,
     selectedCourse: selectedCourse
@@ -461,7 +460,6 @@ export const getUserSelectedCourse = async () => {
 }
 
 export const setUserSelectedCourse = async (courseSelected) => {
-  console.log("HERE ACTIONS setUserSelectedCourse", courseSelected);
   LocalStorageService.setUserSelectedCourse(courseSelected);
   return {
     type: SET_USER_SELECTED_COURSE
@@ -509,7 +507,6 @@ export const getWasUserConfigSetFlag = async (keyword) => {
   const nativeLanguage = await LocalStorageService.getUserSelectedNativeLanguage();
   const selectedCourse =  await LocalStorageService.getUserSelectedCourse();
   const wasUserConfigSet = (selectedCourse && nativeLanguage) ? true : false;
-  console.log("ACTONS", "keyword", keyword, "wasUserConfigSet", wasUserConfigSet)
   if(keyword === "reset"){
     return {
       type: GET_WAS_USER_CONFIG_SET_FLAG,
