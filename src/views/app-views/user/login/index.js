@@ -41,20 +41,39 @@ export const LoginAdapter = (props) => {
 	const currentPath = `${location.pathname}${location.search}`;
 	const safeRedirectPath = currentPath.startsWith('/lrn/login') ? APP_PREFIX_PATH : currentPath;
 
-	// ✅ Get the original intended destination
+	  useEffect(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const redirectParam = urlParams.get("redirect");
+		const existingRedirect = localStorage.getItem("postLoginRedirect");	
+		const isValidRedirect = redirectParam && redirectParam !== "/lrn";
+	
+		if (isValidRedirect && existingRedirect !== redirectParam) {
+			const safePath = decodeURIComponent(redirectParam);			
+			localStorage.setItem("postLoginRedirect", safePath);
+		}
+	}, []);
+
+
 	const getRedirectPath = () => {
 		const searchParams = new URLSearchParams(location.search);
 		const fromQuery = searchParams.get('redirect') || searchParams.get('redirectTo');
 		const fromState = location.state?.from;
 		const fromStorage = localStorage.getItem('postLoginRedirect');
-		console.log("searchParams", searchParams, "fromQuery", fromQuery, "fromState", fromState, "fromStorage", fromStorage)
+		
+		// Decide what source to use, prioritizing the most reliable one
+		let rawRedirect = fromQuery;
 	
-		const rawRedirect = fromQuery || fromState || fromStorage || APP_PREFIX_PATH;
+		// If fromQuery is just "/lrn", ignore it and fallback
+		if (!rawRedirect || rawRedirect === APP_PREFIX_PATH) {
+			rawRedirect = fromState || fromStorage || APP_PREFIX_PATH;
+		}
+	
 		const cleanRedirect = decodeURIComponent(rawRedirect);
 		console.log("cleanRedirect", cleanRedirect);
 		// Prevent redirecting back to login page
 		return cleanRedirect.includes('/lrn/login') ? APP_PREFIX_PATH : cleanRedirect;
 	};
+	
 	
 
 	const { 
@@ -91,26 +110,22 @@ export const LoginAdapter = (props) => {
 		hasRedirected.current = true;
 	
 		const redirectPath = getRedirectPath();
-		localStorage.removeItem('postLoginRedirect');
-	
+			
 		console.log("🔁 Redirecting to", redirectPath);
 		history.replace(redirectPath);
 	};
 	
-	useEffect(() => {
-		// console.log("🔐 LoginAdapter mounted");
-	
+	useEffect(() => {		
 		// ✅ Step 1: Check for Supabase redirect hash tokens
 		const hashParams = parseHashParams(window.location.hash);
 		const accessToken = hashParams.access_token;
 	
-		if (accessToken) {
-			// console.log("🧪 Supabase token found in URL hash, verifying...");
+		if (accessToken) {			
 	
 			// ✅ Supabase stores it in memory automatically, we just need to use getSession to confirm
 			supabase.auth.getSession().then(({ data }) => {
 				if (data?.session) {
-					// console.log("✅ Supabase session restored from hash");
+					
 					handleSuccessfulLogin(data.session);
 	
 					// ✅ Clean the URL (removes the #access_token)
@@ -127,7 +142,6 @@ export const LoginAdapter = (props) => {
 			await new Promise(res => setTimeout(res, 300));
 			const { data } = await supabase.auth.getSession();
 			if (data?.session) {
-				// console.log("✅ Initial session found (no hash)");
 				handleSuccessfulLogin(data.session);
 			}
 		};
@@ -135,8 +149,7 @@ export const LoginAdapter = (props) => {
 		checkInitialSession();
 	
 		// ✅ Step 3: Listen to auth changes
-		const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-			// console.log("🟡 Auth event:", event, session);
+		const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {	
 			if (session) handleSuccessfulLogin(session);
 		});
 	
@@ -153,12 +166,6 @@ export const LoginAdapter = (props) => {
 		padding: "20px",
 	};
 
-	useEffect(() => {
-		if (!token && safeRedirectPath) {
-			console.log("---------safeRedirectPath", safeRedirectPath)
-			localStorage.setItem('postLoginRedirect', safeRedirectPath);
-		}
-	}, [token, safeRedirectPath]);
 
 	if (!token) {
 		// 👇 Login page with correct redirectTo
@@ -191,7 +198,6 @@ export const LoginAdapter = (props) => {
 						}}
 						providers={['google', 'facebook']}
 						redirectTo={`${window.location.origin}/lrn/login?redirect=${encodeURIComponent(safeRedirectPath)}`}
-
 					/>
 				</Card>
 			</div>
