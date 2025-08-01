@@ -6,7 +6,7 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import IntlMessage from "components/util-components/IntlMessage";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard } from "redux/actions/Analytics";
+import { onProcessingPurchaseOfProduct } from "redux/actions/Shop";
 
 export const ShopWindow = (props) => {
 	const { videoClassUrls, nativeLanguage, userProficiencyOrder, course, user, token } = props;
@@ -14,6 +14,20 @@ export const ShopWindow = (props) => {
 	useEffect(() => {
 		// Aqui a redux
 	  }, []);
+
+	//   useEffect(() => {
+	// 	const pathInfo = utils.getCourseInfoFromUrl(location?.pathname);
+	// 	if(user?.emailId){
+	// 	  onProcessingPurchaseOfProduct(
+	// 		pathInfo?.levelNo,
+	// 		pathInfo?.chapterNo,
+	// 		nativeLanguage?.localizationId,
+	// 		course,
+	// 		user?.emailId
+	// 	  );
+	// 	}
+	
+	//   }, [location?.pathname, nativeLanguage?.localizationId, course, user?.emailId]);
   
 	const locale = true;
 	
@@ -117,8 +131,7 @@ export const ShopWindow = (props) => {
 
 function mapDispatchToProps(dispatch) {
 	return bindActionCreators({
-		onRenderingAdminInsightsDashboard: onRenderingAdminInsightsDashboard,
-		onRenderingLocationTypeSelectionsToDashboard: onRenderingLocationTypeSelectionsToDashboard
+		onProcessingPurchaseOfProduct
 	}, dispatch);
 }
 
