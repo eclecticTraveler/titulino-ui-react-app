@@ -161,4 +161,3 @@ const mapStateToProps = ({ analytics }) => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(InsightsLandingDashboard);
-// export default InsightsLandingDashboard;
