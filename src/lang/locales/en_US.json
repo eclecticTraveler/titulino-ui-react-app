@@ -333,6 +333,25 @@
 	"search.NoRecordsFound":"No records found",
 	"search.WouldYouLikeToEnroll":"Would you like to enroll?",
 	"search.TakeMeToEnroll":"Yes, take me to enroll",
-	"weekly.enrollment.course":"Already Enrolled"
+	"weekly.enrollment.course":"Already Enrolled",
+
+	"shopping.center": "Shopping Center 🛒",	
+	"shop.feature.grammarClasses":"📚 Access to 8 Grammar Classes",
+	"shop.feature.termsnResources":"📖 150+ Terms Interactive eBook",
+	"shop.feature.extraQuizletResources":"🧠 Extra Quizlet Resources",
+	"shop.feature.300ebook":"📘 eBook extra 150+ Terms with a Total of 300+",
+	"shop.feature.300TranslationGuide":"🌍 300+ Translation Guide",
+	"shop.feature.extraClasses":"🎓 2 Free Gathering Classes",
+	"shop.feature.accessToGroup":"💬 Access to Exclusive WhatsApp Group",
+	"shop.feature.features":"Features",
+	"shop.feature.free":"Free",
+	"shop.feature.silverCost":"Silver",
+	"shop.feature.goldCost":"Gold",
+	"shop.feature.compareOurPackages":"Compare Our Study Packages ",
+	"shop.feature.current":"Current ",
+	"shop.feature.buy3":"Buy for $3",
+	"shop.feature.buy5":"Buy for $5"
+
+
 	
 }

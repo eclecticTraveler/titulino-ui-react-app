@@ -335,7 +335,23 @@
 	"search.NoRecordsFound": "No se encontraron registros",
 	"search.WouldYouLikeToEnroll": "¿Te gustaría inscribirte?",
 	"search.TakeMeToEnroll": "Sí, inscríbeme",
-	"weekly.enrollment.course":"Ya esta inscrito"
+	"weekly.enrollment.course":"Ya esta inscrito",
+	"shopping.center": "Compras 🛒",
+	"shop.feature.grammarClasses":"📚 Acceso a 8 clases de gramática",
+	"shop.feature.termsnResources":"📖 Libro electrónico interactivo con más de 150 términos",
+	"shop.feature.extraQuizletResources":"🧠 Recursos adicionales de Quizlet",
+	"shop.feature.300ebook":"📘 Libro electrónico con más de 150 términos, con un total de más de 300",
+	"shop.feature.300TranslationGuide":"🌍 Guía de traducción con más de 300 términos",
+	"shop.feature.extraClasses":"🎓 2 clases de grupo gratuitas",
+	"shop.feature.accessToGroup":"💬 Acceso a un grupo exclusivo de WhatsApp",
+	"shop.feature.features":"Características",
+	"shop.feature.free":"Gratis",
+	"shop.feature.silverCost":"Plata",
+	"shop.feature.goldCost":"Oro",
+	"shop.feature.compareOurPackages":"Compara nuestros paquetes de estudio",
+	"shop.feature.current":"Actual",
+	"shop.feature.buy3":"Compra por $3",
+	"shop.feature.buy5":"Compra por $5"
 	
 }
 

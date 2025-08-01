@@ -7,11 +7,13 @@ import MenuContent from './MenuContent'
 import Title from '../../components/layout-components/Title';
 import WidgetAction from '../../components/shared-components/WidgetAction';
 import DonationCenter from "components/shared-components/DonationCenter";
+import { env } from "configs/EnvironmentConfig";
+import ShoppingCenter from "components/shared-components/Shopping";
 
 const { Sider } = Layout;
 
-export const SideNav = ({navColor, navTitle, navCollapsed, sideNavTheme, routeInfo, hideGroupTitle, localization = true, currentRoute, token }) => {
-	const props = { sideNavTheme, routeInfo , hideGroupTitle, localization, currentRoute, token}
+export const SideNav = ({navColor, navTitle, navCollapsed, sideNavTheme, routeInfo, hideGroupTitle, localization = true, currentRoute, token, user }) => {
+	const props = { sideNavTheme, routeInfo , hideGroupTitle, localization, currentRoute, token, user}
 	let hexColor = navColor ? navColor : "#3ca292";
 
 	return (
@@ -28,18 +30,21 @@ export const SideNav = ({navColor, navTitle, navCollapsed, sideNavTheme, routeIn
 					type={NAV_TYPE_SIDE} 
 					{...props}
 				/>
-
+				{(token && user?.contactId && env.IS_SHOPPING_UX_ON) ?
+				<ShoppingCenter isCollapsed={navCollapsed}/> :
 				<DonationCenter isCollapsed={navCollapsed}/>
+				}
 			</Scrollbars>
 		</Sider>
 	)
 }
 
-const mapStateToProps = ({ theme, lrn, auth }) => {
+const mapStateToProps = ({ theme, lrn, auth, grant }) => {
 	const {currentRoute} = lrn;
 	const { token } = auth;
+	const { user } = grant;
 	const { navCollapsed, sideNavTheme } =  theme;
-	return { navCollapsed, sideNavTheme, currentRoute, token }
+	return { navCollapsed, sideNavTheme, currentRoute, token, user }
 };
 
 export default connect(mapStateToProps)(SideNav);
