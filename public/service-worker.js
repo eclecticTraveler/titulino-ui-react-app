@@ -1,4 +1,4 @@
-const CACHE_NAME = 'v0.1.114'; // Increment with every deployment
+const CACHE_NAME = 'v0.1.116'; // Increment with every deployment
 const CACHE_ASSETS = [
   '/',
   '/index.html'

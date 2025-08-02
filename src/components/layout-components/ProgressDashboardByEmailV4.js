@@ -223,6 +223,8 @@ useEffect(() => {
     return <>{setLocale(locale, "resources.myprogress.dashboardInnerTitle")}: {capitalizeFirstLetter(courseTheme)}</>;
   };
 
+  const coverUrl = 'https://images.unsplash.com/photo-1535515384173-d74166f26820?q=80&w=2340&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+	const title = 'Shopping';
   return (
     <div className="container customerName wordBreak">
     {isSmallConfettiVisible && <ConfettiExplosion />}
@@ -244,7 +246,15 @@ useEffect(() => {
         />
       )}
 
-    <Card bordered loading={loading}>
+    <Card 
+      cover={
+        <img
+          alt={title}
+          src={coverUrl}
+          style={{ height: 100, objectFit: 'cover' }}
+        />
+              }
+    bordered loading={loading}>
     {userRegisteredProgressByCourse && (
       <>
         <h1>{capitalizeFirstLetter(courseTheme)}: {renderMessageResults()}</h1>
