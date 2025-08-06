@@ -1,3 +1,146 @@
+Here’s a clean and informative README.md file for the titulino-ui-react-app project:
+
+md
+Copy
+Edit
+# Titulino UI React App
+
+A modern React-based frontend application for [Titulino.com](https://titulino.com), featuring rich UI components, charts, Supabase authentication, Redux state management, and various visualization tools.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Make sure you have the following installed:
+
+- Node.js (v16 or newer recommended)
+- npm
+
+### Install Dependencies
+
+npm install
+Run in Development Mode
+bash
+Copy
+Edit
+npm run dev
+This command runs the React app and watches styles using gulp.
+
+Build for Production
+bash
+Copy
+Edit
+npm run build
+Run Tests
+bash
+Copy
+Edit
+npm test
+📦 Project Structure
+pgsql
+Copy
+Edit
+titulino-ui-react-app/
+├── public/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── redux/
+│   ├── services/
+│   ├── assets/
+│   └── index.js
+├── gulpfile.js
+├── package.json
+└── README.md
+✨ Features
+✅ Built with React 18
+
+✅ Uses Redux, Redux-Saga, and Redux Toolkit
+
+✅ Supabase for authentication
+
+✅ Modern UI with Ant Design and Bootstrap
+
+✅ Animated elements with Framer Motion
+
+✅ Interactive charts with @ant-design/plots
+
+✅ i18n support using React Intl
+
+✅ Map visualizations with react-simple-maps
+
+✅ Lottie animations
+
+✅ Theming and dark mode
+
+✅ Gulp integration for CSS processing
+
+🔧 Useful Scripts
+Command	Description
+npm run dev	Start the dev server and Gulp watcher concurrently
+npm run build	Builds the app for production
+npm run release	Bumps the version using standard-version
+npm run eject	Ejects CRA configs
+npm run afterEachRelease	Runs post-release automation
+
+🔍 Browsers Support
+Production:
+0.2%
+
+Not dead
+
+Not Opera Mini
+
+Development:
+Latest Chrome
+
+Latest Firefox
+
+Latest Safari
+
+🔐 Authentication
+Supabase is used for handling auth via the @supabase/auth-ui-react and @supabase/supabase-js libraries. Keycloak support is also integrated via @react-keycloak/web.
+
+🧪 Testing
+Uses:
+
+@testing-library/react
+
+jest-dom
+
+user-event
+
+You can run tests with:
+
+bash
+Copy
+Edit
+npm test
+📜 License
+ISC License
+
+🛠️ Dev Dependencies
+Gulp & related CSS plugins
+
+Autoprefixer
+
+TypeScript types for React Router
+
+Standard-version for semantic releases
+
+📫 Feedback or Questions?
+Please create an issue or open a discussion if you have suggestions or need help integrating the project.
+
+This project was bootstrapped with Create React App.
+
+vbnet
+Copy
+Edit
+
+Let me know if you want me to tailor this README to a specific deployment (e.g., Vercel, Firebase Hosting, Netlify) or CI setup (GitHub Actions, etc).
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
