@@ -88,7 +88,7 @@ export const AuthLayout = ({ navCollapsed, navType, location, direction, dynamic
 		  			<Footer />
 				</Layout>
 			</Layout>
-			{isMobile && <MobileNav routeInfo={currentRouteInfo} />}
+			{isMobile && <MobileNav routeInfo={currentRouteInfo}/>}
 		</Layout>
   )
 }

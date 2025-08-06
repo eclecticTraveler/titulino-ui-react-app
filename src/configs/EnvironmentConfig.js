@@ -10,6 +10,7 @@ const dev = {
   ...commonConfig,
   IS_SSO_ON: true,
   IS_SHOPPING_UX_ON: true,
+  IS_SWITCH_COURSE_ON:true,
   ENVIROMENT: 'dev',  
 };
 
@@ -17,6 +18,7 @@ const prod = {
   ...commonConfig,
   IS_SSO_ON: true,
   IS_SHOPPING_UX_ON: false,
+  IS_SWITCH_COURSE_ON:false,
   ENVIROMENT: 'prod'
 };
 
@@ -24,13 +26,14 @@ const local = {
   ...commonConfig,
   IS_SSO_ON: true,
   IS_SHOPPING_UX_ON: true,
+  IS_SWITCH_COURSE_ON:true,
   ENVIROMENT: 'local'
 };
 
 const getEnv = () => {
 
   const environment = process.env.REACT_APP_ENV || 'production'; 
-  console.log('Environment:', environment, "process.env.NODE_ENV-Old", process.env.NODE_ENV);
+  console.log('Environment Server:', environment, "process.env.NODE_ENV-Old", process.env.NODE_ENV);
 	switch (environment) {
 		case 'development':
 			return dev

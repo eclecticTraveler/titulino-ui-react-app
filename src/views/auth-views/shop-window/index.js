@@ -1,19 +1,38 @@
-import React, { useEffect, useRef } from 'react';
-import { Row, Col, Card, Table, Button } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Row, Col, Card, Table, Button, Grid, Badge } from 'antd';
 import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import IntlMessage from "components/util-components/IntlMessage";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard } from "redux/actions/Analytics";
+import { onProcessingPurchaseOfProduct } from "redux/actions/Shop";
+import utils from 'utils';
+
+const { useBreakpoint } = Grid;
 
 export const ShopWindow = (props) => {
 	const { videoClassUrls, nativeLanguage, userProficiencyOrder, course, user, token } = props;
-
+	const [hoveredTier, setHoveredTier] = useState(null);
+	const screens = utils.getBreakPoint(useBreakpoint());
+	const isMobile = !screens.includes('md')
 	useEffect(() => {
 		// Aqui a redux
 	  }, []);
+
+	//   useEffect(() => {
+	// 	const pathInfo = utils.getCourseInfoFromUrl(location?.pathname);
+	// 	if(user?.emailId){
+	// 	  onProcessingPurchaseOfProduct(
+	// 		pathInfo?.levelNo,
+	// 		pathInfo?.chapterNo,
+	// 		nativeLanguage?.localizationId,
+	// 		course,
+	// 		user?.emailId
+	// 	  );
+	// 	}
+	
+	//   }, [location?.pathname, nativeLanguage?.localizationId, course, user?.emailId]);
   
 	const locale = true;
 	
@@ -50,66 +69,142 @@ export const ShopWindow = (props) => {
 	const columns = [
 		{ title: setLocale(locale, "shop.feature.features"), dataIndex: 'feature', key: 'feature' },
 		{ title: setLocale(locale, "shop.feature.free"), dataIndex: 'free', key: 'free', align: 'center', render: renderIcon },
-		{ title: setLocale(locale, "shop.feature.silverCost"), dataIndex: 'silver', key: 'silver', align: 'center', render: renderIcon },
-		{ title: setLocale(locale, "shop.feature.goldCost"), dataIndex: 'gold', key: 'gold', align: 'center', render: renderIcon },
+		{ title: setLocale(locale, "shop.feature.silverCost"), dataIndex: 'silver', key: 'silver', align: 'center', render: (_, record) => renderIcon(record.silver) },		  
+		{ title: setLocale(locale, "shop.feature.goldCost"), dataIndex: 'gold', key: 'gold', align: 'center', render: (_, record) => renderIcon(record.gold) },
 	];
 
 	const handlePurchase = (tier) => {
 		alert(`Start Stripe Checkout for: ${tier}`);
 	};
 
+	const renderTierCard = ({ tier, isDisabled, imageUrl, buttonText, featuresForTier }) => (
+		<Card
+		  hoverable
+		  title={tier.charAt(0).toUpperCase() + tier.slice(1)}
+		  bordered
+		  onMouseEnter={() => !isMobile && setHoveredTier(tier)}
+		  onMouseLeave={() => !isMobile && setHoveredTier(null)}
+		>
+		  <div style={{ width: '70%', margin: '0 auto' }}>
+			<img
+			  src={imageUrl}
+			  alt={tier}
+			  style={{
+				width: '100%',
+				marginBottom: 10,
+				marginTop: 20,
+			  }}
+			/>
+			<Button
+			  type={isDisabled ? undefined : 'primary'}
+			  block
+			  disabled={isDisabled}
+			  onClick={!isDisabled ? () => handlePurchase(tier) : undefined}
+			>
+			  {buttonText}
+			</Button>
+		  </div>
+	  
+		  {isMobile && (
+			<div style={{ marginTop: 16 }}>
+			  {featuresForTier.map((item) => (
+				<div
+				  key={item.key}
+				  style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}
+				>
+				  {renderIcon(true)}
+				  <span style={{ marginLeft: 8 }}>{item.feature}</span>
+				</div>
+			  ))}
+			</div>
+		  )}
+		</Card>
+	  );
+	  
+
+	  
+	const coverUrl = 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2304&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+	const title = 'Shopping';
 	return (
-		<div style={{ padding: 16, maxWidth: 1000, margin: '0 auto' }}>
-			<Card bordered>
+		<div className="container customerName">
+			<Card 			
+			cover={
+			<img
+				alt={title}
+				src={coverUrl}
+				style={{ height: 100, objectFit: 'cover' }}
+			/>
+       		 } bordered>
 				<h1>{setLocale(locale, "shop.feature.compareOurPackages")}</h1>
+				<p>{setLocale(locale, "shop.disclaimer")}</p>
 			</Card>
 
 			<Card bordered style={{ marginTop: 16 }}>
-				<Table
-					columns={columns}
-					dataSource={data}
-					pagination={false}
-					scroll={{ x: 'max-content' }}
-					bordered
-				/>
-
 				{/* Responsive card display */}
 				<Row gutter={[16, 16]} style={{ marginTop: 30 }}>
-					<Col xs={24} md={8}>
-						<Card title="Free" bordered>
-							<img
-								src="https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/150Free.png"
-								alt="Free"
-								style={{ width: '100%', marginBottom: 10 }}
-							/>
-							<Button disabled block>{setLocale(locale, "shop.feature.current")}</Button>
-						</Card>
-					</Col>
-					<Col xs={24} md={8}>
-						<Card title="Silver" bordered>
-							<img
-								src="https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/300Silver.png"
-								alt="Silver"
-								style={{ width: '100%', marginBottom: 10 }}
-							/>
-							<Button type="primary" block onClick={() => handlePurchase('silver')}>
-								{setLocale(locale, "shop.feature.buy3")}
-							</Button>
-						</Card>
-					</Col>
-					<Col xs={24} md={8}>
-						<Card title="Gold" bordered>
-							<img
-								src="https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/300Gold.png"
-								alt="Gold"
-								style={{ width: '100%', marginBottom: 10 }}
-							/>
-							<Button type="primary" block onClick={() => handlePurchase('gold')}>
-								{setLocale(locale, "shop.feature.buy5")}
-							</Button>
-						</Card>
-					</Col>
+					{['free', 'silver', 'gold'].map((tier) => {
+						const isDisabled = tier === 'free';
+						const imageUrl = {
+						free: "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/150Free.png",
+						silver: "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/300Silver.png",
+						gold: "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/300Gold.png",
+						}[tier];
+
+						const buttonText = {
+						free: setLocale(locale, "shop.feature.current"),
+						silver: setLocale(locale, "shop.feature.buy3"),
+						gold: setLocale(locale, "shop.feature.buy5"),
+						}[tier];
+
+						const featuresForTier = data.filter((item) => item[tier]);
+
+						return (
+						<Col xs={24} md={8} key={tier}>
+						<Badge.Ribbon
+							text={
+							tier === 'free'
+								? '⭐ Current'
+								: tier === 'silver'
+								? '⭐⭐ Special Offer $3'
+								: '⭐⭐⭐ Special Offer $5'
+							}
+							color={
+							tier === 'free'
+								? '#52c41a'
+								: tier === 'silver'
+								? '#1890ff'
+								: '#f5222d'
+							}
+							style={{
+								marginTop: 40,
+								padding: '0 12px', // wider ribbon
+								fontSize: 17,      // larger text
+								height: 32,        // slightly taller ribbon
+								lineHeight: '32px',
+								fontWeight: 600,   // optional: bolder
+							  }}
+						>
+							{renderTierCard({ tier, isDisabled, imageUrl, buttonText, featuresForTier })}
+						</Badge.Ribbon>
+						</Col>
+						);
+					})}
 				</Row>
+
+
+					{!isMobile && (
+					<Table
+						columns={columns}
+						dataSource={data}
+						pagination={false}
+						scroll={{ x: 'max-content' }}
+						bordered
+						rowClassName={(record) =>
+							hoveredTier && record[hoveredTier] ? 'highlight-row' : ''
+						  }
+					/>
+					)}
+				
 			</Card>
 		</div>
 	);
@@ -117,8 +212,7 @@ export const ShopWindow = (props) => {
 
 function mapDispatchToProps(dispatch) {
 	return bindActionCreators({
-		onRenderingAdminInsightsDashboard: onRenderingAdminInsightsDashboard,
-		onRenderingLocationTypeSelectionsToDashboard: onRenderingLocationTypeSelectionsToDashboard
+		onProcessingPurchaseOfProduct
 	}, dispatch);
 }
 

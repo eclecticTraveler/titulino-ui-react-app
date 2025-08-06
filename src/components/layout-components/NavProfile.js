@@ -140,12 +140,14 @@ export const NavProfile = (props) => {
             </Menu.Item>
           ))}
 
-          <Menu.Item key={menuItems?.length + 2} onClick={resetBaseCourseLanguage}>
-            <span>
-              <SwapOutlined className="mr-3 profile-accomdation" />
-              <span className="font-weight-normal"> {setLocale(locale, "profile.switch.course")}</span>
-            </span>
-          </Menu.Item>
+          {env.IS_SWITCH_COURSE_ON && 
+              <Menu.Item key={menuItems?.length + 2} onClick={resetBaseCourseLanguage}>
+              <span>
+                <SwapOutlined className="mr-3 profile-accomdation" />
+                <span className="font-weight-normal"> {setLocale(locale, "profile.switch.course")}</span>
+              </span>
+            </Menu.Item>
+          }
 
           <Menu.SubMenu
             key="language"

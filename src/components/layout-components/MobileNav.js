@@ -10,6 +10,8 @@ import Flex from "../../components/shared-components/Flex";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import WidgetAction from 'components/shared-components/WidgetAction';
 import DonationCenter from "components/shared-components/DonationCenter";
+import ShoppingCenter from "components/shared-components/Shopping";
+import { env } from "configs/EnvironmentConfig";
 
 export const MobileNav = ({
 	sideNavTheme,
@@ -19,9 +21,10 @@ export const MobileNav = ({
 	hideGroupTitle,
 	localization = true,
 	dynamicUpperMainNavigation,
-	token
+	token,
+	user
 }) => {
-	const props = { sideNavTheme, routeInfo, hideGroupTitle, localization, dynamicUpperMainNavigation, token };
+	const props = { sideNavTheme, routeInfo, hideGroupTitle, localization, dynamicUpperMainNavigation, token, user };
 
 	const onClose = () => {
 		onMobileNavToggle(false);
@@ -51,19 +54,23 @@ export const MobileNav = ({
 					<MenuContent type={NAV_TYPE_SIDE} {...props} />
 				</Scrollbars>
 			</div>
-			<div className="mobile-donate">
+			<div className="mobile-donate">				
+				{(token && user?.contactId && env.IS_SHOPPING_UX_ON) ?
+				<ShoppingCenter/> :
 				<DonationCenter/>
+				}
 			</div>
 		</Flex>
 	</Drawer>
 	);
 };
 
-const mapStateToProps = ({ theme, lrn, auth}) => {
+const mapStateToProps = ({ theme, lrn, auth, grant}) => {
 	const {dynamicUpperMainNavigation} = lrn;
 	const { token } = auth;
+	const { user } = grant;
 	const { navCollapsed, sideNavTheme, mobileNav } = theme;
-	return { navCollapsed, sideNavTheme, mobileNav, dynamicUpperMainNavigation, token };
+	return { navCollapsed, sideNavTheme, mobileNav, dynamicUpperMainNavigation, token, user };
 };
 
 export default connect(mapStateToProps, { onMobileNavToggle })(MobileNav);
