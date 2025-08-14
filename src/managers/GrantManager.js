@@ -52,7 +52,7 @@ const getUserProfile = async (emailId, dobOrYob) => {
       };
       
       LocalStorageService.setCachedObject(localStorageKey, user, 60);       
-
+      console.log("contactPaymentProviderId", user);
       return user;
       
     } else {      

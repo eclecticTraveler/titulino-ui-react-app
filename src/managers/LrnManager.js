@@ -121,6 +121,21 @@ const getUserBookBaseUrl = async(levelTheme, nativeLanguage, course, emailId) =>
   return url;
 } 
 
+const getUserEBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course, emailId) => {  
+  const localStorageKey = `UserProfile_${emailId}`;  
+
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+
+  const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(levelTheme);
+
+  const tier = utils.getCourseTierFromUserCourses(user?.userCourses, courseCodeId);
+  
+  const url = await BookChapterService.getBookTierChapterUrl(levelTheme, chapterNo, nativeLanguage, course, tier);
+
+  return url;
+} 
+
+
 const LrnManager = {
   getUserCourseProgress,
   upsertUserCourseProgress,
@@ -129,7 +144,8 @@ const LrnManager = {
   getGrammarClasses,
   getCourseProgress,
   getUserCoursesForEnrollment,
-  getUserBookBaseUrl
+  getUserBookBaseUrl,
+  getUserEBookChapterUrl
 };
 
 export default LrnManager;

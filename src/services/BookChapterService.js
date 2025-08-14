@@ -35,8 +35,13 @@ const loadRequestedBookUrl = async(levelTheme, nativeLanguage, course, tier) => 
 }
 
 export const getBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course) => {
-    const url = await loadRequestedBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course);
+    const url = await loadRequestedBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course, null);
     return url ?? "";
+}
+
+export const getBookTierChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course, tier) => {
+  const url = await loadRequestedBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course, tier);
+  return url ?? "";
 }
 
 export const getBookBaseUrl = async(levelTheme, nativeLanguage, course) => {
@@ -52,7 +57,8 @@ export const getBookTierBaseUrl = async(levelTheme, nativeLanguage, course, tier
 const BookChapterService = {
   getBookChapterUrl,
   getBookBaseUrl,
-  getBookTierBaseUrl
+  getBookTierBaseUrl,
+  getBookTierChapterUrl
 };
 
 export default BookChapterService;
