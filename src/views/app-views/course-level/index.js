@@ -1,7 +1,7 @@
 import React, {Component, Suspense} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
-import { geteBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse }  from 'redux/actions/Lrn';
+import { geteBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse, getUserEBookUrl }  from 'redux/actions/Lrn';
 import { onLoadingAuthenticatedLandingPage, onAuthenticatingWithSSO } from 'redux/actions/Grant';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
@@ -18,7 +18,7 @@ class CourseLevel extends Component {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
         const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname); 
 
-        this.props.geteBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course );
+        
         this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme);
         this.props.onLoadingUserResourcesByCourseTheme(pathTheme?.courseTheme, this.props.nativeLanguage?.localizationId, this.props.course);
         // check if there is a user object saved and valid and fetch it
@@ -32,6 +32,7 @@ class CourseLevel extends Component {
 
         if(this.props?.user?.emailId){
             this.props.onVerifyingIfUserIsEnrolledInCourse(pathTheme?.courseTheme, this.props.user?.emailId);
+            this.props.getUserEBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course, this.props.user?.emailId);
         }
 
     }
@@ -122,7 +123,8 @@ function mapDispatchToProps(dispatch){
         onLoadingUserResourcesByCourseTheme: onLoadingUserResourcesByCourseTheme,
         onLoadingAuthenticatedLandingPage: onLoadingAuthenticatedLandingPage,
         onAuthenticatingWithSSO: onAuthenticatingWithSSO,
-        onVerifyingIfUserIsEnrolledInCourse: onVerifyingIfUserIsEnrolledInCourse
+        onVerifyingIfUserIsEnrolledInCourse: onVerifyingIfUserIsEnrolledInCourse,
+        getUserEBookUrl: getUserEBookUrl
 	}, dispatch)
 }
 

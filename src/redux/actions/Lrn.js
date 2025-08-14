@@ -671,4 +671,4 @@ export const onRenderingUserCoursesAvailableForRegistration = async (emailId) =>
         type: ON_LOADING_EBOOK_URL,
         ebookUrl: url
       }
-    }
+  }
