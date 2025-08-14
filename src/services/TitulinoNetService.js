@@ -146,12 +146,50 @@ export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
   return "ERROR no valid Token or Array Empty";
 };
 
+export const getPurchaseSessionUrl = async (token, productId, email, name, contactPaymentId, whoCalledMe) => {
+  if (productId && email && token) {
+    const upsertEnrolleeUrl = `${titulinoNetApiUri}/shop`;
+
+    const raw = JSON.stringify({
+      priceId: productId,
+      email: email,
+      name: name,
+      customerPaymentId: contactPaymentId,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: getHeaders(token), // must include Content-Type: application/json
+      body: raw,
+    };
+
+    try {
+      const response = await fetch(upsertEnrolleeUrl, requestOptions);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.statusText}`);
+      }
+
+      const apiResult = await response.json();
+      return apiResult;
+
+    } catch (error) {
+      console.log(`Error in getPurchaseSessionUrl: from ${whoCalledMe}`);
+      console.error(error);
+      return null;
+    }
+  }
+  return "ERROR: Missing token, product, or email";
+};
+
+
 
 
 const TitulinoNetService = {
   getRegistrationToken,
   upsertEnrollment,
-  getUserProfileByEmailAndYearOfBirth
+  getUserProfileByEmailAndYearOfBirth,
+  getPurchaseSessionUrl
 };
 
 export default TitulinoNetService;

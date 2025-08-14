@@ -345,7 +345,21 @@ class Utils {
 		return Object.keys(userCourses);
 	}
 	  
+  /**
+   * Retrieves the course tier from the userCourses object by courseCodeId.
+   * @param {Object} userCourses
+   * @param {string} courseCodeId
+   * @returns {string|null}
+   */
+  static getCourseTierFromUserCourses(userCourses, courseCodeId) {
+	if (!userCourses || typeof userCourses !== "object") {
+	  console.warn("Invalid userCourses object.");
+	  return null;
+	}
 
+	const course = userCourses[courseCodeId];
+	return course?.courseTierAccess || "Free";
+}
 
   /**
    * Retrieves the course token from the userCourses object by courseCodeId.

@@ -671,4 +671,12 @@ export const onRenderingUserCoursesAvailableForRegistration = async (emailId) =>
         type: ON_LOADING_EBOOK_URL,
         ebookUrl: url
       }
+  }
+
+  export const getUserEBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, course, emailId) => {        
+    const url = await LrnManager.getUserEBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course, emailId);
+      return {
+        type: GET_BOOK_CHAPTER_URL,
+        bookChapterUrl: url
+      }
     }

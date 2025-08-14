@@ -7,6 +7,7 @@
         "bookTitle": "Supermarket 200 Core Words",
         "nativeLanguage": "es",
         "course": "eng",
+        "tier":"Free",
         "chapters" : [
           {
             "page": 5,
@@ -77,6 +78,7 @@
         "bookTitle": "Household Items Part 1, 150 Core Words",
         "nativeLanguage": "es",
         "course": "eng",
+        "tier":"Free",
         "chapters" : [
           {
             "page": 5,
@@ -146,6 +148,7 @@
         "bookType":"vocabulary",
         "bookTitle": "Work & Jobs Part 1, 150 Core Words",
         "nativeLanguage": "es",
+        "tier":"Free",
         "course": "eng",
         "chapters" : [
           {
@@ -207,9 +210,201 @@
             "page": 38,
             "chapter": 12,
             "title": "Donate"
-          }
+          }          
         ]
-      }   
+      },      
+      {
+        "id": "14596d599e",
+        "theme":"work-n-jobs",
+        "bookType":"vocabulary",
+        "bookTitle": "Work & Jobs Part 1, 222+ Core Words (Silver)",
+        "nativeLanguage": "es",
+        "tier":"Silver",
+        "course": "eng",
+        "chapters" : [
+          {
+            "page": 4,
+            "chapter": 1,
+            "title": "Construction"
+          },
+          {
+            "page": 8,
+            "chapter": 2,
+            "title": "Office"
+          },
+          {
+            "page": 11,
+            "chapter": 3,
+            "title": "School"
+          },
+          {
+            "page": 14,
+            "chapter": 4,
+            "title": "Farming"
+          },
+          {
+            "page": 17,
+            "chapter": 5,
+            "title": "Hotel"
+          },
+          {
+            "page": 20,
+            "chapter": 6,
+            "title": "Warehouse"
+          },
+          {
+            "page": 23,
+            "chapter": 7,
+            "title": "Restaurant"
+          },
+          {
+            "page": 26,
+            "chapter": 8,
+            "title": "Hospital"
+          },
+          {
+            "page": 29,
+            "chapter": 9,
+            "title": "Pharmacy"
+          },
+          {
+            "page": 32,
+            "chapter": 10,
+            "title": "Corporate"
+          },
+          {
+            "page": 35,
+            "chapter": 11,
+            "title": "Merchandise"
+          },
+          {
+            "page": 38,
+            "chapter": 12,
+            "title": "Office"
+          },
+          {
+            "page": 39,
+            "chapter": 13,
+            "title": "Road Work"
+          },
+          {
+            "page": 45,
+            "chapter": 14,
+            "title": "School"
+          },
+          {
+            "page": 48,
+            "chapter": 15,
+            "title": "Plumbing"
+          },
+          {
+            "page": 52,
+            "chapter": 16,
+            "title": "Test"
+          },
+          {
+            "page": 55,
+            "chapter": 17,
+            "title": "Donate"
+          }          
+        ]
+      },
+      {
+        "id": "14596d599e",
+        "theme":"work-n-jobs",
+        "bookType":"vocabulary",
+        "bookTitle": "Work & Jobs Part 1, 222+ Core Words (Silver)",
+        "nativeLanguage": "es",
+        "tier":"Gold",
+        "course": "eng",
+        "chapters" : [
+          {
+            "page": 4,
+            "chapter": 1,
+            "title": "Construction"
+          },
+          {
+            "page": 8,
+            "chapter": 2,
+            "title": "Office"
+          },
+          {
+            "page": 11,
+            "chapter": 3,
+            "title": "School"
+          },
+          {
+            "page": 14,
+            "chapter": 4,
+            "title": "Farming"
+          },
+          {
+            "page": 17,
+            "chapter": 5,
+            "title": "Hotel"
+          },
+          {
+            "page": 20,
+            "chapter": 6,
+            "title": "Warehouse"
+          },
+          {
+            "page": 23,
+            "chapter": 7,
+            "title": "Restaurant"
+          },
+          {
+            "page": 26,
+            "chapter": 8,
+            "title": "Hospital"
+          },
+          {
+            "page": 29,
+            "chapter": 9,
+            "title": "Pharmacy"
+          },
+          {
+            "page": 32,
+            "chapter": 10,
+            "title": "Corporate"
+          },
+          {
+            "page": 35,
+            "chapter": 11,
+            "title": "Merchandise"
+          },
+          {
+            "page": 38,
+            "chapter": 12,
+            "title": "Office"
+          },
+          {
+            "page": 39,
+            "chapter": 13,
+            "title": "Road Work"
+          },
+          {
+            "page": 45,
+            "chapter": 14,
+            "title": "School"
+          },
+          {
+            "page": 48,
+            "chapter": 15,
+            "title": "Plumbing"
+          },
+          {
+            "page": 52,
+            "chapter": 16,
+            "title": "Test"
+          },
+          {
+            "page": 55,
+            "chapter": 17,
+            "title": "Donate"
+          }          
+        ]
+      }    
     ]
   }
 

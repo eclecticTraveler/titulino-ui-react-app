@@ -47,11 +47,12 @@ const getUserProfile = async (emailId, dobOrYob) => {
         hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
         innerToken: userProfile?.token,
         emailId: emailId,
-        yearOfBirth: userProfile?.yearOfBirth
+        yearOfBirth: userProfile?.yearOfBirth,
+        contactPaymentProviderId: userProfile?.contactPaymentProviderId ?? null
       };
       
       LocalStorageService.setCachedObject(localStorageKey, user, 60);       
-
+      console.log("contactPaymentProviderId", user);
       return user;
       
     } else {      

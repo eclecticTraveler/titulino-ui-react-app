@@ -109,26 +109,32 @@ const getUserCoursesForEnrollment = async(emailId) => {
 
 const getUserBookBaseUrl = async(levelTheme, nativeLanguage, course, emailId) => {  
   const localStorageKey = `UserProfile_${emailId}`;  
+
   const user = await LocalStorageService.getCachedObject(localStorageKey);
 
-  const url = await BookChapterService.getBookBaseUrl(levelTheme, nativeLanguage, course);
+  const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(levelTheme);
 
-  // const [countries, availableCourses, selfLanguageLevel] = await Promise.all([
-  //   TitulinoRestService.getCountries("getUserCoursesForEnrollment"),
-  //   TitulinoRestService.getAvailableCourses(null, "getUserCoursesForEnrollment"),
-  //   TitulinoRestService.getSelfDeterminedLanguageLevelCriteria("getUserCoursesForEnrollment")
-  // ]);
+  const tier = utils.getCourseTierFromUserCourses(user?.userCourses, courseCodeId);
 
-  // const userEnrolledCourseIds = utils.getAllCourseCodeIdsFromUserCourses(user?.userCourses);
-
-  // const userCoursesAvailableForUserToRegistered = availableCourses?.map(course => ({
-  //   ...course,
-  //   alreadyEnrolled: userEnrolledCourseIds.includes(course.CourseCodeId)
-  // }));
-  
+  const url = await BookChapterService.getBookTierBaseUrl(levelTheme, nativeLanguage, course, tier);  
 
   return url;
 } 
+
+const getUserEBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course, emailId) => {  
+  const localStorageKey = `UserProfile_${emailId}`;  
+
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+
+  const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(levelTheme);
+
+  const tier = utils.getCourseTierFromUserCourses(user?.userCourses, courseCodeId);
+  
+  const url = await BookChapterService.getBookTierChapterUrl(levelTheme, chapterNo, nativeLanguage, course, tier);
+
+  return url;
+} 
+
 
 const LrnManager = {
   getUserCourseProgress,
@@ -138,7 +144,8 @@ const LrnManager = {
   getGrammarClasses,
   getCourseProgress,
   getUserCoursesForEnrollment,
-  getUserBookBaseUrl
+  getUserBookBaseUrl,
+  getUserEBookChapterUrl
 };
 
 export default LrnManager;

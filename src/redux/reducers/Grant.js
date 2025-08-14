@@ -19,6 +19,7 @@ const initState = {
     communicationName: null,
     expirationDate: null,
     hasEverBeenFacilitator: false,
+    contactPaymentProviderId: null,
     innerToken: localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
   }
 };
