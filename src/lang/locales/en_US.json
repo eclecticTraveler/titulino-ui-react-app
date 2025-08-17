@@ -352,7 +352,13 @@
 	"shop.feature.buy3":"Buy for $3",
 	"shop.feature.buy5":"Buy for $5",
 	"shop.disclaimer":"All your contributions go toward supporting this community program.",
-	"shop.proceed":"Proceed to Checkout"
+	"shop.proceed":"Proceed to Checkout",
+
+	"shop.succesPurchase.header":"Thank you!!",
+	"shop.succesPurchase.headerTitle":"Before proceeding...",
+	"shop.succesPurchase.headerMessageContent":"I wanted to express my gratitute for your support and making this Community project a sustainable.\n Hope one day I can dedicate to it fully with your support.\n",
+	"shop.succesPurchase.letsExplore":"Let's explore 🏠"
+
 
 
 	

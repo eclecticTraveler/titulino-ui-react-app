@@ -19,6 +19,7 @@ import goldTier from 'assets/lotties/goldTier.json';
 const { useBreakpoint } = Grid;
 const { TabPane } = Tabs;
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+const SHOPPING_PARAMETERS_STORED_KEY = "postQueryParams";
 
 const ShopWindow = (props) => {
   const { user, nativeLanguage, course, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsForPurchase, token, onGettingProductsPurchasedByUser } = props;
@@ -34,6 +35,29 @@ const ShopWindow = (props) => {
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   
+    useEffect(() => {
+      const queryParam = localStorage.getItem(SHOPPING_PARAMETERS_STORED_KEY);        
+      if (queryParam) {     
+        const urlParams = new URLSearchParams(queryParam);     
+        const params = urlParams.get("purchaseTransactionState");
+        const safeParamValue = decodeURIComponent(params);	
+        const paramenterExtracted = safeParamValue?.toLowerCase();
+        if( paramenterExtracted === "success"){        
+          setIsSmallConfettiVisible(true);
+          setIsModalVisible(true);
+          localStorage.removeItem(SHOPPING_PARAMETERS_STORED_KEY);   
+        }else if(paramenterExtracted === "cancel"){
+          setIsSmallConfettiVisible(false);
+          setIsModalVisible(false);
+          localStorage.removeItem(SHOPPING_PARAMETERS_STORED_KEY); 
+        }else{
+          setIsSmallConfettiVisible(false);
+          setIsModalVisible(false);
+        }
+      }
+    }, []);
+
+
   const handleCloseModal = () => {
     // onModalInteraction(true);
     setIsModalVisible(false); // Close modal when user clicks close button
@@ -236,9 +260,8 @@ const ShopWindow = (props) => {
             <GenericModal             
               closeGenericModal={handleCloseModal}
               visibleModal={isModalVisible} // Pass the modal visibility
-              title={"userprogress.enrollment.invitationMessage"}
-              secondTitle={"userprogress.enrollment.invitationMessageTitle"}
-              closeButtonTitle={"enrollment.form.no"}
+              title={"shop.succesPurchase.header"}
+              secondTitle={"shop.succesPurchase.headerTitle"}              
               animation={silverTier}
               messageToDisplay={<ProductPurchasedMessage handlePostButtonClick={handleDirectionModal}/>}
               transitionTimming={1500}

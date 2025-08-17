@@ -26,8 +26,14 @@ import SupabaseAuthService from "services/SupabaseAuthService";
 function RouteInterceptor({ children, isAuthenticated, ...rest }) {
   const { pathname } = useLocation();
 
+  // Save extra params before they are stripped by forwarding to later be used if they match  
+  const urlParams = new URLSearchParams(window.location.search); 
+  if (urlParams?.size > 0) {	      	  	
+        localStorage.setItem("postQueryParams", urlParams);
+    }
+
   // Only protect `/lrn-auth/...` routes
-  if (pathname.startsWith(AUTH_PREFIX_PATH) && !isAuthenticated) {
+  if (pathname.startsWith(AUTH_PREFIX_PATH) && !isAuthenticated) {    
     // redirect to /lrn/login?redirect=/lrn-auth/whatever
     return (
       <Redirect

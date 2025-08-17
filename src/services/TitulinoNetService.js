@@ -223,7 +223,8 @@ const TitulinoNetService = {
   getRegistrationToken,
   upsertEnrollment,
   getUserProfileByEmailAndYearOfBirth,
-  getPurchaseSessionUrl
+  getPurchaseSessionUrl,
+  getUserPurchasedProducts
 };
 
 export default TitulinoNetService;

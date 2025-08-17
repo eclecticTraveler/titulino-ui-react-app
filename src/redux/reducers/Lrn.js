@@ -267,8 +267,7 @@ const lrn = (state = initState, action) => {
         currentRoute: action.route
 
       }
-    case GET_USER_SELECTED_COURSE:
-      console.log("action.selectedCourse", action.selectedCourse)
+    case GET_USER_SELECTED_COURSE:      
       return {
         ...state,
         selectedCourse: action.selectedCourse

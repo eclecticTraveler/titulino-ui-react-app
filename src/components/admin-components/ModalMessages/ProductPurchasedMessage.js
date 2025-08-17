@@ -14,13 +14,13 @@ const ProductPurchasedMessage = ({handlePostButtonClick}) => {
 
   const doAction = () => {
     handlePostButtonClick();
-    history.push("/lrn/enroll");
+    history.push("/");
   };
 
   return (
     <div>
       <h4>
-        {setLocale(locale, "userprogress.enrollment.invitationMessageContent")}
+        {setLocale(locale, "shop.succesPurchase.headerMessageContent")}
       </h4>
       <br />
       <Button 
@@ -28,7 +28,7 @@ const ProductPurchasedMessage = ({handlePostButtonClick}) => {
         size="large" 
         style={{ backgroundColor: "#f0f0f0", color: "#000", borderColor: "#d9d9d9" }}
       >
-        {setLocale(locale, "userprogress.enrollment.yesLetsEnroll")}
+        {setLocale(locale, "shop.succesPurchase.letsExplore")}
       </Button>
     </div>
   );
