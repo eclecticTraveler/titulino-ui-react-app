@@ -9,7 +9,6 @@ import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 import utils from 'utils';
 import Loading from 'components/shared-components/Loading';
-
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 
 class CourseLevel extends Component {

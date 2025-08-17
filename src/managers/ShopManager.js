@@ -35,24 +35,34 @@ const getUserCoursesForEnrollment = async(emailId) => {
     };
 }
 
-const getPurchaseSessionUrl = async(productId, emailId) => {  
+const getPurchaseSessionUrlId = async(product, emailId) => {  
   const localStorageKey = `UserProfile_${emailId}`;  
   const user = await LocalStorageService.getCachedObject(localStorageKey);
-  const url = await TitulinoNetService.getPurchaseSessionUrl(user?.innerToken, productId, user?.emailId, user?.communicationName, user?.contactPaymentId);
-  return url;
+  const sessionUrl = await TitulinoNetService.getPurchaseSessionUrl(user?.innerToken, product?.priceId, user?.emailId, user?.communicationName, user?.contactPaymentProviderId, user?.contactInternalId, "getPurchaseSessionUrlId");
+  return sessionUrl ?? null;
 } 
 
 const getProductsForPurchase = async(nativeLanguage, course) => {  
-  const catalog = await ShoppingCatalogService.getProductCatalog(nativeLanguage, course)
+  const catalog = await ShoppingCatalogService.getProductCatalog(nativeLanguage, course);
   return catalog;
   
 } 
 
+const getProductsPurchasedByUser = async(nativeLanguage, course, emailId) => {  
+  const localStorageKey = `UserProfile_${emailId}`;  
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const purchases = await TitulinoNetService.getUserPurchasedProducts(user?.innerToken, user?.contactInternalId);
+  const catalog = await ShoppingCatalogService.getProductCatalog(nativeLanguage, course);
+
+  return catalog;
+  
+} 
 
 const ShopManager = {
   getUserCoursesForEnrollment,
-  getPurchaseSessionUrl,
-  getProductsForPurchase
+  getPurchaseSessionUrlId,
+  getProductsForPurchase,
+  getProductsPurchasedByUser
 };
 
 export default ShopManager;

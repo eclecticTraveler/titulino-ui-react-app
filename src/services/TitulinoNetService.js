@@ -1,6 +1,7 @@
 import { env } from '../configs/EnvironmentConfig';
 
-const titulinoNetApiUri = `${env.TITULINO_NET_API}/v1/enrollment`;
+const titulinoNetEnrollmentApiUri = `${env.TITULINO_NET_API}/v1/enrollment`;
+const titulinoNetShopApiUri = `${env.TITULINO_NET_API}/v1/shop`;
 let _results = [];
 
 // Helper function to create the headers
@@ -23,7 +24,7 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
     return ""
   }
 
-  const loginUrl = `${titulinoNetApiUri}/login`;
+  const loginUrl = `${titulinoNetEnrollmentApiUri}/login`;
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
   
@@ -78,7 +79,7 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
 
 export const getRegistrationToken = async (whoCalledMe, userName) => {
  
-const loginUrl = `${titulinoNetApiUri}/auth`;
+const loginUrl = `${titulinoNetEnrollmentApiUri}/auth`;
 const myHeaders = new Headers();
 myHeaders.append("Content-Type", "application/json");
 const raw = JSON.stringify({
@@ -107,7 +108,7 @@ export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
   const recordsToSubmit = enrolle ? [...enrolle] : [];
   if (recordsToSubmit?.length > 0 && token) {
     // Base URL
-    const upsertEnrolleeUrl = `${titulinoNetApiUri}/enrollees`;
+    const upsertEnrolleeUrl = `${titulinoNetEnrollmentApiUri}/enrollees`;
 
     const raw = JSON.stringify(
       recordsToSubmit,
@@ -146,15 +147,16 @@ export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
   return "ERROR no valid Token or Array Empty";
 };
 
-export const getPurchaseSessionUrl = async (token, productId, email, name, contactPaymentId, whoCalledMe) => {
+export const getPurchaseSessionUrl = async (token, productId, email, name, contactPaymentId, contactInternalId, whoCalledMe) => {
   if (productId && email && token) {
-    const upsertEnrolleeUrl = `${titulinoNetApiUri}/shop`;
+    const checkoutProductUrl = `${titulinoNetShopApiUri}/checkout`;
 
     const raw = JSON.stringify({
       priceId: productId,
       email: email,
       name: name,
       customerPaymentId: contactPaymentId,
+      contactInternalId: contactInternalId
     });
 
     const requestOptions = {
@@ -164,7 +166,7 @@ export const getPurchaseSessionUrl = async (token, productId, email, name, conta
     };
 
     try {
-      const response = await fetch(upsertEnrolleeUrl, requestOptions);
+      const response = await fetch(checkoutProductUrl, requestOptions);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);
@@ -182,6 +184,38 @@ export const getPurchaseSessionUrl = async (token, productId, email, name, conta
   return "ERROR: Missing token, product, or email";
 };
 
+export const getUserPurchasedProducts = async (token, contactInternalId, whoCalledMe) => {
+  if (contactInternalId && token) {
+    const productUrl = `${titulinoNetShopApiUri}/purchase`;
+
+    const raw = JSON.stringify({
+      contactInternalId: contactInternalId,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: getHeaders(token), // must include Content-Type: application/json
+      body: raw,
+    };
+
+    try {
+      const response = await fetch(productUrl, requestOptions);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.statusText}`);
+      }
+
+      const apiResult = await response.json();
+      return apiResult;
+
+    } catch (error) {
+      console.log(`Error in getUserPurchasedProducts: from ${whoCalledMe}`);
+      console.error(error);
+      return null;
+    }
+  }
+  return "ERROR: Missing token or contactInternalId";
+};
 
 
 

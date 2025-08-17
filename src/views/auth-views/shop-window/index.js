@@ -1,25 +1,57 @@
 import React, { useEffect, useState } from "react";
-import { Row, Col, Card, Table, Button, Grid, Badge, Tabs } from "antd";
+import { Row, Col, Card, Table, Button, Grid, Badge, Tabs, Drawer } from "antd";
 import { faCheckCircle, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import IconAdapter from "components/util-components/IconAdapter";
 import { ICON_LIBRARY_TYPE_CONFIG } from "configs/IconConfig";
 import IntlMessage from "components/util-components/IntlMessage";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { onProcessingPurchaseOfProduct, onGettingProductsForPurchase } from "redux/actions/Shop";
+import { onProcessingPurchaseOfProduct, onGettingProductsForPurchase, onGettingProductsPurchasedByUser } from "redux/actions/Shop";
 import utils from "utils";
+import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
+import { loadStripe } from "@stripe/stripe-js";
+import ConfettiExplosion from 'react-confetti-explosion';
+import GenericModal from "components/layout-components/GenericModal";
+import ProductPurchasedMessage from "components/admin-components/ModalMessages/ProductPurchasedMessage";
+import silverTier from 'assets/lotties/silverTier.json';
+import goldTier from 'assets/lotties/goldTier.json';
 
 const { useBreakpoint } = Grid;
 const { TabPane } = Tabs;
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
 const ShopWindow = (props) => {
-  const { user, nativeLanguage, course, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsForPurchase } = props;
+  const { user, nativeLanguage, course, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsForPurchase, token, onGettingProductsPurchasedByUser } = props;
   const [hoveredTier, setHoveredTier] = useState(null);
   const screens = utils.getBreakPoint(useBreakpoint());
   const isMobile = !screens.includes("md");
   const locale = true;	
   // Track active tab/course_code_id, default first in catalog
   const [activeCourseCode, setActiveCourseCode] = useState("");
+  const [open, setOpen] = useState(false);
+  const [drawerTier, setDrawerTier] = useState(null);
+  const [providePriceId, setProvidePriceId] = useState(null);
+  const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  
+  const handleCloseModal = () => {
+    // onModalInteraction(true);
+    setIsModalVisible(false); // Close modal when user clicks close button
+
+  };
+
+  const handleDirectionModal = () => {
+    // resetState();
+    setIsModalVisible(false);
+  };
+  const showDrawer = () => {
+    setOpen(true);
+  };
+  const onCloseDrawer = () => {
+    setDrawerTier(null);
+    setProvidePriceId(null);
+    setOpen(false);
+  };
 
 	useEffect(() => {
 	if (productCatalog?.length) {
@@ -27,6 +59,11 @@ const ShopWindow = (props) => {
 	}
 	}, [productCatalog]);
 
+  useEffect(() => {
+    if (productCatalog?.length && course && nativeLanguage && user?.emailId) {
+        onGettingProductsPurchasedByUser(course, nativeLanguage, user?.emailId);
+      }
+    }, [productCatalog, nativeLanguage, course, onGettingProductsPurchasedByUser, user?.emailId]);
 
   useEffect(() => {
     // You may want to reload products on nativeLanguage or course change
@@ -91,55 +128,62 @@ const ShopWindow = (props) => {
     },
   ];
 
-  // Handle purchase click for given tier
   const handlePurchase = async (priceId) => {
     if (!user?.emailId) return;
 
-    // Find price_id for this tier from first feature's tiers (or better: from activeCourse features)
-    // You may want to send the whole course_code_id + tierKey to server
-    // Here just pass tierKey and email for simplicity
 
-	// We need ac couple of things:
-	// 1.- Pass the priceId, the courseCodeId, the user.?contactPaymentId, user?.email, user?.communicationName
-	// 2.- also check on the DB if the person has already purchased the product by ID and if so then disable the button and change the badge saying purchased
-	// PaymentProvider -> ProviderId text not null primary key
-	// ContactPurchaseHistory ->  PurchaseId, transactionId, ContactInternalId, ContactPaymentId, PriceId, Amount, Currency, PaymentProviderId, CourseCodeId, WasRefunded, TransactionDate, ModifiedAt
-	// 		constraints ->PurchaseId incremental, ContactPaymentId has to exist in ContactPayment, Amount in float, Currency default USD if not specified, ContactInternalId has to be linked to Contact same with CourseCodeId has to be for Course, PaymentProviderId with PaymentProvider, WasRefunded default false, TransactionDate only in insert now, ModifiedAt on insert and update
-	//					  no record should have the same, purchaseId,  ContactInternalId, ContactPaymentId, PriceId, Amount, Currency, PaymentProviderId, CourseCodeId
+    // TODO
+    // load products purchased and disable the button if product has been purchased and display purchased even on the badge with a color
+    // integrate stripe js
 
-	// ContactPayment -> ContactPaymentId, PaymentProviderId, ContactInternalId
-			// constrains -> ContactPaymentId comes from stripe generated, PaymentProviderId from PaymentProvider tbl, ContactInternalId from contact tbl
-	
-	
-	// Create upsert function "Shop".upsert_contact_purchase_history and it accepts a datatype of the same table structure as ContactPurchaseHistory in an array
-	// Create wrapper function "TitulinoApi_v1"."UpsertContactPurchase" and takes a json string and casts it into an array of the datatype and calls upsert_contact_purchase also has the function permissions necesary
-	// Create get function "Shop".get_contact_purchase_history and gets a select all 
-	// Create permissions for RLS where ContactInternalId is the one.
-	// Create function wrapper and function that gets the ContactPaymentId where ContactInternalId is passed and the 
+    try {
+      const result = await onProcessingPurchaseOfProduct({
+        courseCodeId: activeCourseCode,
+        tier: drawerTier,
+        priceId: priceId
+      }, user.emailId);
 
+      if (result?.sessionUrl?.urlId) {
+        console.log("URL-sessionUrl", result?.sessionUrl?.urlId);        
+        // window.location.href = result.sessionUrl?.urlId;
+        const stripe = await stripePromise;
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: result.sessionUrl.urlId
+        });
 
-	// 3.- as the info is sent then ensure it hits the api and reaches to stripe to generate a URL
-	// 4.- Create a customer_purchases table where there is CourseCodeId, ContactInternalId, PriceId
-	// 5.- Create a table called Contact_ContactPaymentId where it has ContactInternalId, ContactPaymentId, ProviderId "Stripe"
+        if (error) {
+          console.error("Stripe redirect error:", error);
+          alert(error.message);
+        }
 
-	console.log("Tier", priceId || null, activeCourseCode);
-    // try {
-    //   const result = await onProcessingPurchaseOfProduct({
-    //     courseCodeId: activeCourseCode,
-    //     tier: tierKey,
-    //     priceId: activeCourse.features?.[0]?.tiers?.[tierKey]?.price_id || null,
-    //     email: user.emailId,
-    //   });
+        console.log("RESULT", result);
+      } else {
+        alert("Failed to retrieve session URL");
+      }
+    } catch (error) {
+      console.error("Stripe Checkout Error:", error);
+      alert("Something went wrong!");
+    }
+  };
 
-    //   if (result?.sessionUrl) {
-    //     window.location.href = result.sessionUrl;
-    //   } else {
-    //     alert("Failed to retrieve session URL");
-    //   }
-    // } catch (error) {
-    //   console.error("Stripe Checkout Error:", error);
-    //   alert("Something went wrong!");
-    // }
+  // Handle purchase click for given tier
+  const precheckoutShop = async (tierKey, priceId) => {
+    setDrawerTier(tierKey);
+    setProvidePriceId(priceId);
+    showDrawer();
+  };
+
+  const renderFeaturesList = (features) => {
+    return (
+      <div style={{ marginTop: 16 }}>
+        {features.map((item) => (
+          <div key={item.key} style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+            {renderIcon(true)}
+            <span style={{ marginLeft: 8 }}>{item.feature}</span>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   // Render tier card for each pricing tier
@@ -165,30 +209,46 @@ const ShopWindow = (props) => {
           type={isDisabled ? undefined : "primary"}
           block
           disabled={isDisabled}
-          onClick={!isDisabled ? () => handlePurchase(priceId) : undefined}
+          onClick={!isDisabled ? () => precheckoutShop(tierKey, priceId) : undefined}
         >
           {buttonText}
         </Button>
       </div>
 
-      {isMobile && (
-        <div style={{ marginTop: 16 }}>
-          {featuresForTier.map((item) => (
-            <div key={item.key} style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
-              {renderIcon(true)}
-              <span style={{ marginLeft: 8 }}>{item.feature}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      {isMobile && renderFeaturesList(featuresForTier)}
+
     </Card>
   );
+
+  if(token){
+      if(user?.emailId && !user?.yearOfBirth){
+          return (
+              <div id="unathenticated-landing-page-margin">
+                  <EmailYearSearchForm/>
+              </div>
+          )
+      }
+    }
 
   const coverUrl =
     "https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2304&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
   return (
     <div className="container customerName">
+      {isSmallConfettiVisible && <ConfettiExplosion />}
+      {isModalVisible && 
+            <GenericModal             
+              closeGenericModal={handleCloseModal}
+              visibleModal={isModalVisible} // Pass the modal visibility
+              title={"userprogress.enrollment.invitationMessage"}
+              secondTitle={"userprogress.enrollment.invitationMessageTitle"}
+              closeButtonTitle={"enrollment.form.no"}
+              animation={silverTier}
+              messageToDisplay={<ProductPurchasedMessage handlePostButtonClick={handleDirectionModal}/>}
+              transitionTimming={1500}
+          />
+    }
+
       <Card
         cover={<img alt="Shopping" src={coverUrl} style={{ height: 100, objectFit: "cover" }} />}
         bordered
@@ -231,8 +291,8 @@ const ShopWindow = (props) => {
                     tierKey === "free"
                       ? "⭐ Current"
                       : tierKey === "silver"
-                      ? `⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""}`
-                      : `⭐⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""}`
+                      ? `⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`
+                      : `⭐⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`
                   }
                   color={
                     tierKey === "free"
@@ -268,6 +328,93 @@ const ShopWindow = (props) => {
           />
         )}
       </Card>
+
+      <Drawer
+        title={
+          drawerTier === "free"
+            ? "⭐ Current"
+            : drawerTier === "silver"
+            ? `Silver Package $${activeCourse.tiers?.[drawerTier]?.price_usd ?? ""} USD ⭐⭐`
+            : `Gold Package $${activeCourse.tiers?.[drawerTier]?.price_usd ?? ""} USD ⭐⭐⭐`
+        }
+        placement="bottom"
+        closable={false}
+        onClose={onCloseDrawer}
+        visible={open}
+        key="bottom"
+      >
+        {!isMobile ? (
+          <Row gutter={16} justify="center" align="top">
+            {/* Button column */}
+            <Col xs={24} md={6} style={{ textAlign: "center" }}>
+              <Button
+                type="primary"
+                block
+                onClick={() => handlePurchase(providePriceId)}
+                style={{ marginBottom: 16 }}
+              >
+                {setLocale(locale, "shop.proceed")}                 
+              </Button>
+
+              {/* Circular image under button */}
+              {drawerTier && (
+                <img
+                  src={activeCourse.tiers?.[drawerTier]?.image_url || ""}
+                  alt={drawerTier}
+                  style={{
+                    width: 200,
+                    height: 200,
+                    borderRadius: "25%",
+                    objectFit: "scale-down",
+                    display: "block",
+                    margin: "0 auto 16px auto",
+                  }}
+                />
+              )}
+            </Col>
+
+            {/* Features column */}
+            <Col xs={24} md={6}>
+              {drawerTier && renderFeaturesList(
+                data.filter((item) => item[drawerTier])
+              )}
+            </Col>
+          </Row>
+        ) : (
+          <>
+            <Button
+              type="primary"
+              block
+              style={{ marginTop: 16, marginBottom: 16 }}
+              onClick={() => handlePurchase(providePriceId)}
+            >
+              {setLocale(locale, "shop.proceed")}              
+            </Button>
+
+            {/* Circular image under button for mobile */}
+            {drawerTier && (
+              <img
+                className="drawerImage"
+                src={activeCourse.tiers?.[drawerTier]?.image_url || ""}
+                alt={drawerTier}
+                style={{
+                  width: 200,
+                  height: 200,
+                  borderRadius: "25%",
+                  objectFit: "scale-down",
+                  display: "block",
+                  margin: "0 auto 16px auto",
+                }}
+              />
+            )}
+
+            {drawerTier && renderFeaturesList(
+              data.filter((item) => item[drawerTier])
+            )}
+          </>
+        )}
+      </Drawer>
+
     </div>
   );
 };
@@ -277,17 +424,19 @@ function mapDispatchToProps(dispatch) {
     {
       onProcessingPurchaseOfProduct,
       onGettingProductsForPurchase,
+      onGettingProductsPurchasedByUser
     },
     dispatch
   );
 }
 
-const mapStateToProps = ({ grant, shop, lrn, theme }) => {
+const mapStateToProps = ({ grant, shop, lrn, theme, auth }) => {
   const { user } = grant;
   const { productCatalog } = shop;
   const { nativeLanguage } = lrn;
   const { course } = theme;
-  return { user, productCatalog, nativeLanguage, course };
+  const { token } = auth;
+  return { user, productCatalog, nativeLanguage, course, token };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ShopWindow);

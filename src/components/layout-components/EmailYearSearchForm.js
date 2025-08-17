@@ -195,7 +195,13 @@ useEffect(() => {
       console.log("Search result:", result?.user);
       setSearchResult(result?.user);
       setProfileData?.(result?.user);
-      history.push("/");
+      const existingRedirect = localStorage.getItem("postLoginRedirect");	
+      if(existingRedirect){        
+        history.push(existingRedirect);
+      }else{        
+        history.push("/");
+      }
+      
     } else {      
       if (!askFullBirthDate) {
         // First try failed → prompt for full birth date

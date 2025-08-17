@@ -352,7 +352,8 @@
 	"shop.feature.current":"Actual",
 	"shop.feature.buy3":"Compra por $3",
 	"shop.feature.buy5":"Compra por $5",
-	"shop.disclaimer":"Todos sus aportes son destinados a la manutencion de este programa comunitario"
+	"shop.disclaimer":"Todos sus aportes son destinados a la manutencion de este programa comunitario",
+	"shop.proceed": "Adquirir Compra"
 	
 }
 

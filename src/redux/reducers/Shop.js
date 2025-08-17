@@ -1,6 +1,7 @@
 import { 
   ON_PURCHASING_PRODUCT,
-  ON_GETTING_PRODUCTS_FOR_PURCHASE
+  ON_GETTING_PRODUCTS_FOR_PURCHASE,
+  ON_GETTING_PRODUCTS_PURCHASED_BY_USER
 } from "../constants/Shop";
 
 const initState = {
@@ -18,6 +19,10 @@ const shop = (state = initState, action) => {
         ...state,
         productCatalog: action.productCatalog
       }
+    case ON_GETTING_PRODUCTS_PURCHASED_BY_USER:
+      return {
+        ...state
+      }  
     default:
       return state;
   }
