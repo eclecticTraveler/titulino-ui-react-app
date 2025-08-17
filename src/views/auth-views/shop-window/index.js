@@ -130,12 +130,9 @@ const ShopWindow = (props) => {
 
   const handlePurchase = async (priceId) => {
     if (!user?.emailId) return;
-
-
     // TODO
     // load products purchased and disable the button if product has been purchased and display purchased even on the badge with a color
-    // integrate stripe js
-
+   
     try {
       const result = await onProcessingPurchaseOfProduct({
         courseCodeId: activeCourseCode,
@@ -143,8 +140,7 @@ const ShopWindow = (props) => {
         priceId: priceId
       }, user.emailId);
 
-      if (result?.sessionUrl?.urlId) {
-        console.log("URL-sessionUrl", result?.sessionUrl?.urlId);        
+      if (result?.sessionUrl?.urlId) {             
         // window.location.href = result.sessionUrl?.urlId;
         const stripe = await stripePromise;
         const { error } = await stripe.redirectToCheckout({
