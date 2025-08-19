@@ -36,6 +36,12 @@ const ShopWindow = (props) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   
     useEffect(() => {
+      // TODO
+      // upsert to ContactTier once you upsert succesfully to ContactPurchaseHistory
+      // Upsert ContactInternalId, ContactPaymentPRoviderId and CourseCodeId to update TierId
+      // Create two modals to present one for Silver one for Gold
+      // Figure out a way to pass the whatsapp link for the gold
+      // Trigger an email for the Gold
       const queryParam = localStorage.getItem(SHOPPING_PARAMETERS_STORED_KEY);        
       if (queryParam) {     
         const urlParams = new URLSearchParams(queryParam);     
@@ -248,6 +254,11 @@ const ShopWindow = (props) => {
   const coverUrl =
     "https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2304&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
+  const purchasedTier = Object.entries(activeCourse.tiers || {}).find(
+    ([, tier]) => tier?.isPurchased
+  )?.[0] || null;
+
+    
   return (
     <div className="container customerName">
       {isSmallConfettiVisible && <ConfettiExplosion />}
@@ -291,21 +302,24 @@ const ShopWindow = (props) => {
             const isPurchased = tierInfo?.isPurchased ?? false;
             const priceId = tierInfo?.price_id || null;
             const buttonText = isPurchased
-            ? setLocale(locale, "shop.feature.purchased")
+            ? setLocale(locale, "shop.feature.current")
             : {
                 free: setLocale(locale, "shop.feature.current"),
                 silver: setLocale(locale, "shop.feature.buy3"),
                 gold: setLocale(locale, "shop.feature.buy5"),
               }[tierKey];
-
+ 
               // Badge text logic
               const badgeText = isPurchased
               ? setLocale(locale, "shop.feature.purchased")
+              : tierKey === "free" && (purchasedTier === "silver" || purchasedTier === "gold")
+              ? "⭐ Included"
               : tierKey === "free"
               ? "⭐ Current"
               : tierKey === "silver"
               ? `⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`
               : `⭐⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`;
+
 
             const badgeColor = isPurchased
               ? "#00a9fa" // when purchased
