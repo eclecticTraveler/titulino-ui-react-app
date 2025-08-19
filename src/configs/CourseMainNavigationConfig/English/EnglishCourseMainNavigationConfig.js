@@ -11,7 +11,7 @@ import { getTopSubmenuForEnglishConnect } from '../Submenus/Top-Submenus/EConnec
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG, COURSE_TIERS_CONFIG } from 'configs/CourseThemeConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
-export const getEnglishCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) => {	
+export const getEnglishCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) => {
 	return EnglishCourseMainNavigationConfig(isAuthenticated, coursesByTheme);
 }
 const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => [

@@ -37,8 +37,7 @@ const ShopWindow = (props) => {
   
     useEffect(() => {
       // TODO
-      // upsert to ContactTier once you upsert succesfully to ContactPurchaseHistory
-      // Upsert ContactInternalId, ContactPaymentPRoviderId and CourseCodeId to update TierId
+      // if gold then do not make available silver
       // Create two modals to present one for Silver one for Gold
       // Figure out a way to pass the whatsapp link for the gold
       // Trigger an email for the Gold

@@ -11,7 +11,7 @@ export const COURSE_COLOR_CONFIG = {
 	defaultRedBasic: "#C4745F",
 	defaultYellowBasic: "#C89736",
 	silverTier:"#7D8488",
-	goldTier:"AA7F2E"
+	goldTier:"#AA7F2E"
 
 };
 
