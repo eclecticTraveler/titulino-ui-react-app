@@ -19,6 +19,7 @@ import {
 	faHotdog,
 	faBoxes,
 	faTv,
+	faMedal
    } from '@fortawesome/free-solid-svg-icons';
       
 
@@ -153,7 +154,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			key: 'chapter-sidenav-theme-work-n-jobs-11',
 			path: `${commonPath}-11`,
 			title: 'sidenav.chapter.11',
-			icon: faHotdog,
+			icon: faMedal,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
@@ -167,7 +168,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			key: 'chapter-sidenav-theme-work-n-jobs-12',
 			path: `${commonPath}-12`,
 			title: 'sidenav.chapter.12',
-			icon: faArchive,
+			icon: faMedal,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
@@ -178,7 +179,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			key: 'chapter-sidenav-theme-work-n-jobs-13',
 			path: `${commonPath}-13`,
 			title: 'sidenav.chapter.13',
-			icon: faMoneyBill,
+			icon: faMedal,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
@@ -189,7 +190,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			key: 'chapter-sidenav-theme-work-n-jobs-14',
 			path: `${commonPath}-14`,
 			title: 'sidenav.chapter.14',
-			icon: faBreadSlice,
+			icon: faMedal,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
@@ -200,7 +201,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			key: 'chapter-sidenav-theme-work-n-jobs-15',
 			path: `${commonPath}-15`,
 			title: 'sidenav.chapter.15',
-			icon: faHotdog,
+			icon: faMedal,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
@@ -214,7 +215,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			key: 'chapter-sidenav-theme-work-n-jobs-16',
 			path: `${commonPath}-16`,
 			title: 'sidenav.chapter.16',
-			icon: faArchive,
+			icon: faMedal,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
@@ -225,7 +226,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			key: 'chapter-sidenav-theme-work-n-jobs-17',
 			path: `${commonPath}-17`,
 			title: 'sidenav.chapter.17',
-			icon: faMoneyBill,
+			icon: faMedal,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
@@ -236,7 +237,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			key: 'chapter-sidenav-theme-work-n-jobs-18',
 			path: `${commonPath}-18`,
 			title: 'sidenav.chapter.18',
-			icon: faBreadSlice,
+			icon: faMedal,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
@@ -247,7 +248,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			key: 'chapter-sidenav-theme-work-n-jobs-19',
 			path: `${commonPath}-19`,
 			title: 'sidenav.chapter.19',
-			icon: faHotdog,
+			icon: faMedal,
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
