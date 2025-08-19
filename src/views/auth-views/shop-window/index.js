@@ -221,18 +221,34 @@ const ShopWindow = (props) => {
             marginTop: 20,
           }}
         />
-        <Button
-          type={isPurchased ? "default" : isDisabled ? undefined : "primary"}
-          block
-          disabled={isDisabled}
-          onClick={
-            !isDisabled && !isPurchased
-              ? () => precheckoutShop(tierKey, priceId)
-              : undefined
-          }
-        >
-          {buttonText}
-        </Button>
+      <Button
+        type={
+          tierKey === purchasedTier
+            ? "default" // purchased
+            : isDisabled
+            ? undefined
+            : "primary"
+        }
+        block
+        disabled={
+          purchasedTier === "gold"
+            ? true // everything else locked
+            : purchasedTier === "silver" && tierKey === "free"
+            ? true // free locked once silver is bought
+            : isDisabled
+        }
+        onClick={
+          !isDisabled &&
+          !(purchasedTier === "gold") && // lock all when gold purchased
+          !(purchasedTier === "silver" && tierKey === "free") && // lock free when silver purchased
+          tierKey !== purchasedTier // don’t re-purchase current tier
+            ? () => precheckoutShop(tierKey, priceId)
+            : undefined
+        }
+      >
+        {buttonText}
+      </Button>
+
       </div>
 
       {isMobile && renderFeaturesList(featuresForTier)}
@@ -300,33 +316,45 @@ const ShopWindow = (props) => {
             const imageUrl = tierInfo?.image_url || "";
             const isPurchased = tierInfo?.isPurchased ?? false;
             const priceId = tierInfo?.price_id || null;
-            const buttonText = isPurchased
-            ? setLocale(locale, "shop.feature.current")
-            : {
-                free: setLocale(locale, "shop.feature.current"),
-                silver: setLocale(locale, "shop.feature.buy3"),
-                gold: setLocale(locale, "shop.feature.buy5"),
-              }[tierKey];
+            const buttonText =
+            tierKey === purchasedTier
+              ? setLocale(locale, "shop.feature.current") // purchased tier
+              : (purchasedTier === "silver" && tierKey === "free") ||
+                (purchasedTier === "gold" && (tierKey === "free" || tierKey === "silver"))
+              ? setLocale(locale, "shop.feature.current") // included tiers look "current"
+              : {
+                  free: setLocale(locale, "shop.feature.current"),
+                  silver: setLocale(locale, "shop.feature.buy3"),
+                  gold: setLocale(locale, "shop.feature.buy5"),
+                }[tierKey];
+          
  
               // Badge text logic
-              const badgeText = isPurchased
-              ? setLocale(locale, "shop.feature.purchased")
-              : tierKey === "free" && (purchasedTier === "silver" || purchasedTier === "gold")
-              ? "⭐ Included"
-              : tierKey === "free"
-              ? "⭐ Current"
-              : tierKey === "silver"
-              ? `⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`
-              : `⭐⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`;
+              const badgeText =
+              tierKey === purchasedTier
+                ? setLocale(locale, "shop.feature.purchased") // current purchased tier
+                : (purchasedTier === "silver" && tierKey === "free")
+                ? "⭐ Included"
+                : (purchasedTier === "gold" && (tierKey === "free" || tierKey === "silver"))
+                ? "⭐ Included"
+                : tierKey === "free"
+                ? "⭐ Current"
+                : tierKey === "silver"
+                ? `⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`
+                : `⭐⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`;           
 
-
-            const badgeColor = isPurchased
-              ? "#00a9fa" // when purchased
-              : tierKey === "free"
-              ? "#52c41a"
-              : tierKey === "silver"
-              ? "#1890ff"
-              : "#f5222d";  
+                const badgeColor =
+                tierKey === purchasedTier
+                  ? "#52c41a" // purchased = green
+                  : (purchasedTier === "silver" && tierKey === "free") ||
+                    (purchasedTier === "gold" && (tierKey === "free" || tierKey === "silver"))
+                  ? "#00a9fa" // included = blue
+                  : tierKey === "free"
+                  ? "#52c41a"
+                  : tierKey === "silver"
+                  ? "#1890ff"
+                  : "#f5222d";
+              
 
             // Filter features enabled for this tier to display in card
             const featuresForTier = data.filter((item) => item[tierKey]);
