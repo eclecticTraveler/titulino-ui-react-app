@@ -35,8 +35,7 @@ const { useBreakpoint } = Grid;
 export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicUpperMainNavigation, onCurrentRouteInfo }) => {
   // Here we figure out the proper general submenu based on the url location we are hitting
   let currentRouteInfo;
-  dynamicUpperMainNavigation?.forEach(singleFullMenu => {
-    // if(singleFullMenu?.path === location?.pathname){
+  dynamicUpperMainNavigation?.forEach(singleFullMenu => {    
     if(location?.pathname.includes(singleFullMenu?.path)){
       currentRouteInfo = singleFullMenu;
       onCurrentRouteInfo(currentRouteInfo);

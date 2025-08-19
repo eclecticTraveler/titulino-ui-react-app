@@ -41,8 +41,8 @@ const MenuContentTop = (props) => {
   }, [isMobileView]);
 
   useEffect(() => {
-    getUpperNavigationBasedOnUserConfig((user?.contactId && token) ? true : false);
-  }, [user?.contactId, token]);
+    getUpperNavigationBasedOnUserConfig(((user?.contactId && token) ? true : false), user?.emailId);
+  }, [user?.contactId, token, user?.emailId]);
 
   toggleSelectedUpperNavigationTabOnLoad(
     useLocation()?.pathname,

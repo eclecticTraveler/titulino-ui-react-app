@@ -4,7 +4,7 @@ import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationM
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from '../../CourseThemeConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
-const PortugueseCourseMainNavigationConfig = (isAuthenticated) => [
+const PortugueseCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) => [
 	{
 		key: 'level-1-por',
 		path: `${APP_PREFIX_PATH}/por/nivel-1`,

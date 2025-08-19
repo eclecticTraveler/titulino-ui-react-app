@@ -16,6 +16,7 @@ import GoogleService from "services/GoogleService";
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import StudentProgress from "lob/StudentProgress";
+import LrnConfiguration from "lob/LrnConfiguration"
 import TitulinoManager from "managers/LrnManager";
 import $ from 'jquery'; 
 
@@ -311,7 +312,7 @@ export const onRequestingCourseProgressStructure = async (nativeLanguage, course
     // It will handle the caching through REDIS, but for now its okay
     
     // Get `courseCodeId` for the given `courseTheme`
-    const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
+    const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme);
   
     // Dynamic local storage key based on `courseCodeId`
     const localStorageKey = `EnrolleesByCourse_${courseCodeId}`;
@@ -520,20 +521,8 @@ export const getWasUserConfigSetFlag = async (keyword) => {
   }
 }
 
-export const getUpperNavigationBasedOnUserConfig = async (isAuthenticated) => {  
-  const upperMainNavigation = await LrnManager.getUserUpperNavigationConfig(isAuthenticated);
-  return {
-    type: GET_UPPER_NAV_BASED_ON_USER_CONFIG,
-    upperMainNavigation: upperMainNavigation
-  }
-}
-
-
-export const onRetrievingProfileByEmailIdAndYearOfBirth = async (email, yobOrDateOfBirth) => {  
-  let isUserAuthenticated = true ?? false;
-  console.log("isUserAuthenticated: ", isUserAuthenticated);
-  const selectedLanguageForCourse =  await LocalStorageService.getUserSelectedCourse();
-  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation, isUserAuthenticated);
+export const getUpperNavigationBasedOnUserConfig = async (isAuthenticated, emailId) => {  
+  const upperMainNavigation = await LrnManager.getUserUpperNavigationConfig(isAuthenticated, emailId);
   return {
     type: GET_UPPER_NAV_BASED_ON_USER_CONFIG,
     upperMainNavigation: upperMainNavigation
@@ -624,7 +613,7 @@ export const onSubmittingUserAuthenticatedProgressForCourse = async (courseProgr
 export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) => {
 
   // Get courseId in Factory
- const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
+ const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme);
  const userIsEnrolled = await TitulinoManager.getCourseToken(courseCodeId, emailId)
  
   return {

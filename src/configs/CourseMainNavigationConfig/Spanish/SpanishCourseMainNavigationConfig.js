@@ -4,7 +4,7 @@ import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationM
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from '../../CourseThemeConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
-const SpanishCourseMainNavigationConfig = (isAuthenticated) => [
+const SpanishCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) => [
 	{
 		key: 'level-1-spa',
 		path: `${APP_PREFIX_PATH}/spa/nivel-1`,

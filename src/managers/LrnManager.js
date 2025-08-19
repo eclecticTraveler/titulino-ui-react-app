@@ -5,6 +5,7 @@ import BookChapterService  from "services/BookChapterService";
 import DynamicNavigationRouter from "services/DynamicNavigationRouter";
 import TitulinoRestService from "services/TitulinoRestService";
 import StudentProgress from "lob/StudentProgress";
+import LrnConfiguration from "lob/LrnConfiguration";
 import utils from 'utils';
 
 const getUserCourseProgress = async(courseCodeId, emailId) => {
@@ -50,10 +51,15 @@ const getCourseToken = async(courseCodeId, emailId) => {
   return token;
 }
 
-const getUserUpperNavigationConfig = async (isAuthenticated) => {  
+const getUserUpperNavigationConfig = async (isAuthenticated, emailId) => { 
+  const localStorageKey = `UserProfile_${emailId}`;  
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+
   const isUserAuthenticated = !!isAuthenticated;
   const selectedLanguageForCourse =  await LocalStorageService.getUserSelectedCourse();
-  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation, isUserAuthenticated);
+  
+  const mappedCourseNames = LrnConfiguration.mapUserCoursesByTheme(user?.userCourses);  
+  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation, isUserAuthenticated, mappedCourseNames );
   return upperMainNavigation;
 }
 
@@ -61,7 +67,7 @@ const getGrammarClasses = async(levelNo, chapterNo, nativeLanguage, course, emai
     const localStorageKey = `UserProfile_${emailId}`;  
     const user = await LocalStorageService.getCachedObject(localStorageKey);
     const urls = await GrammarClassService.getGrammarClassUrlsByChapter(levelNo, chapterNo, nativeLanguage, course);
-    const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(levelNo);
+    const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelNo);
     const level = utils.getuserLanguageProficiencyOrderIdForCourse(user?.userCourses, courseCodeId);
     const proficiencyLevel = await GrammarClassService.getGrammarCategory(level);
 
@@ -73,7 +79,7 @@ const getGrammarClasses = async(levelNo, chapterNo, nativeLanguage, course, emai
 
 const getCourseProgress = async(courseTheme, nativeLanguage, course) => {  
   // Get courseId in Factory
-  const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(courseTheme);
+  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme);
   const courseConfiguration = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
 
     return {
@@ -112,7 +118,7 @@ const getUserBookBaseUrl = async(levelTheme, nativeLanguage, course, emailId) =>
 
   const user = await LocalStorageService.getCachedObject(localStorageKey);
 
-  const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(levelTheme);
+  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme);
 
   const tier = utils.getCourseTierFromUserCourses(user?.userCourses, courseCodeId);
 
@@ -126,7 +132,7 @@ const getUserEBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, cour
 
   const user = await LocalStorageService.getCachedObject(localStorageKey);
 
-  const courseCodeId = await StudentProgress.getCourseCodeIdByCourseTheme(levelTheme);
+  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme);
 
   const tier = utils.getCourseTierFromUserCourses(user?.userCourses, courseCodeId);
   

@@ -14,7 +14,6 @@ const { Sider } = Layout;
 
 export const SideNav = ({navColor, navTitle, navCollapsed, sideNavTheme, routeInfo, hideGroupTitle, localization = true, currentRoute, token, user }) => {
 	const props = { sideNavTheme, routeInfo , hideGroupTitle, localization, currentRoute, token, user}
-	let hexColor = navColor ? navColor : "#3ca292";
 
 	return (
 		<Sider 
@@ -24,7 +23,7 @@ export const SideNav = ({navColor, navTitle, navCollapsed, sideNavTheme, routeIn
 		>
 
 			<Scrollbars autoHide>
-				<Title title={currentRoute?.sideTitle} color={currentRoute?.color ?? hexColor} prefix={currentRoute?.course} isCollapsed={navCollapsed}/>
+				<Title title={currentRoute?.sideTitle} color={currentRoute?.color} prefix={currentRoute?.course} isCollapsed={navCollapsed}/>
 				
 				<MenuContent 
 					type={NAV_TYPE_SIDE} 

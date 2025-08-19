@@ -9,7 +9,9 @@ export const COURSE_COLOR_CONFIG = {
 	workNjobsTheme: "#2171b5",
 	defaultBlueBasic:"#3CA292",
 	defaultRedBasic: "#C4745F",
-	defaultYellowBasic: "#C89736"
+	defaultYellowBasic: "#C89736",
+	silverTier:"#7D8488",
+	goldTier:"AA7F2E"
 
 };
 
@@ -23,5 +25,12 @@ export const COURSE_ICON_CONFIG = {
 	defaultRedBasic: "/img/mainnav/circle-dot-solid.svg",
 	defaultYellowBasic: "/img/mainnav/circle-dot-solid.svg",
 	default: '/img/mainnav/circle-notch-solid.svg'
+
+};
+
+
+export const COURSE_TIERS_CONFIG = {
+	silver:"Silver",
+	gold:"Gold"
 
 };
