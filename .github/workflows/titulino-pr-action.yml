@@ -1,4 +1,4 @@
-name: publish to gc buckets
+name: Titulino UI Publish to GC Buckets
 
 on:
   push:

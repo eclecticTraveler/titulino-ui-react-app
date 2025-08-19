@@ -17,8 +17,8 @@ export const onProcessingPurchaseOfProduct = async (product, emailId) => {
     }
 }
 
-export const onGettingProductsForPurchase = async (nativeLanguage, course) => {   
-  const catalog = await ShopManager.getProductsForPurchase(nativeLanguage, course);
+export const onGettingProductsAvailableForPurchase = async (nativeLanguage, course, emailId) => {   
+  const catalog = await ShopManager.getProductsForPurchase(nativeLanguage, course, emailId);
     return {
       type: ON_GETTING_PRODUCTS_FOR_PURCHASE,
       productCatalog: catalog

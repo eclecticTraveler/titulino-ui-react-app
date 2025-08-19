@@ -7,6 +7,7 @@ import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import ShoppingCatalogService from "services/ShoppingCatalogService";
 import StudentProgress from "lob/StudentProgress";
+import ShopPurchaseExperience from "lob/ShopPurchaseExperience"
 import utils from 'utils';
 
 
@@ -42,19 +43,21 @@ const getPurchaseSessionUrlId = async(product, emailId) => {
   return sessionUrl ?? null;
 } 
 
-const getProductsForPurchase = async(nativeLanguage, course) => {  
+const getProductsForPurchase = async(nativeLanguage, course, emailId) => { 
+  const localStorageKey = `UserProfile_${emailId}`;  
+  const user = await LocalStorageService.getCachedObject(localStorageKey); 
   const catalog = await ShoppingCatalogService.getProductCatalog(nativeLanguage, course);
-  return catalog;
-  
+  const auditedCatalog = await ShopPurchaseExperience.setUserCoursePurchasesInAvailableCatalog(user?.userCourses, catalog);  
+  return auditedCatalog;
 } 
 
 const getProductsPurchasedByUser = async(nativeLanguage, course, emailId) => {  
   const localStorageKey = `UserProfile_${emailId}`;  
   const user = await LocalStorageService.getCachedObject(localStorageKey);
-  const purchases = await TitulinoNetService.getUserPurchasedProducts(user?.innerToken, user?.contactInternalId);
+  // const purchases = await TitulinoNetService.getUserPurchasedProducts(user?.innerToken, user?.contactInternalId);
   const catalog = await ShoppingCatalogService.getProductCatalog(nativeLanguage, course);
 
-  return catalog;
+  return [];
   
 } 
 

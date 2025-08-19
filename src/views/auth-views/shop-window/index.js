@@ -6,7 +6,7 @@ import { ICON_LIBRARY_TYPE_CONFIG } from "configs/IconConfig";
 import IntlMessage from "components/util-components/IntlMessage";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { onProcessingPurchaseOfProduct, onGettingProductsForPurchase, onGettingProductsPurchasedByUser } from "redux/actions/Shop";
+import { onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase } from "redux/actions/Shop";
 import utils from "utils";
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import { loadStripe } from "@stripe/stripe-js";
@@ -22,7 +22,7 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const SHOPPING_PARAMETERS_STORED_KEY = "postQueryParams";
 
 const ShopWindow = (props) => {
-  const { user, nativeLanguage, course, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsForPurchase, token, onGettingProductsPurchasedByUser } = props;
+  const { user, nativeLanguage, course, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase, token } = props;
   const [hoveredTier, setHoveredTier] = useState(null);
   const screens = utils.getBreakPoint(useBreakpoint());
   const isMobile = !screens.includes("md");
@@ -84,17 +84,11 @@ const ShopWindow = (props) => {
 	}, [productCatalog]);
 
   useEffect(() => {
-    if (productCatalog?.length && course && nativeLanguage && user?.emailId) {
-        onGettingProductsPurchasedByUser(course, nativeLanguage, user?.emailId);
-      }
-    }, [productCatalog, nativeLanguage, course, onGettingProductsPurchasedByUser, user?.emailId]);
-
-  useEffect(() => {
     // You may want to reload products on nativeLanguage or course change
-    if (nativeLanguage?.localizationId && course) {
-      onGettingProductsForPurchase(nativeLanguage.localizationId, course);
+    if (nativeLanguage?.localizationId && course && user?.emailId) {
+      onGettingProductsAvailableForPurchase(nativeLanguage.localizationId, course, user?.emailId);
     }
-  }, [nativeLanguage, course, onGettingProductsForPurchase]);
+  }, [nativeLanguage, course, user?.emailId]);
 
   // Find the currently active course data from productCatalog
   const activeCourse = productCatalog?.find((c) => c.course_code_id === activeCourseCode) || { features: [] };
@@ -119,11 +113,11 @@ const ShopWindow = (props) => {
 
   // Build table data from activeCourse features
   const data = activeCourse.features.map((feature, idx) => ({
-	key: String(idx + 1),
-	feature: setLocale(locale, feature.feature),
-	free: feature.enabled.free,
-	silver: feature.enabled.silver,
-	gold: feature.enabled.gold
+    key: String(idx + 1),
+    feature: setLocale(locale, feature.feature),
+    free: feature.enabled.free,
+    silver: feature.enabled.silver,
+    gold: feature.enabled.gold
   }));
   
   
@@ -154,9 +148,7 @@ const ShopWindow = (props) => {
 
   const handlePurchase = async (priceId) => {
     if (!user?.emailId) return;
-    // TODO
-    // load products purchased and disable the button if product has been purchased and display purchased even on the badge with a color
-   
+  
     try {
       const result = await onProcessingPurchaseOfProduct({
         courseCodeId: activeCourseCode,
@@ -165,7 +157,6 @@ const ShopWindow = (props) => {
       }, user.emailId);
 
       if (result?.sessionUrl?.urlId) {             
-        // window.location.href = result.sessionUrl?.urlId;
         const stripe = await stripePromise;
         const { error } = await stripe.redirectToCheckout({
           sessionId: result.sessionUrl.urlId
@@ -178,7 +169,7 @@ const ShopWindow = (props) => {
 
         console.log("RESULT", result);
       } else {
-        alert("Failed to retrieve session URL");
+        alert("Error. la Pagina no procesara' su pago, dejar saber al administrador para ver el problema");
       }
     } catch (error) {
       console.error("Stripe Checkout Error:", error);
@@ -207,7 +198,7 @@ const ShopWindow = (props) => {
   };
 
   // Render tier card for each pricing tier
-  const renderTierCard = ({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId }) => (
+  const renderTierCard = ({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased }) => (
     <Card
       hoverable
       title={tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}
@@ -226,10 +217,14 @@ const ShopWindow = (props) => {
           }}
         />
         <Button
-          type={isDisabled ? undefined : "primary"}
+          type={isPurchased ? "default" : isDisabled ? undefined : "primary"}
           block
           disabled={isDisabled}
-          onClick={!isDisabled ? () => precheckoutShop(tierKey, priceId) : undefined}
+          onClick={
+            !isDisabled && !isPurchased
+              ? () => precheckoutShop(tierKey, priceId)
+              : undefined
+          }
         >
           {buttonText}
         </Button>
@@ -290,15 +285,35 @@ const ShopWindow = (props) => {
       <Card bordered style={{ marginTop: 16 }}>
         <Row gutter={[16, 16]} style={{ marginTop: 30 }}>
           {["free", "silver", "gold"].map((tierKey) => {
-			const tierInfo = activeCourse.tiers?.[tierKey];
+			      const tierInfo = activeCourse.tiers?.[tierKey];
             const isDisabled = !tierInfo?.isEnabledForPurchase;
             const imageUrl = tierInfo?.image_url || "";
-			const priceId = tierInfo?.price_id || null;
-            const buttonText = {
-              free: setLocale(locale, "shop.feature.current"),
-              silver: setLocale(locale, "shop.feature.buy3"),
-              gold: setLocale(locale, "shop.feature.buy5"),
-            }[tierKey];
+            const isPurchased = tierInfo?.isPurchased ?? false;
+            const priceId = tierInfo?.price_id || null;
+            const buttonText = isPurchased
+            ? setLocale(locale, "shop.feature.purchased")
+            : {
+                free: setLocale(locale, "shop.feature.current"),
+                silver: setLocale(locale, "shop.feature.buy3"),
+                gold: setLocale(locale, "shop.feature.buy5"),
+              }[tierKey];
+
+              // Badge text logic
+              const badgeText = isPurchased
+              ? setLocale(locale, "shop.feature.purchased")
+              : tierKey === "free"
+              ? "⭐ Current"
+              : tierKey === "silver"
+              ? `⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`
+              : `⭐⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`;
+
+            const badgeColor = isPurchased
+              ? "#00a9fa" // when purchased
+              : tierKey === "free"
+              ? "#52c41a"
+              : tierKey === "silver"
+              ? "#1890ff"
+              : "#f5222d";  
 
             // Filter features enabled for this tier to display in card
             const featuresForTier = data.filter((item) => item[tierKey]);
@@ -306,20 +321,8 @@ const ShopWindow = (props) => {
             return (
               <Col xs={24} md={8} key={tierKey}>
                 <Badge.Ribbon
-                  text={
-                    tierKey === "free"
-                      ? "⭐ Current"
-                      : tierKey === "silver"
-                      ? `⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`
-                      : `⭐⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`
-                  }
-                  color={
-                    tierKey === "free"
-                      ? "#52c41a"
-                      : tierKey === "silver"
-                      ? "#1890ff"
-                      : "#f5222d"
-                  }
+                  text={badgeText}
+                  color={badgeColor}
                   style={{
                     marginTop: 40,
                     padding: "0 12px",
@@ -329,7 +332,7 @@ const ShopWindow = (props) => {
                     fontWeight: 600,
                   }}
                 >
-                  {renderTierCard({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId })}
+                  {renderTierCard({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased })}
                 </Badge.Ribbon>
               </Col>
             );
@@ -442,8 +445,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
       onProcessingPurchaseOfProduct,
-      onGettingProductsForPurchase,
-      onGettingProductsPurchasedByUser
+      onGettingProductsAvailableForPurchase
     },
     dispatch
   );

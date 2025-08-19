@@ -161,7 +161,7 @@ export const getPurchaseSessionUrl = async (token, productId, email, name, conta
 
     const requestOptions = {
       method: "POST",
-      headers: getHeaders(token), // must include Content-Type: application/json
+      headers: getHeaders(token),
       body: raw,
     };
 
