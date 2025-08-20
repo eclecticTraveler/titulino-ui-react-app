@@ -36,8 +36,7 @@ const ShopWindow = (props) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   
     useEffect(() => {
-      // TODO
-      // if gold then do not make available silver
+      // TODO      
       // Create two modals to present one for Silver one for Gold
       // Figure out a way to pass the whatsapp link for the gold
       // Trigger an email for the Gold
@@ -47,7 +46,14 @@ const ShopWindow = (props) => {
         const params = urlParams.get("purchaseTransactionState");
         const safeParamValue = decodeURIComponent(params);	
         const paramenterExtracted = safeParamValue?.toLowerCase();
-        if( paramenterExtracted === "success"){        
+        if( paramenterExtracted === "success"){     
+          // ✅ Extract both values
+          const courseCodeId = urlParams.get("courseCodeId");
+          const tierId = urlParams.get("tierId");
+          const sessionId = urlParams.get("session_id");
+          console.log("Success purchase for", { courseCodeId, tierId, sessionId });
+          // go to redux edit the course array by courseCodeId and TierAccess
+          // Pass the package that was purchased to the model to display
           setIsSmallConfettiVisible(true);
           setIsModalVisible(true);
           localStorage.removeItem(SHOPPING_PARAMETERS_STORED_KEY);   
