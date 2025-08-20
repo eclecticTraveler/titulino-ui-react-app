@@ -3,7 +3,8 @@ import {
   ON_AUTHENTICATING_WITH_SSO,
   AUTH_TITULINO_INTERNAL_TOKEN,
   ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
-  ON_LOADING_AUTHENTICATED_LANDING_PAGE
+  ON_LOADING_AUTHENTICATED_LANDING_PAGE,
+  ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT
 } from '../constants/Grant';
 
 const initState = {
@@ -35,7 +36,14 @@ const grant = (state = initState, action) => {
           innerToken: action.innerToken
         }
       };
-
+    case ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT:
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          userCourses: action.userCourses
+        }
+      }
     case ON_AUTHENTICATING_WITH_SSO:
       return {
         ...state,

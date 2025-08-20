@@ -257,11 +257,11 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 		}
 	]
 
-	if (isSilver) {
+	if (isSilver || isGold) {
 		baseMenu.push(...silverMenu);
     }
 	  
-  if (isGold) {
+  	if (isGold) {
 		baseMenu.push(...goldMenu);
     }
 	  

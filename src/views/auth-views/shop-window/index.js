@@ -7,6 +7,7 @@ import IntlMessage from "components/util-components/IntlMessage";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase } from "redux/actions/Shop";
+import {onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut} from "redux/actions/Grant";
 import utils from "utils";
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import { loadStripe } from "@stripe/stripe-js";
@@ -22,19 +23,21 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const SHOPPING_PARAMETERS_STORED_KEY = "postQueryParams";
 
 const ShopWindow = (props) => {
-  const { user, nativeLanguage, course, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase, token } = props;
+  const { user, nativeLanguage, course, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase, token, onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut } = props;
   const [hoveredTier, setHoveredTier] = useState(null);
   const screens = utils.getBreakPoint(useBreakpoint());
   const isMobile = !screens.includes("md");
   const locale = true;	
   // Track active tab/course_code_id, default first in catalog
   const [activeCourseCode, setActiveCourseCode] = useState("");
+  const [purchasedCourseCode, setSuccesfulCourseCodeOfPurchasedItem] = useState("");
+  const [purchasedTierAccess, setSuccesfulPurchasedTierAccess] = useState("");
   const [open, setOpen] = useState(false);
   const [drawerTier, setDrawerTier] = useState(null);
   const [providePriceId, setProvidePriceId] = useState(null);
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  
+
     useEffect(() => {
       // TODO      
       // Create two modals to present one for Silver one for Gold
@@ -51,22 +54,26 @@ const ShopWindow = (props) => {
           const courseCodeId = urlParams.get("courseCodeId");
           const tierId = urlParams.get("tierId");
           const sessionId = urlParams.get("session_id");
-          console.log("Success purchase for", { courseCodeId, tierId, sessionId });
-          // go to redux edit the course array by courseCodeId and TierAccess
-          // Pass the package that was purchased to the model to display
+          setActiveCourseCode(courseCodeId);
+          setSuccesfulCourseCodeOfPurchasedItem(courseCodeId);
+          setSuccesfulPurchasedTierAccess(tierId);          
           setIsSmallConfettiVisible(true);
           setIsModalVisible(true);
-          localStorage.removeItem(SHOPPING_PARAMETERS_STORED_KEY);   
+          localStorage.removeItem(SHOPPING_PARAMETERS_STORED_KEY);          
         }else if(paramenterExtracted === "cancel"){
-          setIsSmallConfettiVisible(false);
-          setIsModalVisible(false);
-          localStorage.removeItem(SHOPPING_PARAMETERS_STORED_KEY); 
+          setIsSmallConfettiVisible(false);          
+          localStorage.removeItem(SHOPPING_PARAMETERS_STORED_KEY);            
         }else{
-          setIsSmallConfettiVisible(false);
-          setIsModalVisible(false);
+          setIsSmallConfettiVisible(false);          
         }
       }
-    }, []);
+    }, [user?.emailId]);
+
+    useEffect(() => {
+      if(purchasedCourseCode && purchasedTierAccess && user?.emailId){       
+        // onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut(purchasedTierAccess, purchasedCourseCode, user.emailId)
+      }
+      }, [user?.emailId, purchasedCourseCode, purchasedTierAccess]);
 
 
   const handleCloseModal = () => {
@@ -289,11 +296,11 @@ const ShopWindow = (props) => {
               visibleModal={isModalVisible} // Pass the modal visibility
               title={"shop.succesPurchase.header"}
               secondTitle={"shop.succesPurchase.headerTitle"}              
-              animation={silverTier}
+              animation={purchasedTierAccess === "Gold" ? goldTier : silverTier }
               messageToDisplay={<ProductPurchasedMessage handlePostButtonClick={handleDirectionModal}/>}
               transitionTimming={1500}
           />
-    }
+      }
 
       <Card
         cover={<img alt="Shopping" src={coverUrl} style={{ height: 100, objectFit: "cover" }} />}
@@ -492,7 +499,8 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators(
     {
       onProcessingPurchaseOfProduct,
-      onGettingProductsAvailableForPurchase
+      onGettingProductsAvailableForPurchase,
+      onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut
     },
     dispatch
   );
