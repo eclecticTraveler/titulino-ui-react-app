@@ -359,7 +359,9 @@
 	"shop.succesPurchase.header":"Obrigado!!",
 	"shop.succesPurchase.headerTitle":"Antes de prosseguir...",
 	"shop.succesPurchase.headerMessageContent":"Gostaria de expressar minha gratidão pelo seu apoio e por tornar este projeto comunitário sustentável.\n Espero um dia poder me dedicar totalmente a ele com o seu apoio.\n",
-	"shop.succesPurchase.letsExplore":"Vamos explorar 🏠"
+	"shop.succesPurchase.headerMessageContentGold": "Acesse este grupo exclusivo do WhatsApp para obter benefícios exclusivos!!",
+	"shop.succesPurchase.letsExplore":"Vamos explorar 🏠",
+	"group.modal.enrollmentCompleted":"Experiência Titulino Gold"
 
 
 

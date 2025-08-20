@@ -14,7 +14,9 @@ import { loadStripe } from "@stripe/stripe-js";
 import ConfettiExplosion from 'react-confetti-explosion';
 import GenericModal from "components/layout-components/GenericModal";
 import ProductPurchasedMessage from "components/admin-components/ModalMessages/ProductPurchasedMessage";
+import GoldTierProductConfirmationMessage from "components/admin-components/ModalMessages/GoldTierProductConfirmationMessage"
 import silverTier from 'assets/lotties/silverTier.json';
+import { useHistory } from 'react-router-dom';
 import goldTier from 'assets/lotties/goldTier.json';
 
 const { useBreakpoint } = Grid;
@@ -27,6 +29,7 @@ const ShopWindow = (props) => {
   const [hoveredTier, setHoveredTier] = useState(null);
   const screens = utils.getBreakPoint(useBreakpoint());
   const isMobile = !screens.includes("md");
+  const history = useHistory();
   const locale = true;	
   // Track active tab/course_code_id, default first in catalog
   const [activeCourseCode, setActiveCourseCode] = useState("");
@@ -37,12 +40,9 @@ const ShopWindow = (props) => {
   const [providePriceId, setProvidePriceId] = useState(null);
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isToProceedToSyncPurchasedTiers, setIsToProceedToSyncPurchasedTiers] = useState(false);
 
     useEffect(() => {
-      // TODO      
-      // Create two modals to present one for Silver one for Gold
-      // Figure out a way to pass the whatsapp link for the gold
-      // Trigger an email for the Gold
       const queryParam = localStorage.getItem(SHOPPING_PARAMETERS_STORED_KEY);        
       if (queryParam) {     
         const urlParams = new URLSearchParams(queryParam);     
@@ -70,21 +70,33 @@ const ShopWindow = (props) => {
     }, [user?.emailId]);
 
     useEffect(() => {
-      if(purchasedCourseCode && purchasedTierAccess && user?.emailId){       
-        // onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut(purchasedTierAccess, purchasedCourseCode, user.emailId)
-      }
-      }, [user?.emailId, purchasedCourseCode, purchasedTierAccess]);
+        if(purchasedCourseCode && purchasedTierAccess && user?.emailId && isToProceedToSyncPurchasedTiers){            
+          onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut(purchasedTierAccess, purchasedCourseCode, user.emailId);
+          resetState();          
+          history.push("/");   
+        }
+      }, [user?.emailId, purchasedCourseCode, purchasedTierAccess, isToProceedToSyncPurchasedTiers]);
 
 
-  const handleCloseModal = () => {
-    // onModalInteraction(true);
-    setIsModalVisible(false); // Close modal when user clicks close button
-
+  const handleCloseModal = () => {    
+    setIsToProceedToSyncPurchasedTiers(true);
   };
 
-  const handleDirectionModal = () => {
-    // resetState();
+  const resetState = () => {
+    //Local
+    setActiveCourseCode("");
+    setSuccesfulCourseCodeOfPurchasedItem("");
+    setSuccesfulPurchasedTierAccess("");
+    setOpen(false);
+    setDrawerTier(null);
+    setProvidePriceId(null);
+    setIsSmallConfettiVisible(false);
     setIsModalVisible(false);
+    setIsToProceedToSyncPurchasedTiers(false);
+  }
+
+  const handleDirectionModal = () => {
+    setIsToProceedToSyncPurchasedTiers(true);
   };
   const showDrawer = () => {
     setOpen(true);
@@ -104,7 +116,7 @@ const ShopWindow = (props) => {
   useEffect(() => {
     // You may want to reload products on nativeLanguage or course change
     if (nativeLanguage?.localizationId && course && user?.emailId) {
-      onGettingProductsAvailableForPurchase(nativeLanguage.localizationId, course, user?.emailId);
+      onGettingProductsAvailableForPurchase(nativeLanguage.localizationId, course, user?.emailId);      
     }
   }, [nativeLanguage, course, user?.emailId]);
 
@@ -297,7 +309,7 @@ const ShopWindow = (props) => {
               title={"shop.succesPurchase.header"}
               secondTitle={"shop.succesPurchase.headerTitle"}              
               animation={purchasedTierAccess === "Gold" ? goldTier : silverTier }
-              messageToDisplay={<ProductPurchasedMessage handlePostButtonClick={handleDirectionModal}/>}
+              messageToDisplay={purchasedTierAccess === "Gold" ? <GoldTierProductConfirmationMessage handlePostButtonClick={handleDirectionModal}/> : <ProductPurchasedMessage handlePostButtonClick={handleDirectionModal}/>}
               transitionTimming={1500}
           />
       }
