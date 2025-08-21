@@ -1,14 +1,15 @@
 import localShoppingCatalogDataDV from '../assets/data/course-shopping-catalog-data-dv.json';
 import localShoppingCatalogDataPD from '../assets/data/course-shopping-catalog-data.json';
+import GoogleService from './GoogleService';
 
 import { env } from "configs/EnvironmentConfig";
 
 const loadLocalShoppingData = async() => {
-  if(env.ENVIROMENT === "prod"){
-    const rawData = localShoppingCatalogDataDV;
+  if(env.ENVIROMENT === "prod"){    
+    const rawData = await GoogleService.getCourseProgressData("loadLocalShoppingData");
     return rawData;
   }else{
-    const rawData = localShoppingCatalogDataPD;
+    const rawData = localShoppingCatalogDataDV;
     return rawData;  
   }
 }
