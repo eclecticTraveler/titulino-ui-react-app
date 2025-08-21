@@ -20,5 +20,25 @@
       { "feature_id": "feat-extra",   "feature": "shop.feature.extraClasses", "enabled": { "free": false, "silver": false, "gold": true } },
       { "feature_id": "feat-group",   "feature": "shop.feature.accessToGroup", "enabled": { "free": false, "silver": false, "gold": true } }
     ]
+  },
+  {
+    "course_code_id": "SUPERMARKET_01",
+    "course_name": "Supermarket",
+    "nativeLanguage": "es",
+    "course": "eng",
+    "theme": "supermarket",
+    "display_order_id":1,
+    "tiers": {
+      "free":   { "image_url": "https://storage.googleapis.com/titulino-bucket/course-covers/packages/supermarket/150Free.png",  "price_id": null, "price_usd": 0.00, "isEnabledForPurchase": false, "isPurchased": false  }
+    },
+    "features": [
+      { "feature_id": "feat-grammar", "feature": "shop.feature.grammarClasses", "enabled": { "free": true, "silver": true, "gold": true } },
+      { "feature_id": "feat-terms",   "feature": "shop.feature.termsnResources", "enabled": { "free": true, "silver": true, "gold": true } },
+      { "feature_id": "feat-quizlet", "feature": "shop.feature.extraQuizletResources", "enabled": { "free": false, "silver": true, "gold": true } },
+      { "feature_id": "feat-ebook",   "feature": "shop.feature.300ebook", "enabled": { "free": false, "silver": true, "gold": true } },
+      { "feature_id": "feat-guide",   "feature": "shop.feature.300TranslationGuide", "enabled": { "free": false, "silver": false, "gold": true } },
+      { "feature_id": "feat-extra",   "feature": "shop.feature.extraClasses", "enabled": { "free": false, "silver": false, "gold": true } },
+      { "feature_id": "feat-group",   "feature": "shop.feature.accessToGroup", "enabled": { "free": false, "silver": false, "gold": true } }
+    ]
   }
 ]

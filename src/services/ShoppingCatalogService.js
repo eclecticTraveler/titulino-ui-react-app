@@ -1,8 +1,16 @@
-import localShoppingCatalogData from '../assets/data/course-shopping-catalog-data.json';
+import localShoppingCatalogDataDV from '../assets/data/course-shopping-catalog-data-dv.json';
+import localShoppingCatalogDataPD from '../assets/data/course-shopping-catalog-data.json';
+
+import { env } from "configs/EnvironmentConfig";
 
 const loadLocalShoppingData = async() => {
-  const rawData = localShoppingCatalogData;
-  return rawData;
+  if(env.ENVIROMENT === "prod"){
+    const rawData = localShoppingCatalogDataDV;
+    return rawData;
+  }else{
+    const rawData = localShoppingCatalogDataPD;
+    return rawData;  
+  }
 }
 
 const loadRequestedShoppingCatalog = async(nativeLanguage, course) => {  
