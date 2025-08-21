@@ -209,6 +209,7 @@ const ShopWindow = (props) => {
 
   // Handle purchase click for given tier
   const precheckoutShop = async (tierKey, priceId) => {
+    console.log("precheckoutShop", tierKey, priceId);
     setDrawerTier(tierKey);
     setProvidePriceId(priceId);
     showDrawer();
