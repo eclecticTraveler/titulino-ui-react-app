@@ -191,8 +191,7 @@ useEffect(() => {
       searchParams.fullDate ? searchParams.fullDate.format("YYYY-MM-DD") : searchParams.yob
     );
     setLoading(false);    
-    if (result?.user?.contactId) {
-      console.log("Search result:", result?.user);
+    if (result?.user?.contactId) {      
       setSearchResult(result?.user);
       setProfileData?.(result?.user);
       const existingRedirect = localStorage.getItem("postLoginRedirect");	
