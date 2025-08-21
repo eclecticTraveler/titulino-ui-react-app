@@ -195,7 +195,13 @@ useEffect(() => {
       console.log("Search result:", result?.user);
       setSearchResult(result?.user);
       setProfileData?.(result?.user);
-      history.push("/");
+      const existingRedirect = localStorage.getItem("postLoginRedirect");	
+      if(existingRedirect){        
+        history.push(existingRedirect);
+      }else{        
+        history.push("/");
+      }
+      
     } else {      
       if (!askFullBirthDate) {
         // First try failed → prompt for full birth date
@@ -221,10 +227,12 @@ useEffect(() => {
     }
 
   const selectedYearOfBirth = form?.getFieldValue("yearOfBirth")?.format("YYYY") ?? yearOfBirth?.format("YYYY");
+  const coverUrl =
+    "https://images.unsplash.com/photo-1516382799247-87df95d790b7?q=80&w=1748&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
   return (
 	<>
-      <Card bordered loading={loading}>
+      <Card cover={<img alt="Shopping" src={coverUrl} style={{ height: 100, objectFit: "cover" }} />} bordered loading={loading}>
         <h1>{setLocale(locale, "resources.myprogress.searchbyEmailandYear")}</h1>
         <h2>{user?.emailId}</h2>
        </Card>

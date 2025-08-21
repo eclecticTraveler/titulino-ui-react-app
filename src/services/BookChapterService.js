@@ -8,29 +8,40 @@ const loadBookData = async() => {
   return rawData;
 }
 
-const loadRequestedBook = async(rawBookData, levelTheme, course, nativeLanguage) => {
+const loadRequestedBook = async (rawBookData, levelTheme, course, nativeLanguage, tier) => {
   // TODO HANDLE FOR POR SPEAKING  
-  return await rawBookData?.books?.find(c => (c.theme === levelTheme && c.course === course && c.nativeLanguage === nativeLanguage));
-}
+  return rawBookData?.books?.find(c => 
+    c.theme === levelTheme &&
+    c.course === course &&
+    c.nativeLanguage === nativeLanguage &&
+    (tier == null || c.tier === tier) // Only check tier if it's provided
+  );
+};
 
-const loadRequestedBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course) => {  
+
+const loadRequestedBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course, tier) => {  
   const rawBookData = await loadBookData();
-  const filteredBookData = await loadRequestedBook(rawBookData, levelTheme, course, nativeLanguage);
+  const filteredBookData = await loadRequestedBook(rawBookData, levelTheme, course, nativeLanguage, tier);
   const ebookChapter = filteredBookData?.chapters.find(ch => ch.chapter === parseInt(chapterNo, 10)) || filteredBookData?.chapters[filteredBookData?.chapters.length - 1];
   const embeddableUrl = filteredBookData?.id ? `https://heyzine.com/flip-book/${filteredBookData?.id}.html#page/${ebookChapter?.page}` : null; 
   return embeddableUrl;
 }
 
-const loadRequestedBookUrl = async(levelTheme, nativeLanguage, course) => {  
+const loadRequestedBookUrl = async(levelTheme, nativeLanguage, course, tier) => {  
   const rawBookData = await loadBookData();
-  const filteredBookData = await loadRequestedBook(rawBookData, levelTheme, course, nativeLanguage);
+  const filteredBookData = await loadRequestedBook(rawBookData, levelTheme, course, nativeLanguage, tier);
   const embeddableUrl = filteredBookData?.id ? `https://heyzine.com/flip-book/${filteredBookData?.id}.html` : null; 
   return embeddableUrl;
 }
 
 export const getBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course) => {
-    const url = await loadRequestedBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course);
+    const url = await loadRequestedBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course, null);
     return url ?? "";
+}
+
+export const getBookTierChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course, tier) => {
+  const url = await loadRequestedBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course, tier);
+  return url ?? "";
 }
 
 export const getBookBaseUrl = async(levelTheme, nativeLanguage, course) => {
@@ -38,9 +49,16 @@ export const getBookBaseUrl = async(levelTheme, nativeLanguage, course) => {
   return url ?? "";
 }
 
+export const getBookTierBaseUrl = async(levelTheme, nativeLanguage, course, tier) => {
+  const url = await loadRequestedBookUrl(levelTheme, nativeLanguage, course, tier);
+  return url ?? "";
+}
+
 const BookChapterService = {
   getBookChapterUrl,
-  getBookBaseUrl
+  getBookBaseUrl,
+  getBookTierBaseUrl,
+  getBookTierChapterUrl
 };
 
 export default BookChapterService;

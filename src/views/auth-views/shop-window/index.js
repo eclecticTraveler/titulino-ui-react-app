@@ -1,227 +1,530 @@
-import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Table, Button, Grid, Badge } from 'antd';
-import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect, useState } from "react";
+import { Row, Col, Card, Table, Button, Grid, Badge, Tabs, Drawer } from "antd";
+import { faCheckCircle, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import IconAdapter from "components/util-components/IconAdapter";
-import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
+import { ICON_LIBRARY_TYPE_CONFIG } from "configs/IconConfig";
 import IntlMessage from "components/util-components/IntlMessage";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { onProcessingPurchaseOfProduct } from "redux/actions/Shop";
-import utils from 'utils';
+import { onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase } from "redux/actions/Shop";
+import {onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut} from "redux/actions/Grant";
+import utils from "utils";
+import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
+import { loadStripe } from "@stripe/stripe-js";
+import ConfettiExplosion from 'react-confetti-explosion';
+import GenericModal from "components/layout-components/GenericModal";
+import ProductPurchasedMessage from "components/admin-components/ModalMessages/ProductPurchasedMessage";
+import GoldTierProductConfirmationMessage from "components/admin-components/ModalMessages/GoldTierProductConfirmationMessage"
+import silverTier from 'assets/lotties/silverTier.json';
+import { useHistory } from 'react-router-dom';
+import goldTier from 'assets/lotties/goldTier.json';
 
 const { useBreakpoint } = Grid;
+const { TabPane } = Tabs;
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+const SHOPPING_PARAMETERS_STORED_KEY = "postQueryParams";
 
-export const ShopWindow = (props) => {
-	const { videoClassUrls, nativeLanguage, userProficiencyOrder, course, user, token } = props;
-	const [hoveredTier, setHoveredTier] = useState(null);
-	const screens = utils.getBreakPoint(useBreakpoint());
-	const isMobile = !screens.includes('md')
+const ShopWindow = (props) => {
+  const { user, nativeLanguage, course, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase, token, onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut } = props;
+  const [hoveredTier, setHoveredTier] = useState(null);
+  const screens = utils.getBreakPoint(useBreakpoint());
+  const isMobile = !screens.includes("md");
+  const history = useHistory();
+  const locale = true;	
+  // Track active tab/course_code_id, default first in catalog
+  const [activeCourseCode, setActiveCourseCode] = useState("");
+  const [purchasedCourseCode, setSuccesfulCourseCodeOfPurchasedItem] = useState("");
+  const [purchasedTierAccess, setSuccesfulPurchasedTierAccess] = useState("");
+  const [open, setOpen] = useState(false);
+  const [drawerTier, setDrawerTier] = useState(null);
+  const [providePriceId, setProvidePriceId] = useState(null);
+  const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isToProceedToSyncPurchasedTiers, setIsToProceedToSyncPurchasedTiers] = useState(false);
+
+    useEffect(() => {
+      const queryParam = localStorage.getItem(SHOPPING_PARAMETERS_STORED_KEY);        
+      if (queryParam) {     
+        const urlParams = new URLSearchParams(queryParam);     
+        const params = urlParams.get("purchaseTransactionState");
+        const safeParamValue = decodeURIComponent(params);	
+        const paramenterExtracted = safeParamValue?.toLowerCase();
+        if( paramenterExtracted === "success"){     
+          // ✅ Extract both values
+          const courseCodeId = urlParams.get("courseCodeId");
+          const tierId = urlParams.get("tierId");
+          const sessionId = urlParams.get("session_id");
+          setActiveCourseCode(courseCodeId);
+          setSuccesfulCourseCodeOfPurchasedItem(courseCodeId);
+          setSuccesfulPurchasedTierAccess(tierId);          
+          setIsSmallConfettiVisible(true);
+          setIsModalVisible(true);
+          localStorage.removeItem(SHOPPING_PARAMETERS_STORED_KEY);          
+        }else if(paramenterExtracted === "cancel"){
+          setIsSmallConfettiVisible(false);          
+          localStorage.removeItem(SHOPPING_PARAMETERS_STORED_KEY);            
+        }else{
+          setIsSmallConfettiVisible(false);          
+        }
+      }
+    }, [user?.emailId]);
+
+    useEffect(() => {
+        if(purchasedCourseCode && purchasedTierAccess && user?.emailId && isToProceedToSyncPurchasedTiers){            
+          onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut(purchasedTierAccess, purchasedCourseCode, user.emailId);
+          resetState();          
+          history.push("/");   
+        }
+      }, [user?.emailId, purchasedCourseCode, purchasedTierAccess, isToProceedToSyncPurchasedTiers]);
+
+
+  const handleCloseModal = () => {    
+    setIsToProceedToSyncPurchasedTiers(true);
+  };
+
+  const resetState = () => {
+    //Local
+    setActiveCourseCode("");
+    setSuccesfulCourseCodeOfPurchasedItem("");
+    setSuccesfulPurchasedTierAccess("");
+    setOpen(false);
+    setDrawerTier(null);
+    setProvidePriceId(null);
+    setIsSmallConfettiVisible(false);
+    setIsModalVisible(false);
+    setIsToProceedToSyncPurchasedTiers(false);
+  }
+
+  const handleDirectionModal = () => {
+    setIsToProceedToSyncPurchasedTiers(true);
+  };
+  const showDrawer = () => {
+    setOpen(true);
+  };
+  const onCloseDrawer = () => {
+    setDrawerTier(null);
+    setProvidePriceId(null);
+    setOpen(false);
+  };
+
 	useEffect(() => {
-		// Aqui a redux
-	  }, []);
+	if (productCatalog?.length) {
+		setActiveCourseCode(productCatalog[0].course_code_id); // first sorted course
+	}
+	}, [productCatalog]);
 
-	//   useEffect(() => {
-	// 	const pathInfo = utils.getCourseInfoFromUrl(location?.pathname);
-	// 	if(user?.emailId){
-	// 	  onProcessingPurchaseOfProduct(
-	// 		pathInfo?.levelNo,
-	// 		pathInfo?.chapterNo,
-	// 		nativeLanguage?.localizationId,
-	// 		course,
-	// 		user?.emailId
-	// 	  );
-	// 	}
-	
-	//   }, [location?.pathname, nativeLanguage?.localizationId, course, user?.emailId]);
+  useEffect(() => {
+    // You may want to reload products on nativeLanguage or course change
+    if (nativeLanguage?.localizationId && course && user?.emailId) {
+      onGettingProductsAvailableForPurchase(nativeLanguage.localizationId, course, user?.emailId);      
+    }
+  }, [nativeLanguage, course, user?.emailId]);
+
+  // Find the currently active course data from productCatalog
+  const activeCourse = productCatalog?.find((c) => c.course_code_id === activeCourseCode) || { features: [] };
+
+  const setLocale = (isLocaleOn, localeKey) =>
+    isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+
+  const renderIcon = (value) =>
+    value ? (
+      <IconAdapter
+        icon={faCheckCircle}
+        iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome}
+        style={{ color: "green" }}
+      />
+    ) : (
+      <IconAdapter
+        icon={faTimesCircle}
+        iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome}
+        style={{ color: "red" }}
+      />
+    );
+
+  // Build table data from activeCourse features
+  const data = activeCourse.features.map((feature, idx) => ({
+    key: String(idx + 1),
+    feature: setLocale(locale, feature.feature),
+    free: feature.enabled.free,
+    silver: feature.enabled.silver,
+    gold: feature.enabled.gold
+  }));
   
-	const locale = true;
-	
-	const setLocale = (isLocaleOn, localeKey) => {
-		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-	};
+  
+  const columns = [
+    { title: setLocale(locale, "shop.feature.features"), dataIndex: "feature", key: "feature" },
+    {
+      title: setLocale(locale, "shop.feature.free"),
+      dataIndex: "free",
+      key: "free",
+      align: "center",
+      render: renderIcon,
+    },
+    {
+      title: setLocale(locale, "shop.feature.silverCost"),
+      dataIndex: "silver",
+      key: "silver",
+      align: "center",
+      render: (_, record) => renderIcon(record.silver),
+    },
+    {
+      title: setLocale(locale, "shop.feature.goldCost"),
+      dataIndex: "gold",
+      key: "gold",
+      align: "center",
+      render: (_, record) => renderIcon(record.gold),
+    },
+  ];
 
-	const renderIcon = (value) => (
-		value ? (
-			<IconAdapter
-				icon={faCheckCircle}
-				iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome}
-				style={{ color: 'green' }}
-			/>
-		) : (
-			<IconAdapter
-				icon={faTimesCircle}
-				iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome}
-				style={{ color: 'red' }}
-			/>
-		)
-	);
+  const handlePurchase = async (priceId) => {
+    if (!user?.emailId) return;
+  
+    try {
+      const result = await onProcessingPurchaseOfProduct({
+        courseCodeId: activeCourseCode,
+        tier: drawerTier,
+        priceId: priceId
+      }, user.emailId);
 
-	const data = [
-		{ key: '1', feature: setLocale(locale, "shop.feature.grammarClasses"), free: true, silver: true, gold: true },
-		{ key: '2', feature: setLocale(locale, "shop.feature.termsnResources"), free: true, silver: true, gold: true },
-		{ key: '3', feature: setLocale(locale, "shop.feature.extraQuizletResources"), free: false, silver: true, gold: true },
-		{ key: '4', feature: setLocale(locale, "shop.feature.300ebook"), free: false, silver: true, gold: true },
-		{ key: '5', feature: setLocale(locale, "shop.feature.300TranslationGuide"), free: false, silver: false, gold: true },
-		{ key: '6', feature: setLocale(locale, "shop.feature.extraClasses"), free: false, silver: false, gold: true },
-		{ key: '7', feature: setLocale(locale, "shop.feature.accessToGroup"), free: false, silver: false, gold: true },
-	];
+      if (result?.sessionUrl?.urlId) {             
+        const stripe = await stripePromise;
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: result.sessionUrl.urlId
+        });
 
-	const columns = [
-		{ title: setLocale(locale, "shop.feature.features"), dataIndex: 'feature', key: 'feature' },
-		{ title: setLocale(locale, "shop.feature.free"), dataIndex: 'free', key: 'free', align: 'center', render: renderIcon },
-		{ title: setLocale(locale, "shop.feature.silverCost"), dataIndex: 'silver', key: 'silver', align: 'center', render: (_, record) => renderIcon(record.silver) },		  
-		{ title: setLocale(locale, "shop.feature.goldCost"), dataIndex: 'gold', key: 'gold', align: 'center', render: (_, record) => renderIcon(record.gold) },
-	];
+        if (error) {
+          console.error("Stripe redirect error:", error);
+          alert(error.message);
+        }
 
-	const handlePurchase = (tier) => {
-		alert(`Start Stripe Checkout for: ${tier}`);
-	};
+        console.log("RESULT", result);
+      } else {
+        alert("Error. la Pagina no procesara' su pago, dejar saber al administrador para ver el problema");
+      }
+    } catch (error) {
+      console.error("Stripe Checkout Error:", error);
+      alert("Something went wrong!");
+    }
+  };
 
-	const renderTierCard = ({ tier, isDisabled, imageUrl, buttonText, featuresForTier }) => (
-		<Card
-		  hoverable
-		  title={tier.charAt(0).toUpperCase() + tier.slice(1)}
-		  bordered
-		  onMouseEnter={() => !isMobile && setHoveredTier(tier)}
-		  onMouseLeave={() => !isMobile && setHoveredTier(null)}
-		>
-		  <div style={{ width: '70%', margin: '0 auto' }}>
-			<img
-			  src={imageUrl}
-			  alt={tier}
-			  style={{
-				width: '100%',
-				marginBottom: 10,
-				marginTop: 20,
-			  }}
-			/>
-			<Button
-			  type={isDisabled ? undefined : 'primary'}
-			  block
-			  disabled={isDisabled}
-			  onClick={!isDisabled ? () => handlePurchase(tier) : undefined}
-			>
-			  {buttonText}
-			</Button>
-		  </div>
-	  
-		  {isMobile && (
-			<div style={{ marginTop: 16 }}>
-			  {featuresForTier.map((item) => (
-				<div
-				  key={item.key}
-				  style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}
-				>
-				  {renderIcon(true)}
-				  <span style={{ marginLeft: 8 }}>{item.feature}</span>
-				</div>
-			  ))}
-			</div>
-		  )}
-		</Card>
-	  );
-	  
+  // Handle purchase click for given tier
+  const precheckoutShop = async (tierKey, priceId) => {
+    setDrawerTier(tierKey);
+    setProvidePriceId(priceId);
+    showDrawer();
+  };
 
-	  
-	const coverUrl = 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2304&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
-	const title = 'Shopping';
-	return (
-		<div className="container customerName">
-			<Card 			
-			cover={
-			<img
-				alt={title}
-				src={coverUrl}
-				style={{ height: 100, objectFit: 'cover' }}
-			/>
-       		 } bordered>
-				<h1>{setLocale(locale, "shop.feature.compareOurPackages")}</h1>
-				<p>{setLocale(locale, "shop.disclaimer")}</p>
-			</Card>
+  const renderFeaturesList = (features) => {
+    return (
+      <div style={{ marginTop: 16 }}>
+        {features.map((item) => (
+          <div key={item.key} style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+            {renderIcon(true)}
+            <span style={{ marginLeft: 8 }}>{item.feature}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
-			<Card bordered style={{ marginTop: 16 }}>
-				{/* Responsive card display */}
-				<Row gutter={[16, 16]} style={{ marginTop: 30 }}>
-					{['free', 'silver', 'gold'].map((tier) => {
-						const isDisabled = tier === 'free';
-						const imageUrl = {
-						free: "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/150Free.png",
-						silver: "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/300Silver.png",
-						gold: "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/300Gold.png",
-						}[tier];
+  // Render tier card for each pricing tier
+  const renderTierCard = ({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased }) => (
+    <Card
+      hoverable
+      title={tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}
+      bordered
+      onMouseEnter={() => !isMobile && setHoveredTier(tierKey)}
+      onMouseLeave={() => !isMobile && setHoveredTier(null)}
+    >
+      <div style={{ width: "70%", margin: "0 auto" }}>
+        <img
+          src={imageUrl}
+          alt={tierKey}
+          style={{
+            width: "100%",
+            marginBottom: 10,
+            marginTop: 20,
+          }}
+        />
+      <Button
+        type={
+          tierKey === purchasedTier
+            ? "default" // purchased
+            : isDisabled
+            ? undefined
+            : "primary"
+        }
+        block
+        disabled={
+          purchasedTier === "gold"
+            ? true // everything else locked
+            : purchasedTier === "silver" && tierKey === "free"
+            ? true // free locked once silver is bought
+            : isDisabled
+        }
+        onClick={
+          !isDisabled &&
+          !(purchasedTier === "gold") && // lock all when gold purchased
+          !(purchasedTier === "silver" && tierKey === "free") && // lock free when silver purchased
+          tierKey !== purchasedTier // don’t re-purchase current tier
+            ? () => precheckoutShop(tierKey, priceId)
+            : undefined
+        }
+      >
+        {buttonText}
+      </Button>
 
-						const buttonText = {
-						free: setLocale(locale, "shop.feature.current"),
-						silver: setLocale(locale, "shop.feature.buy3"),
-						gold: setLocale(locale, "shop.feature.buy5"),
-						}[tier];
+      </div>
 
-						const featuresForTier = data.filter((item) => item[tier]);
+      {isMobile && renderFeaturesList(featuresForTier)}
 
-						return (
-						<Col xs={24} md={8} key={tier}>
-						<Badge.Ribbon
-							text={
-							tier === 'free'
-								? '⭐ Current'
-								: tier === 'silver'
-								? '⭐⭐ Special Offer $3'
-								: '⭐⭐⭐ Special Offer $5'
-							}
-							color={
-							tier === 'free'
-								? '#52c41a'
-								: tier === 'silver'
-								? '#1890ff'
-								: '#f5222d'
-							}
-							style={{
-								marginTop: 40,
-								padding: '0 12px', // wider ribbon
-								fontSize: 17,      // larger text
-								height: 32,        // slightly taller ribbon
-								lineHeight: '32px',
-								fontWeight: 600,   // optional: bolder
-							  }}
-						>
-							{renderTierCard({ tier, isDisabled, imageUrl, buttonText, featuresForTier })}
-						</Badge.Ribbon>
-						</Col>
-						);
-					})}
-				</Row>
+    </Card>
+  );
 
+  if(token){
+      if(user?.emailId && !user?.yearOfBirth){
+          return (
+              <div id="unathenticated-landing-page-margin">
+                  <EmailYearSearchForm/>
+              </div>
+          )
+      }
+    }
 
-					{!isMobile && (
-					<Table
-						columns={columns}
-						dataSource={data}
-						pagination={false}
-						scroll={{ x: 'max-content' }}
-						bordered
-						rowClassName={(record) =>
-							hoveredTier && record[hoveredTier] ? 'highlight-row' : ''
-						  }
-					/>
-					)}
-				
-			</Card>
-		</div>
-	);
+  const coverUrl =
+    "https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2304&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+
+  const purchasedTier = Object.entries(activeCourse.tiers || {}).find(
+    ([, tier]) => tier?.isPurchased
+  )?.[0] || null;
+
+    
+  return (
+    <div className="container customerName">
+      {isSmallConfettiVisible && <ConfettiExplosion />}
+      {isModalVisible && 
+            <GenericModal             
+              closeGenericModal={handleCloseModal}
+              visibleModal={isModalVisible} // Pass the modal visibility
+              title={"shop.succesPurchase.header"}
+              secondTitle={"shop.succesPurchase.headerTitle"}              
+              animation={purchasedTierAccess === "Gold" ? goldTier : silverTier }
+              messageToDisplay={purchasedTierAccess === "Gold" ? <GoldTierProductConfirmationMessage handlePostButtonClick={handleDirectionModal}/> : <ProductPurchasedMessage handlePostButtonClick={handleDirectionModal}/>}
+              transitionTimming={1500}
+          />
+      }
+
+      <Card
+        cover={<img alt="Shopping" src={coverUrl} style={{ height: 100, objectFit: "cover" }} />}
+        bordered
+      >
+        <h1>{setLocale(locale, "shop.feature.compareOurPackages")}</h1>
+        <p>{setLocale(locale, "shop.disclaimer")}</p>
+      </Card>
+
+      <Tabs
+        activeKey={activeCourseCode}
+        onChange={(key) => setActiveCourseCode(key)}
+        style={{ marginTop: 16 }}
+        centered
+      >
+        {productCatalog?.map(({ course_code_id, course_name }) => (
+          <TabPane tab={course_name} key={course_code_id} />
+        ))}
+      </Tabs>
+
+      <Card bordered style={{ marginTop: 16 }}>
+        <Row gutter={[16, 16]} style={{ marginTop: 30 }}>
+          {["free", "silver", "gold"].map((tierKey) => {
+			      const tierInfo = activeCourse.tiers?.[tierKey];
+            const isDisabled = !tierInfo?.isEnabledForPurchase;
+            const imageUrl = tierInfo?.image_url || "";
+            const isPurchased = tierInfo?.isPurchased ?? false;
+            const priceId = tierInfo?.price_id || null;
+            const buttonText =
+            tierKey === purchasedTier
+              ? setLocale(locale, "shop.feature.current") // purchased tier
+              : (purchasedTier === "silver" && tierKey === "free") ||
+                (purchasedTier === "gold" && (tierKey === "free" || tierKey === "silver"))
+              ? setLocale(locale, "shop.feature.current") // included tiers look "current"
+              : {
+                  free: setLocale(locale, "shop.feature.current"),
+                  silver: setLocale(locale, "shop.feature.buy3"),
+                  gold: setLocale(locale, "shop.feature.buy5"),
+                }[tierKey];
+          
+ 
+              // Badge text logic
+              const badgeText =
+              tierKey === purchasedTier
+                ? setLocale(locale, "shop.feature.purchased") // current purchased tier
+                : (purchasedTier === "silver" && tierKey === "free")
+                ? "⭐ Included"
+                : (purchasedTier === "gold" && (tierKey === "free" || tierKey === "silver"))
+                ? "⭐ Included"
+                : tierKey === "free"
+                ? "⭐ Current"
+                : tierKey === "silver"
+                ? `⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`
+                : `⭐⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`;           
+
+                const badgeColor =
+                tierKey === purchasedTier
+                  ? "#52c41a" // purchased = green
+                  : (purchasedTier === "silver" && tierKey === "free") ||
+                    (purchasedTier === "gold" && (tierKey === "free" || tierKey === "silver"))
+                  ? "#00a9fa" // included = blue
+                  : tierKey === "free"
+                  ? "#52c41a"
+                  : tierKey === "silver"
+                  ? "#1890ff"
+                  : "#f5222d";
+              
+
+            // Filter features enabled for this tier to display in card
+            const featuresForTier = data.filter((item) => item[tierKey]);
+
+            return (
+              <Col xs={24} md={8} key={tierKey}>
+                <Badge.Ribbon
+                  text={badgeText}
+                  color={badgeColor}
+                  style={{
+                    marginTop: 40,
+                    padding: "0 12px",
+                    fontSize: 17,
+                    height: 32,
+                    lineHeight: "32px",
+                    fontWeight: 600,
+                  }}
+                >
+                  {renderTierCard({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased })}
+                </Badge.Ribbon>
+              </Col>
+            );
+          })}
+        </Row>
+
+        {!isMobile && (
+          <Table
+            columns={columns}
+            dataSource={data}
+            pagination={false}
+            scroll={{ x: "max-content" }}
+            bordered
+            rowClassName={(record) => (hoveredTier && record[hoveredTier] ? "highlight-row" : "")}
+          />
+        )}
+      </Card>
+
+      <Drawer
+        title={
+          drawerTier === "free"
+            ? "⭐ Current"
+            : drawerTier === "silver"
+            ? `Silver Package $${activeCourse.tiers?.[drawerTier]?.price_usd ?? ""} USD ⭐⭐`
+            : `Gold Package $${activeCourse.tiers?.[drawerTier]?.price_usd ?? ""} USD ⭐⭐⭐`
+        }
+        placement="bottom"
+        closable={false}
+        onClose={onCloseDrawer}
+        visible={open}
+        key="bottom"
+      >
+        {!isMobile ? (
+          <Row gutter={16} justify="center" align="top">
+            {/* Button column */}
+            <Col xs={24} md={6} style={{ textAlign: "center" }}>
+              <Button
+                type="primary"
+                block
+                onClick={() => handlePurchase(providePriceId)}
+                style={{ marginBottom: 16 }}
+              >
+                {setLocale(locale, "shop.proceed")}                 
+              </Button>
+
+              {/* Circular image under button */}
+              {drawerTier && (
+                <img
+                  src={activeCourse.tiers?.[drawerTier]?.image_url || ""}
+                  alt={drawerTier}
+                  style={{
+                    width: 200,
+                    height: 200,
+                    borderRadius: "25%",
+                    objectFit: "scale-down",
+                    display: "block",
+                    margin: "0 auto 16px auto",
+                  }}
+                />
+              )}
+            </Col>
+
+            {/* Features column */}
+            <Col xs={24} md={6}>
+              {drawerTier && renderFeaturesList(
+                data.filter((item) => item[drawerTier])
+              )}
+            </Col>
+          </Row>
+        ) : (
+          <>
+            <Button
+              type="primary"
+              block
+              style={{ marginTop: 16, marginBottom: 16 }}
+              onClick={() => handlePurchase(providePriceId)}
+            >
+              {setLocale(locale, "shop.proceed")}              
+            </Button>
+
+            {/* Circular image under button for mobile */}
+            {drawerTier && (
+              <img
+                className="drawerImage"
+                src={activeCourse.tiers?.[drawerTier]?.image_url || ""}
+                alt={drawerTier}
+                style={{
+                  width: 200,
+                  height: 200,
+                  borderRadius: "25%",
+                  objectFit: "scale-down",
+                  display: "block",
+                  margin: "0 auto 16px auto",
+                }}
+              />
+            )}
+
+            {drawerTier && renderFeaturesList(
+              data.filter((item) => item[drawerTier])
+            )}
+          </>
+        )}
+      </Drawer>
+
+    </div>
+  );
 };
 
 function mapDispatchToProps(dispatch) {
-	return bindActionCreators({
-		onProcessingPurchaseOfProduct
-	}, dispatch);
+  return bindActionCreators(
+    {
+      onProcessingPurchaseOfProduct,
+      onGettingProductsAvailableForPurchase,
+      onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut
+    },
+    dispatch
+  );
 }
 
-const mapStateToProps = ({ lrn, theme, grant, auth }) => {
-  const { videoClassUrls, nativeLanguage, userProficiencyOrder } = lrn;
-  const { course } = theme;
+const mapStateToProps = ({ grant, shop, lrn, theme, auth }) => {
   const { user } = grant;
+  const { productCatalog } = shop;
+  const { nativeLanguage } = lrn;
+  const { course } = theme;
   const { token } = auth;
-  return { videoClassUrls, nativeLanguage, userProficiencyOrder, course, user, token };
+  return { user, productCatalog, nativeLanguage, course, token };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ShopWindow);

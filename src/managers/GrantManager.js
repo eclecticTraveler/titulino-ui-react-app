@@ -3,6 +3,7 @@ import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import GoogleService from "services/GoogleService";
 import AdminInsights from "lob/AdminInsights";
+import ShopPurchaseExperience from "lob/ShopPurchaseExperience";
 
 
 export const getAllCourses = async() => {
@@ -21,6 +22,29 @@ export const getAllCourses = async() => {
   );
   
   return transformedCourses;
+}
+
+const setCourseAccessForUserCourses = async(purchasedTierAccess, courseCodeIdOfPurchasedItem, emailId)=> {
+  const localStorageKey = `UserProfile_${emailId}`;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+
+  // Get updated courses
+  const updatedUserCourses = await ShopPurchaseExperience.setCourseTierAccessPurchasedInUserCourses(
+    user?.userCourses,
+    courseCodeIdOfPurchasedItem,
+    purchasedTierAccess
+  );
+
+  // Create a new updated user object instead of mutating the original
+  const updatedUser = {
+    ...user,
+    userCourses: updatedUserCourses,
+  };
+
+  // Store in cache with TTL (60 min?)
+  await LocalStorageService.setCachedObject(localStorageKey, updatedUser, 60);
+
+  return updatedUserCourses;
 }
 
 
@@ -47,11 +71,12 @@ const getUserProfile = async (emailId, dobOrYob) => {
         hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
         innerToken: userProfile?.token,
         emailId: emailId,
-        yearOfBirth: userProfile?.yearOfBirth
+        yearOfBirth: userProfile?.yearOfBirth,
+        contactPaymentProviderId: userProfile?.contactPaymentProviderId ?? null
       };
       
       LocalStorageService.setCachedObject(localStorageKey, user, 60);       
-
+      console.log("contactPaymentProviderId", user);
       return user;
       
     } else {      
@@ -74,7 +99,8 @@ const getCachedUserProfile = async (emailId) => {
 
 const GrantManager = {
   getUserProfile,
-  getCachedUserProfile
+  getCachedUserProfile,
+  setCourseAccessForUserCourses
 };
 
 export default GrantManager;

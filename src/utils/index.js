@@ -33,25 +33,6 @@ class Utils {
 	}	
 
 	/**
-	 * Get current menu object based on url location
-	 * @param {Array} dynamicUpperMainNavigation - Navigation Tree from Redux 
-	 * @param {String} path - Location path you looking for e.g '/app/dashboards/analytic'
-	 * @return {Object} object that contained the path string
-	 */
-	static getMenuFromDynamicObject(dynamicUpperMainNavigation, pathname){		
-		let currentMenu;
-		dynamicUpperMainNavigation?.forEach(fullMenu => {
-			if(fullMenu.path === pathname){
-				// currentMenu = fullMenu;
-			//   return currentMenu;
-			  return "YESSSSSSSSSSS";
-			}
-		  });
-		  
-		  return "Noooooooooopp";
-	  }
-
-	/**
 	 * getCourseInfoFromUrl
 	 * @param {String} path - Location path you looking for e.g '/app/dashboards/analytic'
 	 * @return {Object} object that contained the course info string
@@ -345,7 +326,21 @@ class Utils {
 		return Object.keys(userCourses);
 	}
 	  
+  /**
+   * Retrieves the course tier from the userCourses object by courseCodeId.
+   * @param {Object} userCourses
+   * @param {string} courseCodeId
+   * @returns {string|null}
+   */
+  static getCourseTierFromUserCourses(userCourses, courseCodeId) {
+	if (!userCourses || typeof userCourses !== "object") {
+	  console.warn("Invalid userCourses object.");
+	  return null;
+	}
 
+	const course = userCourses[courseCodeId];
+	return course?.courseTierAccess || "Free";
+}
 
   /**
    * Retrieves the course token from the userCourses object by courseCodeId.

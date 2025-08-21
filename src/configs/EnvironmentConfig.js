@@ -33,7 +33,7 @@ const local = {
 const getEnv = () => {
 
   const environment = process.env.REACT_APP_ENV || 'production'; 
-  console.log('Environment Server:', environment, "process.env.NODE_ENV-Old", process.env.NODE_ENV);
+  console.log('Server Environment:', environment, "process.env.NODE_ENV-Old", process.env.NODE_ENV);
 	switch (environment) {
 		case 'development':
 			return dev

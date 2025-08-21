@@ -36,7 +36,6 @@ export const AuthLayout = ({ navCollapsed, navType, location, direction, dynamic
   // Here we figure out the proper general submenu based on the url location we are hitting
   let currentRouteInfo;
   dynamicUpperMainNavigation?.forEach(singleFullMenu => {
-	// if(singleFullMenu?.path === location?.pathname){
 	if(location?.pathname.includes(singleFullMenu?.path)){
 	  currentRouteInfo = singleFullMenu;
 	  onCurrentRouteInfo(currentRouteInfo);

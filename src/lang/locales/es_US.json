@@ -340,7 +340,7 @@
 	"shop.feature.grammarClasses":"📚 Acceso a 8 clases de gramática",
 	"shop.feature.termsnResources":"📖 Libro electrónico interactivo con más de 150 términos",
 	"shop.feature.extraQuizletResources":"🧠 Recursos adicionales de Quizlet",
-	"shop.feature.300ebook":"📘 Libro electrónico con más de 150 términos, con un total de más de 300",
+	"shop.feature.300ebook":"📘 Libro electrónico con más de 100+ términos",
 	"shop.feature.300TranslationGuide":"🌍 Guía de traducción con más de 300 términos",
 	"shop.feature.extraClasses":"🎓 2 clases de grupo gratuitas",
 	"shop.feature.accessToGroup":"💬 Acceso a un grupo exclusivo de WhatsApp",
@@ -350,9 +350,18 @@
 	"shop.feature.goldCost":"Oro",
 	"shop.feature.compareOurPackages":"Compara nuestros paquetes de estudio",
 	"shop.feature.current":"Actual",
+	"shop.feature.purchased":"🎉🎉🎉 Comprado 🎉🎉🎉",
+	"shop.feature.purchasedCurrent": "🎉🎉🎉 Actual y comprado 🎉🎉🎉",
 	"shop.feature.buy3":"Compra por $3",
 	"shop.feature.buy5":"Compra por $5",
-	"shop.disclaimer":"Todos sus aportes son destinados a la manutencion de este programa comunitario"
+	"shop.disclaimer":"Todos sus aportes son destinados a la manutencion de este programa comunitario",
+	"shop.proceed": "Adquirir Compra",
+	"shop.succesPurchase.header":"¡Gracias!",
+	"shop.succesPurchase.headerTitle":"Antes de continuar...",
+	"shop.succesPurchase.headerMessageContent":"Quería expresar mi gratitud por su apoyo y por hacer que este proyecto comunitario sea sostenible.\n Espero algún día poder dedicarme por completo a él con su apoyo.\n",
+	"shop.succesPurchase.headerMessageContentGold": "¡Acceda a este grupo exclusivo de WhatsApp para obtener beneficios exclusivos!",
+	"shop.succesPurchase.letsExplore":"Exploremos 🏠",
+	"group.modal.enrollmentCompleted":"Titulino Experiencia de Oro"
 	
 }
 

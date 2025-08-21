@@ -5,8 +5,17 @@ ON_AUTHENTICATING_WITH_INTERNAL_RESOURCES,
 ON_AUTHENTICATING_WITH_SSO,
 AUTH_TITULINO_INTERNAL_TOKEN,
 ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
-ON_LOADING_AUTHENTICATED_LANDING_PAGE
+ON_LOADING_AUTHENTICATED_LANDING_PAGE,
+ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT
 } from '../constants/Grant';
+
+export const onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut = async (purchasedTierAccess, courseCodeIdOfPurchasedItem, emailId) => {   
+  const userCourses = await TitulinoManager.setCourseAccessForUserCourses(purchasedTierAccess, courseCodeIdOfPurchasedItem, emailId);
+    return {
+      type: ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT,
+      userCourses: userCourses
+    }
+}
 
 export const onRetrievingUserProfile = async (emailId, dobOrYob) => {
   const user = await TitulinoManager.getUserProfile(emailId, dobOrYob);

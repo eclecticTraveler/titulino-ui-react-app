@@ -124,20 +124,6 @@ export const getDerivedCategoriesFromCourseStructureData = async (selectedCourse
   return categories;
 };
 
-export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
-  switch (courseTheme?.toLowerCase()) {
-    case 'supermarket':
-      return 'SUPERMARKET_SEP_2024_COURSE_01';      
-    case 'household':      
-      return 'HOUSEHOLD_ITEMS_PART_1_JAN_2025_COURSE_01'    
-    case 'work-n-jobs':
-      return 'WORK_AND_JOBS_JULY_2025_COURSE_01';
-    default:
-      return 'NOT_FOUND' // TODO find a better way to do this!
-      // throw new Error(`Invalid course theme: ${courseTheme}`);
-  }
-};
-
 export const transformEnrolleeGeographycalResidencyData = async(data) => {
   // Define a color palette for unique colors
   const colorPalette = [
@@ -174,7 +160,6 @@ const StudentProgress = {
   calculateUserCourseProgressPercentageForCertificates,
   getUserCourseProgressCategories,
   getDerivedCategoriesFromCourseStructureData,
-  getCourseCodeIdByCourseTheme,
   transformEnrolleeGeographycalResidencyData
 };
 

@@ -11,6 +11,7 @@ export const getTopSubmenuForEnglishConnect = (lang) => {
 	return [
 		{
 			key: 'ec-level-1-eng',
+			nameToCourseCodeKey:"english-connect-1",
 			path: `${APP_PREFIX_PATH}/eng/level-1`,
 			title: 'main.upper.nav.level.1',
 			sideTitle: 'Lower Beginner',
@@ -31,6 +32,7 @@ export const getTopSubmenuForEnglishConnect = (lang) => {
 		},
 		{
 			key: 'ec-level-2-eng',
+			nameToCourseCodeKey:"english-connect-2",
 			path: `${APP_PREFIX_PATH}/eng/level-2`,
 			title: 'main.upper.nav.level.2',
 			sideTitle: 'Mid Beginner',
@@ -51,6 +53,7 @@ export const getTopSubmenuForEnglishConnect = (lang) => {
 		},
 		{
 			key: 'ec-level-3-eng',
+			nameToCourseCodeKey:"english-connect-3",
 			path: `${APP_PREFIX_PATH}/eng/level-3`,
 			title: 'main.upper.nav.level.3',
 			sideTitle: 'Upper Beginner',

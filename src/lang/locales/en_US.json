@@ -339,7 +339,7 @@
 	"shop.feature.grammarClasses":"📚 Access to 8 Grammar Classes",
 	"shop.feature.termsnResources":"📖 150+ Terms Interactive eBook",
 	"shop.feature.extraQuizletResources":"🧠 Extra Quizlet Resources",
-	"shop.feature.300ebook":"📘 eBook extra 150+ Terms with a Total of 300+",
+	"shop.feature.300ebook":"📘 eBook extra more than 100+ terms",
 	"shop.feature.300TranslationGuide":"🌍 300+ Translation Guide",
 	"shop.feature.extraClasses":"🎓 2 Free Gathering Classes",
 	"shop.feature.accessToGroup":"💬 Access to Exclusive WhatsApp Group",
@@ -351,7 +351,17 @@
 	"shop.feature.current":"Current ",
 	"shop.feature.buy3":"Buy for $3",
 	"shop.feature.buy5":"Buy for $5",
-	"shop.disclaimer":"All your contributions go toward supporting this community program."
+	"shop.disclaimer":"All your contributions go toward supporting this community program.",
+	"shop.proceed":"Proceed to Checkout",
+	"shop.feature.purchased":"🎉🎉🎉 Purchased 🎉🎉🎉",
+	"shop.feature.purchasedCurrent":"🎉🎉🎉 Current & Purchased 🎉🎉🎉",
+	"shop.succesPurchase.header":"Thank you!!",
+	"shop.succesPurchase.headerTitle":"Before proceeding...",
+	"shop.succesPurchase.headerMessageContent":"I wanted to express my gratitute for your support and making this Community project a sustainable.\n Hope one day I can dedicate to it fully with your support.\n",
+	"shop.succesPurchase.headerMessageContentGold":"Please access to this exclusive WhatsApp group to which you can get your exclusive benefits!!",
+	"shop.succesPurchase.letsExplore":"Let's explore 🏠",
+	"group.modal.enrollmentCompleted":"Titulino Gold Experience"
+
 
 
 	

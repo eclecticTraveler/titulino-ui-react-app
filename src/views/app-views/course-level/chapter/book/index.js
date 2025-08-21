@@ -2,10 +2,9 @@ import React, {Component} from 'react'
 import {connect} from 'react-redux';
 import { getUserNativeLanguage, getBookChapterUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
-import { env } from '../../../../../configs/EnvironmentConfig';
-import Loading from '../../../../../components/shared-components/Loading';
-import InternalIFrame from '../../../../../components/layout-components/InternalIFrame';
-import UnderConstruccion from '../../../../../components/layout-components/UnderConstruccion';
+import Loading from 'components/shared-components/Loading';
+import InternalIFrame from 'components/layout-components/InternalIFrame';
+import UnderConstruccion from 'components/layout-components/UnderConstruccion';
 import utils from 'utils';
 
 class BookSection extends Component {

@@ -164,6 +164,31 @@ export const getCourseProgressData = async (whoCalledMe) => {
 
 };
 
+export const getCourseShoppingCatalogData = async (whoCalledMe) => {
+  if (whoCalledMe) {
+    
+    const requestOptions = {
+      method: "GET"
+    };
+  
+      // Base URL
+      let catalogDataUrl = `${gcbucketBaseUrl}/${gcBucketName}/course-shopping-catalog-data.json`;
+
+    try {
+      const response = await fetch(catalogDataUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _objectResults;
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getCourseShoppingCatalogData: from ${whoCalledMe}`);
+      console.error(error);
+      return _objectResults; // Might be better to return a handled response
+    }
+  }
+
+  return _objectResults;
+
+};
+
 
 export const getGeoMapResource = async (countryId, whoCalledMe) => {
   if (!whoCalledMe) return _results;
@@ -218,7 +243,8 @@ const GoogleService = {
   getVideoClassData,
   getCourseProgressData,
   getGeoMapResource,
-  getGrammarClassData
+  getGrammarClassData,
+  getCourseShoppingCatalogData
 };
 
 export default GoogleService;

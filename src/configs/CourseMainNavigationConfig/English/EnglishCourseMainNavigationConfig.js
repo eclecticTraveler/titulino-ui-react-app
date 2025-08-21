@@ -1,7 +1,6 @@
 import { APP_PREFIX_PATH } from '../../AppConfig'
 import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic' 
 import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
-import { getCourseSubNavigationHighBasic } from '../Submenus/CourseSubNavigationHighBasic';
 import { CourseSubNavigationHouseholdTheme } from '../Submenus/CourseSubNavigationHouseholdTheme';
 import { CourseSubNavigationWorkNJobsTheme } from '../Submenus/CourseSubNavigationWorkNJobsTheme';
 import { CourseSubNavigationSupermarketTheme } from '../Submenus/CourseSubNavigationSupermarketTheme';
@@ -9,15 +8,16 @@ import { AuthCourseSubNavigationHouseholdTheme } from '../Submenus/AuthCourseSub
 import { AuthCourseSubNavigationSupermarketTheme } from '../Submenus/AuthCourseSubNavigationSupermarketTheme';
 import { AuthCourseSubNavigationWorkNJobsTheme } from '../Submenus/AuthCourseSubNavigationWorknJobsTheme';
 import { getTopSubmenuForEnglishConnect } from '../Submenus/Top-Submenus/EConnectTopSubmenus';
-import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from 'configs/CourseThemeConfig';
+import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG, COURSE_TIERS_CONFIG } from 'configs/CourseThemeConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
-export const getEnglishCourseMainNavigationConfig = (isAuthenticated) => {
-	return EnglishCourseMainNavigationConfig(isAuthenticated);
+export const getEnglishCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) => {
+	return EnglishCourseMainNavigationConfig(isAuthenticated, coursesByTheme);
 }
-const EnglishCourseMainNavigationConfig  = (isAuthenticated) => [
+const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => [
 	{
 		key: 'level-1-eng-inactive',
+		nameToCourseCodeKey:"english-connect-1",
 		path: `${APP_PREFIX_PATH}/eng/level-1`,
 		title: 'main.upper.nav.level.1',
 		sideTitle: 'Lower Beginner',
@@ -38,6 +38,7 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated) => [
 	},
 	{
 		key: 'level-2-eng-inactive',
+		nameToCourseCodeKey:"english-connect-2",
 		path: `${APP_PREFIX_PATH}/eng/level-2`,
 		title: 'main.upper.nav.level.2',
 		sideTitle: 'Mid Beginner',
@@ -58,12 +59,17 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated) => [
 	},
 	{
 		key: 'level-work-and-jobs-part-eng',
+		nameToCourseCodeKey:"work-n-jobs",
 		path: `${APP_PREFIX_PATH}/eng/level-work-n-jobs`,
 		title: 'main.upper.nav.theme.level.workNjobs',
 		sideTitle: 'Work & Jobs',
 		icon: COURSE_ICON_CONFIG.default,
 		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
-		color: COURSE_COLOR_CONFIG.workNjobsTheme,
+		color: coursesByTheme['work-n-jobs']?.courseTierAccess === COURSE_TIERS_CONFIG.silver
+				? COURSE_COLOR_CONFIG.silverTier
+				: coursesByTheme['work-n-jobs']?.courseTierAccess === COURSE_TIERS_CONFIG.gold
+				? COURSE_COLOR_CONFIG.goldTier
+				: COURSE_COLOR_CONFIG.workNjobsTheme,
 		current: false,
 		isRootMenuItem: true,
 		iconPosition: "upperNav",
@@ -74,13 +80,14 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated) => [
 		topSubmenu: [],
 		submenu: [
 			...(isAuthenticated 
-				? AuthCourseSubNavigationWorkNJobsTheme("eng") 
+				? AuthCourseSubNavigationWorkNJobsTheme("eng", coursesByTheme['work-n-jobs']) 
 				: CourseSubNavigationWorkNJobsTheme("eng")
-			)
+			  )
 		]
 	},
 	{
 		key: 'level-household-part-eng',
+		nameToCourseCodeKey:"household",
 		path: `${APP_PREFIX_PATH}/eng/level-household`,
 		title: 'main.upper.nav.theme.level.household',
 		sideTitle: 'Household',
@@ -104,6 +111,7 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated) => [
 	},
 	{
 		key: 'level-supermarket-eng',
+		nameToCourseCodeKey:"supermarket",
 		path: `${APP_PREFIX_PATH}/eng/level-supermarket`,
 		title: 'main.upper.nav.theme.level.supermarket',
 		sideTitle: 'Supermarket',

@@ -27,7 +27,7 @@ const loadCourseProgressStructure = async() => {
 }
 
 const loadRequestedCourseStructure = async(nativeLanguage, course, courseCodeId) => {  
-  const rawCourseStructureData = await loadCourseProgressStructure();
+  const rawCourseStructureData = await loadCourseProgressStructure();  
   const rawCourseData = rawCourseStructureData?.find(c => (c.courseId === courseCodeId && c.course === course && c.nativeLanguage === nativeLanguage));
   const rawRequestedModule = rawCourseData; //rawCourseData?.chapters.find(ch => ch.chapter === parseInt(chapterNo, 10));
   return rawRequestedModule;
