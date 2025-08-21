@@ -5,7 +5,8 @@ import GoogleService from './GoogleService';
 import { env } from "configs/EnvironmentConfig";
 
 const loadLocalShoppingData = async() => {
-  if(env.ENVIROMENT === "prod"){    
+  console.log("🔄 Loading local shopping catalog data from env.ENVIROMENT...", env.ENVIROMENT);
+  if(env.ENVIROMENT === "prod"){
     const rawData = await GoogleService.getCourseShoppingCatalogData("loadLocalShoppingData");
     return rawData;
   }else{
