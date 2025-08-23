@@ -276,6 +276,28 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			submenu: [
 				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 21)
 			]
+		},
+		{
+			key: 'chapter-sidenav-theme-work-n-jobs-22',
+			path: `${commonPath}-22`,
+			title: 'sidenav.chapter.22',
+			icon: faMedal,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+			breadcrumb: false,
+			submenu: [
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 22)
+			]
+		},
+		{
+			key: 'chapter-sidenav-theme-work-n-jobs-23',
+			path: `${commonPath}-23`,
+			title: 'sidenav.chapter.23',
+			icon: faMedal,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+			breadcrumb: false,
+			submenu: [
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 23)
+			]
 		}
 	]
 
