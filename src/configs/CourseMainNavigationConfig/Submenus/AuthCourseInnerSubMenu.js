@@ -41,7 +41,18 @@ export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {
 				isRootMenuItem: false,				
 				submenu: [],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'book')
-			},		
+			},									
+			{
+				key: `module-quizlet-pdf-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${commonPath}/${getLocalizedConfig(lang)?.quizletpdf}`,
+				title: 'sidenav.quizletpdf',
+				icon: faFilePdf,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: [],
+				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizletpdf')
+			},	
 			{
 				key: `module-quizlet-${levelNo}-${chapterNo}-${uuidv4()}`,
 				path: `${commonPath}/${getLocalizedConfig(lang)?.quizlet}`,
@@ -111,7 +122,7 @@ export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {
 						submenu: [],
 						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'review')
 					},
-					...(levelNo === "household"
+					...(levelNo === "household" || levelNo === "work-n-jobs"
 						? [			{
 							key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
 							path: `${commonPath}/${getLocalizedConfig(lang)?.speaking}`,
@@ -146,17 +157,6 @@ export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {
 						isRootMenuItem: false,				
 						submenu: [],
 						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'spell')
-					},					
-					{
-						key: `module-quizlet-pdf-${levelNo}-${chapterNo}-${uuidv4()}`,
-						path: `${commonPath}/${getLocalizedConfig(lang)?.quizletpdf}`,
-						title: 'sidenav.quizletpdf',
-						icon: faFilePdf,
-						iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-						breadcrumb: false,
-						isRootMenuItem: false,				
-						submenu: [],
-						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizletpdf')
 					},
 		
 				],
