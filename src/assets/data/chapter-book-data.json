@@ -310,7 +310,7 @@
         ]
       },
       {
-        "id": "14596d599e",
+        "id": "2de5e814ca",
         "theme":"work-n-jobs",
         "bookType":"vocabulary",
         "bookTitle": "Work & Jobs Part 1, 222+ Core Words (Silver)",
@@ -396,13 +396,43 @@
           {
             "page": 52,
             "chapter": 16,
-            "title": "Test"
+            "title": "Farming"
           },
           {
             "page": 55,
             "chapter": 17,
-            "title": "Donate"
-          }          
+            "title": "Hospital"
+          },
+          {
+            "page": 58,
+            "chapter": 18,
+            "title": "Hotel"
+          },
+          {
+            "page": 61,
+            "chapter": 18,
+            "title": "Warehouse"
+          },
+          {
+            "page": 64,
+            "chapter": 19,
+            "title": "Restaurant"
+          },
+          {
+            "page": 67,
+            "chapter": 20,
+            "title": "Logistics"
+          },
+          {
+            "page": 70,
+            "chapter": 21,
+            "title": "Pharmacy"
+          },
+          {
+            "page": 72,
+            "chapter": 22,
+            "title": "Translation Guide"
+          }
         ]
       }    
     ]
