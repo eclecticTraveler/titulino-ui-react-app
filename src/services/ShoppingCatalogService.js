@@ -1,16 +1,16 @@
-import localShoppingCatalogDataDV from '../assets/data/course-shopping-catalog-data-dv.json';
-import localShoppingCatalogDataPD from '../assets/data/course-shopping-catalog-data.json';
+import localShoppingCatalogData from '../assets/data/course-shopping-catalog-data.json';
 import GoogleService from './GoogleService';
-
 import { env } from "configs/EnvironmentConfig";
 
 const loadLocalShoppingData = async() => {
   console.log("🔄 Loading local shopping catalog data from env.ENVIROMENT...", env.ENVIROMENT);
   if(env.ENVIROMENT === "prod"){
+    console.log("🌐 Loading shopping catalog data from Google Bucket PD...");
     const rawData = await GoogleService.getCourseShoppingCatalogData("loadLocalShoppingData");
     return rawData;
   }else{
-    const rawData = localShoppingCatalogDataDV;
+    console.log("🌐 Loading shopping catalog from local DV...");
+    const rawData = localShoppingCatalogData;
     return rawData;  
   }
 }
