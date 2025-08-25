@@ -11,6 +11,7 @@ const dev = {
   IS_SSO_ON: true,
   IS_SHOPPING_UX_ON: true,
   IS_SWITCH_COURSE_ON:true,
+  IS_TO_DISPLAY_PROGRESS_DASHBOARD: true,
   ENVIROMENT: 'dev',  
 };
 
@@ -19,6 +20,7 @@ const prod = {
   IS_SSO_ON: true,
   IS_SHOPPING_UX_ON: true,
   IS_SWITCH_COURSE_ON:false,
+  IS_TO_DISPLAY_PROGRESS_DASHBOARD: false,
   ENVIROMENT: 'prod'
 };
 
@@ -27,6 +29,7 @@ const local = {
   IS_SSO_ON: true,
   IS_SHOPPING_UX_ON: true,
   IS_SWITCH_COURSE_ON:true,
+  IS_TO_DISPLAY_PROGRESS_DASHBOARD: true,
   ENVIROMENT: 'local'
 };
 

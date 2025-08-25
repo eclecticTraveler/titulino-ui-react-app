@@ -1,7 +1,7 @@
 import { AUTH_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 import { getCoursePracticeResourcesInnerSubMenu, getCoursePracticeInnerSubMenuV2Light } from './CoursePracticeInnerSubMenu';
-import { getAuthCourseInnerSubMenuV1 } from './AuthCourseInnerSubMenu';
+import { getAuthCourseInnerSubMenuV1, getAuthCourseInnerSubMenuNoClass } from './AuthCourseInnerSubMenu';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import { COURSE_TIERS_CONFIG } from 'configs/CourseThemeConfig';
 import {
@@ -172,7 +172,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'work-n-jobs', 12)
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 12)
 			]
 		},
 		{
@@ -183,7 +183,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'work-n-jobs', 13)
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 13)
 			]
 		},
 		{
@@ -194,7 +194,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'work-n-jobs', 14)
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 14)
 			]
 		},
 		{
@@ -205,7 +205,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'work-n-jobs', 15)
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 15)
 			]
 		}
 	]
@@ -219,7 +219,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'work-n-jobs', 16)
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 16)
 			]
 		},
 		{
@@ -230,7 +230,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'work-n-jobs', 17)
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 17)
 			]
 		},
 		{
@@ -241,7 +241,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'work-n-jobs', 18)
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 18)
 			]
 		},
 		{
@@ -252,7 +252,51 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'work-n-jobs', 19)
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 19)
+			]
+		},
+		{
+			key: 'chapter-sidenav-theme-work-n-jobs-20',
+			path: `${commonPath}-20`,
+			title: 'sidenav.chapter.20',
+			icon: faMedal,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+			breadcrumb: false,
+			submenu: [
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 20)
+			]
+		},
+		{
+			key: 'chapter-sidenav-theme-work-n-jobs-21',
+			path: `${commonPath}-21`,
+			title: 'sidenav.chapter.21',
+			icon: faMedal,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+			breadcrumb: false,
+			submenu: [
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 21)
+			]
+		},
+		{
+			key: 'chapter-sidenav-theme-work-n-jobs-22',
+			path: `${commonPath}-22`,
+			title: 'sidenav.chapter.22',
+			icon: faMedal,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+			breadcrumb: false,
+			submenu: [
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 22)
+			]
+		},
+		{
+			key: 'chapter-sidenav-theme-work-n-jobs-23',
+			path: `${commonPath}-23`,
+			title: 'sidenav.chapter.23',
+			icon: faMedal,
+			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+			breadcrumb: false,
+			submenu: [
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 23)
 			]
 		}
 	]

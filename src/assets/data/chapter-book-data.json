@@ -310,7 +310,7 @@
         ]
       },
       {
-        "id": "14596d599e",
+        "id": "2de5e814ca",
         "theme":"work-n-jobs",
         "bookType":"vocabulary",
         "bookTitle": "Work & Jobs Part 1, 222+ Core Words (Silver)",
@@ -319,7 +319,7 @@
         "course": "eng",
         "chapters" : [
           {
-            "page": 4,
+            "page": 5,
             "chapter": 1,
             "title": "Construction"
           },
@@ -374,14 +374,14 @@
             "title": "Merchandise"
           },
           {
-            "page": 38,
+            "page": 39,
             "chapter": 12,
-            "title": "Office"
+            "title": "Road Work"
           },
           {
-            "page": 39,
+            "page": 42,
             "chapter": 13,
-            "title": "Road Work"
+            "title": "Office"
           },
           {
             "page": 45,
@@ -396,13 +396,43 @@
           {
             "page": 52,
             "chapter": 16,
-            "title": "Test"
+            "title": "Farming"
           },
           {
             "page": 55,
             "chapter": 17,
-            "title": "Donate"
-          }          
+            "title": "Hospital"
+          },
+          {
+            "page": 58,
+            "chapter": 18,
+            "title": "Hotel"
+          },
+          {
+            "page": 61,
+            "chapter": 19,
+            "title": "Warehouse"
+          },
+          {
+            "page": 64,
+            "chapter": 20,
+            "title": "Restaurant"
+          },
+          {
+            "page": 67,
+            "chapter": 21,
+            "title": "Logistics"
+          },
+          {
+            "page": 70,
+            "chapter": 22,
+            "title": "Pharmacy"
+          },
+          {
+            "page": 72,
+            "chapter": 23,
+            "title": "Translation Guide"
+          }
         ]
       }    
     ]

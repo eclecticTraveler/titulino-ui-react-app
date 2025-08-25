@@ -8,8 +8,8 @@
     "theme": "work_and_jobs",
     "tiers": {
       "free":   { "image_url": "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/150Free.png",   "price_id": null,  "price_usd": 0.00, "isEnabledForPurchase": false, "isPurchased": false},
-      "silver": { "image_url": "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/222Silver.png", "price_id": "price_1RwMia2dImZF7H1hrrF6IUJQ", "price_usd": 3.00, "isEnabledForPurchase": true, "isPurchased": false  },
-      "gold":   { "image_url": "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/300Gold.png",   "price_id": "price_1RwMm62dImZF7H1hNm2JEYsI","price_usd": 5.00, "isEnabledForPurchase": true, "isPurchased": false  }
+      "silver": { "image_url": "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/222Silver.png", "price_id": "price_1RwMkY2dImZF7H1hh7xLFFCi", "price_usd": 3.00, "isEnabledForPurchase": true, "isPurchased": false  },
+      "gold":   { "image_url": "https://storage.googleapis.com/titulino-bucket/course-covers/packages/work-n-jobs/300Gold.png",   "price_id": "price_1RwMm32dImZF7H1h7WjdF07m","price_usd": 5.00, "isEnabledForPurchase": true, "isPurchased": false  }
     },
     "features": [
       { "feature_id": "feat-grammar", "feature": "shop.feature.grammarClasses", "enabled": { "free": true, "silver": true, "gold": true } },

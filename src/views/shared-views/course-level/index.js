@@ -1,7 +1,7 @@
 import React, {Component, Suspense} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
-import { getUserEBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse }  from 'redux/actions/Lrn';
+import { geteBookUrl, getUserEBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse }  from 'redux/actions/Lrn';
 import { onLoadingAuthenticatedLandingPage, onAuthenticatingWithSSO } from 'redux/actions/Grant';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
@@ -10,12 +10,17 @@ import { bindActionCreators } from 'redux';
 import utils from 'utils';
 import Loading from 'components/shared-components/Loading';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
+import { env } from 'configs/EnvironmentConfig';
 
 class CourseLevel extends Component {
 
     loadCourseLandingData = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
         const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname); 
+
+        if(env.IS_TO_DISPLAY_PROGRESS_DASHBOARD) {
+            this.props.geteBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course );
+        }
         
         this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme);
         this.props.onLoadingUserResourcesByCourseTheme(pathTheme?.courseTheme, this.props.nativeLanguage?.localizationId, this.props.course);
@@ -57,18 +62,21 @@ class CourseLevel extends Component {
             } else if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
 
                 if (this.props.userIsEnrolledInCourse === true) {
-                    // return (
-                    //     <div id="unathenticated-landing-page-margin">
-                    //         <ProgressDashboardByEmailV4 />
-                    //     </div>
-                    // );
 
-                    if (this.props.ebookUrl) {
+                    if(env.IS_TO_DISPLAY_PROGRESS_DASHBOARD) {
                         return (
                             <div id="unathenticated-landing-page-margin">
-                                <InternalIFrame iFrameUrl={this.props.ebookUrl} />
+                                <ProgressDashboardByEmailV4 />
                             </div>
                         );
+                    }else{
+                        if (this.props.ebookUrl) {
+                                return (
+                                    <div id="unathenticated-landing-page-margin">
+                                        <InternalIFrame iFrameUrl={this.props.ebookUrl} />
+                                    </div>
+                                );
+                            }
                     }
                 } else if (this.props.userIsEnrolledInCourse === false) {
                     if (this.props.ebookUrl) {
@@ -129,7 +137,8 @@ function mapDispatchToProps(dispatch){
         onLoadingAuthenticatedLandingPage: onLoadingAuthenticatedLandingPage,
         onAuthenticatingWithSSO: onAuthenticatingWithSSO,
         onVerifyingIfUserIsEnrolledInCourse: onVerifyingIfUserIsEnrolledInCourse,
-        getUserEBookUrl: getUserEBookUrl
+        getUserEBookUrl: getUserEBookUrl,
+        geteBookUrl: geteBookUrl
 	}, dispatch)
 }
 
