@@ -36,6 +36,8 @@ class CourseLevel extends Component {
         if(this.props?.user?.emailId){
             this.props.onVerifyingIfUserIsEnrolledInCourse(pathTheme?.courseTheme, this.props.user?.emailId);
             this.props.getUserEBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course, this.props.user?.emailId);
+        }else{
+            this.props.geteBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course );
         }
 
     }
