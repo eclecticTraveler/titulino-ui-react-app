@@ -4,17 +4,16 @@ import GoogleService from './GoogleService';
 const loadBookData = async() => {
   const rawData = bookChapterData;
   // const bookData = await GoogleService.getChapterBookData("loadRequestedBookChapterUrl");
-  // console.log("BOOK DATA", bookData)
   return rawData;
 }
 
-const loadRequestedBook = async (rawBookData, levelTheme, course, nativeLanguage, tier) => {
-  // TODO HANDLE FOR POR SPEAKING  
+const loadRequestedBook = async (rawBookData, levelTheme, course, nativeLanguage, tier = "Free") => {
+  // TODO HANDLE FOR PORTUGUESE SPEAKING SINCE THEIR DATA IS NOT PRESENT
   return rawBookData?.books?.find(c => 
     c.theme === levelTheme &&
     c.course === course &&
     c.nativeLanguage === nativeLanguage &&
-    (tier == null || c.tier === tier) // Only check tier if it's provided
+    (tier == null || c.tier === tier)
   );
 };
 

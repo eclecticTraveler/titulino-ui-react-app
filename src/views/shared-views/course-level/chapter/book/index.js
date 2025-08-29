@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import { getUserNativeLanguage, getUserEBookChapterUrl}  from 'redux/actions/Lrn';
+import { getBookChapterUrl, getUserNativeLanguage, getUserEBookChapterUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import Loading from 'components/shared-components/Loading';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
@@ -13,7 +13,9 @@ class BookSection extends Component {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname);
         if(this.props.user?.emailId){
             this.props.getUserEBookChapterUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course, this.props.user?.emailId );
-        }        
+        }else{
+            this.props.getBookChapterUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
+        }    
     }
     
     componentDidMount() {                
@@ -50,7 +52,8 @@ class BookSection extends Component {
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
         getUserNativeLanguage: getUserNativeLanguage,
-        getUserEBookChapterUrl: getUserEBookChapterUrl
+        getUserEBookChapterUrl: getUserEBookChapterUrl,
+        getBookChapterUrl: getBookChapterUrl
 	}, dispatch)
 }
 

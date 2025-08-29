@@ -12,7 +12,7 @@ import Loading from 'components/shared-components/Loading';
 
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 
-class CourseLevel extends Component {
+class AuthCourseLevel extends Component {
 
     loadCourseLandingData = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
@@ -134,4 +134,4 @@ const mapStateToProps = ({lrn, theme, grant, auth}) => {
 	return { locale, direction, course, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse }
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);
+export default connect(mapStateToProps, mapDispatchToProps)(AuthCourseLevel);

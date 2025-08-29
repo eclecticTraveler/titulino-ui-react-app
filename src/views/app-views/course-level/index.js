@@ -14,104 +14,41 @@ import EmailYearSearchForm from 'components/layout-components/EmailYearSearchFor
 
 class CourseLevel extends Component {
 
-    loadCourseLandingData = () => {
+    loadPublicCourseLandingData = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
         const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname); 
-
         this.props.geteBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course );
-        this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme);
-        this.props.onLoadingUserResourcesByCourseTheme(pathTheme?.courseTheme, this.props.nativeLanguage?.localizationId, this.props.course);
-        // check if there is a user object saved and valid and fetch it
-        if(this.props.token?.email){            
-            this.props.onLoadingAuthenticatedLandingPage(this.props.token?.email);
-        }else{
-            if(!this.props.user?.emailId){                
-                this.props.onAuthenticatingWithSSO(this.props.token?.email);
-            }
-        }
-
-        if(this.props?.user?.emailId){
-            this.props.onVerifyingIfUserIsEnrolledInCourse(pathTheme?.courseTheme, this.props.user?.emailId);
-        }
+        this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme)
 
     }
-
     
     componentDidMount() {                
-        this.loadCourseLandingData();
+        this.loadPublicCourseLandingData();
     }
 
     componentDidUpdate(prevProps) {       
         if (prevProps?.location?.pathname !== this.props.location?.pathname) {
-            this.loadCourseLandingData();
+            this.loadPublicCourseLandingData();
         }
       }
 
     render() {
-        if(this.props.token){
-            if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
-                return (
-                    <div id="unathenticated-landing-page-margin">
-                        <EmailYearSearchForm/>
-                    </div>
-                )
-            } else if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
-
-                if (this.props.userIsEnrolledInCourse === true) {
-                    return (
-                        <div id="unathenticated-landing-page-margin">
-                            <ProgressDashboardByEmailV4 />
-                        </div>
-                    );
-                } else if (this.props.userIsEnrolledInCourse === false) {
-                    if (this.props.ebookUrl) {
-                        return (
-                            <div id="unathenticated-landing-page-margin">
-                                <InternalIFrame iFrameUrl={this.props.ebookUrl} />
-                            </div>
-                        );
-                    } else {
-                        return (
-                            <div id="unathenticated-landing-page-margin">
-                                <LandingWrapper course={this.props?.match?.params?.level} coursePath={this.props?.location.pathname} />
-                            </div>
-                        );
-                    }
-                } else {
-                    // While waiting for enrollment check to complete
-                    return (
-                        <div id="unathenticated-landing-page-margin">
-                            <Loading cover="content" />
-                        </div>
-                    );
-                }
-
-            } else {
-                return (
-                    <div id="unathenticated-landing-page-margin">
-                        Processing v1
-                        <Loading cover="content"/>
-                    </div>
-                )
-            }
-        }else{
             if(this.props.ebookUrl){
-                return (
-                    <div id="unathenticated-landing-page-margin">
-                         <CourseLandingDashboard course={this.props?.match?.params?.level} 
-                                                 url={this.props.ebookUrl} 
-                                                 totalStudentsCount={this.props.totalEnrolleeCount} 
-                                                 enrolleeRegion={this.props.enrolleeCountByRegion}/>
-                    </div>
-                ) 
-            }else{
-                return (
-                    <div id="unathenticated-landing-page-margin">
-                         <LandingWrapper course={this.props?.match?.params?.level} coursePath={this.props?.location.pathname}/>              
-                    </div>
-                ) 
-            }  
-        }    
+            return (
+                <div id="unathenticated-landing-page-margin">
+                        <CourseLandingDashboard course={this.props?.match?.params?.level} 
+                                                url={this.props.ebookUrl} 
+                                                totalStudentsCount={this.props.totalEnrolleeCount} 
+                                                enrolleeRegion={this.props.enrolleeCountByRegion}/>
+                </div>
+            ) 
+        }else{
+            return (
+                <div id="unathenticated-landing-page-margin">
+                        <LandingWrapper course={this.props?.match?.params?.level} coursePath={this.props?.location.pathname}/>              
+                </div>
+            ) 
+        }     
     }
 }
 
