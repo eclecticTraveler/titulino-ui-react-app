@@ -7,7 +7,7 @@ import { env } from '../../../configs/EnvironmentConfig';
 import Loading from '../../../components/shared-components/Loading';
 import utils from '../../../utils';
 
-class CourseLevel extends Component {
+class ChapterCourseLevel extends Component {
 
     componentDidMount() {                
         console.log("this.props; ")
@@ -49,4 +49,4 @@ const mapStateToProps = ({lrn, theme}) => {
 	return { locale, direction, course, nativeLanguage }
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);
+export default connect(mapStateToProps, mapDispatchToProps)(ChapterCourseLevel);

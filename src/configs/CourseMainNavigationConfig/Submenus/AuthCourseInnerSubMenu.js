@@ -122,7 +122,7 @@ export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {
 						submenu: [],
 						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'review')
 					},
-					...(levelNo === "household" || levelNo === "work-n-jobs"
+					...(levelNo === "household"
 						? [			{
 							key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
 							path: `${commonPath}/${getLocalizedConfig(lang)?.speaking}`,

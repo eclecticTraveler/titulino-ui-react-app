@@ -65,9 +65,9 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 		sideTitle: 'Work & Jobs',
 		icon: COURSE_ICON_CONFIG.default,
 		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
-		color: coursesByTheme['work-n-jobs']?.courseTierAccess === COURSE_TIERS_CONFIG.silver
+		color: isAuthenticated && coursesByTheme['work-n-jobs']?.courseTierAccess === COURSE_TIERS_CONFIG.silver
 				? COURSE_COLOR_CONFIG.silverTier
-				: coursesByTheme['work-n-jobs']?.courseTierAccess === COURSE_TIERS_CONFIG.gold
+				: isAuthenticated && coursesByTheme['work-n-jobs']?.courseTierAccess === COURSE_TIERS_CONFIG.gold
 				? COURSE_COLOR_CONFIG.goldTier
 				: COURSE_COLOR_CONFIG.workNjobsTheme,
 		current: false,

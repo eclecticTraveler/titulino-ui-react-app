@@ -122,7 +122,7 @@ const getUserBookBaseUrl = async(levelTheme, nativeLanguage, course, emailId) =>
 
   const tier = utils.getCourseTierFromUserCourses(user?.userCourses, courseCodeId);
 
-  const url = await BookChapterService.getBookTierBaseUrl(levelTheme, nativeLanguage, course, tier);  
+  const url = await BookChapterService.getBookTierBaseUrl(levelTheme, nativeLanguage, course, tier ?? "Free");  
 
   return url;
 } 

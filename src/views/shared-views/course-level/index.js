@@ -17,10 +17,6 @@ class CourseLevel extends Component {
     loadCourseLandingData = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
         const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname); 
-
-        if(env.IS_TO_DISPLAY_PROGRESS_DASHBOARD) {
-            this.props.geteBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course );
-        }
         
         this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme);
         this.props.onLoadingUserResourcesByCourseTheme(pathTheme?.courseTheme, this.props.nativeLanguage?.localizationId, this.props.course);
@@ -40,14 +36,28 @@ class CourseLevel extends Component {
 
     }
 
-    
-    componentDidMount() {                
-        this.loadCourseLandingData();
+    loadPublicCourseLandingData = () => {
+        const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
+        this.props.geteBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course );
+
     }
 
-    componentDidUpdate(prevProps) {       
-        if (prevProps?.location?.pathname !== this.props.location?.pathname) {
+    
+    componentDidMount() {                
+        this.loadCourseLandingData();        
+    }
+
+    componentDidUpdate(prevProps) {             
+        const tokenChanged = this.props.token !== prevProps.token;
+        const pathChanged = this.props.location?.pathname !== prevProps?.location?.pathname;
+        const isAuthenticated = !!this.props.token;
+
+        if (isAuthenticated && pathChanged) {
+            // Logged in + navigating around
             this.loadCourseLandingData();
+        } else if (!isAuthenticated && (tokenChanged || pathChanged)) {
+            // Not logged in, either signed out or navigating
+            this.loadPublicCourseLandingData();
         }
       }
 
