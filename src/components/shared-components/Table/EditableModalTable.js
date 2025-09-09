@@ -41,7 +41,7 @@ const EditableCell = ({
 };
 
 const EditableModalTable = props => {
-  const { tableData, tableColumns, isAllowedToEditTableData, onSelectingCorrectionToEdit, onCorrectionsModalChange, isToRenderActionButton  } = props;
+  const { tableData, tableColumns, isAllowedToEditTableData, onSelectingCorrectionToEdit, onCorrectionsModalChange, isToRenderActionButton, tableExpandables  } = props;
 
   // console.log("isAllowedToEditTableData++++++++++++");
   // console.log(isAllowedToEditTableData);
@@ -88,6 +88,9 @@ const cancel = () => {
 let columns = [
   ...tableColumns
 ];
+
+let expandables = tableExpandables || undefined;
+
 
 // if theey are integrated show button that says more info rather than edit but they wont be able to edit anything
 if(columns?.length > 0 && isToRenderActionButton) {
@@ -141,6 +144,7 @@ return (
       bordered
       dataSource={tableData}
       columns={mergedColumns}
+      expandable={expandables}
       rowClassName="editable-row"
       pagination={{
         onChange: cancel,

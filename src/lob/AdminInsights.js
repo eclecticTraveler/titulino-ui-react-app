@@ -1,5 +1,5 @@
 import Flag from "react-world-flags";
-import { Tag } from 'antd';
+import { Tag, Table } from 'antd';
 
 
 const getDaysUntilComingBirthday = async(birthday) => {
@@ -238,6 +238,8 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
     regionOfResidencyFilter: new Set(),
     countryOfBirthFilter: new Set(),
     regionOfBirthFilter: new Set(),
+    birthdayFilter: new Set(),
+    emailFilter: new Set()
   };
 
   const trackers = {
@@ -251,26 +253,48 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
       countryOfResidencyTracker: new Set(),
       regionOfResidencyTracker: new Set(),
       countryOfBirthTracker: new Set(),
-      regionOfBirthTracker: new Set()
+      regionOfBirthTracker: new Set(),
+      birthdayTracker: new Set(),
+      emailTracker: new Set()
   };
 
   const processData = async(item, i) => {
       const daysUntilBday = await getDaysUntilComingBirthday(item?.DateOfBirth);
       const currentLevel = item.LanguageProficienciesHistory.find(entry => entry.EndDate === null)?.LanguageLevelAbbreviation;   
       results.push({
-          key: i,
-          langLevel: currentLevel,
-          enrolleeId: item?.ContactExternalId,
-          names: item?.Names,
-          lastNames: item?.LastNames,
-          age: item?.Age,
-          sex: item?.Sex,
-          daysToBday: daysUntilBday,
-          countryOfResidency: item?.Location?.ResidencyLocation?.CountryOfResidency,
-          regionOfResidency: item?.Location?.ResidencyLocation?.CountryDivisionResidencyName,
-          countryOfBirth: item?.Location?.BirthLocation?.CountryOfBirth,
-          regionOfBirth: item?.Location?.BirthLocation?.CountryDivisionBirthName
+        key: i,
+        langLevel: currentLevel,
+        enrolleeId: item?.ContactExternalId,
+        names: item?.Names,
+        lastNames: item?.LastNames,
+        age: item?.Age,
+        sex: item?.Sex,
+        daysToBday: daysUntilBday,
+        birthday: item?.DateOfBirth,
+        countryOfResidency: item?.Location?.ResidencyLocation?.CountryOfResidency,
+        regionOfResidency: item?.Location?.ResidencyLocation?.CountryDivisionResidencyName,
+        countryOfBirth: item?.Location?.BirthLocation?.CountryOfBirth,
+        regionOfBirth: item?.Location?.BirthLocation?.CountryDivisionBirthName,
+
+        // NEW FIELDS for expandable row
+        emails: item?.Emails?.filter(e => e.IsEmailParseValid).map(e => e.EmailId) || [],
+        courses: [
+          ...(item?.CoursesHistory?.map(c => c.CourseCodeId) || []),
+          ...(item?.UserCourseRoles?.map(c => c.CourseCodeId) || [])
+        ].map(courseId => {
+          const tierInfo = item?.ContactCourseTiers?.find(t => t.CourseCodeId === courseId);
+          let tierTag;
+          if (!tierInfo || !tierInfo.TierId) {
+            tierTag = <Tag color="blue">Free</Tag>;
+          } else if (tierInfo.TierId === "Silver") {
+            tierTag = <Tag color="silver">Silver</Tag>;
+          } else if (tierInfo.TierId === "Gold") {
+            tierTag = <Tag color="gold">Gold</Tag>;
+          }
+          return { courseId, tier: tierTag };
+        })
       });
+
 
       const uniqueFilters = [
         { field: currentLevel, filter: 'langLevel' },
@@ -280,6 +304,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
         { field: item?.Age, filter: 'age' },
         { field: item?.Sex, filter: 'sex' },
         { field: daysUntilBday, filter: 'daysToBday' },
+        { field: item?.DateOfBirth, filter: 'birthday' },
         { field: item?.Location?.ResidencyLocation?.CountryOfResidency, filter: 'countryOfResidency' },
         { field: item?.Location?.ResidencyLocation?.CountryDivisionResidencyName, filter: 'regionOfResidency' },
         { field: item?.Location?.BirthLocation?.CountryOfBirth, filter: 'countryOfBirth' },
@@ -335,6 +360,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
           dataIndex: 'langLevel',
           editable: false,
           filterSearch: true,
+          width: '20%',
           filters: Array.from(filters.langLevelFilter),
           onFilter: (value, record) => record.langLevel?.indexOf(value) === 0,
           sorter: (a, b) => a.langLevel.localeCompare(b.langLevel),
@@ -348,13 +374,15 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
       {
           title: 'Profile',
           children: [
-              { title: 'Id', dataIndex: 'enrolleeId', editable: false, filterSearch: true, filters: Array.from(filters.enrolleeIdFilter), onFilter: (value, record) => record.enrolleeId === value ? true : false, sorter: (a, b) => a.enrolleeId - b.enrolleeId },
-              { title: 'Names', dataIndex: 'names', editable: false, filterSearch: true, filters: Array.from(filters.namesFilter), onFilter: (value, record) => record.names?.indexOf(value) === 0, sorter: (a, b) => a.names.localeCompare(b.names), sortDirections: ["ascend", "descend"] },
-              { title: 'Last Names', dataIndex: 'lastNames', editable: false, filterSearch: true, filters: Array.from(filters.lastNamesFilter), onFilter: (value, record) => record.lastNames?.indexOf(value) === 0, sorter: (a, b) => a.lastNames.localeCompare(b.lastNames), sortDirections: ["ascend", "descend"] },
-              { title: 'Age', dataIndex: 'age', editable: false, filterSearch: true, filters: Array.from(filters.ageFilter), onFilter: (value, record) => record.age === value ? true : false, sorter: (a, b) => a.age - b.age },
-              { title: 'Days To B-day', dataIndex: 'daysToBday', editable: false, filterSearch: true, filters: Array.from(filters.daysToBdayFilter), onFilter: (value, record) => record.daysToBday === value ? true : false, sorter: (a, b) => a.daysToBday - b.daysToBday },
+              { title: 'Id', width: '15%', dataIndex: 'enrolleeId', editable: false, filterSearch: true, filters: Array.from(filters.enrolleeIdFilter), onFilter: (value, record) => record.enrolleeId === value ? true : false, sorter: (a, b) => a.enrolleeId - b.enrolleeId },
+              { title: 'Names', width: '20%', dataIndex: 'names', editable: false, filterSearch: true, filters: Array.from(filters.namesFilter), onFilter: (value, record) => record.names?.indexOf(value) === 0, sorter: (a, b) => a.names.localeCompare(b.names), sortDirections: ["ascend", "descend"] },
+              { title: 'Last Names', width: '20%', dataIndex: 'lastNames', editable: false, filterSearch: true, filters: Array.from(filters.lastNamesFilter), onFilter: (value, record) => record.lastNames?.indexOf(value) === 0, sorter: (a, b) => a.lastNames.localeCompare(b.lastNames), sortDirections: ["ascend", "descend"] },
+              { title: 'Age', width: '10%', dataIndex: 'age', editable: false, filterSearch: true, filters: Array.from(filters.ageFilter), onFilter: (value, record) => record.age === value ? true : false, sorter: (a, b) => a.age - b.age },
+              { title: 'Days To B-day', width: '10%', dataIndex: 'daysToBday', editable: false, filterSearch: true, filters: Array.from(filters.daysToBdayFilter), onFilter: (value, record) => record.daysToBday === value ? true : false, sorter: (a, b) => a.daysToBday - b.daysToBday },
+              { title: 'B-day', width: '20%', dataIndex: 'birthday', editable: false, filterSearch: true, filters: Array.from(filters.birthdayFilter), onFilter: (value, record) => record.birthday.startsWith(value), sorter: (a, b) => new Date(a.birthday) - new Date(b.birthday) },
               {
                 title: 'Gender',
+                width: '15%',
                 dataIndex: 'sex',
                 editable: false,
                 filterSearch: true,
@@ -376,38 +404,95 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
       ...(locationType === "all" || locationType === "residency" ? [{
           title: 'Residency',
           children: [
-              { title: 'Country', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
-              { title: 'Region', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
+              { title: 'Country', width: '20%', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
+              { title: 'Region', width: '20%', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
           ]
           },
           {
             title: 'Birth',
             children: [
-                { title: 'Country', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
-                { title: 'Region', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
+                { title: 'Country', width: '20%', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
+                { title: 'Region', width: '20%', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
             ]
         }
     ] : []),
       ...(locationType === "birth" ? [{
           title: 'Birth',
           children: [
-              { title: 'Country', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
-              { title: 'Region', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
+              { title: 'Country', width: '20%', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
+              { title: 'Region', width: '20%', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
           ]
       },
       {
         title: 'Residency',
         children: [
-            { title: 'Country', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
-            { title: 'Region', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
+            { title: 'Country', width: '20%', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
+            { title: 'Region',  width: '20%', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
         ]
       }
     ] : [])
   ];
 
   return {
-      tableData: results,
-      columns: columns
+    tableData: results,
+    columns: columns,
+    expandable: {
+      expandedRowRender: (record) => {
+        // Remove duplicate courses
+        const uniqueCourses = record?.courses
+          ? Array.from(new Map(record.courses.map(c => [c.courseId, c])).values())
+          : [{ courseId: 'No courses', tier: <Tag color="gray">None</Tag> }];
+
+        // Prepare data for nested table
+        const nestedData = [
+          {
+            key: '1',
+            emails: record?.emails?.length ? record.emails : ['No valid emails'],
+            courses: uniqueCourses,
+          }
+        ];
+
+
+        // Nested table columns
+        const nestedColumns = [
+          {
+            title: 'Emails',
+            dataIndex: 'emails',
+            key: 'emails',
+            render: (emails) => (
+              <>
+                {emails.map((email, idx) => (
+                  <Tag color="geekblue" key={idx}>{email}</Tag>
+                ))}
+              </>
+            ),
+          },
+          {
+            title: 'Courses',
+            dataIndex: 'courses',
+            key: 'courses',
+            render: (courses) => (
+              <>
+                {courses.map(({ courseId, tier }, idx) => (
+                  <div key={idx} style={{ marginBottom: 8 }}>
+                    <Tag color="purple">{courseId}</Tag> {tier}
+                  </div>
+                ))}
+              </>
+            ),
+          },
+        ];
+
+        return (
+          <Table
+            columns={nestedColumns}
+            dataSource={nestedData}
+            pagination={false}
+            size="small"
+          />
+        );
+      }
+    }
   };
 };
 
