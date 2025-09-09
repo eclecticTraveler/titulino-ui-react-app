@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.141](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.140...v0.1.141) (2025-09-09)
+
 ### [0.1.140](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.139...v0.1.140) (2025-08-29)
 
 ### [0.1.139](https://github.com/eclecticTraveler/Titulino-UI-React-App/compare/v0.1.138...v0.1.139) (2025-08-28)
