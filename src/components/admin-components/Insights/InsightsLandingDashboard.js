@@ -39,7 +39,7 @@ const InsightsLandingDashboard = (props) => {
 	
 		if (enrolleDashboardData?.tableData) {
 		  const filtered = enrolleDashboardData.tableData.filter((item) =>
-			['names', 'lastNames', 'age', 'enrolleeId', 'daysToBday', 'regionOfResidency', 'regionOfBirth'].some((key) =>
+			['names', 'lastNames', 'age', 'enrolleeId', 'daysToBday', 'birthday', 'regionOfResidency', 'regionOfBirth'].some((key) =>
 			  String(item[key]).toLowerCase().includes(value)
 			)
 		  );
@@ -175,6 +175,7 @@ const InsightsLandingDashboard = (props) => {
 					<AbstractTable 
 						tableData={filteredData}
 						tableColumns={enrolleDashboardData?.columns}
+						tableExpandables={enrolleDashboardData?.expandable}
 						isAllowedToEditTableData={false}
 						isToRenderActionButton={false}
 					/>

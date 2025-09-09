@@ -7,6 +7,7 @@ export class AbstractTable extends Component {
      return (
       <EditableModalTable tableData={this.props.tableData}
                           tableColumns={this.props.tableColumns}
+                          tableExpandables={this.props.tableExpandables}
                           isAllowedToEditTableData={this.props.isAllowedToEditTableData}
                           selectionToRenderInModal={this.props.selectionToRenderInModal}
                           isToRenderActionButton={this.props.isToRenderActionButton}
