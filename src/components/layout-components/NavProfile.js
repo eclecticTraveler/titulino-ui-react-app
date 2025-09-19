@@ -105,6 +105,7 @@ export const NavProfile = (props) => {
   const handleSigningOut = () => {
     signOut();
   }
+  console.log("NavProfile user, token: ", user, token);
 
   const menuItems = configureMenuItems(user, token);
   const authenticatedProfileImg = "/img/avatars/tempProfile-2.png";
@@ -125,6 +126,11 @@ export const NavProfile = (props) => {
                <span className="text-muted">
                 {(token && user?.emailId) ||  token?.email}
               </span>
+            )}            
+            {((token && user?.contactId)) && (
+              <h5 className="mb-0">
+                Student ID: {(user?.contactId) }
+              </h5>
             )}
             </div>
           </div>

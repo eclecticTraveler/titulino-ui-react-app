@@ -13,7 +13,8 @@ import {
 	faChartSimple,
 	faMicrophone,
 	faPencilSquare,
-	faPeopleRoof
+	faPeopleRoof,
+	faPersonWalkingArrowRight
    } from '@fortawesome/free-solid-svg-icons';
    import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
 
@@ -304,6 +305,17 @@ export const getCoursePracticeInnerSubMenuV2Light = (lang, levelNo, chapterNo) =
 				isRootMenuItem: false,				
 				submenu: [],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'book')
+			},
+			{
+				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${commonPath}/${getLocalizedConfig(lang)?.knowMe}`,
+				title: 'sidenav.knowMe',
+				icon: faPersonWalkingArrowRight,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: [],
+				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'knowMe')
 			},
 			{
 				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,

@@ -669,3 +669,15 @@ export const onRenderingUserCoursesAvailableForRegistration = async (emailId) =>
         bookChapterUrl: url
       }
     }
+
+export const onUpsertingKnowMeByChapter = async (emailId) => {
+  const {countries, userCoursesAvailableForUserToRegistered, selfLanguageLevel} = await LrnManager.getUserCoursesForEnrollment(emailId);
+    return {
+      type: ON_RENDERING_COURSE_REGISTRATION,
+      countries: countries,
+      availableCourses: userCoursesAvailableForUserToRegistered,
+      selfLanguageLevel: selfLanguageLevel
+    }
+  }
+
+    
