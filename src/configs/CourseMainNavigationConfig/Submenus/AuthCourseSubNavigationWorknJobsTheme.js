@@ -1,7 +1,7 @@
 import { AUTH_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
-import { getCoursePracticeResourcesInnerSubMenu, getCoursePracticeInnerSubMenuV2Light } from './CoursePracticeInnerSubMenu';
-import { getAuthCourseInnerSubMenuV1, getAuthCourseInnerSubMenuNoClass } from './AuthCourseInnerSubMenu';
+import { getCoursePracticeResourcesInnerSubMenu } from './CoursePracticeInnerSubMenu';
+import { getAuthCourseInnerSubMenuV1, getAuthCourseInnerSubMenuNoClass, getCoursePracticeInnerSubMenuV2Light} from './AuthCourseInnerSubMenu';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import { COURSE_TIERS_CONFIG } from 'configs/CourseThemeConfig';
 import {

@@ -21,7 +21,8 @@ export const getLocalizedConfig = (lang) => {
 		myProgress: "my-progress",
 		household:"household-items",
 		speaking:"speaking",
-		grammarClass: "grammar-class"
+		grammarClass: "grammar-class",
+		knowMe:"know-me"
 	}
 
 	switch (lang) {
@@ -49,6 +50,7 @@ export const getLocalizedConfig = (lang) => {
 			localization.household = "artículos-do-lar";
 			localization.speaking = "pronúncia";
 			localization.grammarClass = "aula-de-gramática";
+			localization.knowMe = "me-conheça";
 			return localization;
 		case "spa":
 			localization.chapter = "capitulo";
@@ -72,6 +74,7 @@ export const getLocalizedConfig = (lang) => {
 			localization.household = "artículos-del-hogar";
 			localization.speaking = "pronunciación";
 			localization.grammarClass = "clase-de-gramática";
+			localization.knowMe = "conóceme";
 			return localization;        
 		default:
 			return localization;

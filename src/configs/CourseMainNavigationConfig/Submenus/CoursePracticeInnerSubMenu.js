@@ -18,7 +18,8 @@ import {
 	faFilePdf,
 	faRoad,
 	faChartSimple,
-	faMicrophone
+	faMicrophone,
+	faPersonWalkingArrowRight
    } from '@fortawesome/free-solid-svg-icons';
    import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
 
