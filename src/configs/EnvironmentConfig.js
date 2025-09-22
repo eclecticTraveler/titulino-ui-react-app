@@ -20,7 +20,7 @@ const prod = {
   IS_SSO_ON: true,
   IS_SHOPPING_UX_ON: true,
   IS_SWITCH_COURSE_ON:false,
-  IS_TO_DISPLAY_PROGRESS_DASHBOARD: false,
+  IS_TO_DISPLAY_PROGRESS_DASHBOARD: true,
   ENVIROMENT: 'prod'
 };
 
