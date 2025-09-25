@@ -23,13 +23,13 @@ const { Meta } = Card;
 const { Option } = Select;
 
 export const UserProgress = ({ progressData, courseCodeId, categories, setHandleUserProgressSubmit,
-   setSelectedLessons, emailId, setIsSmallConfettiVisible, setSelectedLessonsForSubmission, contactId }) => {
-  const [selectedLessons, internalSetSelectedLessons] = useState({});
-  const [userProgressLessonsToUpsert, internalSetUserProgressLessonsToUpsert] = useState({});
-  const locale = true;
-  const setLocale = (isLocaleOn, localeKey) => {
-    return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-  };
+   setSelectedLessons, emailId, setIsSmallConfettiVisible, setSelectedLessonsForSubmission, contactId, userProficiency }) => {
+    const [selectedLessons, internalSetSelectedLessons] = useState({});
+    const [userProgressLessonsToUpsert, internalSetUserProgressLessonsToUpsert] = useState({});
+    const locale = true;
+    const setLocale = (isLocaleOn, localeKey) => {
+      return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+    };
 
   const success = () => {
     // Show loading message
@@ -133,47 +133,55 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
   };
 
 
-  // Combine categories and progress data
-  const combinedCategories = categories
+  // map proficiency to level
+const getLevelFromProficiency = (abbr) => {
+  if (!abbr) return 1; // default
+  const basicLevels = ["be", "ba"];
+  const advancedLevels = ["in", "na", "ad"];
+
+  if (basicLevels.includes(abbr)) return 1;
+  if (advancedLevels.includes(abbr)) return 2;
+  return 1; // fallback
+};
+
+const levelToUse = getLevelFromProficiency(userProficiency);
+
+// Combine categories and progress data
+const combinedCategories = categories
   ?.filter((category) => {
-    // If no level, include category
+    // If category has no level, always include
     if (!category?.level) return true;
-    // Check if progressData is a non-empty array
-    const isProgressDataValid = Array.isArray(progressData) && progressData.length > 0;
-    // If progressData is not valid, include categories with level === 1
-    return isProgressDataValid
-      ? progressData.some((progress) => {
-          const levelOrder = progress?.ContactLanguageProficiencyLevelOrder ?? 1; // Default to 1
-          return levelOrder === category?.level;
-        })
-      : category.level === 1; // Default to lowest level (1) when progressData is missing or empty
+
+    // Only include categories matching the derived level
+    return category.level === levelToUse;
   })
   ?.map((category) => {
-      // Create progressLessons for the category
-      const progressLessons = progressData
-        ?.filter(
-          (progress) =>
-            progress?.CategoryId === category?.categoryId &&
-            (!category?.level || (progress?.ContactLanguageProficiencyLevelOrder ?? 1) === category?.level) // if an unenrolled person then default to level 1 so their progress is displayed
-        )
-        ?.map((progress) => ({
-          classNumber: progress?.ClassNumber,
-          completedDate: new Intl.DateTimeFormat('en-US', {
-            day: 'numeric', // Include the day
-            month: 'long', // Full month name
-            year: 'numeric', // Full year
-          }).format(new Date(progress?.CreatedAt)), // Format CreatedAt here
-          isCompleted: true, // Assuming completed based on progressData
-        }));
+    // Create progressLessons (still tie progress to correct category + level)
+    const progressLessons = progressData
+      ?.filter(
+        (progress) =>
+          progress?.CategoryId === category?.categoryId &&
+          (!category?.level || category?.level === levelToUse)
+      )
+      ?.map((progress) => ({
+        classNumber: progress?.ClassNumber,
+        completedDate: new Intl.DateTimeFormat("en-US", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }).format(new Date(progress?.CreatedAt)),
+        isCompleted: true,
+      }));
 
-      return {
-        ...category,
-        lessons: category?.lessons
-          ? [...category?.lessons].sort((a, b) => a?.classNumber - b?.classNumber) // Order by ascending class
-          : [],
-        progressLessons, // Map progressLessons to category
-      };
-    });
+    return {
+      ...category,
+      lessons: category?.lessons
+        ? [...category.lessons].sort((a, b) => a?.classNumber - b?.classNumber)
+        : [],
+      progressLessons,
+    };
+  });
+
 
   return (
     <div>
