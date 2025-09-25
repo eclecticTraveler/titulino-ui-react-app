@@ -7,14 +7,14 @@ import Loading from 'components/shared-components/Loading';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import UnderConstruccion from 'components/layout-components/UnderConstruccion';
 import KnowMeV1 from 'components/layout-components/KnowMeV1';
+import TestForm from 'components/layout-components/TestForm';
 import utils from 'utils';
 
 class KnowMe extends Component {
 
     loadUrl = () => {
-        const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
-        console.log("VideoClass pathInfo: ", this.props.location, pathInfo);
-        // this.props.getVideoClassUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
+        // const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
+        // this.props.getKnowMeQuestions(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
     }
     
     componentDidMount() {                
@@ -27,24 +27,19 @@ class KnowMe extends Component {
         }
       }
 
-    render() {  
-        if(!this.props.videoClass) {
-            return (
-                <div>
-                    {/* <UnderConstruccion/>                 */}
-                    <KnowMeV1/>
-                   
-                </div>
-            )
-        }else{
-            return (
-                <div id="unathenticated-page">
-                    {/* <InternalIFrame iFrameUrl={`${this.props.videoClass}`}/>                     */}
-                    HELLO KNOW ME
-                </div>
-            )
-        }    
-    }
+  render() {  
+    const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
+    const levelTheme = pathInfo?.levelNo;
+    const chapterNo = pathInfo?.chapterNo;
+
+    return (
+      <div>
+        <KnowMeV1 levelTheme={levelTheme} chapterNo={chapterNo} />
+        {/* <TestForm/> */}
+      </div>
+    );
+  }
+
 }
 
 

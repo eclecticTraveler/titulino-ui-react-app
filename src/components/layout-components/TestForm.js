@@ -24,14 +24,6 @@ const questions = [
     rows: 5,
   },
   {
-    id: "q1_photo",
-    type: "upload",
-    label: "Please share a picture with me to know you better? / Porfavor comparta una foto conmigo para conocerle mejor?",
-    required: true,
-    accept: "image/*",
-    maxCount: 1,
-  },
-  {
     id: "q3_god",
     type: "textarea",
     label: "What has God been for you? Share your feelings or thoughts with me. / ¿Qué ha sido Dios para usted? Comparta sus sentimientos o pensamientos conmigo.",
@@ -76,8 +68,9 @@ const onFinish = async (values) => {
 
   const record = {
     contactId: user.contactInternalId,
-    emailId: user.emailId,
+    emailId: user.email,
     classNumber: chapterNo,
+    categoryId: 6, // Know Me category in DB
     answers,
     consent: values.consent,
   };
@@ -91,7 +84,7 @@ const onFinish = async (values) => {
 useEffect(() => {
   if (submittedKnowMe) {
     const doUpsert = async () => {      
-      const upserted = await onUpsertingKnowMeByChapter(submittedKnowMe, levelTheme, user?.emailId);
+      const upserted = await onUpsertingKnowMeByChapter(submittedKnowMe, levelTheme, user?.email);
       const success = upserted && !upserted.error;
       if (success) {
         message.success("Thank you! Your submission has been saved.");

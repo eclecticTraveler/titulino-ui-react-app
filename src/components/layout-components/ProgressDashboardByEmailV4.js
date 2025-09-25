@@ -155,24 +155,27 @@ useEffect(() => {
     setActiveKey(key); // Update active tab key
   };
 
-
-  const renderProgressTracking = () => (
+  const renderProgressTracking = () => {
+  const course = user?.userCourses?.[currentCourseCodeId];
+  const proficiencyAbbr = course?.userLanguageProficiencyLevelAbbreviationForCourse;
+  return (
     userRegisteredProgressByCourse && (
-      <>
-        <UserProgress
-          progressData={userRegisteredProgressByCourse}
-          courseCodeId={currentCourseCodeId}
-          categories={courseConfiguration?.categories}
-          setHandleUserProgressSubmit={setHandleUserProgressSubmit}
-          setSelectedLessons={setSelectedLessons}
-          emailId={user?.emailId}
-          setIsSmallConfettiVisible={setIsSmallConfettiVisible}
-          setSelectedLessonsForSubmission={setSelectedLessonsForSubmission}
-          contactId={user?.contactInternalId}
-        />
-      </>
+      <UserProgress
+        progressData={userRegisteredProgressByCourse}
+        courseCodeId={currentCourseCodeId}
+        categories={courseConfiguration?.categories}
+        setHandleUserProgressSubmit={setHandleUserProgressSubmit}
+        setSelectedLessons={setSelectedLessons}
+        emailId={user?.emailId}
+        setIsSmallConfettiVisible={setIsSmallConfettiVisible}
+        setSelectedLessonsForSubmission={setSelectedLessonsForSubmission}
+        contactId={user?.contactInternalId}
+        userProficiency={proficiencyAbbr} 
+      />
     )
   );
+};
+
   
   const hasSelections = Object.keys(selectedLessons).length > 0;
 

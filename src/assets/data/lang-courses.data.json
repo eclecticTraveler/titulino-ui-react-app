@@ -64,7 +64,7 @@
     "localizationId": "pt",
     "flag": "https://d2eaaub12s77xu.cloudfront.net/br.png",
     "flagCodeName": "BR", 
-    "isAvailable": true,
+    "isAvailable": false,
     "courses":[
       {
         "id":1,
@@ -73,7 +73,7 @@
         "courseFlagCodeName": "US",
         "courseAbbreviation": "eng",
         "localizationId": "en",
-        "isAvailable": true
+        "isAvailable": false
       },
       {
         "id":2,

@@ -31,11 +31,86 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
   }
 };
 
+export const buildFullKnowMeProgressWithCourseCodeId = async (
+  knowMeProgressInput,
+  courseCodeId,
+  contactId,
+  emailId
+) => {
+  const array = Array.isArray(knowMeProgressInput)
+    ? knowMeProgressInput
+    : [knowMeProgressInput]; // wrap single object
+
+  return array.map(({ record, file }) => {
+    let renamedFile = file;
+
+    if (file) {
+      // build a new filename (example: contactId_timestamp_originalName)
+      const timestamp = Date.now();
+      const ext = file.name.split('.').pop();
+      const baseName = `${contactId}_${record.classNumber || 1}_${timestamp}.${ext}`;
+
+      renamedFile = new File([file], baseName, { type: file.type });
+    }
+
+    return {
+      contactId,
+      emailId,
+      courseCodeId,
+      classNumber: record.classNumber ?? 1,
+      categoryId: record.categoryId ?? 6, // As Per "Lrn"."ClassCategory" table
+      answers: record.answers ?? {},
+      consent: record.consent ?? false,
+      createdAt: record.createdAt || new Date().toISOString(),
+      file: renamedFile,
+    };
+  });
+};
+
+
+export const buildStudentKnowMeFileName = async (
+  knowMeProgressInput,
+  courseCodeId,
+  contactId,
+  emailId
+) => {
+  const array = Array.isArray(knowMeProgressInput)
+    ? knowMeProgressInput
+    : [knowMeProgressInput]; // wrap single object
+
+  return array.map(({ record, file }) => {
+    let renamedFile = file;
+
+    if (file) {
+      // build a new filename (example: contactId_timestamp_originalName)
+      const timestamp = Date.now();
+      const ext = file.name.split('.').pop();
+      const baseName = `${contactId}_${record.classNumber || 1}_${timestamp}.${ext}`;
+
+      renamedFile = new File([file], baseName, { type: file.type });
+    }
+
+    return {
+      contactId,
+      emailId,
+      courseCodeId,
+      classNumber: record.classNumber ?? 1,
+      categoryId: record.categoryId ?? 6, // As Per "Lrn"."ClassCategory" table
+      answers: record.answers ?? {},
+      consent: record.consent ?? false,
+      createdAt: record.createdAt || new Date().toISOString(),
+      file: renamedFile,
+    };
+  });
+};
+
+
 
 
 const LrnConfiguration = {
   mapUserCoursesByTheme,
-  getCourseCodeIdByCourseTheme
+  getCourseCodeIdByCourseTheme,
+  buildFullKnowMeProgressWithCourseCodeId
 };
 
 export default LrnConfiguration;
