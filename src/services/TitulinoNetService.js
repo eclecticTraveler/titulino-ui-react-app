@@ -2,6 +2,7 @@ import { env } from '../configs/EnvironmentConfig';
 
 const titulinoNetEnrollmentApiUri = `${env.TITULINO_NET_API}/v1/enrollment`;
 const titulinoNetShopApiUri = `${env.TITULINO_NET_API}/v1/shop`;
+const titulinoNetLrnApiUri = `${env.TITULINO_NET_API}/v1/lrn`;
 let _results = [];
 
 // Helper function to create the headers
@@ -218,13 +219,56 @@ export const getUserPurchasedProducts = async (token, contactInternalId, whoCall
 };
 
 
+export const upsertStudentKnowMeFile = async (token, fileToSubmit, whoCalledMe) => {
+  if (fileToSubmit && token) {
+    // Base URL
+    const upsertProgressUrl = `${titulinoNetLrnApiUri}/know-me/upload`;
+
+    const raw = JSON.stringify(
+      fileToSubmit,
+    );
+
+    const requestOptions = {
+      method: "POST",
+      headers: getHeaders(token),
+      body: raw,
+      redirect: "follow",
+    };
+
+    try {
+      const response = await fetch(upsertProgressUrl, requestOptions);
+
+      // Check if the response is successful and has valid JSON
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.statusText}`);
+      }
+
+      // Check if the response body is not empty
+      const text = await response.text();
+      if (!text) {
+        throw new Error("Received empty response");
+      }
+
+      // Attempt to parse JSON only if the response is not empty
+      const apiResult = JSON.parse(text);
+      return apiResult ? apiResult : _results;
+    } catch (error) {
+      console.log(`Error Retrieving API payload in upsertStudentKnowMeFile: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+  }
+  return "ERROR no valid Token or Array Empty";
+};
+
 
 const TitulinoNetService = {
   getRegistrationToken,
   upsertEnrollment,
   getUserProfileByEmailAndYearOfBirth,
   getPurchaseSessionUrl,
-  getUserPurchasedProducts
+  getUserPurchasedProducts,
+  upsertStudentKnowMeFile
 };
 
 export default TitulinoNetService;

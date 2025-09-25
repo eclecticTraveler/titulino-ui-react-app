@@ -1,5 +1,6 @@
 import LocalStorageService from "services/LocalStorageService";
 import TitulinoAuthService from "services/TitulinoAuthService";
+import TitulinoNetService from "services/TitulinoNetService";
 import GrammarClassService from "services/GrammarClassService";
 import BookChapterService  from "services/BookChapterService";
 import DynamicNavigationRouter from "services/DynamicNavigationRouter";
@@ -142,6 +143,17 @@ const getUserEBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, cour
 } 
 
 
+const upsertUserKnowMeProgress = async(knowMeProgress, levelTheme, emailId) => {
+    const localStorageKey = `UserProfile_${emailId}`;  
+    const user = await LocalStorageService.getCachedObject(localStorageKey);
+    const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme);
+    const upsertedStudentKnowMeFileUrl = await TitulinoNetService.upsertStudentKnowMeFile(user?.innerToken, knowMeProgress?.record, "upsertUserKnowMeProgress");
+
+
+    // const fullKnowMeProgress = await LrnConfiguration.buildFullKnowMeProgressWithCourseCodeId(knowMeProgress, courseCodeId, user?.contactInternalId, emailId);
+    return upsertedStudentKnowMeFileUrl;
+}
+
 const LrnManager = {
   getUserCourseProgress,
   upsertUserCourseProgress,
@@ -151,7 +163,8 @@ const LrnManager = {
   getCourseProgress,
   getUserCoursesForEnrollment,
   getUserBookBaseUrl,
-  getUserEBookChapterUrl
+  getUserEBookChapterUrl,
+  upsertUserKnowMeProgress
 };
 
 export default LrnManager;

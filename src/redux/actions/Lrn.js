@@ -71,7 +71,8 @@ import {
   ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
   ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
   ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
-  ON_USER_SELECTING_COURSE
+  ON_USER_SELECTING_COURSE,
+  ON_UPSERTING_KNOW_ME_BY_CHAPTER
 } from "../constants/Lrn";
 import LrnManager from "managers/LrnManager";
 
@@ -670,14 +671,11 @@ export const onRenderingUserCoursesAvailableForRegistration = async (emailId) =>
       }
     }
 
-export const onUpsertingKnowMeByChapter = async (emailId) => {
-  const {countries, userCoursesAvailableForUserToRegistered, selfLanguageLevel} = await LrnManager.getUserCoursesForEnrollment(emailId);
+export const onUpsertingKnowMeByChapter = async (knowMeProgress, levelTheme, emailId) => {
+  const {upsertedAnswers} = await LrnManager.upsertUserKnowMeProgress(knowMeProgress, levelTheme, emailId);
     return {
-      type: ON_RENDERING_COURSE_REGISTRATION,
-      countries: countries,
-      availableCourses: userCoursesAvailableForUserToRegistered,
-      selfLanguageLevel: selfLanguageLevel
-    }
+      type: ON_UPSERTING_KNOW_ME_BY_CHAPTER,
+      upsertedAnswers: upsertedAnswers
   }
-
+}
     

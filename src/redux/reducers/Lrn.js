@@ -46,7 +46,8 @@ import {
   ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
   ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
   ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
-  ON_USER_SELECTING_COURSE
+  ON_USER_SELECTING_COURSE,
+  ON_UPSERTING_KNOW_ME_BY_CHAPTER
 } from "../constants/Lrn";
 
 const initState = {
@@ -312,6 +313,11 @@ const lrn = (state = initState, action) => {
         ...state,
         dummyJSONdata: action.dummyJSONdata
 
+      }
+    case ON_UPSERTING_KNOW_ME_BY_CHAPTER:
+      return {
+        ...state,
+        upsertedAnswers: action.upsertedAnswers
       }
     case GET_SELECTED_LEVEL_FROM_UPPER_NAV_ON_CLICK:
       return {
