@@ -147,7 +147,8 @@ const upsertUserKnowMeProgress = async(knowMeProgress, levelTheme, emailId) => {
     const localStorageKey = `UserProfile_${emailId}`;  
     const user = await LocalStorageService.getCachedObject(localStorageKey);
     const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme);
-    const upsertedStudentKnowMeFileUrl = await TitulinoNetService.upsertStudentKnowMeFile(user?.innerToken, knowMeProgress?.record, "upsertUserKnowMeProgress");
+    const fileToUpload = await LrnConfiguration.buildStudentKnowMeFileName(knowMeProgress?.file, courseCodeId, user?.contactInternalId, emailId);
+    const upsertedStudentKnowMeFileUrl = await TitulinoNetService.upsertStudentKnowMeFile(user?.innerToken, fileToUpload, "upsertUserKnowMeProgress");
 
 
     // const fullKnowMeProgress = await LrnConfiguration.buildFullKnowMeProgressWithCourseCodeId(knowMeProgress, courseCodeId, user?.contactInternalId, emailId);

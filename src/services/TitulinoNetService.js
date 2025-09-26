@@ -6,16 +6,20 @@ const titulinoNetLrnApiUri = `${env.TITULINO_NET_API}/v1/lrn`;
 let _results = [];
 
 // Helper function to create the headers
-const getHeaders = (token) => {
+const getHeaders = (token, isFormData = false) => {
   const myHeaders = new Headers();
-  if(token){
+  if (token) {
     myHeaders.append("Authorization", `Bearer ${token}`);
   }
-  myHeaders.append("Content-Type", "application/json");
   myHeaders.append("TITULINO-COM-API-KEY", process.env.REACT_APP_BACKEND_NET_TITULINO_API_KEY);
-  
+
+  if (!isFormData) {
+    myHeaders.append("Content-Type", "application/json");
+  }
+
   return myHeaders;
 };
+
 
 
 export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, whoCalledMe) => {
@@ -224,15 +228,17 @@ export const upsertStudentKnowMeFile = async (token, fileToSubmit, whoCalledMe) 
     // Base URL
     const upsertProgressUrl = `${titulinoNetLrnApiUri}/know-me/upload`;
 
-    const raw = JSON.stringify(
-      fileToSubmit,
-    );
+// Build form-data, not JSON
+    const formData = new FormData();
+    formData.append("ContactInternalId", fileToSubmit.contactId);
+    formData.append("EmailId", fileToSubmit.emailId);
+    formData.append("CourseCodeId", fileToSubmit.courseCodeId);
+    formData.append("File", fileToSubmit.file);
 
     const requestOptions = {
       method: "POST",
-      headers: getHeaders(token),
-      body: raw,
-      redirect: "follow",
+      headers: getHeaders(token, true), // true = don't add application/json
+      body: formData,                   // ✅ correct body for file upload
     };
 
     try {
@@ -251,11 +257,11 @@ export const upsertStudentKnowMeFile = async (token, fileToSubmit, whoCalledMe) 
 
       // Attempt to parse JSON only if the response is not empty
       const apiResult = JSON.parse(text);
-      return apiResult ? apiResult : _results;
+      return apiResult ? apiResult : "";
     } catch (error) {
       console.log(`Error Retrieving API payload in upsertStudentKnowMeFile: from ${whoCalledMe}`);
       console.error(error);
-      return _results;
+      return "";
     }
   }
   return "ERROR no valid Token or Array Empty";
