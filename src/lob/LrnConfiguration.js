@@ -31,7 +31,7 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
   }
 };
 
-export const buildFullKnowMeProgressWithCourseCodeId = async (
+export const buildSingleFullKnowMeProgressWithCourseCodeId = async (
   knowMeProgressInput,
   courseCodeId,
   contactId,
@@ -39,18 +39,22 @@ export const buildFullKnowMeProgressWithCourseCodeId = async (
 ) => {
   const array = Array.isArray(knowMeProgressInput)
     ? knowMeProgressInput
-    : [knowMeProgressInput]; // wrap single object
+    : [knowMeProgressInput];
 
-  return array.map(({ record, file }) => {
-    let renamedFile = file;
+  return array.map(({ record, uploadedFileMap }) => {
+    const answers = { ...record.answers };
 
-    if (file) {
-      // build a new filename (example: contactId_timestamp_originalName)
-      const timestamp = Date.now();
-      const ext = file.name.split('.').pop();
-      const baseName = `${contactId}_${record.classNumber || 1}_${timestamp}.${ext}`;
-
-      renamedFile = new File([file], baseName, { type: file.type });
+    for (const key of Object.keys(answers)) {
+      const answer = answers[key];
+      if (answer && typeof answer === "object" && "fileName" in answer) {
+        const url = uploadedFileMap?.[key]; // pick the right one
+        if (url) {
+          answers[key] = {
+            ...answer,
+            objectNameOrUrl: url
+          };
+        }
+      }
     }
 
     return {
@@ -58,15 +62,58 @@ export const buildFullKnowMeProgressWithCourseCodeId = async (
       emailId,
       courseCodeId,
       classNumber: record.classNumber ?? 1,
-      categoryId: record.categoryId ?? 6, // As Per "Lrn"."ClassCategory" table
-      answers: record.answers ?? {},
+      categoryId: record.categoryId ?? 6,
+      answers,
       consent: record.consent ?? false,
       createdAt: record.createdAt || new Date().toISOString(),
-      file: renamedFile,
     };
   });
 };
 
+
+export const buildMultipleFullKnowMeProgressWithCourseCodeId = async (
+  knowMeProgressInput,
+  courseCodeId,
+  contactId,
+  emailId
+) => {
+  const array = Array.isArray(knowMeProgressInput)
+    ? knowMeProgressInput
+    : [knowMeProgressInput];
+
+  return array.map(({ record, uploadedFileMap }) => {
+    const answers = { ...record.answers };
+
+    for (const key of Object.keys(answers)) {
+      const answer = answers[key];
+      const urls = uploadedFileMap?.[key];
+
+      if (Array.isArray(answer)) {
+        // multiple files allowed for this question
+        answers[key] = answer.map((a, i) => ({
+          ...a,
+          objectNameOrUrl: urls?.[i] || null,
+        }));
+      } else if (answer && typeof answer === "object" && "fileName" in answer) {
+        answers[key] = {
+          ...answer,
+          objectNameOrUrl: urls?.[0] || null,
+        };
+      }
+    }
+
+    return {
+      contactId,
+      emailId,
+      courseCodeId,
+      classNumber: record.classNumber ?? 1,
+      categoryId: record.categoryId ?? 6,
+      answers,
+      consent: record.consent ?? false,
+      createdAt: record.createdAt || new Date().toISOString(),
+    };
+  });
+};
 
 export const buildStudentKnowMeFileName = async (
   file,
@@ -95,11 +142,13 @@ export const buildStudentKnowMeFileName = async (
 
 
 
+
 const LrnConfiguration = {
   mapUserCoursesByTheme,
   getCourseCodeIdByCourseTheme,
-  buildFullKnowMeProgressWithCourseCodeId,
-  buildStudentKnowMeFileName
+  buildSingleFullKnowMeProgressWithCourseCodeId,
+  buildStudentKnowMeFileName,
+  buildMultipleFullKnowMeProgressWithCourseCodeId
 };
 
 export default LrnConfiguration;

@@ -223,6 +223,41 @@ export const getUserPurchasedProducts = async (token, contactInternalId, whoCall
 };
 
 
+export const getStudentKnowMeProfile = async (token, email, contactInternalId, courseCodeId, whoCalledMe) => {
+  if (contactInternalId && email && token && courseCodeId) {
+    const knowMeUrl = `${titulinoNetLrnApiUri}/know-me`;
+
+    const raw = JSON.stringify({
+      emailId: email,
+      courseCodeId: courseCodeId,
+      contactInternalId: contactInternalId
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: getHeaders(token),
+      body: raw,
+    };
+
+    try {
+      const response = await fetch(knowMeUrl, requestOptions);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.statusText}`);
+      }
+
+      const apiResult = await response.json();
+      return apiResult;
+
+    } catch (error) {
+      console.log(`Error in getStudentKnowMeProfile: from ${whoCalledMe}`);
+      console.error(error);
+      return null;
+    }
+  }
+  return "ERROR: Missing token, contactInternalId, courseCodeId, or email";
+};
+
 export const upsertStudentKnowMeFile = async (token, fileToSubmit, whoCalledMe) => {
   if (fileToSubmit && token) {
     // Base URL
@@ -274,7 +309,8 @@ const TitulinoNetService = {
   getUserProfileByEmailAndYearOfBirth,
   getPurchaseSessionUrl,
   getUserPurchasedProducts,
-  upsertStudentKnowMeFile
+  upsertStudentKnowMeFile,
+  getStudentKnowMeProfile
 };
 
 export default TitulinoNetService;
