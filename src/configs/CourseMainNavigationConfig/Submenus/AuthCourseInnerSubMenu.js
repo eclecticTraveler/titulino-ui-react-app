@@ -112,17 +112,6 @@ export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {
 				breadcrumb: false,
 				isRootMenuItem: false,				
 				submenu: [						
-					{
-						key: `module-review-${levelNo}-${chapterNo}-${uuidv4()}`,
-						path: `${commonPath}/${getLocalizedConfig(lang)?.review}`,
-						title: 'sidenav.review',
-						icon: faFileLines,
-						iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-						breadcrumb: false,
-						isRootMenuItem: false,				
-						submenu: [],
-						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'review')
-					},
 					...(levelNo === "household"
 						? [			{
 							key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
@@ -162,17 +151,6 @@ export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {
 		
 				],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'exercises')
-			},
-			{
-				key: `module-test-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${commonPath}/${getLocalizedConfig(lang)?.test}`,
-				title: 'sidenav.test',
-				icon: faUserClock,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'test')
 			}
 		]
 	
