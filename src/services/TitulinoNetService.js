@@ -6,16 +6,20 @@ const titulinoNetLrnApiUri = `${env.TITULINO_NET_API}/v1/lrn`;
 let _results = [];
 
 // Helper function to create the headers
-const getHeaders = (token) => {
+const getHeaders = (token, isFormData = false) => {
   const myHeaders = new Headers();
-  if(token){
+  if (token) {
     myHeaders.append("Authorization", `Bearer ${token}`);
   }
-  myHeaders.append("Content-Type", "application/json");
   myHeaders.append("TITULINO-COM-API-KEY", process.env.REACT_APP_BACKEND_NET_TITULINO_API_KEY);
-  
+
+  if (!isFormData) {
+    myHeaders.append("Content-Type", "application/json");
+  }
+
   return myHeaders;
 };
+
 
 
 export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, whoCalledMe) => {
@@ -219,20 +223,57 @@ export const getUserPurchasedProducts = async (token, contactInternalId, whoCall
 };
 
 
-export const upsertStudentKnowMeFile = async (token, fileToSubmit, whoCalledMe) => {
-  if (fileToSubmit && token) {
-    // Base URL
-    const upsertProgressUrl = `${titulinoNetLrnApiUri}/know-me/upload`;
+export const getStudentKnowMeProfile = async (token, email, contactInternalId, courseCodeId, whoCalledMe) => {
+  if (contactInternalId && email && token && courseCodeId) {
+    const knowMeUrl = `${titulinoNetLrnApiUri}/know-me`;
 
-    const raw = JSON.stringify(
-      fileToSubmit,
-    );
+    const raw = JSON.stringify({
+      emailId: email,
+      courseCodeId: courseCodeId,
+      contactInternalId: contactInternalId
+    });
 
     const requestOptions = {
       method: "POST",
       headers: getHeaders(token),
       body: raw,
-      redirect: "follow",
+    };
+
+    try {
+      const response = await fetch(knowMeUrl, requestOptions);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch: ${response.statusText}`);
+      }
+
+      const apiResult = await response.json();
+      return apiResult;
+
+    } catch (error) {
+      console.log(`Error in getStudentKnowMeProfile: from ${whoCalledMe}`);
+      console.error(error);
+      return null;
+    }
+  }
+  return "ERROR: Missing token, contactInternalId, courseCodeId, or email";
+};
+
+export const upsertStudentKnowMeFile = async (token, fileToSubmit, whoCalledMe) => {
+  if (fileToSubmit && token) {
+    // Base URL
+    const upsertProgressUrl = `${titulinoNetLrnApiUri}/know-me/upload`;
+
+// Build form-data, not JSON
+    const formData = new FormData();
+    formData.append("ContactInternalId", fileToSubmit.contactId);
+    formData.append("EmailId", fileToSubmit.emailId);
+    formData.append("CourseCodeId", fileToSubmit.courseCodeId);
+    formData.append("File", fileToSubmit.file);
+
+    const requestOptions = {
+      method: "POST",
+      headers: getHeaders(token, true), // true = don't add application/json
+      body: formData,                   // ✅ correct body for file upload
     };
 
     try {
@@ -251,11 +292,11 @@ export const upsertStudentKnowMeFile = async (token, fileToSubmit, whoCalledMe) 
 
       // Attempt to parse JSON only if the response is not empty
       const apiResult = JSON.parse(text);
-      return apiResult ? apiResult : _results;
+      return apiResult ? apiResult : "";
     } catch (error) {
       console.log(`Error Retrieving API payload in upsertStudentKnowMeFile: from ${whoCalledMe}`);
       console.error(error);
-      return _results;
+      return "";
     }
   }
   return "ERROR no valid Token or Array Empty";
@@ -268,7 +309,8 @@ const TitulinoNetService = {
   getUserProfileByEmailAndYearOfBirth,
   getPurchaseSessionUrl,
   getUserPurchasedProducts,
-  upsertStudentKnowMeFile
+  upsertStudentKnowMeFile,
+  getStudentKnowMeProfile
 };
 
 export default TitulinoNetService;

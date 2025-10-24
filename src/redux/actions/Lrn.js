@@ -671,8 +671,8 @@ export const onRenderingUserCoursesAvailableForRegistration = async (emailId) =>
       }
     }
 
-export const onUpsertingKnowMeByChapter = async (knowMeProgress, levelTheme, emailId) => {
-  const {upsertedAnswers} = await LrnManager.upsertUserKnowMeProgress(knowMeProgress, levelTheme, emailId);
+export const onUpsertingKnowMeByChapter = async (knowMeProgress, levelTheme, emailId) => {  
+  const upsertedAnswers = await LrnManager.upsertSingleUserKnowMeProgress(knowMeProgress, levelTheme, emailId);
     return {
       type: ON_UPSERTING_KNOW_ME_BY_CHAPTER,
       upsertedAnswers: upsertedAnswers
