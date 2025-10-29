@@ -221,16 +221,16 @@ export const getUserPurchasedProducts = async (token, contactInternalId, whoCall
   }
   return "ERROR: Missing token or contactInternalId";
 };
+ 
 
-
-export const getStudentKnowMeProfile = async (token, email, contactInternalId, courseCodeId, whoCalledMe) => {
-  if (contactInternalId && email && token && courseCodeId) {
-    const knowMeUrl = `${titulinoNetLrnApiUri}/know-me`;
+export const getStudentKnowMeProfile = async (token, email, contactInternalId, whoCalledMe) => {
+  if (contactInternalId && email && token) {
+    const knowMeUrl = `${titulinoNetLrnApiUri}/know-me/profile`;
 
     const raw = JSON.stringify({
       emailId: email,
-      courseCodeId: courseCodeId,
-      contactInternalId: contactInternalId
+      contactInternalId: contactInternalId,
+      minutesRequestedForProfileUrlUsage: 128
     });
 
     const requestOptions = {
@@ -258,49 +258,74 @@ export const getStudentKnowMeProfile = async (token, email, contactInternalId, c
   return "ERROR: Missing token, contactInternalId, courseCodeId, or email";
 };
 
-export const upsertStudentKnowMeFile = async (token, fileToSubmit, whoCalledMe) => {
-  if (fileToSubmit && token) {
-    // Base URL
-    const upsertProgressUrl = `${titulinoNetLrnApiUri}/know-me/upload`;
+export const upsertStudentKnowMeProfileImage = async (token, fileToSubmit, whoCalledMe) => {
+  if (!fileToSubmit || !token) return "ERROR no valid Token or File";
 
-// Build form-data, not JSON
-    const formData = new FormData();
-    formData.append("ContactInternalId", fileToSubmit.contactId);
-    formData.append("EmailId", fileToSubmit.emailId);
-    formData.append("CourseCodeId", fileToSubmit.courseCodeId);
-    formData.append("File", fileToSubmit.file);
+  const upsertUrl = `${titulinoNetLrnApiUri}/know-me/profile/upload`;
 
-    const requestOptions = {
-      method: "POST",
-      headers: getHeaders(token, true), // true = don't add application/json
-      body: formData,                   // ✅ correct body for file upload
-    };
+  const formData = new FormData();
+  formData.append("ContactInternalId", fileToSubmit.contactId);
+  formData.append("EmailId", fileToSubmit.emailId);
+  formData.append("File", fileToSubmit.file);
 
-    try {
-      const response = await fetch(upsertProgressUrl, requestOptions);
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`, // ✅ Let browser set multipart boundaries
+    },
+    body: formData,
+  };
 
-      // Check if the response is successful and has valid JSON
-      if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.statusText}`);
-      }
-
-      // Check if the response body is not empty
-      const text = await response.text();
-      if (!text) {
-        throw new Error("Received empty response");
-      }
-
-      // Attempt to parse JSON only if the response is not empty
-      const apiResult = JSON.parse(text);
-      return apiResult ? apiResult : "";
-    } catch (error) {
-      console.log(`Error Retrieving API payload in upsertStudentKnowMeFile: from ${whoCalledMe}`);
-      console.error(error);
-      return "";
+  try {
+    const response = await fetch(upsertUrl, requestOptions);
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
     }
+
+    const apiResult = await response.json(); // ✅ clean parse
+    return apiResult;
+  } catch (error) {
+    console.error(`❌ Error in upsertStudentKnowMeProfileImage (${whoCalledMe}):`, error);
+    return null;
   }
-  return "ERROR no valid Token or Array Empty";
 };
+
+
+export const upsertStudentKnowMeClassFiles = async (token, filesToSubmit, whoCalledMe) => {
+  if (!filesToSubmit || filesToSubmit.length === 0 || !token) {
+    return "ERROR no valid Token or Array Empty";
+  }
+
+  const upsertUrl = `${titulinoNetLrnApiUri}/know-me/class/upload`;
+  const formData = new FormData();
+
+  // Contact and metadata once
+  formData.append("ContactInternalId", filesToSubmit[0].contactId);
+  formData.append("EmailId", filesToSubmit[0].emailId);
+  formData.append("CourseCodeId", filesToSubmit[0].courseCodeId);
+  formData.append("ClassNumber", filesToSubmit[0].classNumber);
+
+  // Append all files
+  for (const f of filesToSubmit) {
+    formData.append("Files", f.file); // 👈 matches backend DTO
+  }
+
+  const requestOptions = {
+    method: "POST",
+    headers: getHeaders(token, true),
+    body: formData,
+  };
+
+  try {
+    const response = await fetch(upsertUrl, requestOptions);
+    if (!response.ok) throw new Error(`Failed: ${response.statusText}`);
+    return await response.json();
+  } catch (error) {
+    console.error(`Error in upsertStudentKnowMeClassFiles from ${whoCalledMe}`, error);
+    return "";
+  }
+};
+
 
 
 const TitulinoNetService = {
@@ -309,8 +334,9 @@ const TitulinoNetService = {
   getUserProfileByEmailAndYearOfBirth,
   getPurchaseSessionUrl,
   getUserPurchasedProducts,
-  upsertStudentKnowMeFile,
-  getStudentKnowMeProfile
+  upsertStudentKnowMeProfileImage,
+  getStudentKnowMeProfile,
+  upsertStudentKnowMeClassFiles
 };
 
 export default TitulinoNetService;

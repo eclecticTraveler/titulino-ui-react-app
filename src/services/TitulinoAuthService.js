@@ -103,10 +103,56 @@ export const upsertUserCourseProgress = async (progressRecords, token, whoCalled
   }
 };
 
+export const upsertUserKnowMeSubmission = async (progressRecords, token, whoCalledMe = "UnknownCaller") => {
+  if (!token || !Array.isArray(progressRecords) || progressRecords.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing token or progressRecords is empty or invalid`);
+    return _results;
+  }
+
+  const courseProgressUrl = `${SupabaseConfig.baseApiUrl}/UpsertAuthenticatedKnowMeSubmission`;
+
+  const payload = JSON.stringify({ progress_records: progressRecords });
+
+  const requestOptions = {
+    method: "POST",
+    headers: getHeaders(token),
+    body: payload,
+    redirect: "follow",
+  };
+
+  try {
+    const response = await fetch(courseProgressUrl, requestOptions);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (env.ENVIROMENT !== "prod") {
+        console.warn(`[${whoCalledMe}] API responded with status ${response.status}`);
+        console.warn(`[${whoCalledMe}] Response body: ${errorText}`);
+      }
+      return _results;
+    }
+
+    let apiResult;
+    try {
+      apiResult = await response.json();
+    } catch (parseError) {
+      console.error(`[${whoCalledMe}] Failed to parse JSON from response`);
+      return _results;
+    }
+
+    return Array.isArray(apiResult) && apiResult.length > 0 ? apiResult : _results;
+
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception upsertUserKnowMeSubmission during fetch:`, error);
+    return _results;
+  }
+};
+
 
 const TitulinoAuthService = {
   getCourseProgress,
-  upsertUserCourseProgress
+  upsertUserCourseProgress,
+  upsertUserKnowMeSubmission
 };
 
 export default TitulinoAuthService;

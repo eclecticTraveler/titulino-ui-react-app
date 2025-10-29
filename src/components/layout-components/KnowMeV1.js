@@ -12,36 +12,56 @@ const questions = [
     type: "intro",
     title: "Know Me Survey",
     description:
-      "This assignment is about helping us know you better. Please answer honestly and openly.",
+      "This assignment is about helping us know you better and helping you improve your profeciency. Please answer as openly as you feel. (Share only what you feel comfortable sharing). Thank you!",
     coverUrl:
       "https://images.unsplash.com/photo-1632291683263-4a0711d34efe?q=80&w=1742&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "q2_bio",
     type: "textarea",
-    label: "Tell me about yourself, your passions, hopes, family... / Cuéntame sobre usted, sus pasiones, esperanzas, familia...",
+    title: "Simple Presente and Presente Continuos",
+    label: "Tell me about yourself, you family, what you are passionate about / Cuénteme sobre usted, su familia sobre lo que es apasionado en hacer",
     required: true,
     rows: 5,
   },
   {
+    id: "q3_bio",
+    type: "textarea",
+    title: "Simple Past",
+    label: "Tell me about a thing you did you felt the most proud of / Cuénteme sobre algo que hizo usted de lo cual se siente orgullos",
+    required: true,
+    rows: 5,
+  },
+  {
+    id: "q4_bio",
+    type: "textarea",
+    title: "Future",
+    label: "Tell me about one of your biggest wishes for the future / Cuénteme sobre su mayor deseo en el futuro",
+    required: true,
+    rows: 5,
+  },
+  {
+    id: "q5_bio",
+    type: "textarea",
+    title: "Present Perfect",
+    label: "What has God been for you? Share your feelings or thoughts with me. / ¿Qué ha sido Dios para usted? Comparta sus sentimientos o pensamientos conmigo.",
+    required: true,
+    rows: 5,
+  },
+  {   
     id: "q1_photo",
     type: "upload",
+    title: "Picture",
     label: "Please share a picture with me to know you better? / Porfavor comparta una foto conmigo para conocerle mejor?",
     required: true,
     accept: "image/*",
     maxCount: 1,
   },
   {
-    id: "q3_god",
-    type: "textarea",
-    label: "What has God been for you? Share your feelings or thoughts with me. / ¿Qué ha sido Dios para usted? Comparta sus sentimientos o pensamientos conmigo.",
-    required: true,
-    rows: 5,
-  },
-  {
     id: "consent",
     type: "checkbox",
-    label: "Reconozco y acepto que al mandar esta actividad, Titulino podrá usar mis respuestas para mejorar el curso y para otros fines educativos.",
+    title: "Consentimiento para compartir mis respuestas",
+    label: "Acepto esta actividad para usar mis respuestas para mejorar el curso, ser correguido y para otros fines educativos colectivos de Titulino.",
     required: true,
   },
 ];
@@ -57,22 +77,26 @@ export const KnowMeV1 = (props) => {
 const onFinish = async (values) => {
   setLoading(true);
 
-  const validKeys = questions.map(q => q.id);
+  const validKeys = questions?.map(q => q.id);
   const answers = {};
-  let fileToUpload = null;
+  const filesMap = {};
 
   for (const [key, val] of Object.entries(values)) {
     if (!validKeys.includes(key)) continue;
     if (key === "consent") continue;
 
+    // AntD Upload returns an array of items with originFileObj
     if (Array.isArray(val) && val[0]?.originFileObj) {
-      fileToUpload = val[0].originFileObj;
-      answers[key] = { fileName: fileToUpload.name };
+      const files = val.map(x => x.originFileObj).filter(Boolean);
+      filesMap[key] = files;       // <-- normalize to array
+      // store only filenames in answers (or whatever you want)
+      answers[key] = files.length === 1
+        ? { fileName: files[0].name }
+        : files.map(f => ({ fileName: f.name }));
     } else {
       answers[key] = val;
     }
   }
-
 
   const record = {
     contactId: user.contactInternalId,
@@ -82,10 +106,10 @@ const onFinish = async (values) => {
     consent: values.consent,
   };
 
-  // store both record + file so useEffect can handle API call
-  setSubmittedKnowMe({ record, file: fileToUpload });
+  setSubmittedKnowMe({ record, filesMap });  // <-- pass normalized map
   setLoading(false);
 };
+
 
 // watch for new submission and push it through Redux
 useEffect(() => {
@@ -109,10 +133,7 @@ useEffect(() => {
   return (
     <Form form={form} layout="vertical" onFinish={onFinish}>
       <DynamicFormRenderer questions={questions} />
-        <Card
-          bordered
-          style={{ maxWidth: 700, margin: "20px auto", textAlign: "center" }}
-        >
+        <Card bordered style={{ maxWidth: 700, margin: "20px auto", textAlign: "center" }}>
           <Button type="primary" htmlType="submit" loading={loading}>
             Submit
           </Button>

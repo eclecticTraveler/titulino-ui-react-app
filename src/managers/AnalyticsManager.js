@@ -88,7 +88,7 @@ export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, 
   return await AdminInsights.handleEnrolleeListConvertor(extracted, locationType);
 };
 
-const getEnrolleeKnowMeProfilePictureForCourse = async (levelTheme, emailId) => {
+const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {
   const localStorageKey = `UserProfile_${emailId}`;  
   const user = await LocalStorageService.getCachedObject(localStorageKey);
 
@@ -97,18 +97,16 @@ const getEnrolleeKnowMeProfilePictureForCourse = async (levelTheme, emailId) => 
     return null;
   }
 
-  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme);
-
   const profile = await TitulinoNetService.getStudentKnowMeProfile(
     user?.innerToken,
     user?.emailId,
     user?.contactInternalId,
-    courseCodeId,
     "getEnrolleeKnowMeProfilePictureForCourse"
   );
 
   return profile?.url ?? null;
 }
+
 
 const AnalyticsManager = {
   getAllCourses,

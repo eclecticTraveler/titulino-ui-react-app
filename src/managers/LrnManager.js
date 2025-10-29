@@ -143,65 +143,33 @@ const getUserEBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, cour
 } 
 
 
-const upsertSingleUserKnowMeProgress = async (knowMeProgress, levelTheme, emailId) => {
-  const localStorageKey = `UserProfile_${emailId}`;  
+const upsertKnowMeProfilePicture = async (fileToUpload, emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;
   const user = await LocalStorageService.getCachedObject(localStorageKey);
 
-  if (!user?.contactInternalId) {
-    console.warn("No contactInternalId found, skipping KnowMe upsert.");
+  if (!user?.contactInternalId || !fileToUpload) {
+    console.warn("Missing contactInternalId or fileToUpload, skipping KnowMe upload.");
     return null;
   }
 
-  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme);
-
-  // Only handle one file
-  let url = null;
-  if (knowMeProgress?.file) {
-    const fileToUpload = await LrnConfiguration.buildStudentKnowMeFileName(
-      knowMeProgress.file,
-      courseCodeId,
-      user.contactInternalId,
-      user?.emailId
-    );
-
-    const uploaded = await TitulinoNetService.upsertStudentKnowMeFile(
-      user?.innerToken,
-      fileToUpload,
-      "upsertUserKnowMeProgress"
-    );
-
-    url = uploaded?.Url || uploaded?.url || null;
-  }
-
-  // Inject the uploaded URL into the answers
-  const answers = { ...knowMeProgress.record.answers };
-  if (url) {
-    for (const [key, val] of Object.entries(answers)) {
-      if (val && typeof val === "object" && "fileName" in val) {
-        answers[key] = {
-          ...val,
-          objectNameOrUrl: url,
-        };
-      }
-    }
-  }
-
-  // Build final record
-  const fullKnowMeProgress = await LrnConfiguration.buildSingleFullKnowMeProgressWithCourseCodeId(
-    { record: { ...knowMeProgress.record, answers } },
-    courseCodeId,
-    user?.contactInternalId,
-    user?.emailId
+  const uploaded = await TitulinoNetService.upsertStudentKnowMeProfileImage(
+    user.innerToken,
+    fileToUpload,
+    "upsertKnowMeProfilePicture"
   );
 
-  // Send it to Warehouse
-
-  return fullKnowMeProgress;
+  // ✅ Return the URL from backend response
+  return uploaded?.profileUrl ?? uploaded?.ProfileUrl ?? null;
 };
 
 
 
-export const upsertMultipleUserKnowMeProgress = async (knowMeProgress, levelTheme, emailId) => {
+export const upsertUserKnowMeProgress = async (
+  knowMeProgress,   // { record, filesMap }
+  levelTheme,
+  emailId,
+  classNumber = 0
+) => {
   const localStorageKey = `UserProfile_${emailId}`;
   const user = await LocalStorageService.getCachedObject(localStorageKey);
 
@@ -210,23 +178,25 @@ export const upsertMultipleUserKnowMeProgress = async (knowMeProgress, levelThem
     return null;
   }
 
+  // 1. Resolve courseCodeId
   const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme);
 
+  // 2. Upload all files in filesMap (if any)
   const uploadedFileMap = {};
-
   for (const [questionId, files] of Object.entries(knowMeProgress.filesMap || {})) {
     for (const file of files) {
+      // build file wrapper (renames for consistency)
       const fileToUpload = await LrnConfiguration.buildStudentKnowMeFileName(
         file,
-        courseCodeId,
         user.contactInternalId,
-        emailId
+        user?.emailId,
+        classNumber
       );
-
-      const uploaded = await TitulinoNetService.upsertStudentKnowMeFile(
-        user?.innerToken,
+      // TODO: REFACTOR TO ITS ONE METHOD FAR FROM PROFILE RATHER A METHOD THAT STORES IMAGES FOR GIVEN TEST:
+      //  but for now we can use upsertKnowMeProfilePicture but later it has to have its own method in relation to classes
+      const uploaded = await upsertKnowMeProfilePicture(
         fileToUpload,
-        "upsertUserKnowMeProgress"
+        emailId
       );
 
       const url = uploaded?.Url || uploaded?.url || null;
@@ -237,16 +207,44 @@ export const upsertMultipleUserKnowMeProgress = async (knowMeProgress, levelThem
     }
   }
 
+  // 3. Merge uploadedFileMap into answers
   const fullKnowMeProgress = await LrnConfiguration.buildMultipleFullKnowMeProgressWithCourseCodeId(
     { record: knowMeProgress.record, uploadedFileMap },
     courseCodeId,
     user.contactInternalId,
-    emailId
+    user.emailId
   );
 
-  return fullKnowMeProgress;
+  // 4. Send to Warehouse
+  const progressToUpsert = await TitulinoAuthService.upsertUserKnowMeSubmission(
+    [fullKnowMeProgress],
+    user.innerToken,
+    "upsertUserKnowMeProgress"
+  );
+
+  return progressToUpsert;
 };
 
+export const buildStudentKnowMeFileName = async (file, contactId, emailId, classNumber) => {
+  let renamedFile = file;
+
+  if (file) {
+    const timestamp = Date.now();
+
+    const parts = file.name.split(".");
+    const ext = parts.length > 1 ? parts.pop().toLowerCase() : "";
+    const baseName = `${contactId}_${timestamp}${ext ? "." + ext : ""}`;
+
+    renamedFile = new File([file], baseName, { type: file.type });
+  }
+
+  return {
+    contactId,
+    emailId,
+    classNumber,
+    file: renamedFile,
+  };
+};
 
 
 
@@ -260,7 +258,9 @@ const LrnManager = {
   getUserCoursesForEnrollment,
   getUserBookBaseUrl,
   getUserEBookChapterUrl,
-  upsertSingleUserKnowMeProgress
+  upsertUserKnowMeProgress,
+  upsertKnowMeProfilePicture,
+  buildStudentKnowMeFileName
 };
 
 export default LrnManager;

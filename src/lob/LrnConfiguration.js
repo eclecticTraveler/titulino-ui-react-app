@@ -115,28 +115,25 @@ export const buildMultipleFullKnowMeProgressWithCourseCodeId = async (
   });
 };
 
-export const buildStudentKnowMeFileName = async (
-  file,
-  courseCodeId,
-  contactId,
-  emailId
-) => {
+export const buildStudentKnowMeFileName = async (file, contactId, emailId, classNumber = -1) => {
   let renamedFile = file;
-    if (file) {
-      // build a new filename (example: contactId_timestamp_originalName)
-      const timestamp = Date.now();
-      const ext = file.name.split('.').pop();
-      const baseName = `${contactId}_${timestamp}.${ext}`;
 
-      renamedFile = new File([file], baseName, { type: file.type });
-    }
+  if (file) {
+    const timestamp = Date.now();
+
+    const parts = file.name.split(".");
+    const ext = parts.length > 1 ? parts.pop().toLowerCase() : "";
+    const baseName = `${contactId}_${timestamp}${ext ? "." + ext : ""}`;
+
+    renamedFile = new File([file], baseName, { type: file.type });
+  }
 
   return {
-      contactId,
-      emailId,
-      courseCodeId,
-      file: renamedFile,
-    };
+    contactId,
+    emailId,
+    classNumber,
+    file: renamedFile,
+  };
 };
 
 
