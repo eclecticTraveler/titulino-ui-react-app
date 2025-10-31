@@ -214,10 +214,12 @@ export const upsertUserKnowMeProgress = async (
     user.emailId
   );
 
+  const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
+
   // 4. Send to Warehouse
   const progressToUpsert = await TitulinoAuthService.upsertUserKnowMeSubmission(
     [fullKnowMeProgress],
-    user.innerToken,
+    token,
     "upsertUserKnowMeProgress"
   );
 

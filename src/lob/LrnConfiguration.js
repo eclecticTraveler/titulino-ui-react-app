@@ -100,7 +100,7 @@ export const buildMultipleFullKnowMeProgressWithCourseCodeId = async (
         };
       }
     }
-    console.log("record.eventCategoryId", record.eventCategoryId);
+    
     return {
       contactId,
       emailId,
