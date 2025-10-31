@@ -89,7 +89,6 @@ export const buildMultipleFullKnowMeProgressWithCourseCodeId = async (
       const urls = uploadedFileMap?.[key];
 
       if (Array.isArray(answer)) {
-        // multiple files allowed for this question
         answers[key] = answer.map((a, i) => ({
           ...a,
           objectNameOrUrl: urls?.[i] || null,
@@ -101,19 +100,20 @@ export const buildMultipleFullKnowMeProgressWithCourseCodeId = async (
         };
       }
     }
-
+    console.log("record.eventCategoryId", record.eventCategoryId);
     return {
       contactId,
       emailId,
       courseCodeId,
       classNumber: record.classNumber ?? 1,
-      categoryId: record.categoryId ?? 6,
+      eventCategoryId: record.eventCategoryId || "KnowMe", // ✅ new key name + default text ID
       answers,
       consent: record.consent ?? false,
       createdAt: record.createdAt || new Date().toISOString(),
     };
   });
 };
+
 
 export const buildStudentKnowMeFileName = async (file, contactId, emailId, classNumber = -1) => {
   let renamedFile = file;

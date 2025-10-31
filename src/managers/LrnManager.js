@@ -194,15 +194,14 @@ export const upsertUserKnowMeProgress = async (
       );
       // TODO: REFACTOR TO ITS ONE METHOD FAR FROM PROFILE RATHER A METHOD THAT STORES IMAGES FOR GIVEN TEST:
       //  but for now we can use upsertKnowMeProfilePicture but later it has to have its own method in relation to classes
-      const uploaded = await upsertKnowMeProfilePicture(
+      const uploadedUrl = await upsertKnowMeProfilePicture(
         fileToUpload,
         emailId
       );
 
-      const url = uploaded?.Url || uploaded?.url || null;
-      if (url) {
+      if (uploadedUrl) {
         if (!uploadedFileMap[questionId]) uploadedFileMap[questionId] = [];
-        uploadedFileMap[questionId].push(url);
+        uploadedFileMap[questionId].push(uploadedUrl);
       }
     }
   }
