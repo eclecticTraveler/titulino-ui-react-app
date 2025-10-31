@@ -1,6 +1,7 @@
 import React from "react";
 import { Form, Input, Checkbox, Card, Spin, Upload, message } from "antd";
 import IntlMessage from "components/util-components/IntlMessage";
+import ConsentModal from "components/layout-components/Enrollment/ConsentModal";
 import { PlusOutlined } from "@ant-design/icons";
 
 export default function DynamicFormRenderer({ questions, locale = false, loading = false }) {
@@ -10,7 +11,7 @@ export default function DynamicFormRenderer({ questions, locale = false, loading
 
   return (
     <>
-      {questions.map((q) => {
+      {questions?.map((q) => {
         if (q.type === "intro") {
           return (
             <Card
@@ -35,7 +36,7 @@ export default function DynamicFormRenderer({ questions, locale = false, loading
 
       if (q.type === "upload") {
         return (
-          <Card key={q.id} bordered style={{ maxWidth: 700, margin: "20px auto" }}>
+          <Card key={q.id} title={q?.title} bordered style={{ maxWidth: 700, margin: "20px auto" }}>
             <Form.Item
               name={q.id}
               label={q.label}
@@ -82,7 +83,7 @@ export default function DynamicFormRenderer({ questions, locale = false, loading
 
         if (q.type === "textarea") {
           return (
-            <Card key={q.id} bordered style={{ maxWidth: 700, margin: "20px auto" }}>
+            <Card key={q.id} title={q?.title} bordered style={{ maxWidth: 700, margin: "20px auto" }}>
               <Form.Item
                 name={q.id}
                 label={q.label}
@@ -94,26 +95,36 @@ export default function DynamicFormRenderer({ questions, locale = false, loading
           );
         }
 
-        if (q.type === "checkbox") {
-          return (
-            <Card key={q.id} bordered style={{ maxWidth: 700, margin: "20px auto" }}>
-              <Form.Item
-                name={q.id}
-                valuePropName="checked"
-                rules={[
-                  {
-                    validator: (_, value) =>
-                      value
-                        ? Promise.resolve()
-                        : Promise.reject(new Error("You must consent")),
-                  },
-                ]}
-              >
-                <Checkbox>{q.label}</Checkbox>
-              </Form.Item>
-            </Card>
-          );
-        }
+      if (q.type === "checkbox" && q?.id === "consent") {
+        return (
+          <Card
+            key={q.id}
+            title={q?.title}
+            bordered
+            style={{ maxWidth: 700, margin: "20px auto" }}
+          >
+            <Form.Item
+              name={q.id}
+              valuePropName="checked"
+              rules={[
+                {
+                  validator: (_, value) =>
+                    value
+                      ? Promise.resolve()
+                      : Promise.reject(new Error("Debe aceptar para continuar")),
+                },
+              ]}
+            >
+              <Checkbox>
+                I agree {" - "}
+                <ConsentModal label={q.label} title={q.title} />
+              </Checkbox>
+            </Form.Item>
+          </Card>
+        );
+      }
+
+
 
         return null;
       })}

@@ -31,7 +31,7 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
   }
 };
 
-export const buildFullKnowMeProgressWithCourseCodeId = async (
+export const buildSingleFullKnowMeProgressWithCourseCodeId = async (
   knowMeProgressInput,
   courseCodeId,
   contactId,
@@ -39,18 +39,22 @@ export const buildFullKnowMeProgressWithCourseCodeId = async (
 ) => {
   const array = Array.isArray(knowMeProgressInput)
     ? knowMeProgressInput
-    : [knowMeProgressInput]; // wrap single object
+    : [knowMeProgressInput];
 
-  return array.map(({ record, file }) => {
-    let renamedFile = file;
+  return array.map(({ record, uploadedFileMap }) => {
+    const answers = { ...record.answers };
 
-    if (file) {
-      // build a new filename (example: contactId_timestamp_originalName)
-      const timestamp = Date.now();
-      const ext = file.name.split('.').pop();
-      const baseName = `${contactId}_${record.classNumber || 1}_${timestamp}.${ext}`;
-
-      renamedFile = new File([file], baseName, { type: file.type });
+    for (const key of Object.keys(answers)) {
+      const answer = answers[key];
+      if (answer && typeof answer === "object" && "fileName" in answer) {
+        const url = uploadedFileMap?.[key]; // pick the right one
+        if (url) {
+          answers[key] = {
+            ...answer,
+            objectNameOrUrl: url
+          };
+        }
+      }
     }
 
     return {
@@ -58,17 +62,16 @@ export const buildFullKnowMeProgressWithCourseCodeId = async (
       emailId,
       courseCodeId,
       classNumber: record.classNumber ?? 1,
-      categoryId: record.categoryId ?? 6, // As Per "Lrn"."ClassCategory" table
-      answers: record.answers ?? {},
+      categoryId: record.categoryId ?? 6,
+      answers,
       consent: record.consent ?? false,
       createdAt: record.createdAt || new Date().toISOString(),
-      file: renamedFile,
     };
   });
 };
 
 
-export const buildStudentKnowMeFileName = async (
+export const buildMultipleFullKnowMeProgressWithCourseCodeId = async (
   knowMeProgressInput,
   courseCodeId,
   contactId,
@@ -76,33 +79,63 @@ export const buildStudentKnowMeFileName = async (
 ) => {
   const array = Array.isArray(knowMeProgressInput)
     ? knowMeProgressInput
-    : [knowMeProgressInput]; // wrap single object
+    : [knowMeProgressInput];
 
-  return array.map(({ record, file }) => {
-    let renamedFile = file;
+  return array.map(({ record, uploadedFileMap }) => {
+    const answers = { ...record.answers };
 
-    if (file) {
-      // build a new filename (example: contactId_timestamp_originalName)
-      const timestamp = Date.now();
-      const ext = file.name.split('.').pop();
-      const baseName = `${contactId}_${record.classNumber || 1}_${timestamp}.${ext}`;
+    for (const key of Object.keys(answers)) {
+      const answer = answers[key];
+      const urls = uploadedFileMap?.[key];
 
-      renamedFile = new File([file], baseName, { type: file.type });
+      if (Array.isArray(answer)) {
+        answers[key] = answer.map((a, i) => ({
+          ...a,
+          objectNameOrUrl: urls?.[i] || null,
+        }));
+      } else if (answer && typeof answer === "object" && "fileName" in answer) {
+        answers[key] = {
+          ...answer,
+          objectNameOrUrl: urls?.[0] || null,
+        };
+      }
     }
-
+    
     return {
       contactId,
       emailId,
       courseCodeId,
       classNumber: record.classNumber ?? 1,
-      categoryId: record.categoryId ?? 6, // As Per "Lrn"."ClassCategory" table
-      answers: record.answers ?? {},
+      eventCategoryId: record.eventCategoryId || "KnowMe", // ✅ new key name + default text ID
+      answers,
       consent: record.consent ?? false,
       createdAt: record.createdAt || new Date().toISOString(),
-      file: renamedFile,
     };
   });
 };
+
+
+export const buildStudentKnowMeFileName = async (file, contactId, emailId, classNumber = -1) => {
+  let renamedFile = file;
+
+  if (file) {
+    const timestamp = Date.now();
+
+    const parts = file.name.split(".");
+    const ext = parts.length > 1 ? parts.pop().toLowerCase() : "";
+    const baseName = `${contactId}_${timestamp}${ext ? "." + ext : ""}`;
+
+    renamedFile = new File([file], baseName, { type: file.type });
+  }
+
+  return {
+    contactId,
+    emailId,
+    classNumber,
+    file: renamedFile,
+  };
+};
+
 
 
 
@@ -110,7 +143,9 @@ export const buildStudentKnowMeFileName = async (
 const LrnConfiguration = {
   mapUserCoursesByTheme,
   getCourseCodeIdByCourseTheme,
-  buildFullKnowMeProgressWithCourseCodeId
+  buildSingleFullKnowMeProgressWithCourseCodeId,
+  buildStudentKnowMeFileName,
+  buildMultipleFullKnowMeProgressWithCourseCodeId
 };
 
 export default LrnConfiguration;

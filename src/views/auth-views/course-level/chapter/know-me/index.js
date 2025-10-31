@@ -7,7 +7,7 @@ import Loading from 'components/shared-components/Loading';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import UnderConstruccion from 'components/layout-components/UnderConstruccion';
 import KnowMeV1 from 'components/layout-components/KnowMeV1';
-import TestForm from 'components/layout-components/TestForm';
+import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import utils from 'utils';
 
 class KnowMe extends Component {
@@ -32,12 +32,27 @@ class KnowMe extends Component {
     const levelTheme = pathInfo?.levelNo;
     const chapterNo = pathInfo?.chapterNo;
 
-    return (
-      <div>
-        <KnowMeV1 levelTheme={levelTheme} chapterNo={chapterNo} />
-        {/* <TestForm/> */}
-      </div>
-    );
+  if(this.props.token){
+      if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
+          return (
+              <div id="unathenticated-landing-page-margin">
+                  <EmailYearSearchForm/>
+              </div>
+          )
+      }else{
+        return (
+           <div id="unathenticated-landing-page-margin">
+            <KnowMeV1 levelTheme={levelTheme} chapterNo={chapterNo} />
+          </div>
+        );
+      } 
+    }else{
+      return (
+        <div>
+         Error: You must be logged in to access this content.
+        </div>
+      );
+    }
   }
 
 }
@@ -49,11 +64,12 @@ function mapDispatchToProps(dispatch){
   }, dispatch)
 }
 
-const mapStateToProps = ({lrn, theme, grant}) => {
+const mapStateToProps = ({lrn, theme, grant, auth}) => {
   const { nativeLanguage, videoClass } = lrn;
   const { locale, direction, course } =  theme;
   const { user } = grant;
-  return { locale, direction, course, nativeLanguage, videoClass }
+  const { token } = auth; 
+  return { locale, direction, course, nativeLanguage, videoClass, token, user }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(KnowMe);

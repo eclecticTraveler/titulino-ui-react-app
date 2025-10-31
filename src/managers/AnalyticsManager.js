@@ -3,6 +3,7 @@ import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import GoogleService from "services/GoogleService";
 import AdminInsights from "lob/AdminInsights";
+import LrnConfiguration from "lob/LrnConfiguration";
 
 // Use unified cache functions
 const getCached = LocalStorageService.getCachedObject;
@@ -87,13 +88,34 @@ export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, 
   return await AdminInsights.handleEnrolleeListConvertor(extracted, locationType);
 };
 
+const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;  
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+
+  if (!user?.contactInternalId) {
+    console.warn("No contactInternalId found, skipping KnowMe upsert.");
+    return null;
+  }
+
+  const profile = await TitulinoNetService.getStudentKnowMeProfile(
+    user?.innerToken,
+    user?.emailId,
+    user?.contactInternalId,
+    "getEnrolleeKnowMeProfilePictureForCourse"
+  );
+
+  return profile?.url ?? null;
+}
+
+
 const AnalyticsManager = {
   getAllCourses,
   getLocationTypesForInsights,
   getCountriesByLocationType,
   getOverviewInfoAdminDashboard,
   getDemographicInfoAdminDashboard,
-  getEnrolleeInfoAdminDashboard
+  getEnrolleeInfoAdminDashboard,
+  getEnrolleeKnowMeProfilePictureForCourse
 };
 
 export default AnalyticsManager;
