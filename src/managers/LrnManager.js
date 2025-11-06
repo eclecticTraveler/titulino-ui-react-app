@@ -238,7 +238,7 @@ export const upsertUserKnowMeProgress = async (
     // );
 
     // console.log("user profile after upsert", user);
-    // console.log("ttt", ttt);
+    console.log("progressToUpsert", progressToUpsert);
   return progressToUpsert;
 };
 
