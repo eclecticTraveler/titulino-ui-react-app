@@ -97,14 +97,14 @@ const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {
     return null;
   }
 
-  const profile = await TitulinoNetService.getStudentKnowMeProfile(
+  const profile = await TitulinoNetService.getContactEnrolleeKnowMeProfileImage(
     user?.innerToken,
     user?.emailId,
     user?.contactInternalId,
     "getEnrolleeKnowMeProfilePictureForCourse"
   );
 
-  return profile?.url ?? null;
+  return  profile?.profileUrl ?? null;
 }
 
 

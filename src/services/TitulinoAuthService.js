@@ -7,7 +7,7 @@ let _results = [];
 const getHeaders = (token) => {
 
   const myHeaders = new Headers();
-  myHeaders.append("apiKey", SupabaseConfig.supabaseAnonApiKey);
+  myHeaders.append("apikey", SupabaseConfig.supabaseAnonApiKey);
   myHeaders.append("Content-Type", "application/json");
   myHeaders.append("Accept-Profile", "TitulinoApi_v1");
   myHeaders.append("Content-Profile", "TitulinoApi_v1");
@@ -103,15 +103,15 @@ export const upsertUserCourseProgress = async (progressRecords, token, whoCalled
   }
 };
 
-export const upsertUserKnowMeSubmission = async (progressRecords, token, whoCalledMe = "UnknownCaller") => {
-  if (!token || !Array.isArray(progressRecords) || progressRecords.length === 0) {
-    console.warn(`[${whoCalledMe}] Missing token or progressRecords is empty or invalid`);
+export const upsertUserKnowMeSubmission = async (submission_records, token, whoCalledMe = "UnknownCaller") => {
+  if (!token || !Array.isArray(submission_records) || submission_records.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing token or submission_records is empty or invalid`);
     return _results;
   }
 
   const courseProgressUrl = `${SupabaseConfig.baseApiUrl}/UpsertAuthenticatedKnowMeSubmission`;
 
-  const payload = JSON.stringify({ progress_records: progressRecords });
+  const payload = JSON.stringify({ submission_records: submission_records });
 
   const requestOptions = {
     method: "POST",
