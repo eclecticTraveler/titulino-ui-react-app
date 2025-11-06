@@ -223,6 +223,22 @@ export const upsertUserKnowMeProgress = async (
     "upsertUserKnowMeProgress"
   );
 
+  // TESTING TO REMOVE TODO
+    // const payloadArray = [
+    //     { EmailId: user?.emailId, ContactInternalId: user?.contactInternalId },
+    //     { EmailId: 'solorzano2020@gmail.com', ContactInternalId: '0053bc40-9b5b-485c-8ae0-d3de0dec389b'}
+    //   ];
+
+
+    // const ttt = await TitulinoNetService.getContactEnrolleesKnowMeProfileImages(
+    //   user?.innerToken,
+    //   payloadArray,
+    //   180,
+    //   "getEnrolleeKnowMeProfilePictureForCourse"
+    // );
+
+    // console.log("user profile after upsert", user);
+    // console.log("ttt", ttt);
   return progressToUpsert;
 };
 

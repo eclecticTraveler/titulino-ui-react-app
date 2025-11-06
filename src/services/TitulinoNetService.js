@@ -223,7 +223,7 @@ export const getUserPurchasedProducts = async (token, contactInternalId, whoCall
 };
  
 
-export const getStudentKnowMeProfile = async (token, email, contactInternalId, whoCalledMe) => {
+export const getContactEnrolleeKnowMeProfileImage = async (token, email, contactInternalId, whoCalledMe) => {
   if (contactInternalId && email && token) {
     const knowMeUrl = `${titulinoNetLrnApiUri}/know-me/profile`;
 
@@ -250,13 +250,55 @@ export const getStudentKnowMeProfile = async (token, email, contactInternalId, w
       return apiResult;
 
     } catch (error) {
-      console.log(`Error in getStudentKnowMeProfile: from ${whoCalledMe}`);
+      console.log(`Error in getContactEnrolleeKnowMeProfileImage: from ${whoCalledMe}`);
       console.error(error);
       return null;
     }
   }
   return "ERROR: Missing token, contactInternalId, courseCodeId, or email";
 };
+
+export const getContactEnrolleesKnowMeProfileImages = async (
+  token,
+  knowMeProfileBatchRequest,
+  profileUrlAvailabilityUsageTimeInMinutes,
+  whoCalledMe
+) => {
+  if (!token || !Array.isArray(knowMeProfileBatchRequest) || knowMeProfileBatchRequest.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing token or empty knowMeProfileBatchRequest`);
+    return null;
+  }
+
+  const knowMeUrl = `${titulinoNetLrnApiUri}/know-me/profiles`;
+
+  const payload = JSON.stringify({
+    // ✅ Match property names exactly as in C#
+    KnowMeProfileBatchRequest: knowMeProfileBatchRequest,
+    ProfileUrlAvailabilityUsageTimeInMinutes: profileUrlAvailabilityUsageTimeInMinutes ?? 128,
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: getHeaders(token),
+    body: payload,
+  };
+
+  try {
+    const response = await fetch(knowMeUrl, requestOptions);
+    if (!response.ok) {
+      const text = await response.text();
+      console.error(`[${whoCalledMe}] ${response.status}: ${text}`);
+      throw new Error(`Failed to fetch: ${response.statusText}`);
+    }
+
+    const apiResult = await response.json();
+    return apiResult;
+  } catch (error) {
+    console.error(`Error in getContactEnrolleesKnowMeProfileImages (${whoCalledMe}):`, error);
+    return null;
+  }
+};
+
 
 export const upsertStudentKnowMeProfileImage = async (token, fileToSubmit, whoCalledMe) => {
   if (!fileToSubmit || !token) return "ERROR no valid Token or File";
@@ -335,8 +377,9 @@ const TitulinoNetService = {
   getPurchaseSessionUrl,
   getUserPurchasedProducts,
   upsertStudentKnowMeProfileImage,
-  getStudentKnowMeProfile,
-  upsertStudentKnowMeClassFiles
+  getContactEnrolleeKnowMeProfileImage,
+  upsertStudentKnowMeClassFiles,
+  getContactEnrolleesKnowMeProfileImages
 };
 
 export default TitulinoNetService;
