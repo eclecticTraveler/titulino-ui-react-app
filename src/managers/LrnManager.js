@@ -217,12 +217,13 @@ export const upsertUserKnowMeProgress = async (
   const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
 
   // 4. Send to Warehouse
+  const fullKnowMeProgressToSend = [fullKnowMeProgress];
   const progressToUpsert = await TitulinoAuthService.upsertUserKnowMeSubmission(
-    [fullKnowMeProgress],
+    fullKnowMeProgressToSend,
     token,
     "upsertUserKnowMeProgress"
   );
-
+  console.log("fullKnowMeProgress", fullKnowMeProgress);
   // TESTING TO REMOVE TODO
     // const payloadArray = [
     //     { EmailId: user?.emailId, ContactInternalId: user?.contactInternalId },
