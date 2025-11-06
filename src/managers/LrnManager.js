@@ -218,7 +218,7 @@ export const upsertUserKnowMeProgress = async (
 
   // 4. Send to Warehouse
   const progressToUpsert = await TitulinoAuthService.upsertUserKnowMeSubmission(
-    [fullKnowMeProgress],
+    fullKnowMeProgress,
     token,
     "upsertUserKnowMeProgress"
   );
