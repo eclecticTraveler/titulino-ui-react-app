@@ -158,7 +158,7 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'work-n-jobs', 11)
+				...getAuthCourseInnerSubMenuNoClass(lang, 'work-n-jobs', 11)
 			]
 		}
 	]
