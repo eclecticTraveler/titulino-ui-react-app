@@ -31,8 +31,19 @@ const getCommonUrl = (lang, levelNo, chapterNo) => {
 export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {	
 	const commonPath = getCommonUrl(lang, levelNo, chapterNo);
 	// spell  || flashcards -> Resources || Match || Learn --> pratica|| Test
-		  return [
-				{
+		  return [				
+			{
+				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${commonPath}/${getLocalizedConfig(lang)?.book}`,
+				title: 'sidenav.book',
+				icon: faBookReader,
+				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+				breadcrumb: false,
+				isRootMenuItem: false,				
+				submenu: [],
+				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'book')
+			},
+			{
 				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
 				path: `${commonPath}/${getLocalizedConfig(lang)?.class}`,
 				title: 'sidenav.class',
@@ -71,16 +82,16 @@ export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'class')
 			},
 			{
-				key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${commonPath}/${getLocalizedConfig(lang)?.book}`,
-				title: 'sidenav.book',
-				icon: faBookReader,
+				key: `module-quizlet-${levelNo}-${chapterNo}-${uuidv4()}`,
+				path: `${commonPath}/${getLocalizedConfig(lang)?.quizlet}`,
+				title: 'sidenav.quizlet',
+				icon: faClone,
 				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 				breadcrumb: false,
 				isRootMenuItem: false,				
 				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'book')
-			},									
+				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizlet')
+			},						
 			{
 				key: `module-quizlet-pdf-${levelNo}-${chapterNo}-${uuidv4()}`,
 				path: `${commonPath}/${getLocalizedConfig(lang)?.quizletpdf}`,
@@ -92,17 +103,6 @@ export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {
 				submenu: [],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizletpdf')
 			},	
-			{
-				key: `module-quizlet-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${commonPath}/${getLocalizedConfig(lang)?.quizlet}`,
-				title: 'sidenav.quizlet',
-				icon: faClone,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizlet')
-			},
 			{
 				key: `module-quizlet-${levelNo}-${chapterNo}-${uuidv4()}`,
 				path: `${commonPath}/${getLocalizedConfig(lang)?.exercises}`,
