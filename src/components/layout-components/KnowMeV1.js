@@ -61,7 +61,7 @@ const questions = [
     id: "consent",
     type: "checkbox",
     title: "Consentimiento para compartir mis respuestas",
-    label: "Acepto esta actividad para usar mis respuestas para mejorar el curso, ser correguido y para otros fines educativos colectivos de Titulino.",
+    label: "Acepto esta actividad para usar mis respuestas para mejorar el curso, ser correguido y para otros fines educativos colectivos y de uso propio de Titulino para con otros alumnos.",
     required: true,
   },
 ];
