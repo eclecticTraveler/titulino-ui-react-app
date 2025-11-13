@@ -116,8 +116,9 @@ export default function DynamicFormRenderer({ questions, locale = false, loading
               ]}
             >
               <Checkbox>
-                I agree {" - "}
+                I agree with terms and conditions  {" - "} (
                 <ConsentModal label={q.label} title={q.title} />
+                )
               </Checkbox>
             </Form.Item>
           </Card>

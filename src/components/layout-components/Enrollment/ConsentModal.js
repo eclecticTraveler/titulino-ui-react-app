@@ -13,7 +13,7 @@ const ConsentModal = ({ label, title = "Detalles del consentimiento" }) => {
   return (
     <>
       <a href="#" onClick={showModal}>
-        Ver detalles
+        Terminos
       </a>
       <Modal
         title={title}
