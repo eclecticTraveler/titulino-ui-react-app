@@ -12,6 +12,8 @@ import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
 import EnrollmentModal from "./EnrollmentModal";
+import ReCAPTCHA from "react-google-recaptcha";
+import { env } from "configs/EnvironmentConfig";
 import { useHistory } from 'react-router-dom';
 
 const { Option } = Select;
@@ -41,6 +43,7 @@ export const QuickToFullEnrollment = (props) => {
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [submittedRecords, setSubmittingRecords] = useState([]);
+  const [token, setToken] = useState(null);
   const history = useHistory();
     console.log("passedEmail ", passedEmail, passedDateOfBirth);
   const locale = true;
@@ -73,6 +76,10 @@ export const QuickToFullEnrollment = (props) => {
     }, [submittedRecords]);
     
   
+    const handleReCaptchaChange = (value) => {      
+      setToken(value);
+    };
+
     const handleCloseModal = () => {
       setIsEnrollmentModalVisible(false); // Close modal when user clicks close button
       resetQuickEnrollmentInputValues();
@@ -362,6 +369,7 @@ useEffect(() => {
     setSubmittingLoading(false);
     setSubmittingRecords([]); 
     onSelectingEnrollmentCourses([]);
+    setToken(null);
     history.push("/");
   };
   
@@ -812,6 +820,10 @@ useEffect(() => {
           }
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
+              <ReCAPTCHA
+                sitekey={env.ReCAPTCHA_SITE_KEY}
+                onChange={handleReCaptchaChange}
+              />
               <p>
                 {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {enrollmentVersion} - 
                 <TermsModal />{" "}
@@ -821,7 +833,7 @@ useEffect(() => {
                 type="primary"
                 htmlType="submit"
                 block
-                disabled={!isSubmitEnabled}
+                disabled={!isSubmitEnabled && !token}
               >
                 {setLocale(locale, "enrollment.form.submit")}
               </Button>
