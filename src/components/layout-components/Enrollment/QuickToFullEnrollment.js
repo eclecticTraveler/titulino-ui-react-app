@@ -12,7 +12,7 @@ import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
 import EnrollmentModal from "./EnrollmentModal";
-import ReCAPTCHA from "react-google-recaptcha";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { env } from "configs/EnvironmentConfig";
 import { useHistory } from 'react-router-dom';
 
@@ -75,10 +75,6 @@ export const QuickToFullEnrollment = (props) => {
       }
     }, [submittedRecords]);
     
-  
-    const handleReCaptchaChange = (value) => {      
-      setToken(value);
-    };
 
     const handleCloseModal = () => {
       setIsEnrollmentModalVisible(false); // Close modal when user clicks close button
@@ -311,11 +307,23 @@ useEffect(() => {
     return recordsToSubmit;
     
   };
+
+  const { executeRecaptcha } = useGoogleReCaptcha();
   
   const onFormSubmit = async (values) => {
     try {
       // Trigger validation for the form during submit
       await form.validateFields(); // Ensure all fields are valid before proceeding
+      
+      if (!executeRecaptcha) {
+        alert("reCAPTCHA not yet loaded.");
+        return;
+      }
+
+      // Trigger reCAPTCHA when user clicks Submit
+      const token = await executeRecaptcha("enrollment_submit");
+      setToken(token); // optional: store it in state
+
       const enrolledCourses = selectedCoursesToEnroll?.length > 0
       ? availableCourses?.filter(course => selectedCoursesToEnroll?.includes(course.CourseCodeId))
       : availableCourses;
@@ -331,6 +339,7 @@ useEffect(() => {
         returningEnrolleeCountryDivisionInfo
       );
 
+      formattedDatatoSubmit[0].recaptchaToken = token; // attach it if you want backend verification
       setSubmittingLoading(true);
       setSubmittingRecords(formattedDatatoSubmit);
       console.log("formattedDatatoSubmit", formattedDatatoSubmit);
@@ -820,10 +829,6 @@ useEffect(() => {
           }
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
-              <ReCAPTCHA
-                sitekey={env.ReCAPTCHA_SITE_KEY}
-                onChange={handleReCaptchaChange}
-              />
               <p>
                 {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {enrollmentVersion} - 
                 <TermsModal />{" "}

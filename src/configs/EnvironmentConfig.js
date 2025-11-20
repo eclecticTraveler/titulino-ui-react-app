@@ -1,4 +1,3 @@
-import ReCAPTCHA from "react-google-recaptcha";
 
 const commonConfig = {
   IS_NEW_PROGRESS_APP_ON: true,
