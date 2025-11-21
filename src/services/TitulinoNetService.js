@@ -109,19 +109,29 @@ const requestOptions = {
   }
 }
 
-export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
-  const recordsToSubmit = enrolle ? [...enrolle] : [];
-  if (recordsToSubmit?.length > 0 && token) {
-    // Base URL
-    const upsertEnrolleeUrl = `${titulinoNetEnrollmentApiUri}/enrollees`;
+export const upsertEnrollment = async (token, enrollees, whoCalledMe) => {
+  const recordsToSubmit = enrollees ? [...enrollees] : [];
 
-    const raw = JSON.stringify(
-      recordsToSubmit,
-    );
+  // ✅ Extract optional reCAPTCHA token (if present in first record)
+  const recaptchaToken = recordsToSubmit?.[0]?.recaptchaToken || null;
+
+    if (!recaptchaToken) {
+      console.warn(`⚠️ Missing reCAPTCHA token in upsertEnrollment from ${whoCalledMe}`);
+      return "ERROR Missing reCAPTCHA token";
+    }
+
+
+  if (recordsToSubmit?.length > 0 && token && recaptchaToken) {
+    const upsertEnrolleeUrl = `${titulinoNetEnrollmentApiUri}/enrollees`;
+    const raw = JSON.stringify(recordsToSubmit);
+
+    // 👇 Build headers
+    const headers = getHeaders(token);
+    headers.append("X-Recaptcha-Token", recaptchaToken);
 
     const requestOptions = {
       method: "POST",
-      headers: getHeaders(token),
+      headers,
       body: raw,
       redirect: "follow",
     };
@@ -129,28 +139,25 @@ export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
     try {
       const response = await fetch(upsertEnrolleeUrl, requestOptions);
 
-      // Check if the response is successful and has valid JSON
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);
       }
 
-      // Check if the response body is not empty
       const text = await response.text();
-      if (!text) {
-        throw new Error("Received empty response");
-      }
+      if (!text) throw new Error("Received empty response");
 
-      // Attempt to parse JSON only if the response is not empty
       const apiResult = JSON.parse(text);
-      return apiResult ? apiResult : _results;
+      return apiResult || _results;
     } catch (error) {
       console.log(`Error Retrieving API payload in upsertEnrollment: from ${whoCalledMe}`);
       console.error(error);
       return _results;
     }
   }
+
   return "ERROR no valid Token or Array Empty";
 };
+
 
 export const getPurchaseSessionUrl = async (token, productId, email, name, contactPaymentId, contactInternalId, whoCalledMe) => {
   if (productId && email && token) {
