@@ -1,7 +1,7 @@
 {
   "name": "lrn-ui-react-app",
   "homepage": "https://titulino.com",
-  "version": "0.1.155",
+  "version": "0.1.158",
   "private": true,
   "dependencies": {
     "@ant-design/charts": "^1.4.2",
@@ -39,6 +39,8 @@
     "react-css-theme-switcher": "^0.3.0",
     "react-custom-scrollbars-2": "^4.5.0",
     "react-dom": "^18.3.1",
+    "react-google-recaptcha": "^3.1.0",
+    "react-google-recaptcha-v3": "^1.11.0",
     "react-iframe": "^1.8.0",
     "react-intl": "^5.18.2",
     "react-redux": "^7.2.9",

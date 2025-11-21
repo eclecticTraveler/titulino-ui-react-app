@@ -1,9 +1,11 @@
+
 const commonConfig = {
   IS_NEW_PROGRESS_APP_ON: true,
   IS_NEW_SEARCH_CONFIG_ON: true,
   IS_ENROLLMENT_FEAT_ON: true,
   TITULINO_NET_API: process.env.REACT_APP_TITULINO_NET_API || '',
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
+  ReCAPTCHA_SITE_KEY: process.env.REACT_APP_RECAPTCHA_SITE_KEY || '',
 };
 
 const dev = {
