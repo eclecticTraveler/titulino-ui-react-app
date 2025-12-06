@@ -83,6 +83,13 @@ const ExternalFormSection = (props) => {
                 </>
     
             );
+        } else if(pathInfo?.levelNo === "level-work-n-jobs"){
+            return (
+                <>
+                    <InternalIFrame iFrameUrl="https://forms.gle/QWbdyCWEf3NMo7DU9" />
+                </>
+    
+            );
         }else{
             return (
                 <>    
