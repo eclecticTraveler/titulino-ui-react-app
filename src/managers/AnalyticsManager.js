@@ -1,9 +1,11 @@
 import LocalStorageService from "services/LocalStorageService";
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
+import TitulinoAuthService from "services/TitulinoAuthService";
 import GoogleService from "services/GoogleService";
 import AdminInsights from "lob/AdminInsights";
 import LrnConfiguration from "lob/LrnConfiguration";
+import utils from 'utils';
 
 // Use unified cache functions
 const getCached = LocalStorageService.getCachedObject;
@@ -88,6 +90,62 @@ export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, 
   return await AdminInsights.handleEnrolleeListConvertor(extracted, locationType);
 };
 
+export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
+
+  if (!token) {
+    console.warn("No token found for course");
+    return { tableData: [], columns: [] };
+  }
+
+  const progressRows =
+    await TitulinoAuthService.getCourseProgress(
+      courseCodeId,
+      token,
+      "getEnrolleesCourseProgressAdminDashboard"
+    );
+
+    console.log("Fetched course progress rows:", progressRows);
+
+      // 3️⃣ Fetch enrollee list EXACTLY like getEnrolleeInfoAdminDashboard does
+  const isAll = locationType?.toLowerCase() === "all";
+
+  const enrolleeList = isAll
+    ? await TitulinoRestService.getEnrolleeGeneralListByCourseCodeId(
+        courseCodeId,
+        "getEnrolleesCourseProgressAdminDashboard"
+      )
+    : await TitulinoRestService.getEnrolleeCountrylListByCourseCodeId(
+        courseCodeId,
+        countryId,
+        "getEnrolleesCourseProgressAdminDashboard"
+      );
+
+  let extracted = [];
+
+    if (isAll) extracted = enrolleeList;
+    else if (locationType?.toLowerCase() === "residency")
+      extracted = enrolleeList?.Residency;
+    else if (locationType?.toLowerCase() === "birth")
+      extracted = enrolleeList?.Birth;
+
+    // Build progressMap
+    const progressMap = progressRows?.reduce((acc, row) => {
+      if (!acc[row.ContactInternalId]) acc[row.ContactInternalId] = [];
+      acc[row.ContactInternalId].push(row);
+      return acc;
+    }, {}) ?? {};
+
+    // 5️⃣ Build final table model    
+    return AdminInsights.handleEnrolleeProgressListConvertor(
+      extracted,
+      locationType,
+      progressMap
+    );
+};
+
 const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {
   const localStorageKey = `UserProfile_${emailId}`;  
   const user = await LocalStorageService.getCachedObject(localStorageKey);
@@ -115,7 +173,8 @@ const AnalyticsManager = {
   getOverviewInfoAdminDashboard,
   getDemographicInfoAdminDashboard,
   getEnrolleeInfoAdminDashboard,
-  getEnrolleeKnowMeProfilePictureForCourse
+  getEnrolleeKnowMeProfilePictureForCourse,
+  getEnrolleesCourseProgressAdminDashboard
 };
 
 export default AnalyticsManager;

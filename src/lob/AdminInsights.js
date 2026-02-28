@@ -1,6 +1,6 @@
 import Flag from "react-world-flags";
-import { Tag, Table } from 'antd';
-
+import { Tag, Table, Progress } from 'antd';
+import StudentProgress from "lob/StudentProgress";
 
 const getDaysUntilComingBirthday = async(birthday) => {
   // Parse the provided birthday
@@ -496,6 +496,226 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
   };
 };
 
+
+export const handleEnrolleeProgressListConvertor = async (
+  data,
+  locationType,
+  progressMap
+) => {
+
+  if (!data) return { tableData: [], columns: [] };
+
+  const results = [];
+
+  const filters = {
+    countryOfResidencyFilter: new Set(),
+    countryOfBirthFilter: new Set()
+  };
+
+  const trackers = {
+    countryOfResidencyTracker: new Set(),
+    countryOfBirthTracker: new Set()
+  };
+
+  await Promise.all(
+    data.map(async (item, index) => {
+
+      const contactId = item.ContactInternalId;
+      const userProgressRows = progressMap?.[contactId] ?? [];
+
+      const result =
+        await StudentProgress.calculateUserCourseProgressPercentageForCertificates(
+          userProgressRows
+        );
+
+      const goldenCertificatePercentage =
+        Number(result?.goldenCertificatePercentage ?? 0);
+
+      const participationCertificatePercentage =
+        Number(result?.participationCertificatePercentage ?? 0);
+
+      const countryOfResidency =
+        item?.Location?.ResidencyLocation?.CountryOfResidency || null;
+
+      const countryOfBirth =
+        item?.Location?.BirthLocation?.CountryOfBirth || null;
+
+      results.push({
+        key: index,
+        enrolleeId: item?.ContactExternalId,
+        fullName: `${item.LastNames}, ${item.Names}`,
+        countryOfResidency,
+        countryOfBirth,
+        participationPercent:
+          participationCertificatePercentage * 100,
+        goldenPercent:
+          goldenCertificatePercentage * 100,
+        rawProgress: userProgressRows
+      });
+
+      // Populate filters (same architecture as other function)
+      const filterFields = [
+        { field: countryOfResidency, filter: "countryOfResidency" },
+        { field: countryOfBirth, filter: "countryOfBirth" }
+      ];
+
+      filterFields.forEach(({ field, filter }) => {
+        const trackerKey = `${filter}Tracker`;
+
+        if (field && !trackers[trackerKey].has(field)) {
+          filters[`${filter}Filter`].add({
+            key: field,
+            text: (
+              <>
+                <Flag code={field} style={{ width: 30, marginRight: 5 }} />
+                {field}
+              </>
+            ),
+            value: field
+          });
+
+          trackers[trackerKey].add(field);
+        }
+      });
+
+    })
+  );
+
+  const columns = [
+
+    {
+      title: "Profile",
+      children: [
+        {
+          title: "Id",
+          dataIndex: "enrolleeId",
+          sorter: (a, b) => a.enrolleeId - b.enrolleeId
+        },
+        {
+          title: "Full Name",
+          dataIndex: "fullName"
+        }
+      ]
+    },
+
+    {
+      title: "Student Progress",
+      children: [
+        {
+          title: "Participation",
+          dataIndex: "participationPercent",
+          sorter: (a, b) =>
+            a.participationPercent - b.participationPercent,
+          defaultSortOrder: "descend",
+          sortDirections: ["ascend", "descend"],
+          render: (value) =>
+            <Progress percent={value} strokeColor="#1677ff" />
+        },
+        {
+          title: "Golden",
+          dataIndex: "goldenPercent",
+          sorter: (a, b) =>
+            a.goldenPercent - b.goldenPercent,
+          sortDirections: ["ascend", "descend"],
+          render: (value) =>
+            <Progress percent={value} strokeColor="gold" />
+        }
+      ]
+    },
+
+    ...(locationType === "all" || locationType === "residency"
+      ? [
+          {
+            title: "Residency",
+            children: [
+              {
+                title: "Country",
+                dataIndex: "countryOfResidency",
+                align: "center",
+                filters: Array.from(filters.countryOfResidencyFilter),
+                onFilter: (value, record) =>
+                  record.countryOfResidency === value,
+                sorter: (a, b) =>
+                  (a.countryOfResidency || "").localeCompare(
+                    b.countryOfResidency || ""
+                  ),
+                render: (code) =>
+                  code ? <Flag code={code} style={{ width: 35 }} /> : "-"
+              }
+            ]
+          }
+        ]
+      : []),
+
+    ...(locationType === "all" || locationType === "birth"
+      ? [
+          {
+            title: "Birth",
+            children: [
+              {
+                title: "Country",
+                dataIndex: "countryOfBirth",
+                align: "center",
+                filters: Array.from(filters.countryOfBirthFilter),
+                onFilter: (value, record) =>
+                  record.countryOfBirth === value,
+                sorter: (a, b) =>
+                  (a.countryOfBirth || "").localeCompare(
+                    b.countryOfBirth || ""
+                  ),
+                render: (code) =>
+                  code ? <Flag code={code} style={{ width: 35 }} /> : "-"
+              }
+            ]
+          }
+        ]
+      : [])
+  ];
+
+  const expandable = {
+    expandedRowRender: (record) => {
+
+      const nestedData = [
+        {
+          key: "1",
+          participationPercent: record.participationPercent,
+          goldenPercent: record.goldenPercent
+        }
+      ];
+
+      const nestedColumns = [
+        {
+          title: "Participation",
+          dataIndex: "participationPercent",
+          render: (v) =>
+            <Progress percent={v} strokeColor="#1677ff" />
+        },
+        {
+          title: "Golden",
+          dataIndex: "goldenPercent",
+          render: (v) =>
+            <Progress percent={v} strokeColor="gold" />
+        }
+      ];
+
+      return (
+        <Table
+          columns={nestedColumns}
+          dataSource={nestedData}
+          pagination={false}
+          size="small"
+        />
+      );
+    }
+  };
+
+  return {
+    tableData: results,
+    columns,
+    expandable
+  };
+};
+
 const AdminInsights = {
   courseSelectionConverter,
   locationTypeConverter,
@@ -503,7 +723,8 @@ const AdminInsights = {
   overviewInfoConvertion,
   transformEnrolleeGeneralDemographicData,
   transformEnrolleeDivisionDemographicData,
-  handleEnrolleeListConvertor
+  handleEnrolleeListConvertor,
+  handleEnrolleeProgressListConvertor
 };
 
 export default AdminInsights;

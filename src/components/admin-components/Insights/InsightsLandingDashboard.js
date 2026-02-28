@@ -4,7 +4,7 @@ import { bindActionCreators } from "redux";
 import { Row, Col, Card, Tabs, Input } from 'antd';
 import IntlMessage from 'components/util-components/IntlMessage';
 import DropdownInsightSelection from './DropdownInsightSelection';
-import { faPersonPraying, faPieChart, faMapPin } from '@fortawesome/free-solid-svg-icons';
+import { faPersonPraying, faPieChart, faMapPin, faPersonHiking } from '@fortawesome/free-solid-svg-icons';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard } from "redux/actions/Analytics";
@@ -16,17 +16,19 @@ import ColumnBar from 'components/layout-components/Graphs/ColumnGraph';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
+import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 const { TabPane } = Tabs;
 
 const InsightsLandingDashboard = (props) => {
   const { allCourses, onRenderingAdminInsightsDashboard, locationTypes, onRenderingLocationTypeSelectionsToDashboard, demographicDashboardData,
-		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData
+		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData, enrolleesCourseProgressData, user
    } = props;
 
 	const [activeKey, setActiveKey] = useState('1');
 	const [loading, setLoading] = useState(false);
 	const [searchValue, setSearchValue] = useState('');
-  	const [filteredData, setFilteredData] = useState(enrolleDashboardData?.tableData || []);
+  	const [filteredEnrolleeData, setFilteredEnrolleeData] = useState([]);
+	const [filteredProgressData, setFilteredProgressData] = useState([]);
 
 
 	const handleTabChange = (key) => {
@@ -36,23 +38,53 @@ const InsightsLandingDashboard = (props) => {
 	const handleSearch = (event) => {
 		const value = event.target.value.toLowerCase();
 		setSearchValue(value);
-	
-		if (enrolleDashboardData?.tableData) {
-		  const filtered = enrolleDashboardData.tableData.filter((item) =>
-			['names', 'lastNames', 'age', 'enrolleeId', 'daysToBday', 'birthday', 'regionOfResidency', 'regionOfBirth'].some((key) =>
-			  String(item[key]).toLowerCase().includes(value)
-			)
-		  );
-		  setFilteredData(filtered);
+
+		if (activeKey === "3" && enrolleDashboardData?.tableData) {
+			const filtered = enrolleDashboardData.tableData.filter((item) =>
+			Object.values(item)
+				.join(" ")
+				.toLowerCase()
+				.includes(value)
+			);
+
+			setFilteredEnrolleeData(filtered);
 		}
-	  };
+
+		if (activeKey === "2" && enrolleesCourseProgressData?.tableData) {
+			const filtered = enrolleesCourseProgressData.tableData.filter((item) =>
+			Object.values(item)
+				.join(" ")
+				.toLowerCase()
+				.includes(value)
+			);
+
+			setFilteredProgressData(filtered);
+		}
+	};
 	
+	useEffect(() => {
+		setSearchValue("");
+
+		if (activeKey === "3" && enrolleDashboardData?.tableData) {
+			setFilteredEnrolleeData(enrolleDashboardData.tableData);
+		}
+
+		if (activeKey === "2" && enrolleesCourseProgressData?.tableData) {
+			setFilteredProgressData(enrolleesCourseProgressData.tableData);
+		}
+		}, [activeKey]);
 
 	useEffect(() => {
 		if (enrolleDashboardData?.tableData) {
-		  setFilteredData(enrolleDashboardData.tableData);
+			setFilteredEnrolleeData(enrolleDashboardData.tableData);
 		}
-	  }, [enrolleDashboardData]);
+	}, [enrolleDashboardData]);
+
+	useEffect(() => {
+		if (enrolleesCourseProgressData?.tableData) {
+			setFilteredProgressData(enrolleesCourseProgressData.tableData);
+		}
+	}, [enrolleesCourseProgressData]);
 
 	useEffect(() => {
 		// Load data only if necessary
@@ -111,9 +143,17 @@ const InsightsLandingDashboard = (props) => {
 	);
 
 
-  const setLocale = (isLocaleOn, localeKey) => {
-    return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-  };
+	const setLocale = (isLocaleOn, localeKey) => {
+		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+	};
+
+	if(user?.emailId && !user?.yearOfBirth){
+		return (
+			<div id="unathenticated-landing-page-margin">
+				<EmailYearSearchForm/>
+			</div>
+		)
+	}
 
   return (
     <div className="container customerName">
@@ -154,8 +194,8 @@ const InsightsLandingDashboard = (props) => {
 			<TabPane
 				tab={
 					<span>
-					<IconAdapter icon={faPersonPraying} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-					{setLocale(locale, "admin.dashboard.insights.enrolleeList")}
+					<IconAdapter icon={faPersonHiking} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
+					{setLocale(locale, "admin.dashboard.insights.enrolleeProgress")}
 					</span>
 				} 
 				key="2"
@@ -171,9 +211,43 @@ const InsightsLandingDashboard = (props) => {
 					/>
 				</Col>
 				<Col xs={24} sm={24} md={24} lg={24}>
-					{filteredData.length > 0 ? (
+					{filteredProgressData.length > 0 ? (
 					<AbstractTable 
-						tableData={filteredData}
+						tableData={filteredProgressData}
+						tableColumns={enrolleesCourseProgressData?.columns}
+						tableExpandables={enrolleesCourseProgressData?.expandable}
+						isAllowedToEditTableData={false}
+						isToRenderActionButton={false}
+					/>
+					) : (
+					<p>No matching records found.</p>
+					)}
+				</Col>
+				</Row>
+			</TabPane>		
+			<TabPane
+				tab={
+					<span>
+					<IconAdapter icon={faPersonPraying} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
+					{setLocale(locale, "admin.dashboard.insights.enrolleeList")}
+					</span>
+				} 
+				key="3"
+				>
+				<Row gutter={16}>
+				<Col span={24}>
+					<Input
+					placeholder="Search by names, last names, or age"
+					value={searchValue}
+					onChange={handleSearch}
+					prefix={<SearchOutlined />}
+					style={{ marginBottom: 16 }}
+					/>
+				</Col>
+				<Col xs={24} sm={24} md={24} lg={24}>
+					{filteredEnrolleeData.length > 0 ? (
+					<AbstractTable 
+						tableData={filteredEnrolleeData}
 						tableColumns={enrolleDashboardData?.columns}
 						tableExpandables={enrolleDashboardData?.expandable}
 						isAllowedToEditTableData={false}
@@ -192,7 +266,7 @@ const InsightsLandingDashboard = (props) => {
 					{setLocale(locale, "admin.dashboard.insights.demographics")}
 					</span>
 				} 
-				key="3"
+				key="4"
 				>
 				<Row gutter={16}>
 					<Col xs={24} sm={24} md={24} lg={24}>
@@ -224,9 +298,10 @@ function mapDispatchToProps(dispatch) {
 }
 
 
-const mapStateToProps = ({ analytics }) => {
-  const { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, demographicDashboardData, enrolleDashboardData } = analytics;
-  return { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData, demographicDashboardData };
+const mapStateToProps = ({ analytics, grant }) => {
+  const { user } = grant;
+  const { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, demographicDashboardData, enrolleDashboardData, enrolleesCourseProgressData } = analytics;
+  return { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData, demographicDashboardData, enrolleesCourseProgressData, user };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(InsightsLandingDashboard);
