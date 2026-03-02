@@ -58,7 +58,7 @@ export const getCourseProgress = async (courseCodeId, token, whoCalledMe) => {
   }
 };
 
-export const upsertUserCourseProgress = async (progressRecords, token, whoCalledMe = "UnknownCaller") => {
+export const upsertCourseProgress = async (progressRecords, token, whoCalledMe = "UnknownCaller") => {
   if (!token || !Array.isArray(progressRecords) || progressRecords.length === 0) {
     console.warn(`[${whoCalledMe}] Missing token or progressRecords is empty or invalid`);
     return _results;
@@ -151,7 +151,7 @@ export const upsertUserKnowMeSubmission = async (submission_records, token, whoC
 
 const TitulinoAuthService = {
   getCourseProgress,
-  upsertUserCourseProgress,
+  upsertCourseProgress,
   upsertUserKnowMeSubmission
 };
 

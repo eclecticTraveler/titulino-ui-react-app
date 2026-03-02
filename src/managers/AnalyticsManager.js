@@ -163,6 +163,25 @@ const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {
   return  profile?.profileUrl ?? null;
 }
 
+const upsertAdminEnrolleeCourseProgress = async (progressRecords, courseCodeId, adminEmailId) => {
+  try {
+    const localStorageKey = `UserProfile_${adminEmailId}`;
+    const adminUser = await LocalStorageService.getCachedObject(localStorageKey);
+    const token = utils.getCourseTokenFromUserCourses(adminUser?.userCourses, courseCodeId);
+
+  if (!token) {
+    console.warn("No token found for course");
+    return { tableData: [], columns: [] };
+  }
+
+    progressRecords = await TitulinoAuthService.upsertCourseProgress(progressRecords, token, "upsertAdminEnrolleeCourseProgress");
+    return progressRecords;  
+  }
+  catch (error) {
+      console.error("Error upserting admin enrollee course progress:", error);
+      throw error;
+  }
+}
 
 const AnalyticsManager = {
   getAllCourses,
@@ -172,7 +191,8 @@ const AnalyticsManager = {
   getDemographicInfoAdminDashboard,
   getEnrolleeInfoAdminDashboard,
   getEnrolleeKnowMeProfilePictureForCourse,
-  getEnrolleesCourseProgressAdminDashboard
+  getEnrolleesCourseProgressAdminDashboard,
+  upsertAdminEnrolleeCourseProgress
 };
 
 export default AnalyticsManager;

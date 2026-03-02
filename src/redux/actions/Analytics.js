@@ -5,7 +5,8 @@ import {
   ON_RENDERING_LOCATION_TYPE_SELECTIONS,
   ON_GETTING_COUNTRIES_BY_LOCATION_TYPE,
   ON_LOADING_ALL_DASHBOARD_CONTENTS,
-  ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD
+  ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD,
+  ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS
 } from '../constants/Analytics';
 
 export function onTestingDefault(defaultValue) {
@@ -63,6 +64,20 @@ export const onLoadingAllDashboardContents = async (courseCodeId, locationType, 
   } catch (error) {
     console.error('Error loading admin dashboard data:', error);
     throw error;
+  }
+};
+
+export const onSubmittingAdminEnrolleeProgress = async (progressRecords, courseCodeId, adminEmailId) => {
+  try {
+    const result = await TitulinoManager.upsertAdminEnrolleeCourseProgress(progressRecords, courseCodeId, adminEmailId);
+
+    return {
+      type: ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS,
+      submittedAdminEnrolleeProgress: result
+    };
+  } catch (error) {
+    console.error("onSubmittingAdminEnrolleeProgress error:", error);
+     throw error;
   }
 };
 

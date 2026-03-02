@@ -39,7 +39,7 @@ const getUserCourseProgress = async(courseCodeId, emailId) => {
 
 const upsertUserCourseProgress = async(courseProgress, courseCodeId, emailId) => {
   const token = await getCourseToken(courseCodeId, emailId);
-  courseProgress = await TitulinoAuthService.upsertUserCourseProgress(courseProgress, token, "upsertUserCourseProgress");
+  courseProgress = await TitulinoAuthService.upsertCourseProgress(courseProgress, token, "upsertCourseProgress");
   return courseProgress;
 }
 

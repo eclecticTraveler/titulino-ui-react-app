@@ -498,7 +498,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
 };
 
 
-export const handleEnrolleeProgressListConvertor = async (data, locationType, progressMap, courseProgressConfigJson, onSubmit) => {
+export const handleEnrolleeProgressListConvertor = async (data, locationType, progressMap, courseProgressConfigJson) => {
 
   if (!data) return { tableData: [], columns: [] };
 
@@ -540,6 +540,7 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
       results.push({
         key: index,
         enrolleeId: item?.ContactExternalId,
+        contactInternalId: item?.ContactInternalId,
         fullName: `${item.LastNames}, ${item.Names}`,
         countryOfResidency,
         countryOfBirth,
@@ -670,11 +671,10 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
         ]
       : [])
   ];
-
-        //  const studentCategoriesCompletedForCourse = await StudentProgress.getUserCourseProgressCategories(record.rawProgress);
+        
 
   const expandable = {
-    expandedRowRender: (record) => {
+    expandedRowRender: (record, injectedSubmit) => {
 
       const courseConfig = courseProgressConfigJson;
 
@@ -685,7 +685,7 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
           contactId={record.contactInternalId}
           emails={record.emails}
           courseCodeId={courseConfig?.courseId}
-          onSubmit={onSubmit}
+          onSubmit={injectedSubmit}
         />
       );
     }

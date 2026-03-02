@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Checkbox, Select, Button, Divider, Row, Col, Card, Tag } from "antd";
 import { useUserProgressLogic } from "hooks/useUserProgressLogic";
 
@@ -6,16 +6,18 @@ const { Option } = Select;
 
 const AdminProgressEditable = ({
   categories,
-  progressData,
+  progressData,   // <-- this is record.rawProgress (rows)
   contactId,
   emails,
   courseCodeId,
   onSubmit
 }) => {
-
   const [selectedEmail, setSelectedEmail] = useState(
     emails?.length ? emails[0] : null
   );
+
+  // ONE canonical key for selection state
+  const selectionKey = (categoryId, classNumber) => `${categoryId}-${classNumber}`;
 
   const {
     selectedLessons,
@@ -28,143 +30,142 @@ const AdminProgressEditable = ({
     contactId,
     emailId: selectedEmail,
     courseCodeId,
-    onSubmit
+    onSubmit,
+    existingProgressRows: progressData
   });
 
-  // ✅ Pre-select based on progressData
+  // ✅ Pre-select based on progressData (per email)
   useEffect(() => {
-
     if (!progressData || !selectedEmail) return;
 
     const preSelected = {};
 
     progressData
-      ?.filter(p => p.EmailId === selectedEmail)
-      ?.forEach(p => {
-        const key = `${p.CategoryId}-${p.ClassNumber}`;
-        preSelected[key] = {
+      ?.filter((p) => p?.EmailId === selectedEmail)
+      ?.forEach((p) => {
+        const k = selectionKey(p.CategoryId, p.ClassNumber);
+        preSelected[k] = {
           categoryId: p.CategoryId,
           classNumber: p.ClassNumber,
-          participationTypeId: p.ParticipationTypeId
+          participationTypeId: p.ParticipationTypeId ?? null
         };
       });
 
     setSelectedLessons(preSelected);
+  }, [progressData, selectedEmail]); // setSelectedLessons comes from hook
 
-  }, [progressData, selectedEmail]);
+  // Optional: show title + count
+  const emailCount = emails?.length ?? 0;
 
-return (
-  <Card
-    title={`Progress for ${selectedEmail}`}
-    style={{ background: "#fafafa" }}
-  >
+  // Sort lessons by classNumber if needed (safe)
+  const normalizedCategories = useMemo(() => {
+    return (categories ?? []).map((c) => ({
+      ...c,
+      lessons: c?.lessons ? [...c.lessons].sort((a, b) => (a?.classNumber ?? 0) - (b?.classNumber ?? 0)) : []
+    }));
+  }, [categories]);
 
-    {/* Email Selector */}
-    {emails?.length > 0 && (
-      <>
-        <div style={{ marginBottom: 6 }}>
-          <strong>Emails</strong>
-          <Tag
-            color={emails.length > 1 ? "geekblue" : "green"}
-            style={{ marginLeft: 8 }}
+  return (
+    <Card title={`Progress for ${selectedEmail ?? "-"}`} style={{ background: "#fafafa" }}>
+      {/* Email Selector */}
+      {emailCount > 0 && (
+        <>
+          <div style={{ marginBottom: 6 }}>
+            <strong>Emails</strong>
+            <Tag
+              color={emailCount > 1 ? "geekblue" : "green"}
+              style={{ marginLeft: 8 }}
+            >
+              {emailCount}
+            </Tag>
+          </div>
+
+          <Select
+            value={selectedEmail}
+            style={{ width: 350, marginBottom: 16 }}
+            onChange={(value) => setSelectedEmail(value)}
           >
-            {emails.length}
-          </Tag>
-        </div>
+            {emails.map((email) => (
+              <Option key={`email-${email}`} value={email}>
+                {email}
+              </Option>
+            ))}
+          </Select>
 
-        <Select
-          value={selectedEmail}
-          style={{ width: 350, marginBottom: 16 }}
-          onChange={(value) => setSelectedEmail(value)}
-        >
-          {emails.map(email => (
-            <Option key={email} value={email}>
-              {email}
-            </Option>
-          ))}
-        </Select>
+          <Divider />
+        </>
+      )}
 
-        <Divider />
-      </>
-    )}
+      {/* Categories Grid */}
+      <Row gutter={[16, 16]}>
+        {normalizedCategories?.map((category, idx) => {
+          if (!category?.isToDisplay) return null;
 
-    {/* Categories Grid */}
-    <Row gutter={[16, 16]}>
-      {categories?.map(category => {
+          // ✅ React key must be unique even if categoryId repeats across levels
+          const categoryReactKey = `category-${category?.categoryId}-${category?.level ?? "na"}-${idx}-${courseCodeId}`;
 
-        if (!category.isToDisplay) return null;
+          return (
+            <Col xs={24} sm={24} lg={8} key={categoryReactKey}>
+              <Card size="small" title={category?.name}>
+                {category?.lessons
+                  ?.filter((l) => l?.isToDisplay)
+                  ?.map((lesson, lidx) => {
+                    // ✅ selection key for state
+                    const k = selectionKey(category?.categoryId, lesson?.classNumber);
 
-        return (
-          <Col xs={24} sm={24} lg={8} key={category.categoryId}>
-            <Card size="small" title={category.name}>
+                    const isSelected = selectedLessons?.[k];
+                    const requiresDropdown = (category?.participationIds?.length ?? 0) > 1;
 
-              {category.lessons
-                ?.filter(l => l.isToDisplay)
-                ?.map(lesson => {
+                    // ✅ separate React key for list rendering
+                    const lessonReactKey = `lesson-${category?.categoryId}-${category?.level ?? "na"}-${lesson?.classNumber}-${lidx}-${courseCodeId}`;
 
-                  const key = `${category.categoryId}-${lesson.classNumber}`;
-                  const isSelected = selectedLessons[key];
-                  const requiresDropdown =
-                    category.participationIds.length > 1;
-
-                  return (
-                    <div key={key} style={{ marginBottom: 8 }}>
-
-                      <Checkbox
-                        checked={!!isSelected}
-                        onChange={() =>
-                          handleCheckboxChange(
-                            category.categoryId,
-                            lesson.classNumber
-                          )
-                        }
-                      >
-                        Class {lesson.classNumber} – {lesson.title}
-                      </Checkbox>
-
-                      {requiresDropdown && isSelected && (
-                        <Select
-                          style={{ width: "100%", marginTop: 6 }}
-                          value={isSelected?.participationTypeId}
-                          onChange={(value) =>
-                            handleParticipationTypeChange(
-                              category.categoryId,
-                              lesson.classNumber,
-                              value
-                            )
+                    return (
+                      <div key={lessonReactKey} style={{ marginBottom: 8 }}>
+                        <Checkbox
+                          checked={!!isSelected}
+                          onChange={() =>
+                            handleCheckboxChange(category?.categoryId, lesson?.classNumber)
                           }
                         >
-                          {category.participationIds.map(p => (
-                            <Option
-                              key={p.participationTypeId}
-                              value={p.participationTypeId}
-                            >
-                              {p.localizationKey}
-                            </Option>
-                          ))}
-                        </Select>
-                      )}
+                          Class {lesson?.classNumber} – {lesson?.title}
+                        </Checkbox>
 
-                    </div>
-                  );
-                })}
+                        {requiresDropdown && isSelected && (
+                          <Select
+                            style={{ width: "100%", marginTop: 6 }}
+                            value={isSelected?.participationTypeId}
+                            onChange={(value) =>
+                              handleParticipationTypeChange(
+                                category?.categoryId,
+                                lesson?.classNumber,
+                                value
+                              )
+                            }
+                          >
+                            {category?.participationIds?.map((p) => (
+                              <Option
+                                key={`ptype-${category?.categoryId}-${category?.level ?? "na"}-${p?.participationTypeId}`}
+                                value={p?.participationTypeId}
+                              >
+                                {p?.localizationKey}
+                              </Option>
+                            ))}
+                          </Select>
+                        )}
+                      </div>
+                    );
+                  })}
+              </Card>
+            </Col>
+          );
+        })}
+      </Row>
 
-            </Card>
-          </Col>
-        );
-      })}
-    </Row>
-
-    <Button
-      type="primary"
-      onClick={handleSubmit}
-      style={{ marginTop: 20 }}
-    >
-      Save Progress
-    </Button>
-
-  </Card>
-);
+      <Button type="primary" onClick={handleSubmit} style={{ marginTop: 20 }}>
+        Save Progress
+      </Button>
+    </Card>
+  );
 };
 
 export default AdminProgressEditable;
