@@ -1,6 +1,7 @@
 import Flag from "react-world-flags";
 import { Tag, Table, Progress } from 'antd';
 import StudentProgress from "lob/StudentProgress";
+import AdminProgressEditable from "components/layout-components/AdminProgressEditable";
 
 const getDaysUntilComingBirthday = async(birthday) => {
   // Parse the provided birthday
@@ -497,11 +498,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
 };
 
 
-export const handleEnrolleeProgressListConvertor = async (
-  data,
-  locationType,
-  progressMap
-) => {
+export const handleEnrolleeProgressListConvertor = async (data, locationType, progressMap, courseProgressConfigJson, onSubmit) => {
 
   if (!data) return { tableData: [], columns: [] };
 
@@ -550,7 +547,9 @@ export const handleEnrolleeProgressListConvertor = async (
           participationCertificatePercentage * 100,
         goldenPercent:
           goldenCertificatePercentage * 100,
-        rawProgress: userProgressRows
+        rawProgress: userProgressRows,
+        emails: item?.Emails?.filter(e => e.IsEmailParseValid)
+                .map(e => e.EmailId) || [],
       });
 
       // Populate filters (same architecture as other function)
@@ -672,38 +671,21 @@ export const handleEnrolleeProgressListConvertor = async (
       : [])
   ];
 
+        //  const studentCategoriesCompletedForCourse = await StudentProgress.getUserCourseProgressCategories(record.rawProgress);
+
   const expandable = {
     expandedRowRender: (record) => {
 
-      const nestedData = [
-        {
-          key: "1",
-          participationPercent: record.participationPercent,
-          goldenPercent: record.goldenPercent
-        }
-      ];
-
-      const nestedColumns = [
-        {
-          title: "Participation",
-          dataIndex: "participationPercent",
-          render: (v) =>
-            <Progress percent={v} strokeColor="#1677ff" />
-        },
-        {
-          title: "Golden",
-          dataIndex: "goldenPercent",
-          render: (v) =>
-            <Progress percent={v} strokeColor="gold" />
-        }
-      ];
+      const courseConfig = courseProgressConfigJson;
 
       return (
-        <Table
-          columns={nestedColumns}
-          dataSource={nestedData}
-          pagination={false}
-          size="small"
+        <AdminProgressEditable
+          categories={courseConfig?.categories}
+          progressData={record.rawProgress}
+          contactId={record.contactInternalId}
+          emails={record.emails}
+          courseCodeId={courseConfig?.courseId}
+          onSubmit={onSubmit}
         />
       );
     }

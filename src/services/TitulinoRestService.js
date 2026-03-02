@@ -33,6 +33,13 @@ const loadRequestedCourseStructure = async(nativeLanguage, course, courseCodeId)
   return rawRequestedModule;
 }
 
+const getRequestedCourseStructureByCourseCodeId = async(courseCodeId) => {  
+  const rawCourseStructureData = await loadCourseProgressStructure();  
+  const rawCourseData = rawCourseStructureData?.find(c => (c.courseId === courseCodeId));
+  const rawRequestedModule = rawCourseData;
+  return rawRequestedModule;
+}
+
 export const getCountries = async (whoCalledMe) => {      
 
   if (whoCalledMe) {
@@ -698,7 +705,8 @@ const TitulinoRestService = {
   getEnrolleeGeneralListByCourseCodeId,
   getEnrolleeCountrylListByCourseCodeId,
   isUserEmailRegisteredInCourse,
-  getCourseProgressByYearOfBirthEmailCourseCodeIdAndLanguageId 
+  getCourseProgressByYearOfBirthEmailCourseCodeIdAndLanguageId,
+  getRequestedCourseStructureByCourseCodeId
 };
 
 export default TitulinoRestService;

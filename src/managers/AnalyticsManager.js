@@ -138,12 +138,10 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
       return acc;
     }, {}) ?? {};
 
+    const courseConfiguration = await TitulinoRestService.getRequestedCourseStructureByCourseCodeId(courseCodeId);
+
     // 5️⃣ Build final table model    
-    return AdminInsights.handleEnrolleeProgressListConvertor(
-      extracted,
-      locationType,
-      progressMap
-    );
+    return AdminInsights.handleEnrolleeProgressListConvertor(extracted, locationType, progressMap, courseConfiguration);
 };
 
 const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {

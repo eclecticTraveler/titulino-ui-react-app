@@ -16,8 +16,6 @@ const DropdownInsightSelection = (props) => {
   const [countriesBySelectedLocationType, setCountriesBySelectedLocationType] = useState([]);
   const { allCourses, locationTypes, onGettingCountriesByLocationToDashboard, onLoadingAllDashboardContents, setLoading, user } = props;
 
-
-  // Example data based on your categories
   const CoursesOptions = allCourses ? [...allCourses] : [];
   const LocationTypeOptions = locationTypes ? [...locationTypes] : [];
   const CountryOptions = [...countriesBySelectedLocationType];
