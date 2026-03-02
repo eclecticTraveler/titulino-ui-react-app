@@ -75,8 +75,8 @@ const getUserProfile = async (emailId, dobOrYob) => {
         contactPaymentProviderId: userProfile?.contactPaymentProviderId ?? null
       };
       
-      LocalStorageService.setCachedObject(localStorageKey, user, 60);       
-      console.log("contactPaymentProviderId", user, userProfile);
+      LocalStorageService.setCachedObject(localStorageKey, user, 160);       
+      // console.log("contactPaymentProviderId", user, userProfile);
       return user;
       
     } else {      

@@ -14,10 +14,8 @@ const DropdownInsightSelection = (props) => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [isLocationTypeAllSelected, setIsLocationTypeAllSelected] = useState(false);
   const [countriesBySelectedLocationType, setCountriesBySelectedLocationType] = useState([]);
-  const { allCourses, locationTypes, onGettingCountriesByLocationToDashboard, onLoadingAllDashboardContents, setLoading } = props;
+  const { allCourses, locationTypes, onGettingCountriesByLocationToDashboard, onLoadingAllDashboardContents, setLoading, user } = props;
 
-
-  // Example data based on your categories
   const CoursesOptions = allCourses ? [...allCourses] : [];
   const LocationTypeOptions = locationTypes ? [...locationTypes] : [];
   const CountryOptions = [...countriesBySelectedLocationType];
@@ -50,10 +48,10 @@ const DropdownInsightSelection = (props) => {
   
 
   useEffect(() => {
-    if (selectedCourse && selectedLocationType && selectedCountry) {
+    if (selectedCourse && selectedLocationType && selectedCountry && user?.emailId) {
       setLoading(true); // Start loading
       // Unleash all the dashboards?
-      onLoadingAllDashboardContents(selectedCourse, selectedLocationType, selectedCountry)
+      onLoadingAllDashboardContents(selectedCourse, selectedLocationType, selectedCountry, user?.emailId)
       ?.finally(() => setLoading(false)); // Stop loading after data fetch
     } 
   }, [selectedLocationType, selectedCourse, selectedCountry]);
@@ -142,9 +140,10 @@ function mapDispatchToProps(dispatch) {
 }
 
 
-const mapStateToProps = ({ analytics }) => {
+const mapStateToProps = ({ analytics, grant }) => {
+  const { user } = grant;
   const { allCourses, locationTypes } = analytics;
-  return { allCourses, locationTypes };
+  return { allCourses, locationTypes, user };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(DropdownInsightSelection);

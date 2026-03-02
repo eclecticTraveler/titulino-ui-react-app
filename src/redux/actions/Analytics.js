@@ -5,7 +5,8 @@ import {
   ON_RENDERING_LOCATION_TYPE_SELECTIONS,
   ON_GETTING_COUNTRIES_BY_LOCATION_TYPE,
   ON_LOADING_ALL_DASHBOARD_CONTENTS,
-  ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD
+  ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD,
+  ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS
 } from '../constants/Analytics';
 
 export function onTestingDefault(defaultValue) {
@@ -40,12 +41,14 @@ export const onGettingCountriesByLocationToDashboard = async (courseCodeId, loca
   }
 }
 
-export const onLoadingAllDashboardContents = async (courseCodeId, locationType, countryId) => {
+export const onLoadingAllDashboardContents = async (courseCodeId, locationType, countryId, emailId) => {
+
   try {
-    const [overviewDashboardData, demographicDashboardData, enrolleDashboardData] = await Promise.all([
+    const [overviewDashboardData, demographicDashboardData, enrolleDashboardData, enrolleesCourseProgressData] = await Promise.all([
       TitulinoManager.getOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
       TitulinoManager.getDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
-      TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, locationType, countryId)
+      TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getEnrolleesCourseProgressAdminDashboard(courseCodeId, locationType, countryId, emailId)
     ]);
 
     return {
@@ -55,11 +58,26 @@ export const onLoadingAllDashboardContents = async (courseCodeId, locationType, 
       selectedCountryId: countryId,
       overviewDashboardData,
       demographicDashboardData,
-      enrolleDashboardData
+      enrolleDashboardData,
+      enrolleesCourseProgressData
     };
   } catch (error) {
     console.error('Error loading admin dashboard data:', error);
     throw error;
+  }
+};
+
+export const onSubmittingAdminEnrolleeProgress = async (progressRecords, courseCodeId, adminEmailId) => {
+  try {
+    const result = await TitulinoManager.upsertAdminEnrolleeCourseProgress(progressRecords, courseCodeId, adminEmailId);
+
+    return {
+      type: ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS,
+      submittedAdminEnrolleeProgress: result
+    };
+  } catch (error) {
+    console.error("onSubmittingAdminEnrolleeProgress error:", error);
+     throw error;
   }
 };
 

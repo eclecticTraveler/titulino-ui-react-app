@@ -301,6 +301,7 @@
 	"admin.dashboard.dropdown.selection.all": "Todos",
 	"admin.dashboard.selections":"Selecciones desplegables",
 	"admin.dashboard.insights.enrolleeList":"Lista de inscritos",
+	"admin.dashboard.insights.enrolleeProgress":"Progreso de inscritos",
 	"admin.dashboard.insights.demographics": "Datos demográficos",
 	"admin.dashboard.insights.overview.totalEnrollees": "Total de inscritos",
 	"admin.dashboard.insights.overview.totalMalesVsFemales": "Total de hombres y mujeres",

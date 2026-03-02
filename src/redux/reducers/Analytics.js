@@ -5,6 +5,7 @@ import {
   ON_GETTING_COUNTRIES_BY_LOCATION_TYPE,
   ON_LOADING_ALL_DASHBOARD_CONTENTS,
   ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD,
+  ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS
 } from '../constants/Analytics';
 
 const initState = {
@@ -13,6 +14,11 @@ const initState = {
 
 const analytics = (state = initState, action) => {
   switch (action.type) {
+    case ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS:
+      return {
+        ...state,
+        submitProgressSuccess: action.submittedAdminEnrolleeProgress
+      }
     case ON_LOADING_ALL_DASHBOARD_CONTENTS:
       return {
         ...state,
@@ -21,7 +27,8 @@ const analytics = (state = initState, action) => {
         selectedCountryId: action.selectedCountryId,
         overviewDashboardData: action.overviewDashboardData,
         demographicDashboardData: action.demographicDashboardData,
-        enrolleDashboardData: action.enrolleDashboardData
+        enrolleDashboardData: action.enrolleDashboardData,
+        enrolleesCourseProgressData: action.enrolleesCourseProgressData
       }
     case ON_GETTING_COUNTRIES_BY_LOCATION_TYPE:
       return {

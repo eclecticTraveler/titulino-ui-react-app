@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { Row, Col, Card, Tabs, Input } from 'antd';
+import { Row, Col, Card, Tabs, Input, message } from 'antd';
 import IntlMessage from 'components/util-components/IntlMessage';
 import DropdownInsightSelection from './DropdownInsightSelection';
-import { faPersonPraying, faPieChart, faMapPin } from '@fortawesome/free-solid-svg-icons';
+import { faPersonPraying, faPieChart, faMapPin, faPersonHiking } from '@fortawesome/free-solid-svg-icons';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
-import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard } from "redux/actions/Analytics";
+import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard, onSubmittingAdminEnrolleeProgress, onLoadingAllDashboardContents } from "redux/actions/Analytics";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
 import DoubleCounterDisplay from 'components/layout-components/DoubleCounterDisplay';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
@@ -16,17 +16,52 @@ import ColumnBar from 'components/layout-components/Graphs/ColumnGraph';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
+import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 const { TabPane } = Tabs;
 
 const InsightsLandingDashboard = (props) => {
-  const { allCourses, onRenderingAdminInsightsDashboard, locationTypes, onRenderingLocationTypeSelectionsToDashboard, demographicDashboardData,
-		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData
+  const { allCourses, onRenderingAdminInsightsDashboard, locationTypes, onRenderingLocationTypeSelectionsToDashboard, demographicDashboardData, onSubmittingAdminEnrolleeProgress,
+		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData, enrolleesCourseProgressData, user, onLoadingAllDashboardContents
    } = props;
 
 	const [activeKey, setActiveKey] = useState('1');
 	const [loading, setLoading] = useState(false);
 	const [searchValue, setSearchValue] = useState('');
-  	const [filteredData, setFilteredData] = useState(enrolleDashboardData?.tableData || []);
+  	const [filteredEnrolleeData, setFilteredEnrolleeData] = useState([]);
+	const [filteredProgressData, setFilteredProgressData] = useState([]);
+
+
+	const handleAdminProgressSubmit = async (formattedData) => {
+	try {
+		console.log("Submitting admin progress:", formattedData, selectedCourseCodeId);
+
+		// 1) submit (redux action)
+		await onSubmittingAdminEnrolleeProgress(
+		formattedData,
+		selectedCourseCodeId, // ✅ from redux analytics state
+		user?.emailId         // ✅ admin email for token/profile
+		);
+
+		message.success("Progress saved successfully!");
+
+		// 2) refresh dashboards (recommended: reload current selection)
+		if (selectedCourseCodeId && selectedLocationType && selectedCountryId && user?.emailId) {
+		await onLoadingAllDashboardContents(
+			selectedCourseCodeId,
+			selectedLocationType,
+			selectedCountryId,
+			user.emailId
+		);
+		} else {
+		// fallback (if you prefer)
+		onRenderingAdminInsightsDashboard();
+		}
+
+	} catch (error) {
+		console.error("Error submitting admin progress:", error);
+		message.error("Error saving progress.");
+	}
+	};
 
 
 	const handleTabChange = (key) => {
@@ -36,23 +71,53 @@ const InsightsLandingDashboard = (props) => {
 	const handleSearch = (event) => {
 		const value = event.target.value.toLowerCase();
 		setSearchValue(value);
-	
-		if (enrolleDashboardData?.tableData) {
-		  const filtered = enrolleDashboardData.tableData.filter((item) =>
-			['names', 'lastNames', 'age', 'enrolleeId', 'daysToBday', 'birthday', 'regionOfResidency', 'regionOfBirth'].some((key) =>
-			  String(item[key]).toLowerCase().includes(value)
-			)
-		  );
-		  setFilteredData(filtered);
+
+		if (activeKey === "3" && enrolleDashboardData?.tableData) {
+			const filtered = enrolleDashboardData.tableData.filter((item) =>
+			Object.values(item)
+				.join(" ")
+				.toLowerCase()
+				.includes(value)
+			);
+
+			setFilteredEnrolleeData(filtered);
 		}
-	  };
+
+		if (activeKey === "2" && enrolleesCourseProgressData?.tableData) {
+			const filtered = enrolleesCourseProgressData.tableData.filter((item) =>
+			Object.values(item)
+				.join(" ")
+				.toLowerCase()
+				.includes(value)
+			);
+
+			setFilteredProgressData(filtered);
+		}
+	};
 	
+	useEffect(() => {
+		setSearchValue("");
+
+		if (activeKey === "3" && enrolleDashboardData?.tableData) {
+			setFilteredEnrolleeData(enrolleDashboardData.tableData);
+		}
+
+		if (activeKey === "2" && enrolleesCourseProgressData?.tableData) {
+			setFilteredProgressData(enrolleesCourseProgressData.tableData);
+		}
+		}, [activeKey]);
 
 	useEffect(() => {
 		if (enrolleDashboardData?.tableData) {
-		  setFilteredData(enrolleDashboardData.tableData);
+			setFilteredEnrolleeData(enrolleDashboardData.tableData);
 		}
-	  }, [enrolleDashboardData]);
+	}, [enrolleDashboardData]);
+
+	useEffect(() => {
+		if (enrolleesCourseProgressData?.tableData) {
+			setFilteredProgressData(enrolleesCourseProgressData.tableData);
+		}
+	}, [enrolleesCourseProgressData]);
 
 	useEffect(() => {
 		// Load data only if necessary
@@ -111,9 +176,17 @@ const InsightsLandingDashboard = (props) => {
 	);
 
 
-  const setLocale = (isLocaleOn, localeKey) => {
-    return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-  };
+	const setLocale = (isLocaleOn, localeKey) => {
+		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+	};
+
+	if(user?.emailId && !user?.yearOfBirth){
+		return (
+			<div id="unathenticated-landing-page-margin">
+				<EmailYearSearchForm/>
+			</div>
+		)
+	}
 
   return (
     <div className="container customerName">
@@ -152,13 +225,81 @@ const InsightsLandingDashboard = (props) => {
 			{renderGeneralOverview()}
 			</TabPane>
 			<TabPane
+			tab={
+				<span>
+				<IconAdapter icon={faPersonHiking} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+				{setLocale(locale, "admin.dashboard.insights.enrolleeProgress")}
+				</span>
+			}
+			key="2"
+			>
+			<Row gutter={16}>
+				<Col span={24}>
+				<Input
+					placeholder="Search by names, last names, or age"
+					value={searchValue}
+					onChange={handleSearch}
+					prefix={<SearchOutlined />}
+					style={{ marginBottom: 16 }}
+				/>
+				</Col>
+
+				<Col xs={24} sm={24} md={24} lg={24}>
+				{(() => {
+					// 1) Raw redux table data (the truth)
+					const progressTableData = enrolleesCourseProgressData?.tableData;
+
+					// 2) Inject the submit delegate into expandedRowRender
+					const progressExpandableWithDelegate =
+					enrolleesCourseProgressData?.expandable
+						? {
+							...enrolleesCourseProgressData.expandable,
+							expandedRowRender: (record) =>
+							enrolleesCourseProgressData.expandable.expandedRowRender(
+								record,
+								handleAdminProgressSubmit
+							)
+						}
+						: undefined;
+
+					// 3) Render states:
+					// - Not loaded yet
+					if (!progressTableData) {
+					return <p>Loading progress data...</p>;
+					}
+
+					// - Loaded but empty (API returned no rows)
+					if (progressTableData.length === 0) {
+					return <p>No records returned for this selection.</p>;
+					}
+
+					// - Loaded but search filter removed everything
+					if (filteredProgressData.length === 0) {
+					return <p>No matching records found.</p>;
+					}
+
+					// - Normal render
+					return (
+					<AbstractTable
+						tableData={filteredProgressData}
+						tableColumns={enrolleesCourseProgressData?.columns}
+						tableExpandables={progressExpandableWithDelegate}
+						isAllowedToEditTableData={false}
+						isToRenderActionButton={false}
+					/>
+					);
+				})()}
+				</Col>
+			</Row>
+			</TabPane>	
+			<TabPane
 				tab={
 					<span>
 					<IconAdapter icon={faPersonPraying} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
 					{setLocale(locale, "admin.dashboard.insights.enrolleeList")}
 					</span>
 				} 
-				key="2"
+				key="3"
 				>
 				<Row gutter={16}>
 				<Col span={24}>
@@ -171,9 +312,9 @@ const InsightsLandingDashboard = (props) => {
 					/>
 				</Col>
 				<Col xs={24} sm={24} md={24} lg={24}>
-					{filteredData.length > 0 ? (
+					{filteredEnrolleeData.length > 0 ? (
 					<AbstractTable 
-						tableData={filteredData}
+						tableData={filteredEnrolleeData}
 						tableColumns={enrolleDashboardData?.columns}
 						tableExpandables={enrolleDashboardData?.expandable}
 						isAllowedToEditTableData={false}
@@ -192,7 +333,7 @@ const InsightsLandingDashboard = (props) => {
 					{setLocale(locale, "admin.dashboard.insights.demographics")}
 					</span>
 				} 
-				key="3"
+				key="4"
 				>
 				<Row gutter={16}>
 					<Col xs={24} sm={24} md={24} lg={24}>
@@ -219,14 +360,17 @@ const InsightsLandingDashboard = (props) => {
 function mapDispatchToProps(dispatch) {
 	return bindActionCreators({
 		onRenderingAdminInsightsDashboard: onRenderingAdminInsightsDashboard,
-		onRenderingLocationTypeSelectionsToDashboard: onRenderingLocationTypeSelectionsToDashboard
+		onRenderingLocationTypeSelectionsToDashboard: onRenderingLocationTypeSelectionsToDashboard,
+		onSubmittingAdminEnrolleeProgress: onSubmittingAdminEnrolleeProgress,
+		onLoadingAllDashboardContents: onLoadingAllDashboardContents
 	}, dispatch);
 }
 
 
-const mapStateToProps = ({ analytics }) => {
-  const { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, demographicDashboardData, enrolleDashboardData } = analytics;
-  return { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData, demographicDashboardData };
+const mapStateToProps = ({ analytics, grant }) => {
+  const { user } = grant;
+  const { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, demographicDashboardData, enrolleDashboardData, enrolleesCourseProgressData } = analytics;
+  return { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData, demographicDashboardData, enrolleesCourseProgressData, user };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(InsightsLandingDashboard);

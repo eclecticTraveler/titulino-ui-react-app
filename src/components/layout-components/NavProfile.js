@@ -105,8 +105,7 @@ export const NavProfile = (props) => {
   const handleSigningOut = () => {
     signOut();
   }
-  console.log("NavProfile user, token: ", user, token);
-
+  
   const menuItems = configureMenuItems(user, token);
   const authenticatedProfileImg = "/img/avatars/tempProfile-2.png";
   const unauthenticatedprofileImgDefault = "/img/avatars/tempProfile.jpg";

@@ -299,6 +299,7 @@
 	"admin.dashboard.dropdown.selection.all":"All",
 	"admin.dashboard.selections":"Dropdown Selections",
 	"admin.dashboard.insights.enrolleeList":"Enrollee List",
+	"admin.dashboard.insights.enrolleeProgress":"Enrollee Progress",
 	"admin.dashboard.insights.demographics": "Demographics",
 	"admin.dashboard.insights.overview.totalEnrollees": "Total Enrollees",
 	"admin.dashboard.insights.overview.totalMalesVsFemales": "Total Male & Females",
