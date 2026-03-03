@@ -3,6 +3,51 @@ import { Tag, Table, Progress } from 'antd';
 import StudentProgress from "lob/StudentProgress";
 import AdminProgressEditable from "components/layout-components/AdminProgressEditable";
 
+const getLatestProficiencyForCourse = (item, courseCodeId) => {
+  if (!item) {
+    console.warn("getLatestProficiencyForCourse: item is null");
+    return "";
+  }
+
+  if (!courseCodeId) {
+    console.warn("getLatestProficiencyForCourse: courseCodeId is missing");
+    return "";
+  }
+
+  // 1️⃣ Find the course
+  const course = item?.CoursesHistory?.find(
+    c => c?.CourseCodeId === courseCodeId
+  );
+
+  if (!course) {
+    console.warn("No course found for courseCodeId:", courseCodeId);
+    return "";
+  }
+
+  const targetLanguageId = course?.TargetLanguageId;
+  const nativeLanguageId = course?.NativeLanguageId;
+
+  // 2️⃣ Filter language proficiency history
+  const matchingProficiencies = item?.LanguageProficienciesHistory
+    ?.filter(lp =>
+      lp?.EndDate === null &&
+      lp?.LanguageId === targetLanguageId &&
+      lp?.LanguageId !== nativeLanguageId
+    );
+
+  if (!matchingProficiencies || matchingProficiencies.length === 0) {
+    console.warn("No matching proficiency found for language:", targetLanguageId);
+    return "";
+  }
+
+  // 3️⃣ Order by ProficiencyOrder DESC (same as backend)
+  const latest = matchingProficiencies.sort(
+    (a, b) => (b?.ProficiencyOrder ?? 0) - (a?.ProficiencyOrder ?? 0)
+  )[0];
+
+  return latest?.LanguageLevelAbbreviation ?? "";
+}
+
 const getDaysUntilComingBirthday = async(birthday) => {
   // Parse the provided birthday
   const targetDate = new Date(birthday);
@@ -498,7 +543,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
 };
 
 
-export const handleEnrolleeProgressListConvertor = async (data, locationType, progressMap, courseProgressConfigJson) => {
+export const handleEnrolleeProgressListConvertor = async (data, locationType, progressMap, courseProgressConfigJson, courseCodeId) => {
 
   if (!data) return { tableData: [], columns: [] };
 
@@ -506,12 +551,16 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
 
   const filters = {
     countryOfResidencyFilter: new Set(),
-    countryOfBirthFilter: new Set()
+    countryOfBirthFilter: new Set(),
+    enrolleeIdFilter: new Set(),
+    proficiencyFilter: new Set()
   };
 
   const trackers = {
     countryOfResidencyTracker: new Set(),
-    countryOfBirthTracker: new Set()
+    countryOfBirthTracker: new Set(),
+    enrolleeIdTracker: new Set(),
+    proficiencyTracker: new Set()
   };
 
   await Promise.all(
@@ -537,6 +586,8 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
       const countryOfBirth =
         item?.Location?.BirthLocation?.CountryOfBirth || null;
 
+      const courseAbbreviation = getLatestProficiencyForCourse(item, courseCodeId);
+
       results.push({
         key: index,
         enrolleeId: item?.ContactExternalId,
@@ -545,25 +596,48 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
         countryOfResidency,
         countryOfBirth,
         participationPercent:
-          participationCertificatePercentage * 100,
+          Number((participationCertificatePercentage * 100).toFixed(1)),
         goldenPercent:
-          goldenCertificatePercentage * 100,
+          Number((goldenCertificatePercentage * 100).toFixed(1)),
         rawProgress: userProgressRows,
         emails: item?.Emails?.filter(e => e.IsEmailParseValid)
                 .map(e => e.EmailId) || [],
+         contactProficiency: courseAbbreviation
       });
 
       // Populate filters (same architecture as other function)
-      const filterFields = [
-        { field: countryOfResidency, filter: "countryOfResidency" },
-        { field: countryOfBirth, filter: "countryOfBirth" }
-      ];
+    const filterFields = [
+      { field: countryOfResidency, filter: "countryOfResidency" },
+      { field: countryOfBirth, filter: "countryOfBirth" },
+      { field: item?.ContactExternalId, filter: "enrolleeId" },
+      { field: courseAbbreviation, filter: "proficiency" }
+    ];
 
-      filterFields.forEach(({ field, filter }) => {
-        const trackerKey = `${filter}Tracker`;
+    filterFields.forEach(({ field, filter }) => {
+      const trackerKey = `${filter}Tracker`;
 
-        if (field && !trackers[trackerKey].has(field)) {
-          filters[`${filter}Filter`].add({
+      if (field && !trackers[trackerKey].has(field)) {
+
+        let valueToAdd;
+
+        // ---- Proficiency filter (USE TAG LIKE TABLE 3) ----
+        if (filter === "proficiency") {
+
+          const proficiencyMap = proficiencyMaps;
+          const [color, label] = proficiencyMap[field] || ['black', 'Unknown'];
+
+          valueToAdd = {
+            key: field,
+            text: <Tag color={color}>{label}</Tag>,
+            value: field
+          };
+
+        }
+
+        // ---- Country filters (USE FLAG ONLY HERE) ----
+        else if (filter === "countryOfResidency" || filter === "countryOfBirth") {
+
+          valueToAdd = {
             key: field,
             text: (
               <>
@@ -572,23 +646,55 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
               </>
             ),
             value: field
-          });
+          };
 
-          trackers[trackerKey].add(field);
         }
-      });
+
+        // ---- Default filters (ID etc) ----
+        else {
+
+          valueToAdd = {
+            key: field,
+            text: field,
+            value: field
+          };
+
+        }
+
+        filters[`${filter}Filter`].add(valueToAdd);
+        trackers[trackerKey].add(field);
+      }
+    });
 
     })
   );
 
   const columns = [
-
     {
       title: "Profile",
       children: [
+              {
+            title: 'Level',
+            dataIndex: 'contactProficiency',
+            editable: false,
+            filterSearch: true,
+            width: '10%',
+            filters: Array.from(filters.proficiencyFilter || []),
+            onFilter: (value, record) => record.contactProficiency?.indexOf(value) === 0,
+            sorter: (a, b) => a.contactProficiency.localeCompare(b.contactProficiency),
+            sortDirections: ["ascend", "descend"],
+            render: (contactProficiency) => {
+                const proficiencyMap = proficiencyMaps;
+                const [color, proficiency] = proficiencyMap[contactProficiency] || ['black', 'Unknown'];
+                return <Tag color={color} key={contactProficiency}>{proficiency}</Tag>;
+            }
+        },
         {
           title: "Id",
           dataIndex: "enrolleeId",
+          filterSearch: true, 
+          filters: Array.from(filters.enrolleeIdFilter || []), 
+          onFilter: (value, record) => record.enrolleeId === value ? true : false,
           sorter: (a, b) => a.enrolleeId - b.enrolleeId
         },
         {
@@ -677,7 +783,7 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
     expandedRowRender: (record, injectedSubmit) => {
 
       const courseConfig = courseProgressConfigJson;
-
+      console.log("record.contactProficiency", record.contactProficiency);
       return (
         <AdminProgressEditable
           categories={courseConfig?.categories}
@@ -685,6 +791,7 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
           contactId={record.contactInternalId}
           emails={record.emails}
           courseCodeId={courseConfig?.courseId}
+          userProficiency={record.contactProficiency}
           onSubmit={injectedSubmit}
         />
       );
