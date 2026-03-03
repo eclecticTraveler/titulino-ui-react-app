@@ -72,7 +72,7 @@ const InsightsLandingDashboard = (props) => {
 		const value = event.target.value.toLowerCase();
 		setSearchValue(value);
 
-		if (activeKey === "3" && enrolleDashboardData?.tableData) {
+		if (enrolleDashboardData?.tableData) {
 			const filtered = enrolleDashboardData.tableData.filter((item) =>
 			Object.values(item)
 				.join(" ")
@@ -83,7 +83,7 @@ const InsightsLandingDashboard = (props) => {
 			setFilteredEnrolleeData(filtered);
 		}
 
-		if (activeKey === "2" && enrolleesCourseProgressData?.tableData) {
+		if (enrolleesCourseProgressData?.tableData) {
 			const filtered = enrolleesCourseProgressData.tableData.filter((item) =>
 			Object.values(item)
 				.join(" ")
@@ -95,18 +95,6 @@ const InsightsLandingDashboard = (props) => {
 		}
 	};
 	
-	useEffect(() => {
-		setSearchValue("");
-
-		if (activeKey === "3" && enrolleDashboardData?.tableData) {
-			setFilteredEnrolleeData(enrolleDashboardData.tableData);
-		}
-
-		if (activeKey === "2" && enrolleesCourseProgressData?.tableData) {
-			setFilteredProgressData(enrolleesCourseProgressData.tableData);
-		}
-		}, [activeKey]);
-
 	useEffect(() => {
 		if (enrolleDashboardData?.tableData) {
 			setFilteredEnrolleeData(enrolleDashboardData.tableData);

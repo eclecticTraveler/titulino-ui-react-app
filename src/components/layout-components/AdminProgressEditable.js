@@ -10,6 +10,7 @@ const AdminProgressEditable = ({
   contactId,
   emails,
   courseCodeId,
+  userProficiency, 
   onSubmit
 }) => {
   const [selectedEmail, setSelectedEmail] = useState(
@@ -18,6 +19,19 @@ const AdminProgressEditable = ({
 
   // ONE canonical key for selection state
   const selectionKey = (categoryId, classNumber) => `${categoryId}-${classNumber}`;
+
+  const getLevelFromProficiency = (abbr) => {
+    console.log("abbr------", abbr)
+    if (!abbr) return 1;
+    const basicLevels = ["be", "ba"];
+    const advancedLevels = ["in", "na", "ad"];
+
+    if (basicLevels.includes(abbr)) return 1;
+    if (advancedLevels.includes(abbr)) return 2;
+    return 1;
+};
+
+const levelToUse = getLevelFromProficiency(userProficiency);
 
   const {
     selectedLessons,
@@ -59,11 +73,18 @@ const AdminProgressEditable = ({
 
   // Sort lessons by classNumber if needed (safe)
   const normalizedCategories = useMemo(() => {
-    return (categories ?? []).map((c) => ({
-      ...c,
-      lessons: c?.lessons ? [...c.lessons].sort((a, b) => (a?.classNumber ?? 0) - (b?.classNumber ?? 0)) : []
-    }));
-  }, [categories]);
+    return (categories ?? [])
+      .filter((category) => {
+        if (!category?.level) return true;
+        return category.level === levelToUse;
+      })
+      .map((c) => ({
+        ...c,
+        lessons: c?.lessons
+          ? [...c.lessons].sort((a, b) => (a?.classNumber ?? 0) - (b?.classNumber ?? 0))
+          : []
+      }));
+  }, [categories, levelToUse]);
 
   return (
     <Card title={`Progress for ${selectedEmail ?? "-"}`} style={{ background: "#fafafa" }}>
