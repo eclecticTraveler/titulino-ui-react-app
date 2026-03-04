@@ -26,7 +26,9 @@ const analytics = (state = initState, action) => {
         selectedLocationType: action.selectedLocationType,
         selectedCountryId: action.selectedCountryId,
         overviewDashboardData: action.overviewDashboardData,
+        overviewProgressDashboardData: action.overviewProgressDashboardData,
         demographicDashboardData: action.demographicDashboardData,
+        progressDemographicDashboardData: action.progressDemographicDashboardData,
         enrolleDashboardData: action.enrolleDashboardData,
         enrolleesCourseProgressData: action.enrolleesCourseProgressData
       }

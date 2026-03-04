@@ -44,9 +44,18 @@ export const onGettingCountriesByLocationToDashboard = async (courseCodeId, loca
 export const onLoadingAllDashboardContents = async (courseCodeId, locationType, countryId, emailId) => {
 
   try {
-    const [overviewDashboardData, demographicDashboardData, enrolleDashboardData, enrolleesCourseProgressData] = await Promise.all([
+    const [
+      overviewDashboardData,
+      overviewProgressDashboardData,
+      demographicDashboardData,
+      progressDemographicDashboardData,
+      enrolleDashboardData,
+      enrolleesCourseProgressData
+    ] = await Promise.all([
       TitulinoManager.getOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getProgressOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
       TitulinoManager.getDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getProgressDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
       TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, locationType, countryId),
       TitulinoManager.getEnrolleesCourseProgressAdminDashboard(courseCodeId, locationType, countryId, emailId)
     ]);
@@ -57,7 +66,9 @@ export const onLoadingAllDashboardContents = async (courseCodeId, locationType, 
       selectedLocationType: locationType,
       selectedCountryId: countryId,
       overviewDashboardData,
+      overviewProgressDashboardData,
       demographicDashboardData,
+      progressDemographicDashboardData,
       enrolleDashboardData,
       enrolleesCourseProgressData
     };

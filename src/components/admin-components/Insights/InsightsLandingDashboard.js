@@ -20,11 +20,30 @@ import EmailYearSearchForm from 'components/layout-components/EmailYearSearchFor
 const { TabPane } = Tabs;
 
 const InsightsLandingDashboard = (props) => {
-  const { allCourses, onRenderingAdminInsightsDashboard, locationTypes, onRenderingLocationTypeSelectionsToDashboard, demographicDashboardData, onSubmittingAdminEnrolleeProgress,
-		  selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData, enrolleesCourseProgressData, user, onLoadingAllDashboardContents
-   } = props;
+  const {
+    allCourses,
+    onRenderingAdminInsightsDashboard,
+    locationTypes,
+    onRenderingLocationTypeSelectionsToDashboard,
+    demographicDashboardData,
+    progressDemographicDashboardData,
+    onSubmittingAdminEnrolleeProgress,
+    selectedCourseCodeId,
+    selectedLocationType,
+    selectedCountryId,
+    overviewDashboardData,
+    overviewProgressDashboardData,
+    enrolleDashboardData,
+    enrolleesCourseProgressData,
+    user,
+    onLoadingAllDashboardContents
+  } = props;
 
-	const [activeKey, setActiveKey] = useState('1');
+  const [activeOuterTabKey, setActiveOuterTabKey] = useState('general');
+  const [activeInnerTabs, setActiveInnerTabs] = useState({
+    general: 'general-overview',
+    progress: 'progress-overview'
+  });
 	const [loading, setLoading] = useState(false);
 	const [searchValue, setSearchValue] = useState('');
   	const [filteredEnrolleeData, setFilteredEnrolleeData] = useState([]);
@@ -64,8 +83,8 @@ const InsightsLandingDashboard = (props) => {
 	};
 
 
-	const handleTabChange = (key) => {
-		setActiveKey(key); // Update active tab key
+	const handleInnerTabChange = (outerKey, key) => {
+		setActiveInnerTabs((prev) => ({ ...prev, [outerKey]: key }));
 	};
 
 	const handleSearch = (event) => {
@@ -125,44 +144,149 @@ const InsightsLandingDashboard = (props) => {
   const titleOfEnrollment = 'insights';
   const locale = true;
 
-	const renderGeneralOverview = () => (
+  const renderOverviewGrid = (data) => (
 	<>
 		<Row gutter={16}>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.totalEnrollees"} count={overviewDashboardData?.totalEnrollees}/>
+			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.totalEnrollees"} count={data?.totalEnrollees}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.totalMalesVsFemales"} graphData={overviewDashboardData?.genderCount} passedValue={"count"} passedType={"sex"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.totalMalesVsFemales"} graphData={data?.genderCount} passedValue={"count"} passedType={"sex"}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<PieGraph localizedTitle={"admin.dashboard.insights.overview.genderPercentages"} graphData={overviewDashboardData?.genderPercentages} passedValue={"percentage"} passedType={"sex"}/>
+			<PieGraph localizedTitle={"admin.dashboard.insights.overview.genderPercentages"} graphData={data?.genderPercentages} passedValue={"percentage"} passedType={"sex"}/>
 			</Col>
 
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={overviewDashboardData?.averageGeneralAge} />
+			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={data?.averageGeneralAge} />
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.avgMaleVsFemaleAge"} firstCount={overviewDashboardData?.averageMaleAge} secondCount={overviewDashboardData?.averageFemaleAge} />
+			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.avgMaleVsFemaleAge"} firstCount={data?.averageMaleAge} secondCount={data?.averageFemaleAge} />
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.agesGroups"} graphData={overviewDashboardData?.agesPercentages} passedValue={"count"} passedType={"label"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.agesGroups"} graphData={data?.agesPercentages} passedValue={"count"} passedType={"label"}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.newVsReturning"} firstCount={overviewDashboardData?.totalNewEnrollees} secondCount={overviewDashboardData?.totalReturningEnrollees}/>
+			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.newVsReturning"} firstCount={data?.totalNewEnrollees} secondCount={data?.totalReturningEnrollees}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={overviewDashboardData?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={data?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<ColumnBar localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={overviewDashboardData?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""}/>
+			<ColumnBar localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={data?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={overviewDashboardData?.enrolleeProficiencyGroups} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={data?.enrolleeProficiencyGroups} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
 			</Col>
 		</Row>
 	</>
 	);
 
+	const renderGeneralOverview = () => renderOverviewGrid(overviewDashboardData);
+
+	const renderProgressOverview = () => {
+    const progressOverviewData = overviewProgressDashboardData ?? overviewDashboardData;
+    return renderOverviewGrid(progressOverviewData);
+  };
+
+  const renderEnrolleeListTab = () => (
+    <Row gutter={16}>
+      <Col span={24}>
+        <Input
+          placeholder={setLocale(locale, "admin.dashboard.insights.search.placeholder")}
+          value={searchValue}
+          onChange={handleSearch}
+          prefix={<SearchOutlined />}
+          style={{ marginBottom: 16 }}
+        />
+      </Col>
+      <Col xs={24} sm={24} md={24} lg={24}>
+        {filteredEnrolleeData.length > 0 ? (
+          <AbstractTable
+            tableData={filteredEnrolleeData}
+            tableColumns={enrolleDashboardData?.columns}
+            tableExpandables={enrolleDashboardData?.expandable}
+            isAllowedToEditTableData={false}
+            isToRenderActionButton={false}
+          />
+        ) : (
+          <p>{setLocale(locale, "admin.dashboard.insights.progress.noMatchingRecords")}</p>
+        )}
+      </Col>
+    </Row>
+  );
+
+  const renderProgressListTab = () => (
+    <Row gutter={16}>
+      <Col span={24}>
+        <Input
+          placeholder={setLocale(locale, "admin.dashboard.insights.search.placeholder")}
+          value={searchValue}
+          onChange={handleSearch}
+          prefix={<SearchOutlined />}
+          style={{ marginBottom: 16 }}
+        />
+      </Col>
+
+      <Col xs={24} sm={24} md={24} lg={24}>
+        {(() => {
+          const progressTableData = enrolleesCourseProgressData?.tableData;
+
+          const progressExpandableWithDelegate =
+            enrolleesCourseProgressData?.expandable
+              ? {
+                  ...enrolleesCourseProgressData.expandable,
+                  expandedRowRender: (record) =>
+                    enrolleesCourseProgressData.expandable.expandedRowRender(
+                      record,
+                      handleAdminProgressSubmit
+                    )
+                }
+              : undefined;
+
+          if (!progressTableData) {
+            return <p>{setLocale(locale, "admin.dashboard.insights.progress.loadingData")}</p>;
+          }
+
+          if (progressTableData.length === 0) {
+            return <p>{setLocale(locale, "admin.dashboard.insights.progress.noRecordsForSelection")}</p>;
+          }
+
+          if (filteredProgressData.length === 0) {
+            return <p>{setLocale(locale, "admin.dashboard.insights.progress.noMatchingRecords")}</p>;
+          }
+
+          return (
+            <AbstractTable
+              tableData={filteredProgressData}
+              tableColumns={enrolleesCourseProgressData?.columns}
+              tableExpandables={progressExpandableWithDelegate}
+              isAllowedToEditTableData={false}
+              isToRenderActionButton={false}
+            />
+          );
+        })()}
+      </Col>
+    </Row>
+  );
+
+  const renderDemographicTab = (data) => (
+    <Row gutter={16}>
+      <Col xs={24} sm={24} md={24} lg={24}>
+        {data && (
+          <EnrolleeByRegionWidget
+            enrolleeRegionData={
+              selectedLocationType?.toLowerCase() === "birth"
+                ? data?.transformedArrays?.transformedBirthArray
+                : data?.transformedArrays?.transformedResidencyArray
+            }
+            mapSource={data?.mapJson}
+            mapType={data?.mapType}
+          />
+        )}
+      </Col>
+    </Row>
+  );
 
 	const setLocale = (isLocaleOn, localeKey) => {
 		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -175,6 +299,110 @@ const InsightsLandingDashboard = (props) => {
 			</div>
 		)
 	}
+
+  const renderInnerTabsByOuter = (outerKey) => {
+    const innerTabsByOuter = {
+      general: [
+        {
+          key: 'general-overview',
+          tab: (
+            <span>
+              <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+              {setLocale(locale, "resources.myprogress.generalView")}
+            </span>
+          ),
+          content: renderGeneralOverview()
+        },
+        {
+          key: 'general-enrollee-list',
+          tab: (
+            <span>
+              <IconAdapter icon={faPersonPraying} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+              {setLocale(locale, "admin.dashboard.insights.enrolleeList")}
+            </span>
+          ),
+          content: renderEnrolleeListTab()
+        },
+        {
+          key: 'general-demographics',
+          tab: (
+            <span>
+              <IconAdapter icon={faMapPin} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+              {setLocale(locale, "admin.dashboard.insights.demographics")}
+            </span>
+          ),
+          content: renderDemographicTab(demographicDashboardData)
+        }
+      ],
+      progress: [
+        {
+          key: 'progress-overview',
+          tab: (
+            <span>
+              <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+              {setLocale(locale, "admin.dashboard.insights.enrolleeProgress")}
+            </span>
+          ),
+          content: renderProgressOverview()
+        },
+        {
+          key: 'progress-enrollee-list',
+          tab: (
+            <span>
+              <IconAdapter icon={faPersonHiking} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+              {setLocale(locale, "admin.dashboard.insights.enrolleeProgress")}
+            </span>
+          ),
+          content: renderProgressListTab()
+        },
+        {
+          key: 'progress-demographics',
+          tab: (
+            <span>
+              <IconAdapter icon={faMapPin} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+              {setLocale(locale, "admin.dashboard.insights.demographics")}
+            </span>
+          ),
+          content: renderDemographicTab(progressDemographicDashboardData ?? demographicDashboardData)
+        }
+      ]
+    };
+
+    const tabsForOuter = innerTabsByOuter[outerKey] ?? [];
+    return (
+      <Tabs
+        activeKey={activeInnerTabs[outerKey]}
+        onChange={(key) => handleInnerTabChange(outerKey, key)}
+      >
+        {tabsForOuter.map((tabConfig) => (
+          <TabPane tab={tabConfig.tab} key={tabConfig.key}>
+            {tabConfig.content}
+          </TabPane>
+        ))}
+      </Tabs>
+    );
+  };
+
+  const outerTabsConfig = [
+    {
+      key: 'general',
+      tab: (
+        <span>
+          <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+          {setLocale(locale, "admin.dashboard.insights.outer.general")}
+        </span>
+      )
+    },
+    {
+      key: 'progress',
+      tab: (
+        <span>
+          <IconAdapter icon={faPersonHiking} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+          {setLocale(locale, "admin.dashboard.insights.outer.progress")}
+        </span>
+      )
+    }
+  ];
 
   return (
     <div className="container customerName">
@@ -199,146 +427,14 @@ const InsightsLandingDashboard = (props) => {
       >
         <DropdownInsightSelection setLoading={setLoading}/>
       </Card>
-      <Card loading={loading} bordered>
-        <Tabs activeKey={activeKey} onChange={handleTabChange}>
-			<TabPane 
-			tab={
-				<span>
-				<IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-				{setLocale(locale, "resources.myprogress.generalView")}
-				</span>
-			} 
-			key="1"
-			>
-			{renderGeneralOverview()}
-			</TabPane>
-			<TabPane
-			tab={
-				<span>
-				<IconAdapter icon={faPersonHiking} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
-				{setLocale(locale, "admin.dashboard.insights.enrolleeProgress")}
-				</span>
-			}
-			key="2"
-			>
-			<Row gutter={16}>
-				<Col span={24}>
-				<Input
-					placeholder="Search by names, last names, or age"
-					value={searchValue}
-					onChange={handleSearch}
-					prefix={<SearchOutlined />}
-					style={{ marginBottom: 16 }}
-				/>
-				</Col>
-
-				<Col xs={24} sm={24} md={24} lg={24}>
-				{(() => {
-					// 1) Raw redux table data (the truth)
-					const progressTableData = enrolleesCourseProgressData?.tableData;
-
-					// 2) Inject the submit delegate into expandedRowRender
-					const progressExpandableWithDelegate =
-					enrolleesCourseProgressData?.expandable
-						? {
-							...enrolleesCourseProgressData.expandable,
-							expandedRowRender: (record) =>
-							enrolleesCourseProgressData.expandable.expandedRowRender(
-								record,
-								handleAdminProgressSubmit
-							)
-						}
-						: undefined;
-
-					// 3) Render states:
-					// - Not loaded yet
-					if (!progressTableData) {
-					return <p>Loading progress data...</p>;
-					}
-
-					// - Loaded but empty (API returned no rows)
-					if (progressTableData.length === 0) {
-					return <p>No records returned for this selection.</p>;
-					}
-
-					// - Loaded but search filter removed everything
-					if (filteredProgressData.length === 0) {
-					return <p>No matching records found.</p>;
-					}
-
-					// - Normal render
-					return (
-					<AbstractTable
-						tableData={filteredProgressData}
-						tableColumns={enrolleesCourseProgressData?.columns}
-						tableExpandables={progressExpandableWithDelegate}
-						isAllowedToEditTableData={false}
-						isToRenderActionButton={false}
-					/>
-					);
-				})()}
-				</Col>
-			</Row>
-			</TabPane>	
-			<TabPane
-				tab={
-					<span>
-					<IconAdapter icon={faPersonPraying} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-					{setLocale(locale, "admin.dashboard.insights.enrolleeList")}
-					</span>
-				} 
-				key="3"
-				>
-				<Row gutter={16}>
-				<Col span={24}>
-					<Input
-					placeholder="Search by names, last names, or age"
-					value={searchValue}
-					onChange={handleSearch}
-					prefix={<SearchOutlined />}
-					style={{ marginBottom: 16 }}
-					/>
-				</Col>
-				<Col xs={24} sm={24} md={24} lg={24}>
-					{filteredEnrolleeData.length > 0 ? (
-					<AbstractTable 
-						tableData={filteredEnrolleeData}
-						tableColumns={enrolleDashboardData?.columns}
-						tableExpandables={enrolleDashboardData?.expandable}
-						isAllowedToEditTableData={false}
-						isToRenderActionButton={false}
-					/>
-					) : (
-					<p>No matching records found.</p>
-					)}
-				</Col>
-				</Row>
-			</TabPane>
-			<TabPane 
-				tab={
-					<span>
-					<IconAdapter icon={faMapPin} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-					{setLocale(locale, "admin.dashboard.insights.demographics")}
-					</span>
-				} 
-				key="4"
-				>
-				<Row gutter={16}>
-					<Col xs={24} sm={24} md={24} lg={24}>
-					{demographicDashboardData && 
-						<EnrolleeByRegionWidget 
-						enrolleeRegionData={selectedLocationType?.toLowerCase() === "birth" ? 
-											demographicDashboardData?.transformedArrays?.transformedBirthArray :
-											demographicDashboardData?.transformedArrays?.transformedResidencyArray
-						} 
-						mapSource={demographicDashboardData?.mapJson}
-						mapType={demographicDashboardData?.mapType}
-						/>
-					}
-					</Col>
-				</Row>
-			</TabPane>
-        </Tabs>
+      <Card
+        loading={loading}
+        bordered
+        tabList={outerTabsConfig}
+        activeTabKey={activeOuterTabKey}
+        onTabChange={setActiveOuterTabKey}
+      >
+        {renderInnerTabsByOuter(activeOuterTabKey)}
       </Card>
     </div>
   );
@@ -357,8 +453,33 @@ function mapDispatchToProps(dispatch) {
 
 const mapStateToProps = ({ analytics, grant }) => {
   const { user } = grant;
-  const { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, demographicDashboardData, enrolleDashboardData, enrolleesCourseProgressData } = analytics;
-  return { allCourses, locationTypes, selectedCourseCodeId, selectedLocationType, selectedCountryId, overviewDashboardData, enrolleDashboardData, demographicDashboardData, enrolleesCourseProgressData, user };
+  const {
+    allCourses,
+    locationTypes,
+    selectedCourseCodeId,
+    selectedLocationType,
+    selectedCountryId,
+    overviewDashboardData,
+    overviewProgressDashboardData,
+    demographicDashboardData,
+    progressDemographicDashboardData,
+    enrolleDashboardData,
+    enrolleesCourseProgressData
+  } = analytics;
+  return {
+    allCourses,
+    locationTypes,
+    selectedCourseCodeId,
+    selectedLocationType,
+    selectedCountryId,
+    overviewDashboardData,
+    overviewProgressDashboardData,
+    enrolleDashboardData,
+    demographicDashboardData,
+    progressDemographicDashboardData,
+    enrolleesCourseProgressData,
+    user
+  };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(InsightsLandingDashboard);

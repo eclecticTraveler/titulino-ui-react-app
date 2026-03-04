@@ -623,6 +623,39 @@ export const getAdminDashboardDemographicEnrolleeOverview = async (courseCodeId,
   }
 }
 
+// Stubbed dedicated endpoint for Progress dashboard overview.
+// Falls back to the general overview endpoint until backend is ready.
+export const getAdminDashboardProgressOverview = async (courseCodeId, locationType, countryId, whoCalledMe) => {
+  if (locationType && courseCodeId && countryId) {
+    const progressOverviewUrl = `${SupabaseConfig.baseApiUrl}/GetAdminDashboardProgressOverview`;
+
+    const raw = JSON.stringify({
+      "p_locationtype": locationType,
+      "p_countrynameorid": countryId,
+      "p_coursecodeid": courseCodeId
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: getHeaders(),
+      body: raw,
+      redirect: "follow"
+    };
+
+    try {
+      const response = await fetch(progressOverviewUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? false;
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getAdminDashboardProgressOverview: from ${whoCalledMe}`);
+      console.error(error);
+      return getAdminDashboardDemographicEnrolleeOverview(courseCodeId, locationType, countryId, whoCalledMe);
+    }
+  }
+
+  return false;
+};
+
 export const getEnrolleeGeneralListByCourseCodeId = async (courseCodeId, whoCalledMe) => {
 
   if(courseCodeId){
@@ -701,6 +734,7 @@ const TitulinoRestService = {
   getLocationTypeCountrySelection,
   getLocationTypes,
   getAdminDashboardDemographicEnrolleeOverview,
+  getAdminDashboardProgressOverview,
   getEnrolleeCountryDivisionCount,
   getEnrolleeGeneralListByCourseCodeId,
   getEnrolleeCountrylListByCourseCodeId,
