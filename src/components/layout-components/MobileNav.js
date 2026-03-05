@@ -8,7 +8,6 @@ import { onMobileNavToggle } from "../../redux/actions/Theme";
 import LogoAlt from "./LogoAlt";
 import Flex from "../../components/shared-components/Flex";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import WidgetAction from 'components/shared-components/WidgetAction';
 import DonationCenter from "components/shared-components/DonationCenter";
 import ShoppingCenter from "components/shared-components/Shopping";
 import { env } from "configs/EnvironmentConfig";

@@ -1,5 +1,4 @@
 import speakingChapterData from '../assets/data/speaking-practice-data.json';
-import GoogleService from './GoogleService';
 
 const loadSpeakingData = async() => {
   const rawData = speakingChapterData;

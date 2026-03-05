@@ -9,14 +9,12 @@ import {
 	faPepperHot,
 	faAppleAlt,
 	faLemon,
-	faBookReader,
 	faBacon,
 	faFish,
 	faBoxArchive,
 	faArchive,
 	faMoneyBill,
 	faBreadSlice,
-	faHotdog,
 	faBoxes,
 	faTv,
 	faMedal
@@ -326,4 +324,3 @@ export const AuthCourseSubNavigationWorkNJobsTheme = (lang, course) => {
 
 	return baseMenu;
 }
-

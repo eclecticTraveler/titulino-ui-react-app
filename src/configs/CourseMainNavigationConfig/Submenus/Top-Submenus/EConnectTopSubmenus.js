@@ -2,7 +2,6 @@ import { APP_PREFIX_PATH } from '../../../AppConfig';
 import { getCourseSubNavigationLowBasic } from '../CourseSubNavigationLowBasic' 
 import { getCourseSubNavigationMidBasic } from '../CourseSubNavigationMidBasic';
 import { getCourseSubNavigationHighBasic } from '../CourseSubNavigationHighBasic';
-import { getLocalizedConfig } from '../ConfigureNavigationLocalization';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG } from 'configs/CourseThemeConfig';
 
@@ -74,4 +73,3 @@ export const getTopSubmenuForEnglishConnect = (lang) => {
 		}
 	]
 }
-

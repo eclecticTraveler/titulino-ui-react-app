@@ -1,5 +1,4 @@
 import bookChapterData from '../assets/data/chapter-book-data.json';
-import GoogleService from './GoogleService';
 
 const loadBookData = async() => {
   const rawData = bookChapterData;

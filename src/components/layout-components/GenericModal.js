@@ -8,7 +8,6 @@ import Lottie from 'lottie-react';
 const GenericModal = ({ closeGenericModal, visibleModal, title, animation, messageToDisplay, secondTitle, closeButtonTitle, transitionTimming }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentAnimation, setCurrentAnimation] = useState(animation); // Track current animation
-  const [currentMessage, setCurrentMessage] = useState(title); // Track current message
   const [isLinkVisible, setLinkVisible] = useState(false);
   const [isClosedBtnDisabled, setIsClosedBtnDisabled] = useState(true);
 
@@ -19,7 +18,6 @@ const GenericModal = ({ closeGenericModal, visibleModal, title, animation, messa
       setIsModalVisible(true);
       timeoutId = setTimeout(() => {
         setCurrentAnimation(animation);
-        setCurrentMessage(title);
         setLinkVisible(true);
         setIsClosedBtnDisabled(false);
       }, transitionTimming);
@@ -36,7 +34,6 @@ const GenericModal = ({ closeGenericModal, visibleModal, title, animation, messa
   const handleClose = () => {
     setIsModalVisible(false);
     setCurrentAnimation(animation); // Reset to initial animation
-    setCurrentMessage(''); // Reset message
     setLinkVisible(false); // Hide links
     closeGenericModal();
   };

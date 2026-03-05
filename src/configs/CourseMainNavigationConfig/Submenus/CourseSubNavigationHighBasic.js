@@ -7,8 +7,6 @@ import {
 	faChildReaching,
 	faChildren,
    } from '@fortawesome/free-solid-svg-icons';
-   
-   import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
 
   
 export const getCourseSubNavigationHighBasic = (lang) => {
@@ -49,4 +47,3 @@ export const getCourseSubNavigationHighBasic = (lang) => {
 		}
 	]
 }
-

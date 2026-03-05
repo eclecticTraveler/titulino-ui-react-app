@@ -1,6 +1,5 @@
 
 import courses from "../../assets/data/lang-courses.data.json"; 
-import DynamicNavigationRouter from "../../services/DynamicNavigationRouter";
 import LocalStorageService from "../../services/LocalStorageService";
 import QuizletService from "../../services/QuizletService";
 import VideoClassService from "../../services/VideoClassService";
@@ -18,10 +17,6 @@ import TitulinoNetService from "services/TitulinoNetService";
 import StudentProgress from "lob/StudentProgress";
 import LrnConfiguration from "lob/LrnConfiguration"
 import TitulinoManager from "managers/LrnManager";
-import $ from 'jquery'; 
-
-import axios from 'axios';
-import { env } from "../../configs/EnvironmentConfig";
 
 import { 
   GET_SELECTED_LEVEL_FROM_UPPER_NAV_ON_CLICK,
@@ -232,7 +227,7 @@ export const onLoginForEnrollment = async () => {
 }
 
 export const onUpsertingEnrollment = async (apiToken, enrolle) => {
-  const enrollee = await TitulinoNetService.upsertEnrollment(apiToken, enrolle, onUpsertingEnrollment)
+  await TitulinoNetService.upsertEnrollment(apiToken, enrolle, onUpsertingEnrollment)
   return {
     type: ON_UPSERTING_ENROLLMENT_FOR_QUEUE,
   }
@@ -302,7 +297,7 @@ export const onResetSubmittingEnrollee = async (resetValue) => {
 }
 
 export const onRequestingCourseProgressStructure = async (nativeLanguage, course, courseCodeId ) => {
-  const courseStructure = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
+  await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
     return {
       type: ON_REQUESTING_COURSE_PROGRESS_STRUCTURE,
     }

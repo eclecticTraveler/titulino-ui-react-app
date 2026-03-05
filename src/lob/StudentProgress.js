@@ -1,8 +1,6 @@
 export const getCategoriesObtainedByEmailForSupermarketCourse = async(userProgressByEmailId) => {
   const userProgress = [...userProgressByEmailId];
 
-  const totalClasses = 8;
-
     // Filter by category
     const category1Progress = userProgress?.filter(record => record?.Category === 1);
     const category2Progress = userProgress?.filter(record => record?.Category === 2);

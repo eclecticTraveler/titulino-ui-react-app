@@ -26,7 +26,6 @@ import { faSchool,
 	faGlassCheers,
 	faBullseye,
    } from '@fortawesome/free-solid-svg-icons';
-   import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
 
 
 export const getCourseSubNavigationMidBasic = (lang) => {			
@@ -299,4 +298,3 @@ export const getCourseSubNavigationMidBasic = (lang) => {
 		}
 	]
 }
-

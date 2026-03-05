@@ -2,7 +2,6 @@ import React from 'react';
 import { Button } from 'antd';
 import { useHistory } from 'react-router-dom';
 import IntlMessage from "components/util-components/IntlMessage";
-import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 
 const ProductPurchasedMessage = ({handlePostButtonClick}) => {
   const history = useHistory();

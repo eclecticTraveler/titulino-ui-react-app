@@ -8,7 +8,6 @@ import {
 	faPepperHot,
 	faAppleAlt,
 	faLemon,
-	faBookReader,
 	faBacon,
 	faFish,
 	faBoxArchive,
@@ -169,4 +168,3 @@ export const AuthCourseSubNavigationHouseholdTheme = (lang) => {
 		}
 	]
 }
-

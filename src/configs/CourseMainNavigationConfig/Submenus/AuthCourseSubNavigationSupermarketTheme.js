@@ -8,7 +8,6 @@ import {
 	faPepperHot,
 	faAppleAlt,
 	faLemon,
-	faBookReader,
 	faBacon,
 	faFish,
 	faBoxArchive,
@@ -18,7 +17,6 @@ import {
 	faHotdog,
 	faBoxes
    } from '@fortawesome/free-solid-svg-icons';
-   import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
    
 
 export const AuthCourseSubNavigationSupermarketTheme = (lang) => {			
@@ -159,4 +157,3 @@ export const AuthCourseSubNavigationSupermarketTheme = (lang) => {
 		}
 	]
 }
-

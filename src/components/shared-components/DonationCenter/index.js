@@ -1,14 +1,7 @@
 import React from 'react';
 import { env } from 'configs/EnvironmentConfig';
-import IntlMessage from "components/util-components/IntlMessage";
 
 export const DonationCenter = ({ isCollapsed }) => {
-	const locale = true;
-
-	const setLocale = (isLocaleOn, localeKey) => {
-		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-	};
-
 	const renderFullButton = () => (
 		<a
 			href={env.DONATION_CENTER_URL}

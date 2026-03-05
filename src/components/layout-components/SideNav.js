@@ -5,7 +5,6 @@ import { SIDE_NAV_WIDTH, SIDE_NAV_DARK, NAV_TYPE_SIDE } from '../../constants/Th
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import MenuContent from './MenuContent'
 import Title from '../../components/layout-components/Title';
-import WidgetAction from '../../components/shared-components/WidgetAction';
 import DonationCenter from "components/shared-components/DonationCenter";
 import { env } from "configs/EnvironmentConfig";
 import ShoppingCenter from "components/shared-components/Shopping";
