@@ -54,6 +54,16 @@ export const getOverviewInfoAdminDashboard = async (courseCodeId, locationType, 
   return await AdminInsights.overviewInfoConvertion(overview);
 };
 
+export const getProgressOverviewInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
+  const progressOverview = await TitulinoRestService.getAdminDashboardProgressOverview(
+    courseCodeId,
+    locationType,
+    countryId,
+    "getProgressOverviewInfoAdminDashboard"
+  );
+  return await AdminInsights.overviewInfoConvertion(progressOverview);
+};
+
 export const getDemographicInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
   const isAll = locationType?.toLowerCase() === "all";
 
@@ -73,6 +83,10 @@ export const getDemographicInfoAdminDashboard = async (courseCodeId, locationTyp
     mapType,
     mapJson
   };
+};
+
+export const getProgressDemographicInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
+  return getDemographicInfoAdminDashboard(courseCodeId, locationType, countryId);
 };
 
 export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
@@ -188,7 +202,9 @@ const AnalyticsManager = {
   getLocationTypesForInsights,
   getCountriesByLocationType,
   getOverviewInfoAdminDashboard,
+  getProgressOverviewInfoAdminDashboard,
   getDemographicInfoAdminDashboard,
+  getProgressDemographicInfoAdminDashboard,
   getEnrolleeInfoAdminDashboard,
   getEnrolleeKnowMeProfilePictureForCourse,
   getEnrolleesCourseProgressAdminDashboard,

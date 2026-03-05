@@ -1,27 +1,32 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Checkbox, Select, Button, Divider, Row, Col, Card, Tag } from "antd";
 import { useUserProgressLogic } from "hooks/useUserProgressLogic";
+import IntlMessage from "components/util-components/IntlMessage";
 
 const { Option } = Select;
 
 const AdminProgressEditable = ({
   categories,
-  progressData,   // <-- this is record.rawProgress (rows)
+  progressData,
   contactId,
   emails,
   courseCodeId,
-  userProficiency, 
+  userProficiency,
   onSubmit
 }) => {
+  const locale = true;
+  const setLocale = (isLocaleOn, localeKey) => {
+    return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
+  };
+
   const [selectedEmail, setSelectedEmail] = useState(
     emails?.length ? emails[0] : null
   );
 
-  // ONE canonical key for selection state
   const selectionKey = (categoryId, classNumber) => `${categoryId}-${classNumber}`;
 
   const getLevelFromProficiency = (abbr) => {
-    console.log("abbr------", abbr)
+    console.log("abbr------", abbr);
     if (!abbr) return 1;
     const basicLevels = ["be", "ba"];
     const advancedLevels = ["in", "na", "ad"];
@@ -29,9 +34,9 @@ const AdminProgressEditable = ({
     if (basicLevels.includes(abbr)) return 1;
     if (advancedLevels.includes(abbr)) return 2;
     return 1;
-};
+  };
 
-const levelToUse = getLevelFromProficiency(userProficiency);
+  const levelToUse = getLevelFromProficiency(userProficiency);
 
   const {
     selectedLessons,
@@ -48,7 +53,6 @@ const levelToUse = getLevelFromProficiency(userProficiency);
     existingProgressRows: progressData
   });
 
-  // ✅ Pre-select based on progressData (per email)
   useEffect(() => {
     if (!progressData || !selectedEmail) return;
 
@@ -66,12 +70,10 @@ const levelToUse = getLevelFromProficiency(userProficiency);
       });
 
     setSelectedLessons(preSelected);
-  }, [progressData, selectedEmail]); // setSelectedLessons comes from hook
+  }, [progressData, selectedEmail]);
 
-  // Optional: show title + count
   const emailCount = emails?.length ?? 0;
 
-  // Sort lessons by classNumber if needed (safe)
   const normalizedCategories = useMemo(() => {
     return (categories ?? [])
       .filter((category) => {
@@ -87,12 +89,18 @@ const levelToUse = getLevelFromProficiency(userProficiency);
   }, [categories, levelToUse]);
 
   return (
-    <Card title={`Progress for ${selectedEmail ?? "-"}`} style={{ background: "#fafafa" }}>
-      {/* Email Selector */}
+    <Card
+      title={
+        <span>
+          {setLocale(locale, "resources.myprogress.progressFor")} {selectedEmail ?? "-"}
+        </span>
+      }
+      style={{ background: "#fafafa" }}
+    >
       {emailCount > 0 && (
         <>
           <div style={{ marginBottom: 6 }}>
-            <strong>Emails</strong>
+            <strong>{setLocale(locale, "admin.progressEditable.emails")}</strong>
             <Tag
               color={emailCount > 1 ? "geekblue" : "green"}
               style={{ marginLeft: 8 }}
@@ -117,12 +125,10 @@ const levelToUse = getLevelFromProficiency(userProficiency);
         </>
       )}
 
-      {/* Categories Grid */}
       <Row gutter={[16, 16]}>
         {normalizedCategories?.map((category, idx) => {
           if (!category?.isToDisplay) return null;
 
-          // ✅ React key must be unique even if categoryId repeats across levels
           const categoryReactKey = `category-${category?.categoryId}-${category?.level ?? "na"}-${idx}-${courseCodeId}`;
 
           return (
@@ -131,13 +137,11 @@ const levelToUse = getLevelFromProficiency(userProficiency);
                 {category?.lessons
                   ?.filter((l) => l?.isToDisplay)
                   ?.map((lesson, lidx) => {
-                    // ✅ selection key for state
                     const k = selectionKey(category?.categoryId, lesson?.classNumber);
 
                     const isSelected = selectedLessons?.[k];
                     const requiresDropdown = (category?.participationIds?.length ?? 0) > 1;
 
-                    // ✅ separate React key for list rendering
                     const lessonReactKey = `lesson-${category?.categoryId}-${category?.level ?? "na"}-${lesson?.classNumber}-${lidx}-${courseCodeId}`;
 
                     return (
@@ -148,7 +152,7 @@ const levelToUse = getLevelFromProficiency(userProficiency);
                             handleCheckboxChange(category?.categoryId, lesson?.classNumber)
                           }
                         >
-                          Class {lesson?.classNumber} – {lesson?.title}
+                          {setLocale(locale, "resources.userProgress.class")} {lesson?.classNumber} - {lesson?.title}
                         </Checkbox>
 
                         {requiresDropdown && isSelected && (
@@ -168,7 +172,7 @@ const levelToUse = getLevelFromProficiency(userProficiency);
                                 key={`ptype-${category?.categoryId}-${category?.level ?? "na"}-${p?.participationTypeId}`}
                                 value={p?.participationTypeId}
                               >
-                                {p?.localizationKey}
+                                {setLocale(locale, p?.localizationKey)}
                               </Option>
                             ))}
                           </Select>
@@ -183,7 +187,7 @@ const levelToUse = getLevelFromProficiency(userProficiency);
       </Row>
 
       <Button type="primary" onClick={handleSubmit} style={{ marginTop: 20 }}>
-        Save Progress
+        {setLocale(locale, "admin.progressEditable.saveProgress")}
       </Button>
     </Card>
   );
