@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { Breadcrumb } from 'antd';
-import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from '../../configs/AppConfig'
 import mainNavigationConfig from "../../configs/MainNavigationConfig";
 import IntlMessage from '../../components/util-components/IntlMessage';
 

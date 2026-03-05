@@ -1,7 +1,6 @@
 import LocalStorageService from "services/LocalStorageService";
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
-import GoogleService from "services/GoogleService";
 import AdminInsights from "lob/AdminInsights";
 import ShopPurchaseExperience from "lob/ShopPurchaseExperience";
 

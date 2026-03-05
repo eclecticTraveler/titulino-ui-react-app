@@ -1,5 +1,3 @@
-import { env } from './EnvironmentConfig'
-
 export const COURSE_COLOR_CONFIG = {
 	lowerBeginner:"#bf4b1f",
 	midBeginner:"#37aab5",

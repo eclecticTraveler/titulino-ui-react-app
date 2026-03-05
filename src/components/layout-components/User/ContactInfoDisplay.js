@@ -7,13 +7,9 @@ import {
     ContactsOutlined,
     PhoneOutlined, 
     MailOutlined, 
-    UsergroupAddOutlined, 
-    QuestionCircleOutlined, 
-    LogoutOutlined,
-    CloudUploadOutlined,
-    SwapOutlined
+    UsergroupAddOutlined
   } from '@ant-design/icons';
-import { Input, Row, Col, Card, Form, Button } from 'antd';
+import { Row, Col, Card } from 'antd';
 
 const ContactInfoDisplay = props => {
 	const { selectedCorrectionRecord } = props;	

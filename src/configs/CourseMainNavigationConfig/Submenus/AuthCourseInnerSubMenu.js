@@ -10,7 +10,6 @@ import {
 	faPencilAlt,
 	faChalkboard,
 	faFilePdf,
-	faChartSimple,
 	faMicrophone,
 	faPencilSquare,
 	faPeopleRoof,
@@ -326,4 +325,3 @@ export const getCoursePracticeResourcesInnerSubMenu = (lang, levelNo, chapterNo)
 		]
 	
 }
-

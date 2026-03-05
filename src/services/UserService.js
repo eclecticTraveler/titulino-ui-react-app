@@ -1,4 +1,3 @@
-import $ from 'jquery'; 
 import Keycloak from 'keycloak-js';
 import { env } from '../configs/EnvironmentConfig';
 

@@ -11,7 +11,7 @@ import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/
 
 
 export const ProgressDashboardByEmail = (props) => {
-  const { onSearchingForProgressByEmailId, registeredProgressByEmailId, nativeLanguage, onRenderingCourseRegistration,
+  const { onSearchingForProgressByEmailId, registeredProgressByEmailId, onRenderingCourseRegistration,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, course } = props;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -150,8 +150,6 @@ export const ProgressDashboardByEmail = (props) => {
               </Button>
             </Card>
           </Col>
-1460
-to 1200 resta 1388.24
           {/* LiquidCirclePercent - Participation Certificate */}
           <Col xs={24} sm={8}>
             <Card title={setLocale(locale, "resources.myprogress.participationcert")} bordered>
@@ -195,9 +193,8 @@ function mapDispatchToProps(dispatch) {
 
 const mapStateToProps = ({ lrn, theme }) => {
   const { course } =  theme;
-  const { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse } = lrn;
-  return { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course };
+  const { registeredProgressByEmailId, studentPercentagesForCourse, studentCategoriesCompletedForCourse } = lrn;
+  return { registeredProgressByEmailId, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProgressDashboardByEmail));
-

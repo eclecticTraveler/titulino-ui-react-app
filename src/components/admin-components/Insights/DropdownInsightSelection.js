@@ -54,7 +54,7 @@ const DropdownInsightSelection = (props) => {
       onLoadingAllDashboardContents(selectedCourse, selectedLocationType, selectedCountry, user?.emailId)
       ?.finally(() => setLoading(false)); // Stop loading after data fetch
     } 
-  }, [selectedLocationType, selectedCourse, selectedCountry]);
+  }, [selectedLocationType, selectedCourse, selectedCountry, onLoadingAllDashboardContents, setLoading, user?.emailId]);
 
 
   const handleCourseSelection = (value) => {

@@ -1,6 +1,5 @@
 
 import ShopManager from "managers/ShopManager";
-import { env } from "../../configs/EnvironmentConfig";
 
 import { 
   ON_PURCHASING_PRODUCT,

@@ -1,23 +1,20 @@
 import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
-import { getCoursePracticeInnerSubMenuV2, getCoursePracticeResourcesInnerSubMenu } from './CoursePracticeInnerSubMenu';
+import { getCoursePracticeInnerSubMenuV2 } from './CoursePracticeInnerSubMenu';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
 	faCarrot,
 	faPepperHot,
 	faAppleAlt,
 	faLemon,
-	faBookReader,
 	faBacon,
 	faFish,
 	faBoxArchive,
 	faArchive,
 	faMoneyBill,
 	faBreadSlice,
-	faHotdog,
-	faBoxes
+	faHotdog
    } from '@fortawesome/free-solid-svg-icons';
-   import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
    
 
 export const CourseSubNavigationSupermarketTheme = (lang) => {			
@@ -147,4 +144,3 @@ export const CourseSubNavigationSupermarketTheme = (lang) => {
 		}
 	]
 }
-

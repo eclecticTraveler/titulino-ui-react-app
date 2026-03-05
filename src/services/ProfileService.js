@@ -1,9 +1,7 @@
-import axios from 'axios';
 import { env } from '../configs/EnvironmentConfig'
 import dummyAddressData from '../assets/data/shipping-data.json';
 
 const userAccountInfoEndPoint= `${env.DECISIONS_API_ENDPOINT_URL}/Primary/restapi/Flow/33c34e05-e8c7-11eb-91cf-326dddd3e106`;
-const adminIdEndpoint = `${env.DECISIONS_API_ENDPOINT_URL}/Primary/restapi/Flow/77b20400-6376-11ec-91f8-326dddd3e106`;
 
 const requestBody = {
   "userid": env.GUESS_ENDPOINT_USER_ID,
