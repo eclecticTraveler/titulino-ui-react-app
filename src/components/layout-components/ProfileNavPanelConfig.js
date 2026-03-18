@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { DIR_RTL } from '../../constants/ThemeConstant';
 import IntlMessage from '../util-components/IntlMessage';
 
-const ProfileNavPanelConfig = ({ visible, onClose, title, direction, locale }) => {
+const ProfileNavPanelConfig = ({ open, onClose, title, direction, locale }) => {
   // Function to set the locale for the title
   const setLocale = (isLocaleOn, localeKey) =>
     isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -16,7 +16,7 @@ const ProfileNavPanelConfig = ({ visible, onClose, title, direction, locale }) =
       placement={direction === DIR_RTL ? 'left' : 'right'}
       width={350}
       onClose={onClose}
-      visible={visible}
+      open={open}
     >
       <ThemeConfigurator />
     </Drawer>

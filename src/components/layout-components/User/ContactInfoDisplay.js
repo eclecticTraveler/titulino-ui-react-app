@@ -2,7 +2,7 @@ import React from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import { onSelectingCorrectionToEdit, onCorrectionsModalChange } from 'redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import { 
     ContactsOutlined,
     PhoneOutlined, 
@@ -20,7 +20,7 @@ const ContactInfoDisplay = props => {
         <div>
             <Row gutter={16}>
                 <Col xs={24} sm={24} md={17}>
-                <Card bordered={false}>
+                <Card variant="borderless">
                     <h2><ContactsOutlined />{` ${selectedCorrectionRecord?.fullCorrectionObj?.ContactTerm?.ContactRelationId} Info:`}</h2>
                     <div>First Name*</div>
                     <h4>{selectedCorrectionRecord?.firstName}</h4>
@@ -84,3 +84,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ContactInfoDisplay));
+

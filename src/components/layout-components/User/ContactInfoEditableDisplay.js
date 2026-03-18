@@ -2,7 +2,7 @@ import React from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import { onSelectingCorrectionToEdit, onCorrectionsModalChange } from 'redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import { Input, Row, Col, Card, Form, Button } from 'antd';
 import { 
     ContactsOutlined,
@@ -97,7 +97,7 @@ const ContactInfoEditableDisplay = props => {
             >
                 <Row>
                     <Col span={12}>
-                        <Card bordered={false}>
+                        <Card variant="borderless">
                             <h2><ContactsOutlined />{` ${selectedCorrectionRecord?.fullCorrectionObj?.ContactTerm?.ContactRelationId} Info:`}</h2>                
                             <div>First Name*</div>
                             <Form.Item name="firstName" rules={rules.firstName}>
@@ -144,7 +144,7 @@ const ContactInfoEditableDisplay = props => {
                         </Card>                    
                     </Col>
                     {/* <Col span={12} >
-                        <Card bordered={false}>
+                        <Card variant="borderless">
                             <h2><ContactsOutlined />{` ${selectedCorrectionRecord?.fullCorrectionObj?.ContactTerm?.ContactRelationId} Info:`}</h2>
                         
                             <div>First Name*</div>
@@ -210,3 +210,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ContactInfoEditableDisplay));
+

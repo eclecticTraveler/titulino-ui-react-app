@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Switch, Route, Redirect } from "react-router-dom";
+import { Switch, Route, Redirect } from 'utils/routerCompat';
 import Loading from '../../components/shared-components/Loading';
 import { AUTH_PREFIX_PATH, APP_PREFIX_PATH, DEFAULT_LANDING_COURSE } from '../../configs/AppConfig'
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
@@ -62,4 +62,5 @@ const mapStateToProps = ({ theme, auth, grant }) => {
 };
 
 export default React.memo(connect(mapStateToProps)(AuthViews));
+
 

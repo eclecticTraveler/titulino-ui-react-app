@@ -27,7 +27,7 @@ const OverviewLesson = () => {
 
     return (
         <div>
-            <Card bordered={true} title={setLocale(locale, "unauthenticated.dashboard.courseOverview")}>
+            <Card variant="outlined" title={setLocale(locale, "unauthenticated.dashboard.courseOverview")}>
                 <Iframe 
                     url={temporalURL} 
                     width="100%" 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link } from 'utils/routerCompat';
 import { Menu, Grid } from "antd";
 import IntlMessage from "../util-components/IntlMessage";
 import IconAdapter from "components/util-components/IconAdapter";
@@ -48,6 +48,7 @@ const SideNavContent = (props) => {
 			defaultSelectedKeys={[routeInfo?.key]}
 			defaultOpenKeys={setDefaultOpen(routeInfo?.key)}
 			className={hideGroupTitle ? "hide-group-title" : ""}
+			inlineIndent={24}
 		>
 			{currentRoute?.submenu.map((menu) =>
 				menu?.submenu.length > 0 ? 
@@ -67,7 +68,9 @@ const SideNavContent = (props) => {
 								>
 									{
 										subMenuFirst.submenu?.map((subMenuSecond) => (
-											<Menu.Item key={subMenuSecond?.key} >
+											<Menu.Item
+												key={subMenuSecond?.key}
+											>
 												<IconAdapter icon={subMenuSecond.icon} iconType={subMenuSecond.iconType} />
 												<span>
 													{setLocale(localization, subMenuSecond?.title)}
@@ -78,8 +81,10 @@ const SideNavContent = (props) => {
 									}
 								</SubMenu>
 							) : (
-								<Menu.Item key={subMenuFirst.key} className="number223">
-									<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} />
+								<Menu.Item
+									key={subMenuFirst.key}
+							>
+								<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} />
 									<span>{setLocale(localization, subMenuFirst.title)}</span>
 									<Link onClick={() => closeMobileNav()} to={subMenuFirst.path} />
 								</Menu.Item>
@@ -88,8 +93,10 @@ const SideNavContent = (props) => {
 						}
 					</SubMenu>
 				) : (
-					<Menu.Item key={menu.key}>
-						{<IconAdapter icon={menu.icon} iconType={menu.iconType} />}
+					<Menu.Item
+						key={menu.key}
+						icon={<IconAdapter icon={menu.icon} iconType={menu.iconType} />}
+					>
 						{(!navCollapsed) ? <span>{setLocale(localization, menu?.title)}</span> : null}
 						{menu.path ? <span><Link onClick={() => closeMobileNav()} to={menu.path} /></span> : null}
 					</Menu.Item>
@@ -170,3 +177,4 @@ const mapStateToProps = ({ theme, lrn }) => {
 };
 
 export default connect(mapStateToProps, { onMobileNavToggle, onCurrentRouteInfo })(MenuContent);
+

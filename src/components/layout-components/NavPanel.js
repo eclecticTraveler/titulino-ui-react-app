@@ -38,7 +38,7 @@ export class NavPanel extends Component {
           placement={this.props.direction === DIR_RTL ? 'left' : 'right'} 
           width={350}
           onClose={this.onClose}
-          visible={this.state.visible}
+          open={this.state.visible}
         >
           <ThemeConfigurator/>
         </Drawer>

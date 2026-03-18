@@ -156,7 +156,7 @@ export const overviewInfoConvertion = async(data) => {
   const totalReturningEnrollees = data?.EnrolleeTypeDistribution?.find(item => item.Status === "R")?.Count ?? null;
 
    // Create the array similar to genderPercentages
-   const enrolleeTypes = data.EnrolleeTypeDistribution?.map(item => ({
+   const enrolleeTypes = data?.EnrolleeTypeDistribution?.map(item => ({
     type: item?.Status === "N" ? "New" : "Returning",
     count: item?.Count,
     percentage: item?.Percentage
@@ -269,7 +269,7 @@ const proficiencyMaps = {
 
 export const handleEnrolleeListConvertor = async (data, locationType) => {
 
-  if (!data) return { tableData: [], columns: [] };
+  if (!Array.isArray(data) || data.length === 0) return { tableData: [], columns: [] };
 
   const results = [];
   const filters = {
@@ -305,8 +305,14 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
   };
 
   const processData = async(item, i) => {
-      const daysUntilBday = await getDaysUntilComingBirthday(item?.DateOfBirth);
-      const currentLevel = item.LanguageProficienciesHistory.find(entry => entry.EndDate === null)?.LanguageLevelAbbreviation;   
+      let daysUntilBday = null;
+      try {
+        daysUntilBday = await getDaysUntilComingBirthday(item?.DateOfBirth);
+      } catch (error) {
+        daysUntilBday = null;
+      }
+      const currentLevel =
+        item?.LanguageProficienciesHistory?.find(entry => entry?.EndDate === null)?.LanguageLevelAbbreviation ?? "";
       results.push({
         key: i,
         langLevel: currentLevel,
@@ -398,7 +404,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
       
   };
 
-  await data?.forEach(processData);
+  await Promise.all(data.map((item, index) => processData(item, index)));
 
   const columns = [
       {
@@ -479,6 +485,13 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
     ] : [])
   ];
 
+  console.log("[InsightsDebug][Converter][EnrolleeList]", {
+    locationType,
+    inputRows: Array.isArray(data) ? data.length : -1,
+    outputRows: results.length,
+    outputColumns: columns.length
+  });
+
   return {
     tableData: results,
     columns: columns,
@@ -545,7 +558,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
 
 export const handleEnrolleeProgressListConvertor = async (data, locationType, progressMap, courseProgressConfigJson, courseCodeId) => {
 
-  if (!data) return { tableData: [], columns: [] };
+  if (!Array.isArray(data) || data.length === 0) return { tableData: [], columns: [] };
 
   const results = [];
 
@@ -777,6 +790,13 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
         ]
       : [])
   ];
+
+  console.log("[InsightsDebug][Converter][ProgressList]", {
+    locationType,
+    inputRows: Array.isArray(data) ? data.length : -1,
+    outputRows: results.length,
+    outputColumns: columns.length
+  });
         
 
   const expandable = {

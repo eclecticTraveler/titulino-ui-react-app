@@ -44,6 +44,34 @@ export const onGettingCountriesByLocationToDashboard = async (courseCodeId, loca
 export const onLoadingAllDashboardContents = async (courseCodeId, locationType, countryId, emailId) => {
 
   try {
+    const requests = [
+      TitulinoManager.getOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getProgressOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getProgressDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getEnrolleesCourseProgressAdminDashboard(courseCodeId, locationType, countryId, emailId)
+    ];
+
+    const settled = await Promise.allSettled(requests);
+    const defaults = [
+      {},
+      {},
+      {},
+      {},
+      { tableData: [], columns: [] },
+      { tableData: [], columns: [] }
+    ];
+
+    const values = settled.map((result, index) => {
+      if (result.status === 'fulfilled') {
+        return result.value;
+      }
+
+      console.error(`Dashboard section ${index + 1} failed to load:`, result.reason);
+      return defaults[index];
+    });
+
     const [
       overviewDashboardData,
       overviewProgressDashboardData,
@@ -51,14 +79,27 @@ export const onLoadingAllDashboardContents = async (courseCodeId, locationType, 
       progressDemographicDashboardData,
       enrolleDashboardData,
       enrolleesCourseProgressData
-    ] = await Promise.all([
-      TitulinoManager.getOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
-      TitulinoManager.getProgressOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
-      TitulinoManager.getDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
-      TitulinoManager.getProgressDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
-      TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, locationType, countryId),
-      TitulinoManager.getEnrolleesCourseProgressAdminDashboard(courseCodeId, locationType, countryId, emailId)
-    ]);
+    ] = values;
+
+    const getModelCount = (value) => {
+      if (Array.isArray(value?.tableData)) return value.tableData.length;
+      if (Array.isArray(value)) return value.length;
+      return -1;
+    };
+
+    console.log("[InsightsDebug][Action][onLoadingAllDashboardContents]", {
+      courseCodeId,
+      locationType,
+      countryId,
+      overviewType: typeof overviewDashboardData,
+      progressOverviewType: typeof overviewProgressDashboardData,
+      demographicType: typeof demographicDashboardData,
+      progressDemographicType: typeof progressDemographicDashboardData,
+      enrolleeRows: getModelCount(enrolleDashboardData),
+      progressRows: getModelCount(enrolleesCourseProgressData),
+      enrolleeColumns: Array.isArray(enrolleDashboardData?.columns) ? enrolleDashboardData.columns.length : -1,
+      progressColumns: Array.isArray(enrolleesCourseProgressData?.columns) ? enrolleesCourseProgressData.columns.length : -1
+    });
 
     return {
       type: ON_LOADING_ALL_DASHBOARD_CONTENTS,

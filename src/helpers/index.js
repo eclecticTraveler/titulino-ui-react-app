@@ -1,4 +1,4 @@
-import { Route, Redirect } from "react-router-dom";
+import { Route, Redirect } from 'utils/routerCompat';
 import { APP_PREFIX_PATH } from '../configs/AppConfig'
 
  export function retry(fn, retriesLeft = 5, interval = 1000) {

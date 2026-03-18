@@ -12,11 +12,10 @@ import { onRequestingCourseProgressStructure } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import IntlMessage from "components/util-components/IntlMessage";
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import utils from 'utils';
 
 const { Meta } = Card;
-const { Option } = Select;
 
 const courseCodeId = 'SUPERMARKET_SEP_2024_COURSE_01';
 const categories = [
@@ -247,14 +246,14 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
           }}
         />
       )} */}
-      <Card bordered>
+      <Card variant="outlined">
         <h1>{`Course Progress Dashboard`}</h1>
         {/* <br /> */}
         {/* <div>{setLocale(locale, "resources.myprogress.requirements")}</div> */}
       </Card>
       <Row justify="center" style={{ marginBottom: 20 }}>
         <Col xs={24} sm={24} lg={8}>
-          <Card title="Enter Your Email" bordered>
+          <Card title="Enter Your Email" variant="outlined">
             <Input
               placeholder="Enter your email"
               value={email}
@@ -287,7 +286,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
                     />
                   )
                 }
-                bordered
+                variant="outlined"
               >
                 {category?.lessons
                   ?.filter((lesson) => lesson?.isToDisplay)
@@ -312,7 +311,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
                         className={`course-card ${isSelected ? 'selected' : ''}`}
                         hoverable
                         title={`Class: ${classNumber}`}
-                        bordered
+                        variant="outlined"
                         extra={
                           <Checkbox
                             onChange={(e) =>
@@ -422,18 +421,11 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
                                   undefined
                                 }
                                 style={{ width: '100%', marginTop: 10 }}
-                              >
-                                {category.participationIds.map(
-                                  (participation) => (
-                                    <Option
-                                      key={participation.participationTypeId}
-                                      value={participation.participationTypeId}
-                                    >
-                                      {participation.localizationKey}
-                                    </Option>
-                                  )
-                                )}
-                              </Select>
+                                options={(category?.participationIds ?? []).map((participation) => ({
+                                  value: participation?.participationTypeId,
+                                  label: participation?.localizationKey,
+                                }))}
+                              />
                             )}
                             {!requiresDropdown && (
                               <div style={{ marginTop: 10 }}>

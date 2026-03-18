@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {onShippingKeyTabChange, onIsToEditShippingAddressChange, onIsToEditUserProfileChange, onAddressRequestLoad}  from '../../../../redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import IntlMessage from "../../../../components/util-components/IntlMessage";
 import Address from "../../../../components/layout-components/User-profile/Address";
 import BillingView from "../../../../components/layout-components/User-profile/BillingView";
@@ -24,7 +24,7 @@ class Profile extends Component {
 	}
 
 	cardDropdown = (menu) => (
-		<Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+		<Dropdown menu={{ items: [] }} popupRender={() => menu} trigger={['click']} placement="bottomRight">
 		  <a href="/#" className="text-gray font-size-lg" onClick={e => e.preventDefault()}>
 			<EllipsisOutlined />
 		  </a>
@@ -50,9 +50,9 @@ class Profile extends Component {
 				<div className="container customerName" >
 				<Row gutter={16}>	
 					<Col lg={8}>			
-						<Card bordered={true}>
+						<Card variant="outlined">
 						<h1>User Profile</h1>		
-							<Card bordered={false}
+							<Card variant="borderless"
 								cover={
 									<img
 									alt="company logo"
@@ -72,13 +72,13 @@ class Profile extends Component {
 							]}>
 
 
-						<Card bordered={false}>							
+						<Card variant="borderless">							
 							{!this.props.isToEditUserProfile ? <Meta title="Primary Industry" description="Home care" /> : <PrimaryIndustry />}
 							<br/>
 							<Meta title="Company Name" description="Fallen Angels" />
 						</Card>
 					</Card>
-					<Card title="Addresses on File" bordered={true} >
+					<Card title="Addresses on File" variant="outlined" >
 						<Card							
 							tabList={this.props.tabIndexedAddresses}
 							activeTabKey={this.props.shippingTabKey}
@@ -118,3 +118,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Profile));
+

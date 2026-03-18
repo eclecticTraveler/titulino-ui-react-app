@@ -3,8 +3,6 @@ import { Checkbox, Select, Button, Divider, Row, Col, Card, Tag } from "antd";
 import { useUserProgressLogic } from "hooks/useUserProgressLogic";
 import IntlMessage from "components/util-components/IntlMessage";
 
-const { Option } = Select;
-
 const AdminProgressEditable = ({
   categories,
   progressData,
@@ -113,13 +111,11 @@ const AdminProgressEditable = ({
             value={selectedEmail}
             style={{ width: 350, marginBottom: 16 }}
             onChange={(value) => setSelectedEmail(value)}
-          >
-            {emails.map((email) => (
-              <Option key={`email-${email}`} value={email}>
-                {email}
-              </Option>
-            ))}
-          </Select>
+            options={(emails ?? []).map((email) => ({
+              value: email,
+              label: email,
+            }))}
+          />
 
           <Divider />
         </>
@@ -166,16 +162,11 @@ const AdminProgressEditable = ({
                                 value
                               )
                             }
-                          >
-                            {category?.participationIds?.map((p) => (
-                              <Option
-                                key={`ptype-${category?.categoryId}-${category?.level ?? "na"}-${p?.participationTypeId}`}
-                                value={p?.participationTypeId}
-                              >
-                                {setLocale(locale, p?.localizationKey)}
-                              </Option>
-                            ))}
-                          </Select>
+                            options={(category?.participationIds ?? []).map((p) => ({
+                              value: p?.participationTypeId,
+                              label: setLocale(locale, p?.localizationKey),
+                            }))}
+                          />
                         )}
                       </div>
                     );

@@ -8,7 +8,7 @@ import WeeklyCourseSelector from "./WeeklyCourseSelector";
 import QuickToFullEnrollment from "./QuickToFullEnrollment";
 import AuthenticatedQuickEnrollment from "./AuthenticatedQuickEnrollment";
 import CoursesNotAvailableMessage from "components/admin-components/ModalMessages/CoursesNotAvailableMessage";
-import { useLocation } from "react-router-dom";
+import { useLocation } from 'utils/routerCompat';
  
 export const EnrollmentWrapper = (props) => {
 	const { user, token, onRenderingUserCoursesAvailableForRegistration, onRenderingCourseRegistration, availableCourses, selectedCoursesToEnroll } = props;
@@ -86,3 +86,4 @@ const mapStateToProps = ({ theme, lrn, auth, grant }) => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EnrollmentWrapper);
+

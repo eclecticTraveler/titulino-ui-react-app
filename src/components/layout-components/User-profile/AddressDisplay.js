@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {onShippingKeyTabChange, onIsToEditShippingAddressChange}  from '../../../redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import IntlMessage from "../../util-components/IntlMessage";
 import { Row, Col, Card } from 'antd';
 
@@ -21,7 +21,7 @@ class AddressDisplay extends Component {
 			<div>
 				<Row gutter={16}>
 					<Col xs={24} sm={24} md={17}>
-					<Card bordered={false}>
+					<Card variant="borderless">
 						<h4>{selectedAddress?.Address1}</h4>
 						{selectedAddress?.Address2 && <h4>{selectedAddress?.Address2}</h4>}
 						<h4>{`${selectedAddress?.City}, ${selectedAddress?.CountryDivisionId}, ${selectedAddress?.PostalCodeId}`}</h4>
@@ -47,3 +47,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AddressDisplay));
+

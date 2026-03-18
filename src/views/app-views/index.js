@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Switch, Route, Redirect } from "react-router-dom";
+import { Switch, Route, Redirect } from 'utils/routerCompat';
 import { connect } from "react-redux";
 import { bindActionCreators } from 'redux';
 import Loading from '../../components/shared-components/Loading';

@@ -45,7 +45,7 @@ const ColumnBar = (props) => {
     yField: 'value',
     color: () => generateSoberColorV2(), // Directly call the external function
     label: {
-      position: 'middle',
+      position: 'inside',
       style: {
         fill: '#FFFFFF',
         opacity: 0.6,
@@ -73,7 +73,7 @@ const ColumnBar = (props) => {
 
   return (
     <div>
-      <Card bordered={true} title={setLocale(locale, title)}>
+      <Card variant="outlined" title={setLocale(locale, title)}>
         <Column {...config} />
       </Card>
     </div>

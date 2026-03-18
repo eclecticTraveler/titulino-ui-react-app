@@ -11,6 +11,47 @@ import utils from 'utils';
 const getCached = LocalStorageService.getCachedObject;
 const setCached = LocalStorageService.setCachedObject;
 
+const normalizeLocationType = (locationType) =>
+  `${locationType ?? ""}`.trim().toLowerCase();
+
+const extractEnrolleeRowsByLocation = (enrolleePayload, locationType) => {
+  if (Array.isArray(enrolleePayload)) {
+    return enrolleePayload;
+  }
+
+  if (!enrolleePayload || typeof enrolleePayload !== "object") {
+    return [];
+  }
+
+  const normalizedLocationType = normalizeLocationType(locationType);
+  const tryArray = (value) => (Array.isArray(value) ? value : []);
+
+  if (normalizedLocationType === "residency") {
+    return tryArray(enrolleePayload?.Residency ?? enrolleePayload?.residency);
+  }
+
+  if (normalizedLocationType === "birth") {
+    return tryArray(enrolleePayload?.Birth ?? enrolleePayload?.birth);
+  }
+
+  if (normalizedLocationType === "all") {
+    const preferred =
+      enrolleePayload?.All ??
+      enrolleePayload?.all ??
+      enrolleePayload?.Residency ??
+      enrolleePayload?.residency ??
+      enrolleePayload?.Birth ??
+      enrolleePayload?.birth;
+
+    if (Array.isArray(preferred)) {
+      return preferred;
+    }
+  }
+
+  const firstArrayMatch = Object.values(enrolleePayload).find(Array.isArray);
+  return Array.isArray(firstArrayMatch) ? firstArrayMatch : [];
+};
+
 export const getAllCourses = async () => {
   const key = `adminAllCourses`;
   const cached = await getCached(key);
@@ -65,7 +106,8 @@ export const getProgressOverviewInfoAdminDashboard = async (courseCodeId, locati
 };
 
 export const getDemographicInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
-  const isAll = locationType?.toLowerCase() === "all";
+  const normalizedLocationType = normalizeLocationType(locationType);
+  const isAll = normalizedLocationType === "all";
 
   const rawData = isAll
     ? await TitulinoRestService.getEnrolleeCountryCountByCourseCodeId(courseCodeId, "getDemographicInfoAdminDashboard")
@@ -90,18 +132,26 @@ export const getProgressDemographicInfoAdminDashboard = async (courseCodeId, loc
 };
 
 export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
-  const isAll = locationType?.toLowerCase() === "all";
+  const normalizedLocationType = normalizeLocationType(locationType);
+  const isAll = normalizedLocationType === "all";
 
   const enrolleeList = isAll
     ? await TitulinoRestService.getEnrolleeGeneralListByCourseCodeId(courseCodeId, "getEnrolleeInfoAdminDashboard")
     : await TitulinoRestService.getEnrolleeCountrylListByCourseCodeId(courseCodeId, countryId, "getEnrolleeInfoAdminDashboard");
 
-  let extracted = [];
-  if (isAll) extracted = enrolleeList;
-  else if (locationType?.toLowerCase() === "residency") extracted = enrolleeList?.Residency;
-  else if (locationType?.toLowerCase() === "birth") extracted = enrolleeList?.Birth;
+  const extracted = extractEnrolleeRowsByLocation(enrolleeList, normalizedLocationType);
+  console.log("[InsightsDebug][Manager][EnrolleeList]", {
+    courseCodeId,
+    locationType,
+    normalizedLocationType,
+    countryId,
+    isAll,
+    enrolleeListType: Array.isArray(enrolleeList) ? "array" : typeof enrolleeList,
+    enrolleeListKeys: enrolleeList && typeof enrolleeList === "object" ? Object.keys(enrolleeList) : [],
+    extractedLength: Array.isArray(extracted) ? extracted.length : -1
+  });
 
-  return await AdminInsights.handleEnrolleeListConvertor(extracted, locationType);
+  return await AdminInsights.handleEnrolleeListConvertor(extracted, normalizedLocationType);
 };
 
 export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
@@ -124,7 +174,8 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
     console.log("Fetched course progress rows:", progressRows);
 
       // 3️⃣ Fetch enrollee list EXACTLY like getEnrolleeInfoAdminDashboard does
-  const isAll = locationType?.toLowerCase() === "all";
+  const normalizedLocationType = normalizeLocationType(locationType);
+  const isAll = normalizedLocationType === "all";
 
   const enrolleeList = isAll
     ? await TitulinoRestService.getEnrolleeGeneralListByCourseCodeId(
@@ -137,13 +188,18 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
         "getEnrolleesCourseProgressAdminDashboard"
       );
 
-  let extracted = [];
-
-    if (isAll) extracted = enrolleeList;
-    else if (locationType?.toLowerCase() === "residency")
-      extracted = enrolleeList?.Residency;
-    else if (locationType?.toLowerCase() === "birth")
-      extracted = enrolleeList?.Birth;
+  const extracted = extractEnrolleeRowsByLocation(enrolleeList, normalizedLocationType);
+  console.log("[InsightsDebug][Manager][ProgressList]", {
+    courseCodeId,
+    locationType,
+    normalizedLocationType,
+    countryId,
+    isAll,
+    progressRowsLength: Array.isArray(progressRows) ? progressRows.length : -1,
+    enrolleeListType: Array.isArray(enrolleeList) ? "array" : typeof enrolleeList,
+    enrolleeListKeys: enrolleeList && typeof enrolleeList === "object" ? Object.keys(enrolleeList) : [],
+    extractedLength: Array.isArray(extracted) ? extracted.length : -1
+  });
 
     // Build progressMap
     const progressMap = progressRows?.reduce((acc, row) => {
@@ -155,7 +211,16 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
     const courseConfiguration = await TitulinoRestService.getRequestedCourseStructureByCourseCodeId(courseCodeId);
 
     // 5️⃣ Build final table model    
-    return AdminInsights.handleEnrolleeProgressListConvertor(extracted, locationType, progressMap, courseConfiguration, courseCodeId);
+    var finalTableData = await AdminInsights.handleEnrolleeProgressListConvertor(
+      extracted,
+      normalizedLocationType,
+      progressMap,
+      courseConfiguration,
+      courseCodeId
+    );
+
+    console.log("finalTableData after conversion:", finalTableData);
+    return finalTableData;
 };
 
 const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {

@@ -60,7 +60,7 @@ const InsightsLandingDashboard = (props) => {
 //     <div className="container customerName">
 //       <Card
 //         loading={false}
-//         bordered
+//         variant="outlined"
 //         cover={
 //           <img
 //             alt={titleOfEnrollment}
@@ -76,12 +76,12 @@ const InsightsLandingDashboard = (props) => {
 
 //       <Card
 //         loading={false}
-//         bordered
+//         variant="outlined"
 //         title={setLocale(locale, 'admin.dashboard.selections')}
 //       >
 //         <DropdownInsightSelection />
 //       </Card>
-//       <Card loading={false} bordered>
+//       <Card loading={false} variant="outlined">
 //         <Tabs defaultActiveKey="1">
 // 			<TabPane 
 // 			tab={

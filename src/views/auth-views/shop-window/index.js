@@ -16,7 +16,7 @@ import GenericModal from "components/layout-components/GenericModal";
 import ProductPurchasedMessage from "components/admin-components/ModalMessages/ProductPurchasedMessage";
 import GoldTierProductConfirmationMessage from "components/admin-components/ModalMessages/GoldTierProductConfirmationMessage"
 import silverTier from 'assets/lotties/silverTier.json';
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'utils/routerCompat';
 import goldTier from 'assets/lotties/goldTier.json';
 
 const { useBreakpoint } = Grid;
@@ -233,7 +233,7 @@ const ShopWindow = (props) => {
     <Card
       hoverable
       title={tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}
-      bordered
+      variant="outlined"
       onMouseEnter={() => !isMobile && setHoveredTier(tierKey)}
       onMouseLeave={() => !isMobile && setHoveredTier(null)}
     >
@@ -317,7 +317,7 @@ const ShopWindow = (props) => {
 
       <Card
         cover={<img alt="Shopping" src={coverUrl} style={{ height: 100, objectFit: "cover" }} />}
-        bordered
+        variant="outlined"
       >
         <h1>{setLocale(locale, "shop.feature.compareOurPackages")}</h1>
         <p>{setLocale(locale, "shop.disclaimer")}</p>
@@ -334,7 +334,7 @@ const ShopWindow = (props) => {
         ))}
       </Tabs>
 
-      <Card bordered style={{ marginTop: 16 }}>
+      <Card variant="outlined" style={{ marginTop: 16 }}>
         <Row gutter={[16, 16]} style={{ marginTop: 30 }}>
           {["free", "silver", "gold"].map((tierKey) => {
 			      const tierInfo = activeCourse.tiers?.[tierKey];
@@ -429,7 +429,7 @@ const ShopWindow = (props) => {
         placement="bottom"
         closable={false}
         onClose={onCloseDrawer}
-        visible={open}
+        open={open}
         key="bottom"
       >
         {!isMobile ? (
@@ -529,3 +529,4 @@ const mapStateToProps = ({ grant, shop, lrn, theme, auth }) => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ShopWindow);
+

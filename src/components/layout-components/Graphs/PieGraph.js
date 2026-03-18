@@ -22,10 +22,8 @@ const PieGraph = (props) => {
     angleField: 'value',
     colorField: 'type',
     radius: 0.8,
-    label: {
-      type: 'outer',
-      content: ({ type, value }) => `${type}: ${value}%`, // Dynamic label content
-    },
+    // Disable old label shape config not supported by latest plots runtime
+    label: false,
     interactions: [
       { type: 'pie-legend-active' },
       { type: 'element-active' },
@@ -36,7 +34,7 @@ const PieGraph = (props) => {
   const title = localizedTitle || "unavailable";
   return (
     <div>	
-      <Card bordered={true} title={setLocale(locale, title)}>
+      <Card title={setLocale(locale, title)}>
         <Pie {...config} />
       </Card>	
     </div>

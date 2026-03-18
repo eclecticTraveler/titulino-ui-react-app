@@ -3,7 +3,7 @@ import RegisterOne from "../../../auth-views/authentication/register-1";
 import { createClient } from '@supabase/supabase-js';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { Route, Switch, Redirect } from "react-router-dom";
+import { Route, Switch, Redirect } from 'utils/routerCompat';
 
 export const RedirectSignup = () => {
   useEffect(() => {
@@ -16,3 +16,4 @@ return (
 };
 
 export default RedirectSignup;
+

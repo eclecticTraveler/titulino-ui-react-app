@@ -20,7 +20,7 @@ const TermsModal = () => {
       </a>
       <Modal
         title={setLocale(locale, "enrollment.form.termsAndConditionsTitle")}
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleClose}
         footer={[
           <Button key="close" onClick={handleClose}>

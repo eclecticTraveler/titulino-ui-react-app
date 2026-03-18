@@ -1,7 +1,7 @@
 import React from 'react'
 import { Button } from "antd";
 import { APP_NAME } from 'configs/AppConfig';
-import { Link } from 'react-router-dom'
+import { Link } from 'utils/routerCompat'
 import Flex from 'components/shared-components/Flex'
 import { useSelector } from 'react-redux'
 
@@ -36,4 +36,5 @@ const ErrorTwo = () => {
 }
 
 export default ErrorTwo
+
 

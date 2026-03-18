@@ -1,6 +1,8 @@
 .nav-profile {
     // width: 14.5rem;
     width: auto;
+    // background-color: @component-background !important;
+    // color: @text-color;
 
     .nav-profile-header {
         padding: 0.7rem 1rem;
@@ -9,6 +11,7 @@
 
     .nav-profile-body {
         padding: 0.625rem 0;
+        // background: transparent;
 
         .ant-menu-vertical > .ant-menu-item {
             height: 2.1875rem;
@@ -20,6 +23,45 @@
         font-size: 15px;
         padding-left: 13px;
         padding-right: 5px;
+    }
+
+    .ant-menu,
+    .ant-menu-root,
+    .ant-menu-vertical,
+    .ant-menu-inline,
+    .ant-menu-dark,
+    .ant-menu-sub {
+        background: transparent !important;
+        background-color: transparent !important;
+        border-inline-end: 0 !important;
+    }
+
+    .ant-menu-item,
+    .ant-menu-submenu-title {
+        background: transparent;
+        transition: background-color .2s ease;
+    }
+
+    .ant-menu-item,
+    .ant-menu-submenu-title,
+    .ant-menu-item a,
+    .ant-menu-submenu-title span,
+    .ant-menu-item .anticon,
+    .ant-menu-submenu-title .anticon {
+        color: @text-color !important;
+    }
+
+    .ant-menu-item:hover,
+    .ant-menu-submenu-title:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .ant-menu-item-selected {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .ant-menu-item-divider {
+        border-color: fade(@border-color-base, 70%) !important;
     }
 }
 
@@ -47,4 +89,3 @@
         }
     }
 }
-

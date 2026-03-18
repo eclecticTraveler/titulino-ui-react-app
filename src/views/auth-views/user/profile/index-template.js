@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import {getAllLanguageCourses, setUserCourseConfiguration, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
 import PageHeaderAlt from '../../../../components/layout-components/PageHeaderAlt'
 import IconFallback from "../../../../components/util-components/IconFallback";
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import { onLocaleChange, onCourseChange } from '../../../../redux/actions/Theme'
 import Flex from '../../../../components/shared-components/Flex'
 import IntlMessage from "../../../../components/util-components/IntlMessage";
@@ -35,7 +35,7 @@ class Profile extends Component {
 	}
 
 	cardDropdown = (menu) => (
-		<Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+		<Dropdown menu={{ items: [] }} popupRender={() => menu} trigger={['click']} placement="bottomRight">
 		  <a href="/#" className="text-gray font-size-lg" onClick={e => e.preventDefault()}>
 			<EllipsisOutlined />
 		  </a>
@@ -172,7 +172,7 @@ class Profile extends Component {
 				</Card>
 
 					<Col lg={8}>
-						<Card title="Card title" bordered={true}>
+						<Card title="Card title" variant="outlined">
 						Card content
 						
 							<Card type="inner" title="Inner Card title" actions={[
@@ -200,10 +200,10 @@ class Profile extends Component {
 						</Card>
 					</Col>
 					<Col lg={8}>
-						<Card title="Card title" bordered={true}>
+						<Card title="Card title" variant="outlined">
 						Card content
 						</Card>
-						<Card title="Card title" bordered={true}>
+						<Card title="Card title" variant="outlined">
 							<Card
 							style={{ width: '100%' }}
 							tabList={tabListNoTitle}
@@ -217,7 +217,7 @@ class Profile extends Component {
 						</Card>
 					</Col>
 					<Col span={8}>
-						<Card title="Card title" bordered={true}>
+						<Card title="Card title" variant="outlined">
 						Card content
 							<Card
 							style={{ width: '100%' }}
@@ -255,3 +255,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Profile));
+

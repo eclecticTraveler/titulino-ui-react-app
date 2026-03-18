@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Form, Row, Col, DatePicker, Input, Button, message, Card } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import getLocaleText from "components/util-components/IntString";
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'utils/routerCompat';
 import { onRetrievingUserProfile } from 'redux/actions/Grant';
 import IntlMessage from "components/util-components/IntlMessage";
 
@@ -225,13 +225,16 @@ useEffect(() => {
     padding: "20px",
     }
 
-  const selectedYearOfBirth = form?.getFieldValue("yearOfBirth")?.format("YYYY") ?? yearOfBirth?.format("YYYY");
+  const selectedYearOfBirth = form?.getFieldValue("yearOfBirth")?.year?.() ?? yearOfBirth;
+  const canSubmit =
+    !!user?.emailId &&
+    ((askFullBirthDate && !!fullDateOfBirth) || (!askFullBirthDate && !!yearOfBirth));
   const coverUrl =
     "https://images.unsplash.com/photo-1516382799247-87df95d790b7?q=80&w=1748&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
   return (
 	<>
-      <Card cover={<img alt="Shopping" src={coverUrl} style={{ height: 100, objectFit: "cover" }} />} bordered loading={loading}>
+      <Card cover={<img alt="Shopping" src={coverUrl} style={{ height: 100, objectFit: "cover" }} />} variant="outlined" loading={loading}>
         <h1>{setLocale(locale, "resources.myprogress.searchbyEmailandYear")}</h1>
         <h2>{user?.emailId}</h2>
        </Card>
@@ -240,7 +243,7 @@ useEffect(() => {
     <Card 
       title={!askFullBirthDate && !isToDisplayFullEnrollment && setLocale(locale, "enrollment.yearOfBirth") } 
       loading={loading} 
-      bordered
+      variant="borderless"
     >
       <Form layout="vertical" onFinish={handleSearch} form={form}>
         {/* Row for input fields */}
@@ -254,7 +257,7 @@ useEffect(() => {
               <DatePicker
                 style={{ width: "100%" }}
                 picker="year"
-                defaultPickerValue={moment("1980", "YYYY")}
+                defaultPickerValue={dayjs("1980-01-01", "YYYY-MM-DD")}
                 disabledDate={(current) =>
                   current && (current.year() > 2017 || current.year() < 1900)
                 }
@@ -276,11 +279,11 @@ useEffect(() => {
               >
                 <DatePicker
                   style={{ width: "100%" }}
-                  disabledDate={current => current && current > moment().endOf("day")}
+                  disabledDate={current => current && current > dayjs().endOf("day")}
                   onChange={(date) => setFullDateOfBirth(date)}
                   defaultPickerValue={
                     selectedYearOfBirth
-                      ? moment(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")
+                      ? dayjs(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")
                       : undefined
                   }
                 />
@@ -298,7 +301,7 @@ useEffect(() => {
                 <Col xs={24} sm={24} lg={8}>
                 {isToDisplayFullEnrollment && (
                   <>               
-                  <Card bordered>
+                  <Card variant="outlined">
                     <h3>{setLocale(locale, "search.NoRecordsFound")}</h3>
                     <p>{setLocale(locale, "search.WouldYouLikeToEnroll")}</p>
                     <Button type="primary" onClick={handleRedirectToEnrollment}>
@@ -316,7 +319,7 @@ useEffect(() => {
                 htmlType="submit" 
                 loading={loading} 
                 style={{ width: "100%" }} 
-                disabled={!(yearOfBirth && user?.emailId)}
+                disabled={!canSubmit}
               >
                 {setLocale(locale, "resources.myprogress.search")}
               </Button>
@@ -352,3 +355,4 @@ const mapStateToProps = ({ grant, lrn, auth }) => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EmailYearSearchForm);
+

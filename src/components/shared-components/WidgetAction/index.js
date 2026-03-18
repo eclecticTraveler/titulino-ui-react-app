@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link } from 'utils/routerCompat';
 import { APP_PREFIX_PATH } from '../../../configs/AppConfig';
 import { env } from '../../../configs/EnvironmentConfig';
 import IntlMessage from "../../../components/util-components/IntlMessage";
@@ -55,3 +55,4 @@ export default WidgetAction;
 // };
 
 // export default connect(mapStateToProps, {})(WidgetAction);
+

@@ -8,7 +8,7 @@ import {
 	EditOutlined,
 	SearchOutlined
 } from '@ant-design/icons';
-import { Link } from "react-router-dom";
+import { Link } from 'utils/routerCompat';
 import { AutoComplete, Input } from 'antd';
 import IntlMessage from '../../util-components/IntlMessage';
 import { connect } from "react-redux";
@@ -143,7 +143,7 @@ const SearchInput = props => {
 		<AutoComplete
 			ref={inputRef} 
 			className={`nav-search-input ${isMobile ? 'is-mobile' : ''} ${!isMobile ? 'search-input-big' : ''} ${mode === 'light' ? 'light' : ''}`}
-			dropdownClassName="nav-search-dropdown"
+			popupClassName="nav-search-dropdown"
 			dropdownMatchSelectWidth={false} // Disable the default width matching behavior
 			dropdownStyle={{ maxHeight: 400 }} // Adjust the maximum height of the dropdown menu
 			options={options} // Pass in more options to increase the number of displayed results
@@ -166,3 +166,4 @@ const mapStateToProps = ({ theme, lrn}) => {
   };
   
   export default connect(mapStateToProps, {onSearchSelection})(SearchInput)
+

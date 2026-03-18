@@ -8,7 +8,7 @@ import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
 import UserProgress from './UserProgress'
 import moment from "moment";
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import Confetti from 'react-confetti';
 import useWindowSize from 'react-use/lib/useWindowSize';
 import { faRoad, faPieChart } from '@fortawesome/free-solid-svg-icons';
@@ -219,7 +219,7 @@ useEffect(() => {
       <Row gutter={16}>
         <Col xs={24} sm={24} lg={12}>		
         {/* LiquidCirclePercent - Participation Certificate */}    
-        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidCirclePercent percent={studentPercentagesForCourse?.participationCertificatePercentage} />
           <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
           <ul>
@@ -229,7 +229,7 @@ useEffect(() => {
       </Col>
       <Col xs={24} sm={24} lg={12}>
         {/* LiquidStarPercent - Golden Certificate */}
-        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />
           <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
           <ul>
@@ -398,7 +398,7 @@ useEffect(() => {
               transitionTimming={1500}
           />
     }
-    <Card bordered loading={loading}>
+    <Card variant="outlined" loading={loading}>
       <h1>{renderDashboardTitle()}</h1>
      </Card>
      <Row justify="center" style={{ marginBottom: 20 }}>
@@ -406,7 +406,7 @@ useEffect(() => {
     <Card 
       title={setLocale(locale, "resources.myprogress.searchbyEmailandYear")} 
       loading={loading} 
-      bordered
+      variant="outlined"
     >
       {registeredProgressByEmailId && <h2>{renderMessageResults()}</h2>}
       <Form layout="vertical" onFinish={handleSearch} form={form}>

@@ -7,7 +7,7 @@ import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
 import UserProgress from './UserProgress'
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import Confetti from 'react-confetti';
 import useWindowSize from 'react-use/lib/useWindowSize';
@@ -168,7 +168,7 @@ useEffect(() => {
       <Row gutter={16}>
         <Col xs={24} sm={24} lg={12}>		
         {/* LiquidCirclePercent - Participation Certificate */}    
-        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidCirclePercent percent={studentPercentagesForCourse?.participationCertificatePercentage} />
           <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
           <ul>
@@ -178,7 +178,7 @@ useEffect(() => {
       </Col>
       <Col xs={24} sm={24} lg={12}>
         {/* LiquidStarPercent - Golden Certificate */}
-        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />
           <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
           <ul>
@@ -336,12 +336,12 @@ useEffect(() => {
           }}
         />
       )}
-    <Card bordered loading={loading}>
+    <Card variant="outlined" loading={loading}>
       <h1>{renderDashboardTitle()}</h1>
      </Card>
     <Row justify="center" style={{ marginBottom: 20 }}>
         <Col xs={24} sm={24} lg={24}>
-            <Card title={setLocale(locale, "resources.myprogress.searchYourEmail")}  loading={loading} bordered>
+            <Card title={setLocale(locale, "resources.myprogress.searchYourEmail")}  loading={loading} variant="outlined">
             {registeredProgressByEmailId && <h2>{renderMessageResults()}</h2>}
             <Form layout="vertical" onFinish={handleSearch}>
               <Form.Item>

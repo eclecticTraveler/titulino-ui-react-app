@@ -6,8 +6,6 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onGettingCountriesByLocationToDashboard, onLoadingAllDashboardContents } from "redux/actions/Analytics";
 
-const { Option } = Select;
-
 const DropdownInsightSelection = (props) => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedLocationType, setSelectedLocationType] = useState(null);
@@ -76,56 +74,64 @@ const DropdownInsightSelection = (props) => {
     setSelectedLocationType(value);
   };
 
-  
+  const courseSelectOptions = CoursesOptions?.map((course) => ({
+    value: course?.value,
+    label: course?.name
+  }));
+
+  const locationSelectOptions = LocationTypeOptions?.map((locationType) => ({
+    value: locationType?.value,
+    label: setLocale(locale, locationType?.name)
+  }));
+
+  const countrySelectOptions = CountryOptions?.map((option) => ({
+    value: option?.value,
+    label: (
+      <>
+        <Flag code={option?.value} style={{ width: 20, marginRight: 10 }} />
+        {option?.name}
+      </>
+    )
+  }));
 
   return (
     <>
       <Row gutter={16}>
           <Col xs={24} sm={24} md={24} lg={8}>
-              <Select
+            <Select
+              size="large"
               placeholder="Select Course"
+              className="insights-dashboard-select"
               style={{ width: "100%" }}
               value={selectedCourse}
               onChange={(value) => handleCourseSelection(value)}
-            >
-              {CoursesOptions?.map((course) => (
-                <Option key={course?.index} value={course?.value}>
-                  {course?.name}
-                </Option>
-              ))}
-            </Select>
+              options={courseSelectOptions}
+            />
           </Col>
 
           <Col xs={24} sm={24} md={24} lg={8}>
-              <Select
+            <Select
+              size="large"
               placeholder="Select Location Type"
+              className="insights-dashboard-select"
               style={{ width: "100%" }}
               value={selectedLocationType}
               onChange={(value) => handleLocationTypeSelection(value)}
               disabled={!selectedCourse}
-            >
-              {LocationTypeOptions?.map((locationType) => (
-                <Option key={locationType?.index} value={locationType?.value}>                  
-                  {setLocale(locale, locationType?.name)}
-                </Option>
-              ))}
-            </Select>
+              options={locationSelectOptions}
+            />
           </Col>
           <Col xs={24} sm={24} md={24} lg={8}>
-              <Select
+            <Select
+              size="large"
               placeholder="Select Country"
+              className="insights-dashboard-select"
               style={{ width: "100%" }}
               value={selectedCountry}
               onChange={(value) => setSelectedCountry(value)}
               disabled={(!selectedLocationType || isLocationTypeAllSelected)}
-            >
-              {CountryOptions?.map((option) => (
-                <Option key={option?.index} value={option?.value}>
-                  <Flag code={option.value} style={{ width: 20, marginRight: 10 }} />
-                  {`${option?.name}`}
-                </Option>
-              ))}
-            </Select>
+              options={countrySelectOptions}
+            />
           </Col>
         </Row>
     </>

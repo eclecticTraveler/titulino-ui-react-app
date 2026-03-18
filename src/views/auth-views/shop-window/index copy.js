@@ -78,7 +78,7 @@ export const ShopWindow = (props) => {
 		<Card
 		  hoverable
 		  title={tier.charAt(0).toUpperCase() + tier.slice(1)}
-		  bordered
+		  variant="outlined"
 		  onMouseEnter={() => !isMobile && setHoveredTier(tier)}
 		  onMouseLeave={() => !isMobile && setHoveredTier(null)}
 		>
@@ -131,12 +131,12 @@ export const ShopWindow = (props) => {
 				src={coverUrl}
 				style={{ height: 100, objectFit: 'cover' }}
 			/>
-       		 } bordered>
+       		 } variant="outlined">
 				<h1>{setLocale(locale, "shop.feature.compareOurPackages")}</h1>
 				<p>{setLocale(locale, "shop.disclaimer")}</p>
 			</Card>
 
-			<Card bordered style={{ marginTop: 16 }}>
+			<Card variant="outlined" style={{ marginTop: 16 }}>
 				{/* Responsive card display */}
 				<Row gutter={[16, 16]} style={{ marginTop: 30 }}>
 					{['free', 'silver', 'gold'].map((tier) => {

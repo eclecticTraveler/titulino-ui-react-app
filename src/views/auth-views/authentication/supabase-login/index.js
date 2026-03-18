@@ -2,7 +2,7 @@ import React from 'react'
 import { createClient } from '@supabase/supabase-js';
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { useHistory } from "react-router-dom";
+import { useHistory } from 'utils/routerCompat';
 
 
 const SupabaseLogin = () => {
@@ -39,3 +39,4 @@ const SupabaseLogin = () => {
 }
 
 export default SupabaseLogin
+

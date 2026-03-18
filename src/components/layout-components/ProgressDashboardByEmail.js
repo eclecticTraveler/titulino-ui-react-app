@@ -6,7 +6,7 @@ import { Card, Input, Button, Form, Row, Col, Divider, message } from 'antd';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 
 
@@ -96,7 +96,7 @@ export const ProgressDashboardByEmail = (props) => {
         <Row gutter={[16, 16]}>
           {registeredProgressByEmailId?.map((record, index) => (
             <Col key={index} xs={24} sm={12} lg={8}>
-              <Card title={`Class: ${record?.Class}`} bordered>
+              <Card title={`Class: ${record?.Class}`} variant="outlined">
                 <h5><strong>{setLocale(locale, "resources.myprogress.participation")}:</strong> {record?.TypeOfParticipation}</h5>
                 <p><strong>{setLocale(locale, "resources.myprogress.email")}:</strong> {record?.EmailAddress}</p>
                 <p><strong>{setLocale(locale, "resources.myprogress.date")}:</strong> {new Date(record?.Date).toLocaleDateString('en-US', {
@@ -114,13 +114,13 @@ export const ProgressDashboardByEmail = (props) => {
 
   return (
     <div className="search-container">
-      <Card title={setLocale(locale, "resources.myprogress.title")} bordered>
+      <Card title={setLocale(locale, "resources.myprogress.title")} variant="outlined">
       <div>{setLocale(locale, "resources.myprogress.requirements")}</div>
       <br />
         <Row gutter={[16, 16]}>
           {/* Input email and search functionality */}
           <Col xs={24} sm={8}>
-            <Card title={setLocale(locale, "resources.myprogress.searchYourEmail")} bordered>
+            <Card title={setLocale(locale, "resources.myprogress.searchYourEmail")} variant="outlined">
             <Form layout="inline" onFinish={handleSearch}>
               <Form.Item>
                 <Input
@@ -152,7 +152,7 @@ export const ProgressDashboardByEmail = (props) => {
           </Col>
           {/* LiquidCirclePercent - Participation Certificate */}
           <Col xs={24} sm={8}>
-            <Card title={setLocale(locale, "resources.myprogress.participationcert")} bordered>
+            <Card title={setLocale(locale, "resources.myprogress.participationcert")} variant="outlined">
               <LiquidCirclePercent percent={studentPercentagesForCourse?.participationCertificatePercentage} />
               <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
               <ul>
@@ -163,7 +163,7 @@ export const ProgressDashboardByEmail = (props) => {
 
           {/* LiquidStarPercent - Golden Certificate */}
           <Col xs={24} sm={8}>
-            <Card title={setLocale(locale, "resources.myprogress.goldencert")} bordered>
+            <Card title={setLocale(locale, "resources.myprogress.goldencert")} variant="outlined">
               <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />
             <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
               <ul>
@@ -198,3 +198,4 @@ const mapStateToProps = ({ lrn, theme }) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProgressDashboardByEmail));
+

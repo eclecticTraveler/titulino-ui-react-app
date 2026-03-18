@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Table, Input, InputNumber, Popconfirm, Form, Button, Modal } from 'antd';
+import React from 'react';
+import { Table, Input, InputNumber, Form, Button } from 'antd';
 import {connect} from 'react-redux';
-import { withRouter } from "react-router-dom";
 import { onSelectingCorrectionToEdit, onCorrectionsModalChange } from 'redux/actions/Lrn';
 import AbstractContactModalForm from '../../layout-components/User/AbstractContactModalForm';
 
@@ -42,15 +41,14 @@ const EditableCell = ({
 
 const EditableModalTable = props => {
   const { tableData, tableColumns, isAllowedToEditTableData, onSelectingCorrectionToEdit, onCorrectionsModalChange, isToRenderActionButton, tableExpandables  } = props;
-
+  const normalizedTableData = Array.isArray(tableData) ? tableData : [];
+  const normalizedTableColumns = Array.isArray(tableColumns) ? tableColumns : [];
   // console.log("isAllowedToEditTableData++++++++++++");
   // console.log(isAllowedToEditTableData);
   // console.log("tableData++++++++++++");
   // console.log(tableData);
   // console.log("tableColumns++++++++++++");
   // console.log(tableColumns);
-
-const [form] = Form.useForm();
 
 const displayMoreInfo = (record, isToEdit) => {
   onCorrectionsModalChange(true);
@@ -86,7 +84,7 @@ const cancel = () => {
 // };
 
 let columns = [
-  ...tableColumns
+  ...normalizedTableColumns
 ];
 
 let expandables = tableExpandables || undefined;
@@ -140,12 +138,13 @@ const mergedColumns = columns.map(col => {
 return (
   <div>
     <Table
-      components={components}
+      components={isAllowedToEditTableData ? components : undefined}
       bordered
-      dataSource={tableData}
+      dataSource={normalizedTableData}
       columns={mergedColumns}
       expandable={expandables}
       rowClassName="editable-row"
+      rowKey={(record, index) => record?.key ?? record?.enrolleeId ?? index}
       pagination={{
         onChange: cancel,
       }}
@@ -154,7 +153,7 @@ return (
         y: 440,    // Vertical scrolling with fixed height
       }}
     />
-  <AbstractContactModalForm isToEditContent={isAllowedToEditTableData}/>
+  {isToRenderActionButton ? <AbstractContactModalForm isToEditContent={isAllowedToEditTableData}/> : null}
   </div>
 
   );
@@ -163,9 +162,8 @@ return (
 
 
 const mapStateToProps = ({lrn}) => {
-	const {selectedCorrectionRecord, onSelectingCorrectionToEdit, onCorrectionsModalChange } = lrn;
-	return {selectedCorrectionRecord, onSelectingCorrectionToEdit, onCorrectionsModalChange} 
+	const { selectedCorrectionRecord } = lrn;
+	return { selectedCorrectionRecord } 
 };
 
-export default withRouter(connect(mapStateToProps, {onSelectingCorrectionToEdit, onCorrectionsModalChange})(EditableModalTable));
-
+export default connect(mapStateToProps, {onSelectingCorrectionToEdit, onCorrectionsModalChange})(EditableModalTable);

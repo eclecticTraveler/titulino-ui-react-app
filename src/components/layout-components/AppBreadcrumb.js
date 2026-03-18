@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
+import { Link, withRouter } from 'utils/routerCompat';
 import { Breadcrumb } from 'antd';
 import mainNavigationConfig from "../../configs/MainNavigationConfig";
 import IntlMessage from '../../components/util-components/IntlMessage';
@@ -51,3 +51,4 @@ export class AppBreadcrumb extends Component {
 }
 
 export default AppBreadcrumb
+

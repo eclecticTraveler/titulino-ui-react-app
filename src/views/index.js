@@ -3,9 +3,9 @@ import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
 import { IntlProvider } from "react-intl";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, theme as antdTheme } from "antd";
 import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH, AUTH_PREFIX_PATH } from "../configs/AppConfig";
-import { Route, Switch, Redirect, withRouter, useLocation  } from "react-router-dom";
+import { Route, Switch, Redirect, withRouter, useLocation  } from 'utils/routerCompat';
 import AuthLayout from '../layouts/auth-layout';
 import AppLayout from "../layouts/app-layout";
 import CourseSelection from './app-views/course-selection';
@@ -54,6 +54,104 @@ export const Views = (props) => {
         wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
+    const titulinoBaseColor = "#e79547";
+    const isDark = currentTheme === "dark";
+    const darkTokens = isDark ? {
+        colorBgBase: "#1b2531",
+        colorBgContainer: "#283142",
+        colorBgLayout: "#1b2531",
+        colorBgElevated: "#455572",
+        colorText: "#b4bed2",
+        colorTextSecondary: "#72849a",
+        colorTextHeading: "#d6d7dc",
+        colorBorder: "#4d5b75",
+        colorBorderSecondary: "#4d5b75",
+        colorTextPlaceholder: "#617190",
+        colorTextDisabled: "#9ea8bb",
+        colorBgContainerDisabled: "#586379",
+        controlItemBgHover: "#364663",
+        colorFillSecondary: "#364663",
+        colorBgSpotlight: "#283142",
+        colorSplit: "#4d5b75",
+        boxShadow: "0 3px 6px -4px rgba(0,0,0,0.12), 0 6px 16px 0 rgba(0,0,0,0.58), 0 9px 28px 8px rgba(0,0,0,0.15)",
+    } : {};
+    const archivoFont = "'Archivo', Helvetica, sans-serif";
+    const configProviderTheme = {
+        algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+        token: {
+            colorPrimary: titulinoBaseColor,
+            fontFamily: archivoFont,
+            ...darkTokens,
+        },
+        components: {
+            Tabs: {
+                itemSelectedColor: titulinoBaseColor,
+                itemActiveColor: titulinoBaseColor,
+                itemHoverColor: titulinoBaseColor,
+                inkBarColor: titulinoBaseColor,
+                cardBg: isDark ? '#283142' : undefined,
+                titleFontSize: 14,
+            },
+            Checkbox: {
+                colorPrimary: titulinoBaseColor,
+                colorPrimaryHover: titulinoBaseColor,
+            },
+            Menu: {
+                itemHoverColor: titulinoBaseColor,
+                itemSelectedColor: titulinoBaseColor,
+                subMenuItemBg: 'transparent',
+                ...(isDark ? {
+                    colorItemBg: '#283142',
+                    darkItemBg: '#283142',
+                    itemHoverBg: '#364663',
+                    darkItemHoverBg: '#364663',
+                    itemSelectedBg: '#364663',
+                    darkItemSelectedBg: '#364663',
+                    itemColor: '#b4bed2',
+                    darkItemColor: '#b4bed2',
+                    itemHoverColor: titulinoBaseColor,
+                    darkItemHoverColor: titulinoBaseColor,
+                } : {}),
+            },
+            ...(isDark ? {
+                Table: {
+                    headerBg: "#283142",
+                    rowHoverBg: "#364663",
+                    headerSortActiveBg: "#424242",
+                    headerSortHoverBg: "#424242",
+                    footerBg: "#3b4962",
+                    colorBgContainer: "#283142",
+                },
+                Layout: {
+                    headerBg: "#283142",
+                    bodyBg: "#1b2531",
+                    siderBg: "#283142",
+                },
+                Card: {
+                    colorBgContainer: "#283142",
+                },
+                Input: {
+                    colorBgContainer: "#283142",
+                    addonBg: "#3b4962",
+                },
+                Select: {
+                    colorBgContainer: "#283142",
+                    colorBgElevated: "#455572",
+                    optionActiveBg: "#364663",
+                },
+                Modal: {
+                    contentBg: "#283142",
+                    headerBg: "#283142",
+                },
+                Dropdown: {
+                    colorBgElevated: "#455572",
+                },
+                Popover: {
+                    colorBgElevated: "#455572",
+                },
+            } : {}),
+        },
+    };
 
     // Load the cookie for Authentication if there was any
      useSupabaseSessionSync((session) => {
@@ -96,16 +194,21 @@ export const Views = (props) => {
       
     
     useBodyClass(`dir-${direction}`);
+    useBodyClass(currentTheme === 'dark' ? 'dark' : 'light');
+
+    // Switch CSS theme file when currentTheme changes
+    useEffect(() => {
+        if (currentTheme) {
+            switcher({ theme: themes[currentTheme] });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentTheme]);
 
     // Effect to load user selected theme and locale
     useEffect(() => {
         onLoadingUserSelectedTheme();        
         if((!wasUserConfigSet) || wasUserConfigSet === false){                 
             getWasUserConfigSetFlag();            
-        }
- 
-        if (currentTheme) {
-            switcher({ theme: themes[currentTheme] });
         }
         
         if (wasUserConfigSet && !course) {
@@ -120,13 +223,13 @@ export const Views = (props) => {
             }
         }
 
-    }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);          
+    }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);          
 
 
     if(!wasUserConfigSet){
         return (
             <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
-                <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
+                <ConfigProvider locale={currentAppLocale.antd} direction={direction} theme={configProviderTheme}>
                     <CourseSelection />
                 </ConfigProvider>
             </IntlProvider>
@@ -139,7 +242,7 @@ export const Views = (props) => {
 
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
-            <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
+            <ConfigProvider locale={currentAppLocale.antd} direction={direction} theme={configProviderTheme}>
                 <Switch>
                     <Route exact path={DEFAULT_PREFIX_VIEW}>
                         <Redirect to={APP_PREFIX_PATH} />
@@ -181,3 +284,4 @@ const mapStateToProps = ({ theme, lrn, auth, grant }) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Views));
+

@@ -1,6 +1,6 @@
 import React from 'react';
 import { APP_FULLNAME } from '../../configs/AppConfig';
-import { Link } from 'react-router-dom';
+import { Link } from 'utils/routerCompat';
 import packageJson from '../../../package.json'; 
 
 export default function Footer() {
@@ -23,3 +23,4 @@ export default function Footer() {
 		</footer>
 	);
 }
+

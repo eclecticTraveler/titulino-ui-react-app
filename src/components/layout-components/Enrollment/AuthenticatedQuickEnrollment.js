@@ -11,9 +11,7 @@ import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
 import EnrollmentModal from "./EnrollmentModal";
-import { useHistory } from 'react-router-dom';
-
-const { Option } = Select;
+import { useHistory } from 'utils/routerCompat';
 
 export const AuthenticatedQuickEnrollment = (props) => {
   const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, nativeLanguage, passedSubmitBtnEnabled,
@@ -330,6 +328,42 @@ const formatSubmissionData = (
     };
     return map[id] || id;
   };
+
+  const filterSelectOption = (input, option) =>
+    (option?.searchText || "").toLowerCase().includes(input.toLowerCase());
+
+  const countryOptions = (props.countries ?? []).map((country) => ({
+    value: country.CountryId,
+    searchText: `${country?.NativeCountryName || ""} ${country?.CountryName || ""}`,
+    label: (
+      <span>
+        <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
+        {`${country?.NativeCountryName} | ${country?.CountryName}`}
+      </span>
+    ),
+  }));
+
+  const residencyDivisionOptions = (residencyDivisions ?? []).map((division) => ({
+    value: division?.CountryDivisionId,
+    searchText: division?.CountryDivisionName || "",
+    label: (
+      <span>
+        <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
+        {division?.CountryDivisionName}
+      </span>
+    ),
+  }));
+
+  const birthDivisionOptions = (birthDivisions ?? []).map((division) => ({
+    value: division?.CountryDivisionId,
+    searchText: division?.CountryDivisionName || "",
+    label: (
+      <span>
+        <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
+        {division?.CountryDivisionName}
+      </span>
+    ),
+  }));
   
 
   const quickEnrollmentStyle = {
@@ -367,7 +401,7 @@ const formatSubmissionData = (
         >
         <Row gutter={24}>
           <Col lg={24}>
-            <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered
+            <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined"
               cover={
                 <img
                 alt={titleOfEnrollment}
@@ -384,7 +418,7 @@ const formatSubmissionData = (
             {coursesToDisplay?.length > 1 ? (
               <Card
                 style={quickEnrollmentStyle}
-                bordered
+                variant="outlined"
                 title={setLocale(locale, "enrollment.courseDetails")}
                 loading={submittingLoading}
               >
@@ -440,7 +474,7 @@ const formatSubmissionData = (
                 <Card
                   key={course.id || index}
                   style={quickEnrollmentStyle}
-                  bordered
+                  variant="outlined"
                   title={setLocale(locale, "enrollment.courseDetails")}
                   loading={submittingLoading}
                 >
@@ -485,7 +519,7 @@ const formatSubmissionData = (
           { user?.contactId && returningEnrolleeCountryDivisionInfo?.personalCommunicationName && (
             <>
             {isGeographyInfoVisible && (
-              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} loading={submittingLoading} bordered>
+              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} loading={submittingLoading} variant="outlined">
                 <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
                   rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}
                   initialValue={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId ?? undefined}               
@@ -493,20 +527,14 @@ const formatSubmissionData = (
                   <Select
                     showSearch
                     placeholder="Select your country of residence"
-                    optionFilterProp="children"
+                    options={countryOptions}
                     onChange={(value) => {
                       setSelectedCountryOfResidence(value); // Update selected country
                       setDivisions([]); // Reset divisions for residence
                       form.setFieldsValue({ countryDivisionOfResidence: null }); // Clear form division value
                     }}
-                  >
-                    {props.countries?.map((country) => (
-                      <Option key={country.CountryId} value={country.CountryId}>
-                        <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
-                        {`${country?.NativeCountryName} | ${country?.CountryName}`}
-                      </Option>
-                    ))}
-                  </Select>
+                    filterOption={filterSelectOption}
+                  />
                 </Form.Item>
 
                 {selectedCountryOfResidence && residencyDivisions?.length > 0 && (
@@ -518,18 +546,12 @@ const formatSubmissionData = (
                     <Select
                       showSearch
                       placeholder="Select a state/region where you currently live"
-                      optionFilterProp="children"
+                      filterOption={filterSelectOption}
+                      options={residencyDivisionOptions}
                       onChange={(value) => {
                         setEnrolleeResidencyDivision(value);
                       }}
-                    >
-                      {residencyDivisions?.map((division) => (
-                        <Option key={division?.CountryDivisionId} value={division?.CountryDivisionId}>
-                          <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
-                          {division?.CountryDivisionName}
-                        </Option>
-                      ))}
-                    </Select>
+                    />
                   </Form.Item>
                 )}
 
@@ -548,20 +570,14 @@ const formatSubmissionData = (
                 <Select
                   showSearch
                   placeholder="Select country of nationality of birth"
-                  optionFilterProp="children"
+                  options={countryOptions}
                   onChange={(value) => {
                     setSelectedBirthCountry(value);
                     setBirthDivisions([]);
                     form.setFieldsValue({ countryDivisionOfBirth: null });
                   }}
-                >
-                  {props.countries?.map((country) => (
-                    <Option key={country.CountryId} value={country.CountryId}>
-                      <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
-                      {`${country.NativeCountryName} | ${country.CountryName}`}
-                    </Option>
-                  ))}
-                </Select>
+                  filterOption={filterSelectOption}
+                />
               </Form.Item>
 
             {selectedBirthCountry && birthDivisions?.length > 0 && (
@@ -574,18 +590,12 @@ const formatSubmissionData = (
                 <Select
                   showSearch
                   placeholder="Select state/region of nationality of birth"
-                  optionFilterProp="children"
+                  filterOption={filterSelectOption}
+                  options={birthDivisionOptions}
                   onChange={(value) => {
                     setEnrolleeBirthDivision(value);
                   }}
-                >
-                  {birthDivisions?.map((division) => (
-                    <Option key={division.CountryDivisionId} value={division.CountryDivisionId}>
-                      <Flag code={division.CountryId} style={{ width: 20, marginRight: 10 }} />
-                      {division.CountryDivisionName}
-                    </Option>
-                  ))}
-                </Select>
+                />
               </Form.Item>
             )}
           </>
@@ -627,7 +637,7 @@ const formatSubmissionData = (
                       : setLocale(locale, "enrollment.form.languageLevelForCourse")
                   }
                   loading={submittingLoading}
-                  bordered
+                  variant="outlined"
                 >
                   <Form.Item
                     name={
@@ -659,7 +669,7 @@ const formatSubmissionData = (
         })()}
 
 
-            <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
+            <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined">
               <p>
                 {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {enrollmentVersion} - 
                 <TermsModal />{" "}
@@ -700,3 +710,4 @@ const mapStateToProps = ({ lrn, grant, auth }) => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AuthenticatedQuickEnrollment);
+

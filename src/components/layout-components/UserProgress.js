@@ -3,13 +3,10 @@ import {
   Card,
   Checkbox,
   Select,
-  Button,
   Row,
   Col,
-  Input,
   message,
-  Badge,
-  notification 
+  Badge
 } from 'antd';
 import {
   FacebookOutlined,
@@ -20,7 +17,6 @@ import IntlMessage from "components/util-components/IntlMessage";
 
 
 const { Meta } = Card;
-const { Option } = Select;
 
 export const UserProgress = ({ progressData, courseCodeId, categories, setHandleUserProgressSubmit,
    setSelectedLessons, emailId, setIsSmallConfettiVisible, setSelectedLessonsForSubmission, contactId, userProficiency }) => {
@@ -115,7 +111,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
     }, [selectedLessons, userProgressLessonsToUpsert]);
 
   // Handle checkbox change for class selection
-  const handleCheckboxChange = (categoryId, classNumber, participationIds) => {
+  const handleCheckboxChange = (categoryId, classNumber) => {
     internalSetSelectedLessons((prev) => {
       const key = `${categoryId}-${classNumber}`;
       const newSelections = { ...prev };
@@ -145,6 +141,12 @@ const getLevelFromProficiency = (abbr) => {
 };
 
 const levelToUse = getLevelFromProficiency(userProficiency);
+
+const getParticipationTypeOptions = (participationIds = []) =>
+  participationIds.map((participation) => ({
+    value: participation?.participationTypeId,
+    label: setLocale(locale, participation?.localizationKey),
+  }));
 
 // Combine categories and progress data
 const combinedCategories = categories
@@ -359,7 +361,7 @@ const combinedCategories = categories
                                   />
                                 </div>
                               }
-                              bordered
+                              variant="outlined"
                               extra={
                                 <Checkbox
                                   onClick={(e) => {
@@ -488,22 +490,8 @@ const combinedCategories = categories
                                           ?.participationTypeId || undefined
                                       }
                                       style={{ width: '100%', marginTop: 10 }}
-                                    >
-                                      {category?.participationIds?.map(
-                                        (participation) => (
-                                          <Option
-                                            key={
-                                              participation.participationTypeId
-                                            }
-                                            value={
-                                              participation.participationTypeId
-                                            }
-                                          >
-                                            {setLocale(locale, participation?.localizationKey)}
-                                          </Option>
-                                        )
-                                      )}
-                                    </Select>
+                                      options={getParticipationTypeOptions(category?.participationIds)}
+                                    />
                                     </>
                                   )}
                                   {!requiresDropdown && (

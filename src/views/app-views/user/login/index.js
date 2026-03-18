@@ -16,7 +16,7 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
 import { Card } from 'antd';
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation } from 'utils/routerCompat';
 import Loading from 'components/shared-components/Loading';
 
 // ✅ Extract hash tokens into query-style params
@@ -172,7 +172,7 @@ export const LoginAdapter = (props) => {
 		return (
 			<div className="container customerName">
 				<Card
-					bordered
+					variant="outlined"
 					style={loginStyle}
 					cover={
 						<img
@@ -226,3 +226,4 @@ const mapStateToProps = ({ auth }) => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginAdapter);
+

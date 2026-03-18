@@ -2,7 +2,7 @@ import React from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {onIsToEditShippingAddressChange}  from '../../../redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import IntlMessage from "../../util-components/IntlMessage";
 import { Input, Row, Col, Card, Form, Upload, Button } from 'antd';
 const { Dragger } = Upload;
@@ -75,7 +75,7 @@ const AddressEditableDisplay = props => {
 		<div>
 			<Row gutter={16}>
 				<Col xs={24} sm={24} md={17}>
-					<Card bordered={false}>
+					<Card variant="borderless">
 						<Form
 							layout="vertical"
 							form={form}
@@ -130,3 +130,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AddressEditableDisplay));
+

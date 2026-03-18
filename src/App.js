@@ -1,5 +1,5 @@
 import React from 'react'
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
+import {BrowserRouter as Router, Route, Switch} from 'utils/routerCompat'
 import './App.css';
 import Views from './views'
 import { Provider } from 'react-redux';
@@ -28,4 +28,5 @@ function App(){
 }
 
 export default App;
+
 

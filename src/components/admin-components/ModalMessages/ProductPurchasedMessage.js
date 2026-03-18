@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from 'antd';
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'utils/routerCompat';
 import IntlMessage from "components/util-components/IntlMessage";
 
 const ProductPurchasedMessage = ({handlePostButtonClick}) => {
@@ -34,3 +34,4 @@ const ProductPurchasedMessage = ({handlePostButtonClick}) => {
 };
 
 export default ProductPurchasedMessage;
+

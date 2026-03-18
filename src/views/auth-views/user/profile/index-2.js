@@ -3,7 +3,7 @@ import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {getAllLanguageCourses, setUserCourseConfiguration, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
 import IconFallback from "../../../../components/util-components/IconFallback";
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import { onLocaleChange, onCourseChange } from '../../../../redux/actions/Theme'
 import IntlMessage from "../../../../components/util-components/IntlMessage";
 import Accordion from 'react-bootstrap/Accordion';
@@ -34,7 +34,7 @@ class Profile extends Component {
 	}
 
 	cardDropdown = (menu) => (
-		<Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+		<Dropdown menu={{ items: [] }} popupRender={() => menu} trigger={['click']} placement="bottomRight">
 		  <a href="/#" className="text-gray font-size-lg" onClick={e => e.preventDefault()}>
 			<EllipsisOutlined />
 		  </a>
@@ -195,3 +195,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Profile));
+

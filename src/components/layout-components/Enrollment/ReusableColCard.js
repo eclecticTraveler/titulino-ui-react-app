@@ -6,7 +6,7 @@ const ReusableColCard = ({ children, selected, onClick, course, totalCardsToBeRe
   >
     <Card
       hoverable
-      bordered
+      variant="outlined"
       className={`course-card ${selected ? 'selected' : ''}`}
       onClick={onClick}
       style={{ display: 'flex', alignItems: 'center' }}

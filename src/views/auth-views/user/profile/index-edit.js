@@ -5,7 +5,7 @@ import { ImageSvg } from '../../../../assets/svg/icon';
 import {getAllLanguageCourses, setUserCourseConfiguration, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
 import PageHeaderAlt from '../../../../components/layout-components/PageHeaderAlt'
 import IconFallback from "../../../../components/util-components/IconFallback";
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import { onLocaleChange, onCourseChange } from '../../../../redux/actions/Theme'
 import Flex from '../../../../components/shared-components/Flex'
 import IntlMessage from "../../../../components/util-components/IntlMessage";
@@ -27,7 +27,6 @@ import {
 import { Input, Row, Col, Card, Form, Upload, InputNumber, message, Select } from 'antd';
 import AvatarStatus from '../../../../components/shared-components/AvatarStatus';
 const { Dragger } = Upload;
-const { Option } = Select;
 
 class Profile extends Component {
 
@@ -232,18 +231,25 @@ class Profile extends Component {
 							</Card>
 							<Card title="Organization">
 								<Form.Item name="category" label="Category" >
-									<Select className="w-100" placeholder="Category">
-										{
-											categories.map(elm => (
-												<Option key={elm} value={elm}>{elm}</Option>
-											))
-										}
-									</Select>
+									<Select
+										className="w-100"
+										placeholder="Category"
+										options={categories.map((elm) => ({
+											value: elm,
+											label: elm,
+										}))}
+									/>
 								</Form.Item>
 								<Form.Item name="tags" label="Tags" >
-								<Select mode="tags" style={{ width: '100%' }} placeholder="Tags">
-									{tags.map(elm => <Option key={elm}>{elm}</Option>)}
-								</Select>
+								<Select
+									mode="tags"
+									style={{ width: '100%' }}
+									placeholder="Tags"
+									options={tags.map((elm) => ({
+										value: elm,
+										label: elm,
+									}))}
+								/>
 								</Form.Item>
 							</Card>
 						</Col>
@@ -269,3 +275,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Profile));
+

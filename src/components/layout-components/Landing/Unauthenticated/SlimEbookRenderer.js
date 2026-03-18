@@ -22,9 +22,9 @@ class SlimEbookRenderer extends Component {
 		let subTitle = `eBook`
 		return (
 			<div>			
-				<Card bordered={true} title={subTitle}>	
+				<Card variant="outlined" title={subTitle}>	
 					<h1>{setLocale(locale, "unauthenticated.dashboard.welcome")} {sanitizedCourseTitle}</h1>
-					<Card bordered={false}
+					<Card variant="borderless"
 						cover={
 							<InternalIFrame iFrameUrl={this.props.ebookUrl}/>  
 						}>

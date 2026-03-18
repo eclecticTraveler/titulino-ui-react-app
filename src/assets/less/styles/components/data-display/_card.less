@@ -30,7 +30,7 @@
 }
 
 .ant-card-bordered {
-    border: 1px solid @border-color-base;
+    // border: 1px solid @border-color-base;
     
     // & when (@theme = dark) {
     //     border-color: transparent;
@@ -117,6 +117,27 @@
         & when (@theme = dark) {       
             background: @border-color-dark-upper;
         }
+    }
+
+    .ant-card-actions {
+        border-top: 1px solid @border-color-base;
+
+        & when (@theme = light) {
+            background: @gray-lightest;
+        }
+
+        & when (@theme = dark) {
+            background: @component-background;
+        }
+    }
+
+    .ant-card-actions > li {
+        border-inline-end: 1px solid fade(@border-color-base, 70%);
+    }
+
+    .ant-card-actions > li > span,
+    .ant-card-actions > li > span a {
+        color: @text-color;
     }
 }
 

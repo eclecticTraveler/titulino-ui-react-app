@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from "react";
-import { Route, useRouteMatch, Switch, Redirect } from 'react-router-dom';
+import { Route, useRouteMatch, Switch, Redirect } from 'utils/routerCompat';
 import Loading from 'components/shared-components/Loading';
 
 const PageRouter = ({ routes, from, to, align, cover }) => {

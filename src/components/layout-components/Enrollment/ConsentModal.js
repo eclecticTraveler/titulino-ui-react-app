@@ -17,7 +17,7 @@ const ConsentModal = ({ label, title = "Detalles del consentimiento" }) => {
       </a>
       <Modal
         title={title}
-        visible={isVisible}
+        open={isVisible}
         onCancel={handleClose}
         footer={[
           <Button key="close" type="primary" onClick={handleClose}>

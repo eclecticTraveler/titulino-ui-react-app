@@ -127,7 +127,6 @@
     padding-left: 6px; // SIDE BAR PADDING EXPANDABLE
 }
 .ant-menu-title-content{
-    // margin-left: 15px;
     margin-left: 0px;
 }
 .nav-search-wrapper{
@@ -136,4 +135,17 @@
 
 .ant-menu-title-content > span {
     padding-left: 5px;
+}
+
+// antd v6: Ensure menu item hover uses brand color
+.ant-menu-inline .ant-menu-item:hover,
+.ant-menu-inline .ant-menu-submenu-title:hover,
+.ant-menu-inline .ant-menu-item:hover > .ant-menu-title-content,
+.ant-menu-inline .ant-menu-submenu-title:hover > .ant-menu-title-content {
+    color: @titulino-base !important;
+}
+
+.ant-menu-inline .ant-menu-item:hover a,
+.ant-menu-inline .ant-menu-submenu-title:hover a {
+    color: @titulino-base !important;
 }

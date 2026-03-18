@@ -5,7 +5,7 @@ import { ongettingUserVideoClassArrayUrls } from 'redux/actions/Lrn';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import UnderConstruccion from 'components/layout-components/UnderConstruccion';
 import utils from 'utils';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'utils/routerCompat';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import { faLevelDown, faLevelUp } from '@fortawesome/free-solid-svg-icons';
 import IntlMessage from "components/util-components/IntlMessage";
@@ -86,3 +86,4 @@ const mapStateToProps = ({ lrn, theme, grant }) => {
 };
 
 export default connect(mapStateToProps, { ongettingUserVideoClassArrayUrls })(VideoClasses);
+

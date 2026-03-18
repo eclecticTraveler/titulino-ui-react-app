@@ -12,7 +12,7 @@ import {
 	authenticated
 } from 'redux/actions/Auth';
 import JwtAuthService from 'services/JwtAuthService'
-import { useHistory } from "react-router-dom";
+import { useHistory } from 'utils/routerCompat';
 import { motion } from "framer-motion";
 import IntlMessage from "components/util-components/IntlMessage";
 
@@ -213,3 +213,4 @@ const mapDispatchToProps = {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginForm)
+

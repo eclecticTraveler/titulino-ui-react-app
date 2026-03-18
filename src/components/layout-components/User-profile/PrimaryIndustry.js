@@ -2,10 +2,9 @@ import React from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {onIsToEditUserProfileChange}  from '../../../redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import IntlMessage from "../../util-components/IntlMessage";
 import { Row, Col, Card, Form, Button, Select } from 'antd';
-const { Option } = Select;
 
 const setLocale = (isLocaleOn, localeKey) =>{		
 	return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -53,7 +52,7 @@ const PrimaryIndustry = props => {
 		<div>
 			<Row gutter={16}>
 				<Col xs={24} sm={24} md={17}>
-					<Card bordered={false}>
+					<Card variant="borderless">
 						<Form
 							layout="vertical"
 							form={form}
@@ -63,15 +62,12 @@ const PrimaryIndustry = props => {
 							}}
 						>
 						<Form.Item name="primaryIndustry" label="Select your primary Industry">
-							<Select>
-						{
-							PrimaryIndustries.map(elm => (
-								<Option value={elm} key={elm}>
-									<span className="text-capitalize font-weight-semibold">{elm}</span>
-								</Option>
-							))
-						}
-							</Select>
+							<Select
+								options={PrimaryIndustries.map((elm) => ({
+									value: elm,
+									label: <span className="text-capitalize font-weight-semibold">{elm}</span>,
+								}))}
+							/>
 						</Form.Item>
 						<div className="mb-3">
 						<Button className="mr-2" onClick={() => discardChanges()}>Discard</Button>
@@ -97,3 +93,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PrimaryIndustry));
+

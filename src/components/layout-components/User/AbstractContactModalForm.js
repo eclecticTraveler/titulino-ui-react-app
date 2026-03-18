@@ -2,7 +2,7 @@ import React from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import { onSelectingCorrectionToEdit, onCorrectionsModalChange } from 'redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import ContactInfoDisplay from './ContactInfoDisplay';
 import ContactInfoEditableDisplay from './ContactInfoEditableDisplay';
 import { Modal } from 'antd';
@@ -22,7 +22,7 @@ const AbstractContactModalForm = props => {
 	const modalTitle = isToEditContent ? `Edit ${match?.params?.relationType} Information` : `${match?.params?.relationType} Information`;
 	return(	
 		<div>
-			<Modal title={modalTitle} visible={isCorrectionModalOpened} onOk={handleOk} onCancel={handleCancel} width={1000} footer={null}>
+			<Modal title={modalTitle} open={isCorrectionModalOpened} onOk={handleOk} onCancel={handleCancel} width={1000} footer={null}>
 				{
 					isToEditContent ? 
 					<ContactInfoEditableDisplay/>
@@ -47,3 +47,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(AbstractContactModalForm));
+

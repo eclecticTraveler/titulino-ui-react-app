@@ -8,7 +8,7 @@ import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
 import UserProgress from './UserProgress'
 import moment from "moment";
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import Confetti from 'react-confetti';
 import useWindowSize from 'react-use/lib/useWindowSize';
 import { faRoad, faPieChart } from '@fortawesome/free-solid-svg-icons';
@@ -119,28 +119,40 @@ useEffect(() => {
   }
 
   const ProgressDashboardByEmailStyle = {
-    height: 600
+    minHeight: 620
   }
+
+  const requirementsTitleStyle = {
+    marginTop: 8,
+    marginBottom: 8,
+  };
+
+  const requirementsListStyle = {
+    paddingInlineStart: 22,
+    marginBottom: 0,
+    lineHeight: 1.6,
+    wordBreak: 'break-word',
+  };
 
   const renderGeneralView = () => (
     <>
       <Row gutter={16}>
         <Col xs={24} sm={24} lg={12}>		
         {/* LiquidCirclePercent - Participation Certificate */}    
-        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidCirclePercent percent={studentPercentagesForCourse?.participationCertificatePercentage} />
-          <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
-          <ul>
+          <h5 style={requirementsTitleStyle}>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
+          <ul style={requirementsListStyle}>
           <li>{setLocale(locale, "resources.myprogress.generalGatherings")}: {studentCategoriesCompletedForCourse?.category1Total ?? 0}/8</li>
         </ul> 
         </Card>
       </Col>
       <Col xs={24} sm={24} lg={12}>
         {/* LiquidStarPercent - Golden Certificate */}
-        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />
-          <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
-          <ul>
+          <h5 style={requirementsTitleStyle}>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
+          <ul style={requirementsListStyle}>
             <li>{setLocale(locale, "resources.myprogress.generalGatherings")}: {studentCategoriesCompletedForCourse?.category1Total ?? 0}/8</li>
             <li>{setLocale(locale, "resources.myprogress.watchedGrammarClasses")}: {studentCategoriesCompletedForCourse?.category2Total ?? 0}/8</li>
             <li>{setLocale(locale, "resources.myprogress.finalExam")}: {studentCategoriesCompletedForCourse?.category4Total ?? 0}/1:</li>
@@ -257,7 +269,7 @@ useEffect(() => {
           style={{ height: 100, objectFit: 'cover' }}
         />
               }
-    bordered loading={loading}>
+    variant="outlined" loading={loading}>
     {userRegisteredProgressByCourse && (
       <>
         <h1>{capitalizeFirstLetter(courseTheme)}: {renderMessageResults()}</h1>
@@ -312,3 +324,4 @@ const mapStateToProps = ({ lrn, theme, grant }) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProgressDashboardByEmailV4));
+

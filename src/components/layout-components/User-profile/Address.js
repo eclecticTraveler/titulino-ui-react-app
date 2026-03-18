@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {onShippingKeyTabChange, onIsToEditShippingAddressChange}  from '../../../redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from 'utils/routerCompat';
 import IntlMessage from "../../util-components/IntlMessage";
 import AddressEditableDisplay from "./AddressEditableDisplay";
 import AddressDisplay from "./AddressDisplay";
@@ -50,3 +50,4 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Address));
+

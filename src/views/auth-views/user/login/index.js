@@ -15,7 +15,7 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
 import { Card } from 'antd';
-import { useHistory } from "react-router-dom";
+import { useHistory } from 'utils/routerCompat';
 import JwtAuthService from 'services/JwtAuthService';
 import Loading from 'components/shared-components/Loading';
 
@@ -93,7 +93,7 @@ export const LoginAdapter = (props) => {
 			<>
 				<div className="container customerName">
 			<Card
-				bordered
+				variant="outlined"
 				style={loginStyle}
 				cover={
 				<img
@@ -153,3 +153,4 @@ const mapStateToProps = ({auth}) => {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginAdapter);
+

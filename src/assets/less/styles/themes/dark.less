@@ -65,3 +65,64 @@
 
 @scrumboard-bg: #2e4056;
 @scrumboard-add-bg: #405875;
+
+// Body-class-scoped overrides ensure dark wins even when both theme CSS files load
+body.dark {
+    color: @text-color;
+    background-color: @body-background;
+
+    h1, h2, h3, h4, h5, h6,
+    .h1, .h2, .h3, .h4, .h5, .h6 {
+        color: @heading-color;
+    }
+
+    p {
+        color: @text-color;
+    }
+
+    .footer {
+        color: @text-color;
+
+        a {
+            color: @text-color;
+        }
+    }
+
+    .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab .ant-tabs-tab-btn,
+    .ant-tabs-card > div > .ant-tabs-nav .ant-tabs-tab .ant-tabs-tab-btn {
+        color: @text-color !important;
+    }
+
+    .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab:not(.ant-tabs-tab-active) .ant-tabs-tab-btn,
+    .ant-tabs-card > div > .ant-tabs-nav .ant-tabs-tab:not(.ant-tabs-tab-active) .ant-tabs-tab-btn {
+        color: @text-color !important;
+    }
+
+    .widget-action {
+        background-color: transparent;
+
+        p {
+            color: @text-color;
+        }
+    }
+
+    .side-nav--alt .ant-menu .ant-menu-item a {
+        color: @text-color;
+    }
+
+    .side-nav--alt .ant-menu .ant-menu-submenu-title {
+        color: @text-color;
+    }
+
+    // Hover overrides for dark mode
+    .ant-menu-inline .ant-menu-item:hover,
+    .ant-menu-inline .ant-menu-submenu-title:hover,
+    .ant-menu-inline .ant-menu-item:hover a,
+    .ant-menu-inline .ant-menu-submenu-title:hover a {
+        color: @titulino-base !important;
+    }
+
+    .ant-tabs .ant-tabs-tab-btn:hover {
+        color: @titulino-base !important;
+    }
+}

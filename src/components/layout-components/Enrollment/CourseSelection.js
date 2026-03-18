@@ -5,8 +5,6 @@ import { onRenderingCourseRegistration } from "redux/actions/Lrn";
 import { Form, Input, Radio, Select, Checkbox, Button, Card, Divider, Row, Col, Space  } from "antd";
 import CourseCards from "./CourseCards";
 
-const { Option } = Select;
-
 export const CourseSelection = (props) => {
   const { selectedCoursesToEnroll } = props;
 
@@ -17,7 +15,7 @@ export const CourseSelection = (props) => {
   };
   return (
     <div className="container customerName" >
-      <Card bordered={true}>
+      <Card variant="outlined">
           <h1>Select Courses to Enroll</h1>
       </Card>
       <Row gutter={[16, 16]} justify="center">

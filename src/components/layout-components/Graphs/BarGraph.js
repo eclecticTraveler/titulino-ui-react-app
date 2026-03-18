@@ -27,7 +27,7 @@ const BarGraph = (props) => {
       position: 'top-left',
     },
     label: {
-      position: 'middle', // Label position in the middle of bars
+      position: 'inside', // Compatible position for latest plots
       style: {
         fill: '#FFFFFF',
         fontSize: 12,
@@ -42,7 +42,7 @@ const BarGraph = (props) => {
 
   return (
     <div>
-      <Card bordered={true} title={setLocale(locale, title)}>
+      <Card variant="outlined" title={setLocale(locale, title)}>
         <Bar {...config} />
       </Card>
     </div>

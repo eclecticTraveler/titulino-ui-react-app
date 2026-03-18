@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Alert } from "antd";
 import { showAuthMessage, showLoading, hideAuthMessage, authenticated } from 'redux/actions/Auth';
-import { useHistory } from "react-router-dom";
+import { useHistory } from 'utils/routerCompat';
 import { motion } from "framer-motion"
 import JwtAuthService from 'services/JwtAuthService';
 import IntlMessage from "components/util-components/IntlMessage";
@@ -147,3 +147,4 @@ const mapDispatchToProps = {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(RegisterForm)
+

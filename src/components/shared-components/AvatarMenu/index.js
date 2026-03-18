@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types'
 import { Avatar } from 'antd';
-import { Link } from "react-router-dom";
+import { Link } from 'utils/routerCompat';
 import IntlMessage from "../../../components/util-components/IntlMessage";
 
 
@@ -61,3 +61,4 @@ AvatarMenu.propTypes = {
 }
 
 export default AvatarMenu;
+

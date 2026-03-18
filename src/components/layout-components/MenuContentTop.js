@@ -4,7 +4,7 @@ import { EllipsisOutlined } from "@ant-design/icons";
 import { Grid } from "antd";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { useLocation, NavLink } from "react-router-dom";
+import { useLocation, NavLink } from 'utils/routerCompat';
 import IconAdapter from "components/util-components/IconAdapter";
 import IntlMessage from "../util-components/IntlMessage";
 import {
@@ -153,8 +153,8 @@ const MenuContentTop = (props) => {
         <Popover
           content={menu}
           trigger="click"
-          visible={menuVisible}
-          onVisibleChange={toggleMenu}
+          open={menuVisible}
+          onOpenChange={toggleMenu}
         >
           <button
             className="menu-toggle-button"
@@ -193,3 +193,4 @@ const mapStateToProps = ({ lrn, grant, auth }) => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MenuContentTop);
+

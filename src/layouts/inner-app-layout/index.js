@@ -16,15 +16,15 @@ const SideContent = props => {
 }
 
 const SideContentMobile = props => {
-	const { sideContent, visible, onSideContentClose } = props
+	const { sideContent, open, onSideContentClose } = props
 	return (
 		<Drawer
 			width={320}
 			placement="left"
 			closable={false}
 			onClose={onSideContentClose}
-			visible={visible}
-			bodyStyle={{paddingLeft: 0, paddingRight: 0}}
+			open={open}
+			styles={{ body: {paddingLeft: 0, paddingRight: 0} }}
 		>
 			<div className="h-100">
 				{sideContent}
@@ -50,7 +50,7 @@ export const InnerAppLayout = props => {
 		<div className="inner-app-layout">
 			{isMobile ? 
 				<SideContentMobile 
-					visible={visible} 
+					open={visible} 
 					onSideContentClose={close}
 					{...props}
 				/> 

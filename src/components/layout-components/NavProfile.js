@@ -17,7 +17,7 @@ import {
 import Icon from '../../components/util-components/Icon';
 import { signOut } from 'redux/actions/Auth';
 import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from 'configs/AppConfig';
-import { Link } from "react-router-dom";
+import { Link } from 'utils/routerCompat';
 import IntlMessage from "../../components/util-components/IntlMessage";
 import ProfileNavPanelConfig from './ProfileNavPanelConfig';
 import { DIR_RTL } from 'constants/ThemeConstant';
@@ -200,14 +200,14 @@ export const NavProfile = (props) => {
   );
   return (
     <>
-      <Dropdown placement="bottomRight" overlay={profileMenu} trigger={["click"]}>
+      <Dropdown placement="bottomRight" menu={{ items: [] }} popupRender={() => profileMenu} trigger={["click"]}>
         <div className="avatar-menu d-flex align-items-center" mode="horizontal">
           <Avatar size={40} src={avatarImg} />
         </div>
       </Dropdown>
 
       <ProfileNavPanelConfig
-        visible={visible}
+        open={visible}
         onClose={onClose}
         title='settings.menu.main.title' // Adjust the title key as needed
         direction={direction}

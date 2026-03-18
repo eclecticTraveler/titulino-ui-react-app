@@ -20,6 +20,15 @@ const analytics = (state = initState, action) => {
         submitProgressSuccess: action.submittedAdminEnrolleeProgress
       }
     case ON_LOADING_ALL_DASHBOARD_CONTENTS:
+      console.log("[InsightsDebug][Reducer][ON_LOADING_ALL_DASHBOARD_CONTENTS]", {
+        selectedCourseCodeId: action.selectedCourseCodeId,
+        selectedLocationType: action.selectedLocationType,
+        selectedCountryId: action.selectedCountryId,
+        enrolleeRows: Array.isArray(action?.enrolleDashboardData?.tableData) ? action.enrolleDashboardData.tableData.length : -1,
+        progressRows: Array.isArray(action?.enrolleesCourseProgressData?.tableData) ? action.enrolleesCourseProgressData.tableData.length : -1,
+        enrolleeColumns: Array.isArray(action?.enrolleDashboardData?.columns) ? action.enrolleDashboardData.columns.length : -1,
+        progressColumns: Array.isArray(action?.enrolleesCourseProgressData?.columns) ? action.enrolleesCourseProgressData.columns.length : -1
+      });
       return {
         ...state,
         selectedCourseCodeId: action.selectedCourseCodeId,

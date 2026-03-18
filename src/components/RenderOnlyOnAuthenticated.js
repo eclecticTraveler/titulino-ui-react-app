@@ -1,7 +1,7 @@
 import { RouteInterceptor } from '../helpers/index';
-import { Route, Switch, Redirect, withRouter } from "react-router-dom";
+import { Route, Switch, Redirect, withRouter } from 'utils/routerCompat';
 import { AUTH_PREFIX_PATH, APP_PREFIX_PATH } from "../configs/AppConfig";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'utils/routerCompat';
 import React, {useEffect} from 'react'
 
 const RenderOnlyOnAuthenticated = ({ children }) => {
