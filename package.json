@@ -42,7 +42,7 @@
     "react-iframe": "^1.8.0",
     "react-intl": "^5.18.2",
     "react-redux": "^7.2.9",
-    "react-router-dom": "^5.2.0",
+    "react-router-dom": "^7.13.1",
     "react-scripts": "^5.0.1",
     "react-simple-maps": "^3.0.0",
     "react-toggle": "^4.1.2",
@@ -89,7 +89,6 @@
     ]
   },
   "devDependencies": {
-    "@types/react-router-dom": "^5.3.3",
     "autoprefixer": "^10.4.2",
     "gulp": "^4.0.2",
     "gulp-csso": "^4.0.1",

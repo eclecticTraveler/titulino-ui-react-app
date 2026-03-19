@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {onShippingKeyTabChange, onIsToEditShippingAddressChange}  from '../../../redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import IntlMessage from "../../util-components/IntlMessage";
 import { Row, Col, Card } from 'antd';
 

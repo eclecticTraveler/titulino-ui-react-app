@@ -5,7 +5,7 @@ import { ImageSvg } from '../../../../assets/svg/icon';
 import {getAllLanguageCourses, setUserCourseConfiguration, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
 import PageHeaderAlt from '../../../../components/layout-components/PageHeaderAlt'
 import IconFallback from "../../../../components/util-components/IconFallback";
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import { onLocaleChange, onCourseChange } from '../../../../redux/actions/Theme'
 import Flex from '../../../../components/shared-components/Flex'
 import IntlMessage from "../../../../components/util-components/IntlMessage";

@@ -7,7 +7,7 @@ import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
 import UserProgress from './UserProgress'
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import Confetti from 'react-confetti';
 import useWindowSize from 'react-use/lib/useWindowSize';

@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { API_BASE_URL } from '../configs/AppConfig'
-import history from '../history'
 import { AUTH_TOKEN } from '../redux/constants/Auth'
 import { notification } from 'antd';
 
@@ -14,6 +13,12 @@ const ENTRY_ROUTE = '/auth/login'
 const TOKEN_PAYLOAD_KEY = 'authorization'
 const PUBLIC_REQUEST_KEY = 'public-request'
 
+// Navigate outside React tree — use window.location since
+// react-router-dom v7 does not support standalone history objects
+function redirectToEntry() {
+  window.location.href = ENTRY_ROUTE;
+}
+
 // API Request interceptor
 service.interceptors.request.use(config => {
 	const jwtToken = localStorage.getItem(AUTH_TOKEN)
@@ -23,8 +28,7 @@ service.interceptors.request.use(config => {
   }
 
   if (!jwtToken && !config.headers[PUBLIC_REQUEST_KEY]) {
-		history.push(ENTRY_ROUTE)
-		window.location.reload();
+		redirectToEntry();
   }
 
   return config
@@ -50,8 +54,7 @@ service.interceptors.response.use( (response) => {
 		notificationParam.message = 'Authentication Fail'
 		notificationParam.description = 'Please login again'
 		localStorage.removeItem(AUTH_TOKEN)
-		history.push(ENTRY_ROUTE)
-		window.location.reload();
+		redirectToEntry();
 	}
 
 	if (error.response.status === 404) {

@@ -1,5 +1,5 @@
 import React from 'react'
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './App.css';
 import Views from './views'
 import { Provider } from 'react-redux';
@@ -17,9 +17,9 @@ function App(){
           <Provider store={store}>
             <ThemeSwitcherProvider themeMap={themes} defaultTheme={THEME_CONFIG.currentTheme} insertionPoint="styles-insertion-point">
               <Router>
-                <Switch>
-                  <Route path="/" component={Views}/>
-                </Switch>
+                <Routes>
+                  <Route path="/*" element={<Views />}/>
+                </Routes>
               </Router>
             </ThemeSwitcherProvider>
           </Provider>

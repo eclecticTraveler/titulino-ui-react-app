@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from "react";
-import { Switch, Route, Redirect } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { RouteElement } from "utils/routerCompat";
 import Loading from '../../components/shared-components/Loading';
 import { AUTH_PREFIX_PATH, APP_PREFIX_PATH, DEFAULT_LANDING_COURSE } from '../../configs/AppConfig'
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
@@ -9,47 +10,63 @@ import { bindActionCreators } from 'redux';
 import { retry } from '../../helpers/index';
 import Login from '../auth-views/authentication/login';
 
+// Lazy-loaded route components (hoisted to module scope for stable references)
+const Analytics = lazy(() => import(`./user/analytics`));
+const SharedCourseLevel = lazy(() => retry(() => import(`../shared-views/course-level`)));
+const SharedCourseLevelResources = lazy(() => retry(() => import(`../shared-views/course-level/resources`)));
+const SharedCourseLevelBook = lazy(() => retry(() => import(`../shared-views/course-level/chapter/book`)));
+const AuthKnowMe = lazy(() => retry(() => import(`./course-level/chapter/know-me`)));
+const SharedCourseLevelClass = lazy(() => retry(() => import(`../shared-views/course-level/chapter/class`)));
+const AuthGrammarClass = lazy(() => retry(() => import(`./course-level/chapter/classes`)));
+const AuthSpeaking = lazy(() => retry(() => import(`./course-level/chapter/speaking`)));
+const AuthPdfRender = lazy(() => retry(() => import(`./course-level/chapter/pdf-render`)));
+const SharedCourseLevelPractice = lazy(() => retry(() => import(`../shared-views/course-level/chapter/practice`)));
+const ShopWindow = lazy(() => retry(() => import(`./shop-window`)));
+const Login2 = lazy(() => import(`./authentication/login-2`));
+const Register1 = lazy(() => import(`./authentication/register-1`));
+const Register2 = lazy(() => import(`./authentication/register-2`));
+const ForgotPassword = lazy(() => import(`./authentication/forgot-password`));
+const ErrorPage1 = lazy(() => import(`./errors/error-page-1`));
+const ErrorPage2 = lazy(() => import(`./errors/error-page-2`));
+
 export const AuthViews = (props) => {
   const { course, token, user } = props;
+  const cfg = getLocalizedConfig(course);
   return (
     <Suspense fallback={<Loading cover="page"/>}>
-      <Switch>                
-        <Route exact path={`${AUTH_PREFIX_PATH}/insight`} component={lazy(() => import(`./user/analytics`))} />
-        <Route exact path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}`} component={lazy(() => retry(() => import(`../shared-views/course-level`)))} />
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/${getLocalizedConfig(course)?.resources}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`../shared-views/course-level/resources`)))} />
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.book}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/book`)))} />
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.knowMe}`} component={lazy(() => retry(() => import(`./course-level/chapter/know-me`)))} />
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.class}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/class`)))} />
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.grammarClass}`} component={lazy(() => retry(() => import(`./course-level/chapter/classes`)))} />
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.speaking}`} component={lazy(() => retry(() => import(`./course-level/chapter/speaking`)))} />
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.quizletpdf}`} component={lazy(() => retry(() => import(`./course-level/chapter/pdf-render`)))} />		
-        <Route path={`${AUTH_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/practice`)))} />
-        <Route exact path={`${AUTH_PREFIX_PATH}/terms-conditions`} component={TermsConditionsCancelSubscription} />
-        <Route exact path={`${AUTH_PREFIX_PATH}/shopping`} component={lazy(() => retry(() => import(`./shop-window`)))} />
-        {/* <Route exact path={`${AUTH_PREFIX_PATH}/profile/edit-profile`} component={lazy(() => retry(() => import(`./profile/index`)))} />		 */}
-        {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/login`))} /> */}
-        {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={lazy(() => import(`./authentication/login`))} /> */}
-        {/* <Route path={`${AUTH_PREFIX_PATH}/login`} component={Login} /> */}
-        <Route path={`${AUTH_PREFIX_PATH}/login-2`} component={lazy(() => import(`./authentication/login-2`))} />
-        <Route path={`${AUTH_PREFIX_PATH}/register-1`} component={lazy(() => import(`./authentication/register-1`))} />
-        <Route path={`${AUTH_PREFIX_PATH}/register-2`} component={lazy(() => import(`./authentication/register-2`))} />
-        <Route path={`${AUTH_PREFIX_PATH}/forgot-password`} component={lazy(() => import(`./authentication/forgot-password`))} />
-        <Route path={`${AUTH_PREFIX_PATH}/error-1`} component={lazy(() => import(`./errors/error-page-1`))} />
-        <Route path={`${AUTH_PREFIX_PATH}/error-2`} component={lazy(() => import(`./errors/error-page-2`))} />
+      <Routes>
+        <Route path={`insight`} element={<RouteElement component={Analytics} />} />
+        <Route path={`${course}/:${cfg?.level}`} element={<RouteElement component={SharedCourseLevel} />} />
+        <Route path={`${course}/:${cfg?.level}/${cfg?.resources}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelResources} />} />
+        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.book}`} element={<RouteElement component={SharedCourseLevelBook} />} />
+        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.knowMe}`} element={<RouteElement component={AuthKnowMe} />} />
+        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.class}`} element={<RouteElement component={SharedCourseLevelClass} />} />
+        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.grammarClass}`} element={<RouteElement component={AuthGrammarClass} />} />
+        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.speaking}`} element={<RouteElement component={AuthSpeaking} />} />
+        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.quizletpdf}`} element={<RouteElement component={AuthPdfRender} />} />
+        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelPractice} />} />
+        <Route path={`terms-conditions`} element={<TermsConditionsCancelSubscription />} />
+        <Route path={`shopping`} element={<RouteElement component={ShopWindow} />} />
+        {/* <Route path={`profile/edit-profile`} element={<RouteElement component={...} />} /> */}
+        {/* <Route path={`login`} element={<Login />} /> */}
+        <Route path={`login-2`} element={<RouteElement component={Login2} />} />
+        <Route path={`register-1`} element={<RouteElement component={Register1} />} />
+        <Route path={`register-2`} element={<RouteElement component={Register2} />} />
+        <Route path={`forgot-password`} element={<RouteElement component={ForgotPassword} />} />
+        <Route path={`error-1`} element={<RouteElement component={ErrorPage1} />} />
+        <Route path={`error-2`} element={<RouteElement component={ErrorPage2} />} />
         {/* Authenticated users go to landing course on root /lrn-auth */}
         { token ? 
-          <Redirect exact from={`${AUTH_PREFIX_PATH}`} to={`${AUTH_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
+          <Route path="" element={<Navigate to={`${AUTH_PREFIX_PATH}/${course}/${cfg?.level}-${DEFAULT_LANDING_COURSE}`} replace />} />
           :
           // Unauthenticated go to /lrn
-          <Redirect exact from={`${AUTH_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}`} />
+          <Route path="" element={<Navigate to={`${APP_PREFIX_PATH}`} replace />} />
         }
 
         {/* Catch-all fallback for any unknown /lrn-auth/* paths */}
-        <Route path={`${AUTH_PREFIX_PATH}/*`}>
-          <Redirect to={`${APP_PREFIX_PATH}`} />
-        </Route>
+        <Route path="*" element={<Navigate to={`${APP_PREFIX_PATH}`} replace />} />
         
-      </Switch>
+      </Routes>
     </Suspense>
   )
 }

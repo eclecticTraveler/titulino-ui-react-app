@@ -12,7 +12,7 @@ import { onRequestingCourseProgressStructure } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import IntlMessage from "components/util-components/IntlMessage";
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import utils from 'utils';
 
 const { Meta } = Card;

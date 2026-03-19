@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from "react";
-import { Switch, Route, Redirect } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { RouteElement } from "utils/routerCompat";
 import { connect } from "react-redux";
 import { bindActionCreators } from 'redux';
 import Loading from '../../components/shared-components/Loading';
@@ -11,6 +12,19 @@ import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPol
 import { retry } from '../../helpers/index';
 import { env } from 'configs/EnvironmentConfig';
 
+// Lazy-loaded route components (hoisted to module scope for stable references)
+const SharedCourseLevel = lazy(() => retry(() => import(`../shared-views/course-level`)));
+const SharedCourseLevelResources = lazy(() => retry(() => import(`../shared-views/course-level/resources`)));
+const SharedCourseLevelBook = lazy(() => retry(() => import(`../shared-views/course-level/chapter/book`)));
+const SharedCourseLevelClass = lazy(() => retry(() => import(`../shared-views/course-level/chapter/class`)));
+const SharedCourseLevelPractice = lazy(() => retry(() => import(`../shared-views/course-level/chapter/practice`)));
+const Enrollment = lazy(() => import(`./user/enrollment`));
+const RedirectSignup = lazy(() => import(`./user/redirect-signup`));
+const CourseSelectionView = lazy(() => retry(() => import(`./course-selection`)));
+const SessionRetrieval = lazy(() => import(`./user/session-retrieval`));
+const LoginView = lazy(() => import(`./user/login`));
+const LogoutView = lazy(() => import(`./user/logout`));
+
 export const AppViews = (props) => {
 	const { course } = props;
 
@@ -18,25 +32,27 @@ export const AppViews = (props) => {
 		return <Loading cover="content" />;
 	  }
 
+	const cfg = getLocalizedConfig(course);
+
 	return (
 		<>
 	<Suspense fallback={<Loading cover="content"/>}>
-		<Switch>
-			<Route exact path={`${APP_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}`} component={lazy(() => retry(() => import(`../shared-views/course-level`)))} />
-			<Route path={`${APP_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/${getLocalizedConfig(course)?.resources}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`../shared-views/course-level/resources`)))} />
-			<Route path={`${APP_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.book}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/book`)))} />
-			<Route path={`${APP_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/${getLocalizedConfig(course)?.class}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/class`)))} />		
-			<Route path={`${APP_PREFIX_PATH}/${course}/:${getLocalizedConfig(course)?.level}/:${getLocalizedConfig(course)?.chapter}/:${getLocalizedConfig(course)?.modality}`} component={lazy(() => retry(() => import(`../shared-views/course-level/chapter/practice`)))} />			
-			<Route exact path={`${APP_PREFIX_PATH}/terms-conditions`} component={TermsConditionsCancelSubscription} />
-			<Route exact path={`${APP_PREFIX_PATH}/private-policy`} component={PrivacyPolicy} />
-			<Route exact path={`${APP_PREFIX_PATH}/enroll`} component={lazy(() => import(`./user/enrollment`))} />
-			<Route exact path={`${APP_PREFIX_PATH}/signup`} component={lazy(() => import(`./user/redirect-signup`))} />
-			<Route exact path={`${APP_PREFIX_PATH}/switch-course`} component={lazy(() => retry(() => import(`./course-selection`)))} />	
-			<Route exact path={`${APP_PREFIX_PATH}/session-retrieval`} component={lazy(() => import(`./user/session-retrieval`))} />   
-			<Route exact path={`${APP_PREFIX_PATH}/login`} component={lazy(() => import(`./user/login`))} />
-			<Route exact path={`${APP_PREFIX_PATH}/logout`} component={lazy(() => import(`./user/logout`))} />	
-			<Redirect exact from={`${APP_PREFIX_PATH}`} to={`${APP_PREFIX_PATH}/${course}/${getLocalizedConfig(course)?.level}-${DEFAULT_LANDING_COURSE}`} />
-		</Switch>
+		<Routes>
+			<Route path={`${course}/:${cfg?.level}`} element={<RouteElement component={SharedCourseLevel} />} />
+			<Route path={`${course}/:${cfg?.level}/${cfg?.resources}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelResources} />} />
+			<Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.book}`} element={<RouteElement component={SharedCourseLevelBook} />} />
+			<Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.class}`} element={<RouteElement component={SharedCourseLevelClass} />} />
+			<Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelPractice} />} />
+			<Route path={`terms-conditions`} element={<TermsConditionsCancelSubscription />} />
+			<Route path={`private-policy`} element={<PrivacyPolicy />} />
+			<Route path={`enroll`} element={<RouteElement component={Enrollment} />} />
+			<Route path={`signup`} element={<RouteElement component={RedirectSignup} />} />
+			<Route path={`switch-course`} element={<RouteElement component={CourseSelectionView} />} />
+			<Route path={`session-retrieval`} element={<RouteElement component={SessionRetrieval} />} />
+			<Route path={`login`} element={<RouteElement component={LoginView} />} />
+			<Route path={`logout`} element={<RouteElement component={LogoutView} />} />
+			<Route path="" element={<Navigate to={`${APP_PREFIX_PATH}/${course}/${cfg?.level}-${DEFAULT_LANDING_COURSE}`} replace />} />
+		</Routes>
 	</Suspense>
 	</>
 	)

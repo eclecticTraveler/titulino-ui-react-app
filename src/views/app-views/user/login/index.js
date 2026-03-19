@@ -16,7 +16,8 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
 import { Card } from 'antd';
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "utils/routerCompat";
+import { useLocation } from "react-router-dom";
 import Loading from 'components/shared-components/Loading';
 
 // ✅ Extract hash tokens into query-style params

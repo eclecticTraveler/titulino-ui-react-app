@@ -2,7 +2,7 @@ import React from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import { onSelectingCorrectionToEdit, onCorrectionsModalChange } from 'redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import { 
     ContactsOutlined,
     PhoneOutlined, 

@@ -8,7 +8,7 @@ import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
 import UserProgress from './UserProgress'
 import moment from "moment";
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import Confetti from 'react-confetti';
 import useWindowSize from 'react-use/lib/useWindowSize';
 import { faRoad, faPieChart } from '@fortawesome/free-solid-svg-icons';

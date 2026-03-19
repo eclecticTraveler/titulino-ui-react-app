@@ -2,7 +2,7 @@ import React from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {onIsToEditUserProfileChange}  from '../../../redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import IntlMessage from "../../util-components/IntlMessage";
 import { Row, Col, Card, Form, Button, Select } from 'antd';
 const { Option } = Select;

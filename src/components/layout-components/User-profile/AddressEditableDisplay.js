@@ -2,7 +2,7 @@ import React from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {onIsToEditShippingAddressChange}  from '../../../redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import IntlMessage from "../../util-components/IntlMessage";
 import { Input, Row, Col, Card, Form, Upload, Button } from 'antd';
 const { Dragger } = Upload;

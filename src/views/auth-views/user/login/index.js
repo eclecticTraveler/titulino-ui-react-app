@@ -15,7 +15,7 @@ import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
 import { Card } from 'antd';
-import { useHistory } from "react-router-dom";
+import { useHistory } from "utils/routerCompat";
 import JwtAuthService from 'services/JwtAuthService';
 import Loading from 'components/shared-components/Loading';
 
