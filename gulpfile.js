@@ -21,6 +21,7 @@ gulp.task('theme', function () {
     .pipe(postcss(plugins))
     .pipe(
       csso({
+        restructure: false,
         debug: true,
       }),
     )
