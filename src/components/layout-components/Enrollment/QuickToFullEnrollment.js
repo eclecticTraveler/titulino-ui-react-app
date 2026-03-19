@@ -12,7 +12,7 @@ import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
 import EnrollmentModal from "./EnrollmentModal";
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'utils/routerCompat';
 
 const { Option } = Select;
 

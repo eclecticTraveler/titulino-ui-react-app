@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {onShippingKeyTabChange, onIsToEditShippingAddressChange, onIsToEditUserProfileChange, onAddressRequestLoad}  from '../../../../redux/actions/Lrn';
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import IntlMessage from "../../../../components/util-components/IntlMessage";
 import Address from "../../../../components/layout-components/User-profile/Address";
 import BillingView from "../../../../components/layout-components/User-profile/BillingView";

@@ -1,18 +1,18 @@
 import React, { lazy, Suspense } from "react";
-import { Route, useRouteMatch, Switch, Redirect } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { RouteElement } from 'utils/routerCompat';
 import Loading from 'components/shared-components/Loading';
 
 const PageRouter = ({ routes, from, to, align, cover }) => {
-	const { url } = useRouteMatch();
 	const loadingProps = {align, cover}
 	return (
 		<Suspense fallback={<Loading {...loadingProps}/>}>
-      <Switch>
+      <Routes>
         {routes.map((route, idx) => (
-          <Route key={idx} path={`${url}/${route.path}`} component={route.component} />
+          <Route key={idx} path={route.path} element={<RouteElement component={route.component} />} />
         ))}
-        <Redirect from={from} to={to} />
-      </Switch>
+        {to && <Route path="*" element={<Navigate to={to} replace />} />}
+      </Routes>
       
     </Suspense>
 	)

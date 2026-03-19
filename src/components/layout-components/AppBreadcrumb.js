@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { withRouter } from 'utils/routerCompat';
 import { Breadcrumb } from 'antd';
 import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from '../../configs/AppConfig'
 import mainNavigationConfig from "../../configs/MainNavigationConfig";

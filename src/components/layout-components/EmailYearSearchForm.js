@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import { Form, Row, Col, DatePicker, Input, Button, message, Card } from 'antd';
 import moment from 'moment';
 import getLocaleText from "components/util-components/IntString";
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'utils/routerCompat';
 import { onRetrievingUserProfile } from 'redux/actions/Grant';
 import IntlMessage from "components/util-components/IntlMessage";
 

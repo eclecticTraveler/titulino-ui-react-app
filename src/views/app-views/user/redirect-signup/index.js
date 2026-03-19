@@ -3,7 +3,7 @@ import RegisterOne from "../../../auth-views/authentication/register-1";
 import { createClient } from '@supabase/supabase-js';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { Route, Switch, Redirect } from "react-router-dom";
+// react-router-dom imports removed (unused)
 
 export const RedirectSignup = () => {
   useEffect(() => {

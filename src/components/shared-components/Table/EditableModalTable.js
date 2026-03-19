@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Input, InputNumber, Popconfirm, Form, Button, Modal } from 'antd';
 import {connect} from 'react-redux';
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import { onSelectingCorrectionToEdit, onCorrectionsModalChange } from 'redux/actions/Lrn';
 import AbstractContactModalForm from '../../layout-components/User/AbstractContactModalForm';
 

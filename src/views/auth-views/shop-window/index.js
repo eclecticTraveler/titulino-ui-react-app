@@ -16,7 +16,7 @@ import GenericModal from "components/layout-components/GenericModal";
 import ProductPurchasedMessage from "components/admin-components/ModalMessages/ProductPurchasedMessage";
 import GoldTierProductConfirmationMessage from "components/admin-components/ModalMessages/GoldTierProductConfirmationMessage"
 import silverTier from 'assets/lotties/silverTier.json';
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'utils/routerCompat';
 import goldTier from 'assets/lotties/goldTier.json';
 
 const { useBreakpoint } = Grid;

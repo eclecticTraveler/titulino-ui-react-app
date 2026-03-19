@@ -6,7 +6,7 @@ import { Card, Input, Button, Form, Row, Col, Divider, message } from 'antd';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from 'antd';
-import { useHistory } from 'react-router-dom';
+import { useHistory } from 'utils/routerCompat';
 import IntlMessage from "components/util-components/IntlMessage";
 import whatsApp from 'assets/lotties/whatsApp.json';
 import Lottie from 'lottie-react';

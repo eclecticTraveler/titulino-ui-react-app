@@ -5,7 +5,8 @@ import { connect } from "react-redux";
 import { IntlProvider } from "react-intl";
 import { ConfigProvider } from "antd";
 import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH, AUTH_PREFIX_PATH } from "../configs/AppConfig";
-import { Route, Switch, Redirect, withRouter, useLocation  } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { withRouter, Redirect } from "utils/routerCompat";
 import AuthLayout from '../layouts/auth-layout';
 import AppLayout from "../layouts/app-layout";
 import CourseSelection from './app-views/course-selection';
@@ -23,7 +24,7 @@ import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPol
 import Loading from 'components/shared-components/Loading';
 import SupabaseAuthService from "services/SupabaseAuthService";
  
-function RouteInterceptor({ children, isAuthenticated, ...rest }) {
+function RouteInterceptor({ children, isAuthenticated }) {
   const { pathname } = useLocation();
 
   // Save extra params before they are stripped by forwarding to later be used if they match  
@@ -36,17 +37,18 @@ function RouteInterceptor({ children, isAuthenticated, ...rest }) {
   if (pathname.startsWith(AUTH_PREFIX_PATH) && !isAuthenticated) {    
     // redirect to /lrn/login?redirect=/lrn-auth/whatever
     return (
-      <Redirect
+      <Navigate
         to={{
           pathname: `${APP_PREFIX_PATH}/login`,
           search: `?redirect=${encodeURIComponent(pathname)}`,
         }}
+        replace
       />
     );
   }
 
-  // Otherwise just render the route as normal
-  return <Route {...rest} render={() => children} />;
+  // Otherwise just render the children
+  return children;
 }
 
 export const Views = (props) => { 
@@ -140,17 +142,15 @@ export const Views = (props) => {
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
             <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
-                <Switch>
-                    <Route exact path={DEFAULT_PREFIX_VIEW}>
-                        <Redirect to={APP_PREFIX_PATH} />
-                    </Route>
-                    <Route path={APP_PREFIX_PATH}>
-                        <AppLayout direction={direction} location={location} />
-                    </Route>
-                    <RouteInterceptor path={AUTH_PREFIX_PATH} isAuthenticated={token}>
-                        <AuthLayout direction={direction} location={location} />
-                    </RouteInterceptor>
-                </Switch>                            
+                <Routes>
+                    <Route path={DEFAULT_PREFIX_VIEW} element={<Navigate to={APP_PREFIX_PATH} replace />} />
+                    <Route path={`${APP_PREFIX_PATH}/*`} element={<AppLayout direction={direction} location={location} />} />
+                    <Route path={`${AUTH_PREFIX_PATH}/*`} element={
+                        <RouteInterceptor isAuthenticated={token}>
+                            <AuthLayout direction={direction} location={location} />
+                        </RouteInterceptor>
+                    } />
+                </Routes>                            
             </ConfigProvider>
         </IntlProvider>  
     );

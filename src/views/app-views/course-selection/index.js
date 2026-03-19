@@ -3,7 +3,7 @@ import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {getAllLanguageCourses, setUserCourseConfiguration, setUserSelectedCourse, setUserNativeLanguage, onUserSelectingCourse}  from 'redux/actions/Lrn';
 import IconAdapter from 'components/util-components/IconAdapter';
-import { withRouter } from "react-router-dom";
+import { withRouter } from "utils/routerCompat";
 import { onLocaleChange, onCourseChange } from 'redux/actions/Theme'
 import IntlMessage from "components/util-components/IntlMessage";
 import { 

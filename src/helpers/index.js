@@ -1,4 +1,4 @@
-import { Route, Redirect } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { APP_PREFIX_PATH } from '../configs/AppConfig'
 
  export function retry(fn, retriesLeft = 5, interval = 1000) {
@@ -19,22 +19,17 @@ import { APP_PREFIX_PATH } from '../configs/AppConfig'
     });
   } 
 
-export function RouteInterceptor({ children, isAuthenticated, ...rest }) {
-    return (
-      <Route
-        {...rest}
-        render={({ location }) =>
-          isAuthenticated ? (
-            children
-          ) : (
-            <Redirect
-              to={{
-                pathname: APP_PREFIX_PATH,
-                state: { from: location }
-              }}
-            />
-          )
-        }
+export function RouteInterceptor({ children, isAuthenticated }) {
+    const location = useLocation();
+    return isAuthenticated ? (
+      children
+    ) : (
+      <Navigate
+        to={{
+          pathname: APP_PREFIX_PATH,
+        }}
+        state={{ from: location }}
+        replace
       />
     );
   }  
