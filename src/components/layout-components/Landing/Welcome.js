@@ -24,12 +24,12 @@ class Welcome extends Component {
 		let title = `Welcome to ${sanitizedCourseTitle}`;
 		return (
 			<div>			
-				<Card bordered={true} 
+				<Card variant="outlined" 
 					actions={[																				
 						<span onClick={() => this.startRandomClass()}>CLICK HERE TO START A RANDOM CLASS</span>,
 						]}>	
 					<h1>{title}</h1>
-					<Card bordered={false}
+					<Card variant="borderless"
 						cover={
 							<img
 							alt={this.props.landingObjectPictureOfTheDay?.description}

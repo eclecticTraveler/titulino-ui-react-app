@@ -359,7 +359,7 @@ const combinedCategories = categories
                                   />
                                 </div>
                               }
-                              bordered
+                              variant="outlined"
                               extra={
                                 <Checkbox
                                   onClick={(e) => {

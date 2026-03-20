@@ -17,7 +17,7 @@ export const CourseSelection = (props) => {
   };
   return (
     <div className="container customerName" >
-      <Card bordered={true}>
+      <Card variant="outlined">
           <h1>Select Courses to Enroll</h1>
       </Card>
       <Row gutter={[16, 16]} justify="center">

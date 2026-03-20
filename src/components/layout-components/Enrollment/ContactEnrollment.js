@@ -97,7 +97,7 @@ export const ContactEnrollment = (props) => {
 
   return (
     <div className="container customerName" >
-      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} loading={submittingLoading} bordered={true}>
+      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} loading={submittingLoading} variant="outlined">
         <Form.Item
           name="emailAddress"
           rules={[
@@ -140,7 +140,7 @@ export const ContactEnrollment = (props) => {
                   : setLocale(locale, "enrollment.form.languageLevelForCourse")
               }
               loading={submittingLoading}
-              bordered
+              variant="outlined"
             >
               <Form.Item
                 name={fieldName}
@@ -167,7 +167,7 @@ export const ContactEnrollment = (props) => {
       </>
 
 
-      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.personalInfo")} loading={submittingLoading} bordered={true}>
+      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.personalInfo")} loading={submittingLoading} variant="outlined">
           <Form.Item name="lastNames" label={setLocale(locale, "enrollment.form.lastNames")} 
           rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.enterLastNames") }]}>
             <Input placeholder="Enter your last names" />
@@ -204,7 +204,7 @@ export const ContactEnrollment = (props) => {
       </Card>
 
 
-      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.geography")} loading={submittingLoading} bordered={true}>
+      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.geography")} loading={submittingLoading} variant="outlined">
          <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
          rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}>
           <Select

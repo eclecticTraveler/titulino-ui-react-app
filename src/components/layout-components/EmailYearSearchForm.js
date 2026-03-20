@@ -231,7 +231,7 @@ useEffect(() => {
 
   return (
 	<>
-      <Card cover={<img alt="Shopping" src={coverUrl} style={{ height: 100, objectFit: "cover" }} />} bordered loading={loading}>
+      <Card cover={<img alt="Shopping" src={coverUrl} style={{ height: 100, objectFit: "cover" }} />} variant="outlined" loading={loading}>
         <h1>{setLocale(locale, "resources.myprogress.searchbyEmailandYear")}</h1>
         <h2>{user?.emailId}</h2>
        </Card>
@@ -240,7 +240,7 @@ useEffect(() => {
     <Card 
       title={!askFullBirthDate && !isToDisplayFullEnrollment && setLocale(locale, "enrollment.yearOfBirth") } 
       loading={loading} 
-      bordered
+      variant="outlined"
     >
       <Form layout="vertical" onFinish={handleSearch} form={form}>
         {/* Row for input fields */}
@@ -298,7 +298,7 @@ useEffect(() => {
                 <Col xs={24} sm={24} lg={8}>
                 {isToDisplayFullEnrollment && (
                   <>               
-                  <Card bordered>
+                  <Card variant="outlined">
                     <h3>{setLocale(locale, "search.NoRecordsFound")}</h3>
                     <p>{setLocale(locale, "search.WouldYouLikeToEnroll")}</p>
                     <Button type="primary" size="large" onClick={handleRedirectToEnrollment}>

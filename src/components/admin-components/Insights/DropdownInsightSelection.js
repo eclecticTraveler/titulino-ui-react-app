@@ -86,7 +86,7 @@ const DropdownInsightSelection = (props) => {
               placeholder="Select Course"
               style={{ width: "100%" }}
               value={selectedCourse}
-              size="large"
+              size="medium"
               onChange={(value) => handleCourseSelection(value)}
             >
               {CoursesOptions?.map((course) => (
@@ -102,7 +102,7 @@ const DropdownInsightSelection = (props) => {
               placeholder="Select Location Type"
               style={{ width: "100%" }}
               value={selectedLocationType}
-              size="large"
+              size="medium"
               onChange={(value) => handleLocationTypeSelection(value)}
               disabled={!selectedCourse}
             >
@@ -119,7 +119,7 @@ const DropdownInsightSelection = (props) => {
               style={{ width: "100%" }}
               value={selectedCountry}
               onChange={(value) => setSelectedCountry(value)}
-              size="large"
+              size="medium"
               disabled={(!selectedLocationType || isLocationTypeAllSelected)}
             >
               {CountryOptions?.map((option) => (

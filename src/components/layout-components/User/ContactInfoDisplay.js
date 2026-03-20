@@ -24,7 +24,7 @@ const ContactInfoDisplay = props => {
         <div>
             <Row gutter={16}>
                 <Col xs={24} sm={24} md={17}>
-                <Card bordered={false}>
+                <Card variant="borderless">
                     <h2><ContactsOutlined />{` ${selectedCorrectionRecord?.fullCorrectionObj?.ContactTerm?.ContactRelationId} Info:`}</h2>
                     <div>First Name*</div>
                     <h4>{selectedCorrectionRecord?.firstName}</h4>

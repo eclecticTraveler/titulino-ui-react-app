@@ -43,7 +43,7 @@ const PieGraph = (props) => {
   const title = localizedTitle || "unavailable";
   return (
     <div>	
-      <Card bordered={true} title={setLocale(locale, title)}>
+      <Card variant="outlined" title={setLocale(locale, title)}>
         <Pie {...config} />
       </Card>	
     </div>

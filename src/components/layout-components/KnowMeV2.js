@@ -69,7 +69,7 @@ export const KnowMeV2 = (props) => {
   return (
     <Form form={form} layout="vertical" onFinish={onFinish}>
       <DynamicFormRenderer questions={props.questions} />
-      <Card bordered style={{ maxWidth: 700, margin: "20px auto", textAlign: "center" }}>
+      <Card variant="outlined" style={{ maxWidth: 700, margin: "20px auto", textAlign: "center" }}>
         <Button type="primary" size="large" htmlType="submit" loading={loading}>
           Submit
         </Button>

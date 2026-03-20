@@ -14,7 +14,7 @@ class AdjetiveOfTheDay extends Component {
 	render(){ 
 		return (
 			<div>			
-				<Card bordered={true} >
+				<Card variant="outlined" >
 				<h2>Adjetive of the Day</h2>
 					<Card>
 						<h3>Bewildered</h3>						

@@ -52,7 +52,7 @@ const BarGraph = (props) => {
 
   return (
     <div>
-      <Card bordered={true} title={setLocale(locale, title)}>
+      <Card variant="outlined" title={setLocale(locale, title)}>
         <Bar {...config} />
       </Card>
     </div>

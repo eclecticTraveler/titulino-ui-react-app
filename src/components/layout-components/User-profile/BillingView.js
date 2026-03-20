@@ -17,7 +17,7 @@ class BillingView extends Component {
 				<div>
 				<Row gutter={16}>
 					<Col xs={24} sm={24} md={17}>
-					<Card bordered={false}>						
+					<Card variant="borderless">						
 						<Iframe url={`https://www.youtube.com/embed/tgbNymZ7vqY`}
 							width="100%"
 							height="600px"

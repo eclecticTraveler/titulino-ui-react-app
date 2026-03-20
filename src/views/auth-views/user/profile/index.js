@@ -50,9 +50,9 @@ class Profile extends Component {
 				<div className="container customerName" >
 				<Row gutter={16}>	
 					<Col lg={8}>			
-						<Card bordered={true}>
+						<Card variant="outlined">
 						<h1>User Profile</h1>		
-							<Card bordered={false}
+							<Card variant="borderless"
 								cover={
 									<img
 									alt="company logo"
@@ -72,13 +72,13 @@ class Profile extends Component {
 							]}>
 
 
-						<Card bordered={false}>							
+						<Card variant="borderless">							
 							{!this.props.isToEditUserProfile ? <Meta title="Primary Industry" description="Home care" /> : <PrimaryIndustry />}
 							<br/>
 							<Meta title="Company Name" description="Fallen Angels" />
 						</Card>
 					</Card>
-					<Card title="Addresses on File" bordered={true} >
+					<Card title="Addresses on File" variant="outlined" >
 						<Card							
 							tabList={this.props.tabIndexedAddresses}
 							activeTabKey={this.props.shippingTabKey}

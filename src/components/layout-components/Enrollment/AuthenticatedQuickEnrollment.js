@@ -367,7 +367,7 @@ const formatSubmissionData = (
         >
         <Row gutter={24}>
           <Col lg={24}>
-            <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered
+            <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined"
               cover={
                 <img
                 alt={titleOfEnrollment}
@@ -384,7 +384,7 @@ const formatSubmissionData = (
             {coursesToDisplay?.length > 1 ? (
               <Card
                 style={quickEnrollmentStyle}
-                bordered
+                variant="outlined"
                 title={setLocale(locale, "enrollment.courseDetails")}
                 loading={submittingLoading}
               >
@@ -439,7 +439,7 @@ const formatSubmissionData = (
                 <Card
                   key={course.id || index}
                   style={quickEnrollmentStyle}
-                  bordered
+                  variant="outlined"
                   title={setLocale(locale, "enrollment.courseDetails")}
                   loading={submittingLoading}
                 >
@@ -484,7 +484,7 @@ const formatSubmissionData = (
           { user?.contactId && returningEnrolleeCountryDivisionInfo?.personalCommunicationName && (
             <>
             {isGeographyInfoVisible && (
-              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} loading={submittingLoading} bordered>
+              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} loading={submittingLoading} variant="outlined">
                 <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
                   rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}
                   initialValue={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId ?? undefined}               
@@ -626,7 +626,7 @@ const formatSubmissionData = (
                       : setLocale(locale, "enrollment.form.languageLevelForCourse")
                   }
                   loading={submittingLoading}
-                  bordered
+                  variant="outlined"
                 >
                   <Form.Item
                     name={
@@ -658,7 +658,7 @@ const formatSubmissionData = (
         })()}
 
 
-            <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
+            <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined">
               <p>
                 {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {enrollmentVersion} - 
                 <TermsModal />{" "}

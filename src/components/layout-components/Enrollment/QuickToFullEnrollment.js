@@ -441,7 +441,7 @@ useEffect(() => {
         >
         <Row gutter={24}>
           <Col lg={24}>
-            <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered
+            <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined"
               cover={
                 <img
                 alt={titleOfEnrollment}
@@ -458,7 +458,7 @@ useEffect(() => {
             {coursesToDisplay?.length > 1 ? (
               <Card
                 style={quickEnrollmentStyle}
-                bordered
+                variant="outlined"
                 title={setLocale(locale, "enrollment.courseDetails")}
                 loading={submittingLoading}
               >
@@ -509,7 +509,7 @@ useEffect(() => {
                 <Card
                   key={course.id || index}
                   style={quickEnrollmentStyle}
-                  bordered
+                  variant="outlined"
                   title={setLocale(locale, "enrollment.courseDetails")}
                   loading={submittingLoading}
                 >
@@ -542,7 +542,7 @@ useEffect(() => {
               <Card style={quickEnrollmentStyle}
                     title={setLocale(locale, "enrollment.personalInfo")}
                     loading={submittingLoading}
-                    bordered>
+                    variant="outlined">
               <Form.Item name="yearOfBirth" label={setLocale(locale, "enrollment.yearOfBirth")} 
               rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.pleaseSelectYearOfBirth") }]}>
                 <DatePicker
@@ -563,7 +563,7 @@ useEffect(() => {
  
 
             {isEmailVisible && !isToProceedToFullEnrollment && (
-              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} loading={submittingLoading} bordered>
+              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} loading={submittingLoading} variant="outlined">
                 <Form.Item 
                   name="emailAddress"
                   rules={[
@@ -612,7 +612,7 @@ useEffect(() => {
           { returningEnrolleeCountryDivisionInfo?.personalCommunicationName && !isToProceedToFullEnrollment && (
             <>
               {isConfirmVisible && (
-              <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>                
+              <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined">                
                 <h3><Flag code={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId} style={{ width: 20, marginRight: 10 }} />
                  {returningEnrolleeCountryDivisionInfo?.names}?</h3>
                 <Button size="large" onClick={onYesConfirm}>{setLocale(locale, "enrollment.form.yes")}</Button>
@@ -621,7 +621,7 @@ useEffect(() => {
             )}
 
             {isGeographyInfoVisible && (
-              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} loading={submittingLoading} bordered>
+              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} loading={submittingLoading} variant="outlined">
                 <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
                   rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}
                   initialValue={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId ?? undefined}               
@@ -766,7 +766,7 @@ useEffect(() => {
                       : setLocale(locale, "enrollment.form.languageLevelForCourse")
                   }
                   loading={submittingLoading}
-                  bordered
+                  variant="outlined"
                 >
                   <Form.Item
                     name={
@@ -814,7 +814,7 @@ useEffect(() => {
             )
           }
 
-            <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
+            <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined">
               <p>
                 {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {enrollmentVersion} - 
                 <TermsModal />{" "}

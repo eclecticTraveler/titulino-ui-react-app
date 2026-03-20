@@ -103,7 +103,7 @@ useEffect(() => {
     <Form form={form} layout="vertical" onFinish={onFinish}>
       <DynamicFormRenderer questions={questions} />
         <Card
-          bordered
+          variant="outlined"
           style={{ maxWidth: 700, margin: "20px auto", textAlign: "center" }}
         >
           <Button type="primary" size="large" htmlType="submit" loading={loading}>

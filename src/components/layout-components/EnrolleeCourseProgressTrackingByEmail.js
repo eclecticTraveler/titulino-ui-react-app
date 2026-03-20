@@ -247,14 +247,14 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
           }}
         />
       )} */}
-      <Card bordered>
+      <Card variant="outlined">
         <h1>{`Course Progress Dashboard`}</h1>
         {/* <br /> */}
         {/* <div>{setLocale(locale, "resources.myprogress.requirements")}</div> */}
       </Card>
       <Row justify="center" style={{ marginBottom: 20 }}>
         <Col xs={24} sm={24} lg={8}>
-          <Card title="Enter Your Email" bordered>
+          <Card title="Enter Your Email" variant="outlined">
             <Input
               placeholder="Enter your email"
               value={email}
@@ -287,7 +287,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
                     />
                   )
                 }
-                bordered
+                variant="outlined"
               >
                 {category?.lessons
                   ?.filter((lesson) => lesson?.isToDisplay)
@@ -312,7 +312,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
                         className={`course-card ${isSelected ? 'selected' : ''}`}
                         hoverable
                         title={`Class: ${classNumber}`}
-                        bordered
+                        variant="outlined"
                         extra={
                           <Checkbox
                             onChange={(e) =>

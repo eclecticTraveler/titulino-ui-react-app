@@ -80,7 +80,7 @@ const ColumnBar = (props) => {
 
   return (
     <div>
-      <Card bordered={true} title={setLocale(locale, title)}>
+      <Card variant="outlined" title={setLocale(locale, title)}>
         <Column {...config} />
       </Card>
     </div>

@@ -21,7 +21,7 @@ class AddressDisplay extends Component {
 			<div>
 				<Row gutter={16}>
 					<Col xs={24} sm={24} md={17}>
-					<Card bordered={false}>
+					<Card variant="borderless">
 						<h4>{selectedAddress?.Address1}</h4>
 						{selectedAddress?.Address2 && <h4>{selectedAddress?.Address2}</h4>}
 						<h4>{`${selectedAddress?.City}, ${selectedAddress?.CountryDivisionId}, ${selectedAddress?.PostalCodeId}`}</h4>

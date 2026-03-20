@@ -98,7 +98,7 @@ const ContactInfoEditableDisplay = props => {
             >
                 <Row>
                     <Col span={12}>
-                        <Card bordered={false}>
+                        <Card variant="borderless">
                             <h2><ContactsOutlined />{` ${selectedCorrectionRecord?.fullCorrectionObj?.ContactTerm?.ContactRelationId} Info:`}</h2>                
                             <div>First Name*</div>
                             <Form.Item name="firstName" rules={rules.firstName}>

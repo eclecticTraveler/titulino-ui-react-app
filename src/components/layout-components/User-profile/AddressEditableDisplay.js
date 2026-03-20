@@ -75,7 +75,7 @@ const AddressEditableDisplay = props => {
 		<div>
 			<Row gutter={16}>
 				<Col xs={24} sm={24} md={17}>
-					<Card bordered={false}>
+					<Card variant="borderless">
 						<Form
 							layout="vertical"
 							form={form}

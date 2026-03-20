@@ -46,7 +46,7 @@ export const SearchProgress = (props) => {
         <Row gutter={[16, 16]}>
           {registeredProgressByEmailId?.map((record, index) => (
             <Col key={index} xs={24} sm={12} lg={8}>
-              <Card title={`Class: ${record?.Class}`} bordered>
+              <Card title={`Class: ${record?.Class}`} variant="outlined">
               <h5><strong>{setLocale(locale, "resources.myprogress.participation")}:</strong> {record?.TypeOfParticipation}</h5>
                 <p><strong>{setLocale(locale, "resources.myprogress.email")}:</strong> {record?.EmailAddress}</p>
                 <p>  <strong>{setLocale(locale, "resources.myprogress.date")}:</strong> {new Date(record?.Date).toLocaleDateString('en-US', {
@@ -64,7 +64,7 @@ export const SearchProgress = (props) => {
 
   return (
 <div className="search-container">
-  <Card title={setLocale(locale, "resources.myprogress.title")} bordered>
+  <Card title={setLocale(locale, "resources.myprogress.title")} variant="outlined">
     <Form layout="inline" onFinish={handleSearch}>
       <Form.Item>
         <Input

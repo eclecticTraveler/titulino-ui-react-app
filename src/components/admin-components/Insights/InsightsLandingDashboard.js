@@ -405,7 +405,7 @@ const InsightsLandingDashboard = (props) => {
   return (
     <div className="container customerName">
       <Card
-        bordered
+        variant="outlined"
         cover={
           <img
             alt={titleOfEnrollment}
@@ -420,14 +420,14 @@ const InsightsLandingDashboard = (props) => {
       </Card>
 
       <Card
-        bordered
+        variant="outlined"
         title={setLocale(locale, 'admin.dashboard.selections')}
       >
         <DropdownInsightSelection setLoading={setLoading}/>
       </Card>
       <Card
         loading={loading}
-        bordered
+        variant="outlined"
         tabList={outerTabsConfig}
         activeTabKey={activeOuterTabKey}
         onTabChange={setActiveOuterTabKey}

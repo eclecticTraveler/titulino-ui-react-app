@@ -214,7 +214,7 @@ const WeeklyCourseSelector = (props) => {
       <Row gutter={[24, 24]}>
         <Col span={24}>
           <Card
-            bordered
+            variant="outlined"
             cover={
               <img
                 alt="Course Selection Banner"
@@ -236,7 +236,7 @@ const WeeklyCourseSelector = (props) => {
             
             <Card
               title={setLocale(locale, `days.${day.toLowerCase()}`)}
-              bordered
+              variant="outlined"
               style={{ minHeight: 100 }}
               styles={{ body: { padding: 12 } }}
               cover={
@@ -325,7 +325,7 @@ const WeeklyCourseSelector = (props) => {
         ))}
         <Col span={24}>
           <Card
-            bordered
+            variant="outlined"
           >
           <Button type="primary" size="large" block onClick={handleSaveSelection} disabled={selectedCourses?.length === 0}>
             {setLocale(locale, "enrollment.continue")}

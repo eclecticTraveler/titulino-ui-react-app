@@ -93,7 +93,7 @@ export const LoginAdapter = (props) => {
 			<>
 				<div className="container customerName">
 			<Card
-				bordered
+				variant="outlined"
 				style={loginStyle}
 				cover={
 				<img
