@@ -106,7 +106,7 @@ const AddressEditableDisplay = props => {
 						</Form.Item>
 						<div className="mb-3">
 						<Button className="mr-2" onClick={() => discardChanges()}>Discard</Button>
-						<Button type="primary" onClick={() => onFinish()} htmlType="submit" >
+						<Button type="primary" size="large" onClick={() => onFinish()} htmlType="submit" >
 							Update
 						</Button>
 					</div>

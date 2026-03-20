@@ -475,6 +475,7 @@ const combinedCategories = categories
                                     <>
                                     <div style={{color:'red'}}>{setLocale(locale, "resources.userProgress.selectOptions")}:</div>
                                     <Select
+                                      size="large"
                                       placeholder={setLocale(locale, "resources.userProgress.participationType")}
                                       onChange={(value) =>
                                         handleParticipationTypeChange(

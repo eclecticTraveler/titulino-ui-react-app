@@ -547,6 +547,7 @@ useEffect(() => {
               rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.pleaseSelectYearOfBirth") }]}>
                 <DatePicker
                   style={{ width: "100%" }}
+                  size="large"
                   picker="year" // Restrict picker to year only
                   defaultPickerValue={dayjs("1990", "YYYY")} // Open to the 1990-1999 range
                   disabledDate={(current) =>
@@ -564,13 +565,14 @@ useEffect(() => {
             {isEmailVisible && !isToProceedToFullEnrollment && (
               <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} loading={submittingLoading} bordered>
                 <Form.Item 
-                  name="emailAddress" 
+                  name="emailAddress"
                   rules={[
                     { required: true, message: setLocaleString(locale, "profile.login.validEmail") },
                     { type: "email", message: setLocaleString(locale, "enrollment.invalidEmail") },
                   ]}
                   >
                   <Input
+                    size="large"
                     onChange={(e) => handleEmailChange(e.target.value)}
                     placeholder="Enter your contact email"
                     style={{ marginBottom: 10 }}
@@ -590,16 +592,16 @@ useEffect(() => {
                 
                 {isFindMeVisible && (
                   <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-                    <Button type="primary" onClick={onFindMe}>{setLocale(locale, "enrollment.form.findMe")}</Button>
-                    <Button type="default" onClick={resetQuickEnrollmentInputValues}>{setLocale(locale, "resources.myprogress.reset")}</Button>
+                    <Button type="primary" size="large" onClick={onFindMe}>{setLocale(locale, "enrollment.form.findMe")}</Button>
+                    <Button type="default" size="large" onClick={resetQuickEnrollmentInputValues}>{setLocale(locale, "resources.myprogress.reset")}</Button>
                   </div>
                 )}
 
                 {!loading && isFindMeSubmitted && !returningEnrolleeCountryDivisionInfo?.personalCommunicationName && !isToProceedToFullEnrollment && (
                   <div style={quickEnrollmentStyle}>
                     <h3>{setLocale(locale, "enrollment.form.noRecordsProceedEnrollment")}</h3>
-                    <Button type="primary" onClick={onProceedForFullEnrollment}>{setLocale(locale, "enrollment.form.yes")}</Button>
-                    <Button type="default" onClick={resetQuickEnrollmentInputValues} style={{ marginLeft: 10 }}>{setLocale(locale, "enrollment.form.no")}</Button>
+                    <Button type="primary" size="large" onClick={onProceedForFullEnrollment}>{setLocale(locale, "enrollment.form.yes")}</Button>
+                    <Button type="default" size="large" onClick={resetQuickEnrollmentInputValues} style={{ marginLeft: 10 }}>{setLocale(locale, "enrollment.form.no")}</Button>
                   </div>
                 )}
 
@@ -613,8 +615,8 @@ useEffect(() => {
               <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>                
                 <h3><Flag code={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId} style={{ width: 20, marginRight: 10 }} />
                  {returningEnrolleeCountryDivisionInfo?.names}?</h3>
-                <Button onClick={onYesConfirm}>{setLocale(locale, "enrollment.form.yes")}</Button>
-                <Button onClick={onNoConfirm} style={{ marginLeft: 10 }}>{setLocale(locale, "enrollment.form.no")}</Button>
+                <Button size="large" onClick={onYesConfirm}>{setLocale(locale, "enrollment.form.yes")}</Button>
+                <Button size="large" onClick={onNoConfirm} style={{ marginLeft: 10 }}>{setLocale(locale, "enrollment.form.no")}</Button>
               </Card>
             )}
 
@@ -628,6 +630,7 @@ useEffect(() => {
                     showSearch
                     placeholder="Select your country of residence"
                     optionFilterProp="children"
+                    size="large"
                     onChange={(value) => {
                       setSelectedCountryOfResidence(value); // Update selected country
                       setDivisions([]); // Reset divisions for residence
@@ -653,6 +656,7 @@ useEffect(() => {
                       showSearch
                       placeholder="Select a state/region where you currently live"
                       optionFilterProp="children"
+                      size="large"
                       onChange={(value) => {
                         setEnrolleeResidencyDivision(value);
                       }}
@@ -780,7 +784,7 @@ useEffect(() => {
                     <Radio.Group>
                       <Space direction="vertical">
                         {selfLanguageLevel?.map((level) => (
-                          <Radio key={level?.LevelAbbreviation} value={level?.LevelAbbreviation}>
+                          <Radio key={level?.LevelAbbreviation} value={level?.LevelAbbreviation} size="large">
                             {setLocale(locale, level.LocalizationKey)}
                           </Radio>
                         ))}
@@ -818,6 +822,7 @@ useEffect(() => {
               </p>
               <Button
                 type="primary"
+                size="large"
                 htmlType="submit"
                 block
                 disabled={!isSubmitEnabled}

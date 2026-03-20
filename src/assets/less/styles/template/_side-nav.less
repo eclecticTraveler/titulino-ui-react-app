@@ -50,7 +50,8 @@
             padding: 14px 11px 0; 
             height: initial !important; 
 
-            .ant-menu-item {
+            .ant-menu-item,
+            .ant-menu-submenu-title {
                 position: relative; 
                 margin: 0;
                 width: 100%; 
@@ -62,6 +63,10 @@
 
                 a {
                     color: #0E1F43; 
+
+                    & when (@theme = dark) {
+                        color: @text-color;
+                    }
                 }
 
                 .ant-menu-title-content {
@@ -75,6 +80,30 @@
                     top: 50%; 
                     left: 0; 
                     transform: translateY(-50%); 
+                }
+            }
+
+            .ant-menu-sub.ant-menu-inline {
+                .ant-menu-item {
+                    padding-left: 32px !important;
+                    padding-inline-start: 32px !important;
+                }
+
+                .ant-menu-submenu-title {
+                    padding-left: 36px !important;
+                    padding-inline-start: 36px !important;
+                }
+
+                .ant-menu-sub.ant-menu-inline {
+                    .ant-menu-item {
+                        padding-left: 52px !important;
+                        padding-inline-start: 52px !important;
+                    }
+
+                    .ant-menu-submenu-title {
+                        padding-left: 54px !important;
+                        padding-inline-start: 54px !important;
+                    }
                 }
             }
 

@@ -301,7 +301,7 @@ useEffect(() => {
                   <Card bordered>
                     <h3>{setLocale(locale, "search.NoRecordsFound")}</h3>
                     <p>{setLocale(locale, "search.WouldYouLikeToEnroll")}</p>
-                    <Button type="primary" onClick={handleRedirectToEnrollment}>
+                    <Button type="primary" size="large" onClick={handleRedirectToEnrollment}>
                       {setLocale(locale, "search.TakeMeToEnroll")}
                     </Button>
                   </Card>

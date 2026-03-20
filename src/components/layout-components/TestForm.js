@@ -106,7 +106,7 @@ useEffect(() => {
           bordered
           style={{ maxWidth: 700, margin: "20px auto", textAlign: "center" }}
         >
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button type="primary" size="large" htmlType="submit" loading={loading}>
             Submit
           </Button>
         </Card>

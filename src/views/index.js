@@ -133,6 +133,7 @@ export const Views = (props) => {
             colorInfo: '#e79547',
             fontFamily: "'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
             borderRadius: 10,
+            controlHeightLG: 48,
         };
 
         if (currentTheme === 'dark') {

@@ -186,7 +186,7 @@ const AdminProgressEditable = ({
         })}
       </Row>
 
-      <Button type="primary" onClick={handleSubmit} style={{ marginTop: 20 }}>
+      <Button type="primary" size="large" onClick={handleSubmit} style={{ marginTop: 20 }}>
         {setLocale(locale, "admin.progressEditable.saveProgress")}
       </Button>
     </Card>

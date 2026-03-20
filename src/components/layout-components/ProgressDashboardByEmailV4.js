@@ -185,6 +185,7 @@ useEffect(() => {
           <Col xs={24} sm={24} lg={8}>
             <Button
               type="primary"
+              size="large"
               onClick={() => {
                 if (handleUserProgressSubmit) {
                   handleUserProgressSubmit(); // Trigger the child's submit function

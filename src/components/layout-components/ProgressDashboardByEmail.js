@@ -130,7 +130,7 @@ export const ProgressDashboardByEmail = (props) => {
                 />
               </Form.Item>
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading}>
+                <Button type="primary" size="large" htmlType="submit" loading={loading}>
                   {setLocale(locale, "resources.myprogress.search")}
                 </Button>
               </Form.Item>
@@ -145,7 +145,7 @@ export const ProgressDashboardByEmail = (props) => {
             {renderMessageResults()}
             <Divider />
             <h4>{setLocale(locale, "resources.myprogress.recordProgress")}</h4>
-              <Button type="primary" onClick={() => props.history.push(getLocalizedConfig(course).progress)}>
+              <Button type="primary" size="large" onClick={() => props.history.push(getLocalizedConfig(course).progress)}>
               {setLocale(locale, "resources.myprogress.here")}
               </Button>
             </Card>

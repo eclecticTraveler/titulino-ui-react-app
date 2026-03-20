@@ -74,7 +74,7 @@ export const SearchProgress = (props) => {
         />
       </Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading}>
+        <Button type="primary" size="large" htmlType="submit" loading={loading}>
         {setLocale(locale, "resources.myprogress.search")}
         </Button>
       </Form.Item>

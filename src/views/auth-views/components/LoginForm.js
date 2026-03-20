@@ -181,7 +181,7 @@ export const LoginForm = (props) => {
 					<Input.Password prefix={<LockOutlined className="text-primary" />}/>
 				</Form.Item>
 				<Form.Item>
-					<Button type="primary" htmlType="submit" block loading={loading}>
+					<Button type="primary" size="large" htmlType="submit" block loading={loading}>
 						{setLocale(localization, "profile.login.signIn")}
 					</Button>
 				</Form.Item>
