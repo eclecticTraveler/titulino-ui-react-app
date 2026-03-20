@@ -5,7 +5,6 @@ import { SIDE_NAV_WIDTH, SIDE_NAV_DARK, NAV_TYPE_SIDE } from '../../constants/Th
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import MenuContent from './MenuContent'
 import Title from '../../components/layout-components/Title';
-import WidgetAction from '../../components/shared-components/WidgetAction';
 import DonationCenter from "components/shared-components/DonationCenter";
 import { env } from "configs/EnvironmentConfig";
 import ShoppingCenter from "components/shared-components/Shopping";
@@ -23,16 +22,18 @@ export const SideNav = ({navColor, navTitle, navCollapsed, sideNavTheme, routeIn
 		>
 
 			<Scrollbars autoHide>
-				<Title title={currentRoute?.sideTitle} color={currentRoute?.color} prefix={currentRoute?.course} isCollapsed={navCollapsed}/>
-				
-				<MenuContent 
-					type={NAV_TYPE_SIDE} 
-					{...props}
-				/>
-				{(token && user?.contactId && env.IS_SHOPPING_UX_ON) ?
-				<ShoppingCenter isCollapsed={navCollapsed}/> :
-				<DonationCenter isCollapsed={navCollapsed}/>
-				}
+				<div className="side-nav-content">
+					<Title title={currentRoute?.sideTitle} color={currentRoute?.color} prefix={currentRoute?.course} isCollapsed={navCollapsed}/>
+					
+					<MenuContent 
+						type={NAV_TYPE_SIDE} 
+						{...props}
+					/>
+					{(token && user?.contactId && env.IS_SHOPPING_UX_ON) ?
+					<ShoppingCenter isCollapsed={navCollapsed}/> :
+					<DonationCenter isCollapsed={navCollapsed}/>
+					}
+				</div>
 			</Scrollbars>
 		</Sider>
 	)

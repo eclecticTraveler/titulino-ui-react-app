@@ -23,8 +23,8 @@ const SideContentMobile = props => {
 			placement="left"
 			closable={false}
 			onClose={onSideContentClose}
-			visible={visible}
-			bodyStyle={{paddingLeft: 0, paddingRight: 0}}
+			open={visible}
+			styles={{ body: {paddingLeft: 0, paddingRight: 0} }}
 		>
 			<div className="h-100">
 				{sideContent}

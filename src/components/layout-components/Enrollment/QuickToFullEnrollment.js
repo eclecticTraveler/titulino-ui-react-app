@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee, onSelectingEnrollmentCourses } from "redux/actions/Lrn";
 import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs  } from "antd";
-import moment from "moment";
+import dayjs from "dayjs";
 import Flag from "react-world-flags";
 import CourseCards from "./CourseCards";
 import CourseDetails from "./CourseDetails";
@@ -464,12 +464,11 @@ useEffect(() => {
               >
                 <h2>{setLocale(locale, "enrollment.numOfCoursesEnrolled")}  {coursesToDisplay?.length}</h2>
                 
-                <Tabs tabPosition="top" type="line">
-                  {coursesToDisplay?.map((course, index) => (
-                    <Tabs.TabPane
-                      tab={course?.CourseDetails?.course || `Course ${index + 1}`}
-                      key={course?.CourseCodeId || index}
-                    >
+                <Tabs tabPosition="top" type="line"
+                  items={coursesToDisplay?.map((course, index) => ({
+                    key: course?.CourseCodeId || index,
+                    label: course?.CourseDetails?.course || `Course ${index + 1}`,
+                    children: (
                       <Row gutter={[16, 16]}>
                         {/* Image Column */}
                         <Col xs={24} sm={24} lg={12}>
@@ -493,9 +492,9 @@ useEffect(() => {
                           <CourseDetails course={course} />
                         </Col>
                       </Row>
-                    </Tabs.TabPane>
-                  ))}
-                </Tabs>
+                    ),
+                  }))}
+                />
                   {selectedCoursesToEnroll?.length > 0 && (                      
                   <Button type="dashed" block onClick={handleGoBackSelection} disabled={selectedCoursesToEnroll?.length === 0}>
                   {setLocale(locale, "enrollment.form.goBackToCourseSelection")}
@@ -549,7 +548,7 @@ useEffect(() => {
                 <DatePicker
                   style={{ width: "100%" }}
                   picker="year" // Restrict picker to year only
-                  defaultPickerValue={moment("1990", "YYYY")} // Open to the 1990-1999 range
+                  defaultPickerValue={dayjs("1990", "YYYY")} // Open to the 1990-1999 range
                   disabledDate={(current) =>
                     current &&
                     (current.year() > 2014 || // No years beyond 2014

@@ -1,9 +1,9 @@
-import React, { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useRef, useMemo } from "react";
 import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
 import { IntlProvider } from "react-intl";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, theme } from "antd";
 import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH, AUTH_PREFIX_PATH } from "../configs/AppConfig";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { withRouter, Redirect } from "utils/routerCompat";
@@ -124,11 +124,44 @@ export const Views = (props) => {
 
     }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);          
 
+    const antdTheme = useMemo(() => {
+        const baseToken = {
+            colorPrimary: '#e79547',
+            colorSuccess: '#04d182',
+            colorError: '#ff6b72',
+            colorWarning: '#ffc542',
+            colorInfo: '#e79547',
+            fontFamily: "'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
+            borderRadius: 10,
+        };
+
+        if (currentTheme === 'dark') {
+            return {
+                algorithm: theme.darkAlgorithm,
+                token: {
+                    ...baseToken,
+                    colorBgContainer: '#283142',
+                    colorBgElevated: '#283142',
+                    colorBgLayout: '#1b2531',
+                    colorText: '#b4bed2',
+                    colorTextSecondary: '#72849a',
+                    colorBorder: '#4d5b75',
+                    colorBorderSecondary: '#4d5b75',
+                    colorLink: '#e79547',
+                },
+            };
+        }
+
+        return {
+            algorithm: theme.defaultAlgorithm,
+            token: baseToken,
+        };
+    }, [currentTheme]);
 
     if(!wasUserConfigSet){
         return (
             <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
-                <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
+                <ConfigProvider locale={currentAppLocale.antd} direction={direction} theme={antdTheme}>
                     <CourseSelection />
                 </ConfigProvider>
             </IntlProvider>
@@ -141,7 +174,7 @@ export const Views = (props) => {
 
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
-            <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
+            <ConfigProvider locale={currentAppLocale.antd} direction={direction} theme={antdTheme}>
                 <Routes>
                     <Route path={DEFAULT_PREFIX_VIEW} element={<Navigate to={APP_PREFIX_PATH} replace />} />
                     <Route path={`${APP_PREFIX_PATH}/*`} element={<AppLayout direction={direction} location={location} />} />

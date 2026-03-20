@@ -20,7 +20,6 @@ import { useHistory } from 'utils/routerCompat';
 import goldTier from 'assets/lotties/goldTier.json';
 
 const { useBreakpoint } = Grid;
-const { TabPane } = Tabs;
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const SHOPPING_PARAMETERS_STORED_KEY = "postQueryParams";
 
@@ -328,11 +327,11 @@ const ShopWindow = (props) => {
         onChange={(key) => setActiveCourseCode(key)}
         style={{ marginTop: 16 }}
         centered
-      >
-        {productCatalog?.map(({ course_code_id, course_name }) => (
-          <TabPane tab={course_name} key={course_code_id} />
-        ))}
-      </Tabs>
+        items={productCatalog?.map(({ course_code_id, course_name }) => ({
+          key: course_code_id,
+          label: course_name,
+        }))}
+      />
 
       <Card bordered style={{ marginTop: 16 }}>
         <Row gutter={[16, 16]} style={{ marginTop: 30 }}>
@@ -429,7 +428,7 @@ const ShopWindow = (props) => {
         placement="bottom"
         closable={false}
         onClose={onCloseDrawer}
-        visible={open}
+        open={open}
         key="bottom"
       >
         {!isMobile ? (

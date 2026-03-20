@@ -20,8 +20,7 @@ const VideoClasses = ({
   user
 }) => {
   const location = useLocation();
- const { TabPane } = Tabs;
-   const locale = true;
+ const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   };
@@ -56,24 +55,22 @@ const VideoClasses = ({
 
   return (
     <div id="iframed-double-page">
-      {/* <Tabs defaultActiveKey={activeCategory} items={items} /> for V5 */}
-        <Tabs type="card" defaultActiveKey={userProficiencyOrder}>
-        {['basic', 'advanced'].map(category => (
-            <TabPane
-            tab={
-                <span>
+        <Tabs type="card" defaultActiveKey={userProficiencyOrder}
+          items={['basic', 'advanced'].map(category => ({
+            key: category,
+            label: (
+              <span>
                 <IconAdapter icon={category === "basic" ? faLevelDown : faLevelUp} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
                 {setLocale(locale, `classes.grammar.${category}`)}
-                </span>
-            } 
-            key={category}
-            >
-            <span>
+              </span>
+            ),
+            children: (
+              <span>
                 <InternalIFrame iFrameUrl={videoClass[category]} className="iframed-video-classes" />
-            </span>
-            </TabPane>
-        ))}
-        </Tabs>
+              </span>
+            ),
+          }))}
+        />
     </div>
   );
 };

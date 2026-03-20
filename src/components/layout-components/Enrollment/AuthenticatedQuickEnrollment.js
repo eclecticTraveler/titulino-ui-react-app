@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee, onSelectingEnrollmentCourses } from "redux/actions/Lrn";
 import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs  } from "antd";
-import moment from "moment";
+import dayjs from "dayjs";
 import Flag from "react-world-flags";
 import CourseCards from "./CourseCards";
 import CourseDetails from "./CourseDetails";
@@ -393,12 +393,11 @@ const formatSubmissionData = (
                   {coursesToDisplay?.length}
                 </h2>
 
-                <Tabs tabPosition="top" type="line">
-                  {coursesToDisplay?.map((course, index) => (
-                    <Tabs.TabPane
-                      tab={course?.CourseDetails?.course || `Course ${index + 1}`}
-                      key={course?.CourseCodeId || index}
-                    >
+                <Tabs tabPosition="top" type="line"
+                  items={coursesToDisplay?.map((course, index) => ({
+                    key: course?.CourseCodeId || index,
+                    label: course?.CourseDetails?.course || `Course ${index + 1}`,
+                    children: (
                       <Row gutter={[16, 16]}>
                         <Col xs={24} sm={24} lg={12}>
                           <img
@@ -419,9 +418,9 @@ const formatSubmissionData = (
                           <CourseDetails course={course} />
                         </Col>
                       </Row>
-                    </Tabs.TabPane>
-                  ))}
-                </Tabs>
+                    ),
+                  }))}
+                />
 
                 {selectedCoursesToEnroll?.length > 0 && (
                   <Button

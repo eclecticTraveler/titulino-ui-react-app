@@ -238,7 +238,7 @@ const WeeklyCourseSelector = (props) => {
               title={setLocale(locale, `days.${day.toLowerCase()}`)}
               bordered
               style={{ minHeight: 100 }}
-              bodyStyle={{ padding: 12 }}
+              styles={{ body: { padding: 12 } }}
               cover={
                 <img
                   alt={day}

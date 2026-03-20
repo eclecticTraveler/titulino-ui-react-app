@@ -5,9 +5,10 @@
     box-shadow: @side-nav-box-shadow;
     z-index: @zindex-modal - 1;
     direction: ltr;
+    background-color: @white;
 
-    & when (@theme = light) {
-        background-color: @white;
+    & when (@theme = dark) {
+        background-color: @component-background;
     }
     
     .print ({
@@ -18,14 +19,20 @@
         background-color: @menu-dark-bg;
     }
 
+    .ant-layout-sider-children {
+        background-color: inherit;
+    }
+
     .hide-group-title {
         .ant-menu-item-group-title {
             display: none;
         }
     }
 
-    .ant-menu-item {
-        padding-left: 20px !important // Unable to find the inline style of 48px that pushes the menu item for now
+    .ant-menu-item,
+    .ant-menu-submenu-title {
+        padding-left: 20px !important; // Unable to find the inline style of 48px that pushes the menu item for now
+        padding-inline-start: 20px !important;
     }
 }
 
@@ -50,15 +57,17 @@
                 height: 52px; 
                 line-height: 52px; 
                 border-radius: 5px; 
-                padding-left: 0 !important; 
+                padding-left: 12px !important; 
+                padding-inline-start: 12px !important;
 
                 a {
                     color: #0E1F43; 
                 }
 
-                span {
-                    display: inline-block; 
-                    padding-left: 32px;
+                .ant-menu-title-content {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 10px;
                 }
 
                 > img {
@@ -114,29 +123,76 @@
 .side-nav--alt {
     z-index: 1000; 
 
-    > div > div > div:first-child {
+    .side-nav-content {
         display: flex;
         flex-direction: column;
-        min-height: 100%; 
+        min-height: 100%;
+        background-color: @white;
+
+        & when (@theme = dark) {
+            background-color: @component-background;
+        }
     }
 
-    .widget-action {
-        margin-top: auto; 
-        padding: 44px 31px; 
+    .ant-menu,
+    .ant-menu-sub.ant-menu-inline {
+        background-color: @white;
+
+        & when (@theme = dark) {
+            background-color: @component-background;
+        }
     }
 
-    .widget-action-collapsed {
-        margin-top: auto; 
-        padding: 44px 37px; 
+    .side-nav-content > .widget-action,
+    .side-nav-content > .widget-action-collapsed,
+    .side-nav-content > .donation-btn-action-collapsed {
+        margin-top: auto;
+        width: 100%;
+        box-sizing: border-box;
+
+            & when (@theme = dark) {
+                background-color: @component-background;
+            }
+            & when (@theme = light) {
+                background-color: @white;
+        }        
+    }
+
+    .side-nav-content > .widget-action {
+        padding: 44px 31px;
+    }
+
+    .side-nav-content > .widget-action-collapsed {
+        padding: 44px 37px;
     }
     
-    .donation-btn-action-collapsed {
-        margin-top: auto; 
-        padding: 80px 10px
+    .side-nav-content > .donation-btn-action-collapsed {
+        padding: 80px 10px;
     }
 
     .help-center{
         height: 20px !important;
+    }
+
+    &.side-nav-dark {
+        .side-nav-content {
+            background-color: @menu-dark-bg;
+        }
+
+        .ant-menu,
+        .ant-menu.ant-menu-dark,
+        .ant-menu-dark > .ant-menu,
+        .ant-menu-dark.ant-menu-inline,
+        .ant-menu-dark .ant-menu-sub,
+        .ant-menu-sub.ant-menu-inline {
+            background-color: @menu-dark-bg;
+        }
+
+        .side-nav-content > .widget-action,
+        .side-nav-content > .widget-action-collapsed,
+        .side-nav-content > .donation-btn-action-collapsed {
+            background-color: @menu-dark-bg;
+        }
     }
 
     .ant-menu {
@@ -145,22 +201,29 @@
         padding: 14px 3px 0; 
         height: initial !important; 
 
-        .ant-menu-item {
+        .ant-menu-item,
+        .ant-menu-submenu-title {
             position: relative; 
             margin: 0;
             width: 100%; 
             height: 52px; 
             line-height: 52px; 
             border-radius: 5px; 
-            // padding-left: 0px !important; // SIDE BAR PADDING
+            padding-left: 12px !important;
+            padding-inline-start: 12px !important;
 
             a {
                 color:#0E1F43; 
+
+                & when (@theme = dark) {
+                    color: @text-color;
+                }
             }
 
-            span {
-                display: inline-block; 
-                padding-left: 15px;
+            .ant-menu-title-content {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
             }
 
             > img {
@@ -171,15 +234,72 @@
             }
         }
 
+        .ant-menu-item:hover,
+        .ant-menu-submenu-title:hover {
+            color: @primary-color !important;
+            background-color: transparent !important;
+        }
+
+        .ant-menu-item:hover a,
+        .ant-menu-item-selected a,
+        .ant-menu-submenu-title:hover a {
+            color: @primary-color !important;
+        }
+
         .ant-menu-item-selected {
             font-weight: 700; 
+            color: @primary-color !important;
+            background-color: transparent !important;
 
             &:after {
                 display: none; 
             }
 
             a {
-                color: #827D90; 
+                color: @primary-color !important; 
+            }
+        }
+
+        .ant-menu-sub.ant-menu-inline {
+            .ant-menu-item {
+                padding-left: 32px !important;
+                padding-inline-start: 32px !important;
+            }
+
+            .ant-menu-submenu-title {
+                padding-left: 36px !important;
+                padding-inline-start: 36px !important;
+            }
+
+            // Second-level nested submenus
+            .ant-menu-sub.ant-menu-inline {
+                .ant-menu-item {
+                    padding-left: 52px !important;
+                    padding-inline-start: 52px !important;
+                }
+
+                .ant-menu-submenu-title {
+                    padding-left: 54px !important;
+                    padding-inline-start: 54px !important;
+                }
+            }
+
+            .ant-menu-submenu-selected > .ant-menu-submenu-title {
+                font-weight: 700;
+                color: @primary-color !important;
+                background-color: transparent !important;
+
+                &:after {
+                    display: none;
+                }
+            }
+        }
+
+        .ant-menu-submenu-title {
+            .ant-menu-title-content {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
             }
         }
     }

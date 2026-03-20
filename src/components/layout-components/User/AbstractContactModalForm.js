@@ -22,7 +22,7 @@ const AbstractContactModalForm = props => {
 	const modalTitle = isToEditContent ? `Edit ${match?.params?.relationType} Information` : `${match?.params?.relationType} Information`;
 	return(	
 		<div>
-			<Modal title={modalTitle} visible={isCorrectionModalOpened} onOk={handleOk} onCancel={handleCancel} width={1000} footer={null}>
+			<Modal title={modalTitle} open={isCorrectionModalOpened} onOk={handleOk} onCancel={handleCancel} width={1000} footer={null}>
 				{
 					isToEditContent ? 
 					<ContactInfoEditableDisplay/>

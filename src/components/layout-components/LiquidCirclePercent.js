@@ -6,13 +6,15 @@ export const LiquidPercent = (props) => {
 
   const config = {
     percent: percent,
-    outline: {
-      border: 4,
-      distance: 8,
+    width: 300,
+    height: 300,
+    interaction: {},
+    style: {
+      outlineBorder: 4,
+      outlineDistance: 8,
+      waveLength: 328,
+      textFontSize: 36,
     },
-    wave: {
-      length: 328,
-    }
   };
 
   return <Liquid {...config} />; 

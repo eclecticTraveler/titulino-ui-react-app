@@ -7,7 +7,7 @@ import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
 import UserProgress from './UserProgress'
-import moment from "moment";
+import dayjs from "dayjs";
 import { withRouter } from "utils/routerCompat";
 import Confetti from 'react-confetti';
 import useWindowSize from 'react-use/lib/useWindowSize';
@@ -38,7 +38,6 @@ export const ProgressDashboardByEmailV3 = (props) => {
   const [isMassiveConfettiVisible, setIsMassiveConfettiVisible] = useState(false);
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { TabPane } = Tabs;
   const { width, height } = useWindowSize();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
@@ -420,7 +419,7 @@ useEffect(() => {
               <DatePicker
                 style={{ width: "100%" }}
                 picker="year"
-                defaultPickerValue={moment("1980", "YYYY")}
+                defaultPickerValue={dayjs("1980", "YYYY")}
                 disabledDate={(current) =>
                   current && (current.year() > 2017 || current.year() < 1900)
                 }
@@ -455,32 +454,30 @@ useEffect(() => {
 </Row>
 
       {renderSubtitle()}
-      <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}>
-      <TabPane 
-        tab={
-          <span>
-            <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-            {setLocale(locale, "resources.myprogress.generalView")}
-          </span>
-        } 
-        key="1"
-      >
-        {/* Render your general view content */}
-        {renderGeneralView()}
-      </TabPane>
-      <TabPane 
-        tab={
-          <span>
-            <IconAdapter icon={faRoad} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} /> 
-            {setLocale(locale, "resources.myprogress.progress&Tracking")}
-          </span>
-        } 
-        key="2"
-      >
-        {/* Render your progress tracking content */}
-        {renderProgressTracking()}
-      </TabPane>
-    </Tabs>
+      <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}
+        items={[
+          {
+            key: "1",
+            label: (
+              <span>
+                <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
+                {setLocale(locale, "resources.myprogress.generalView")}
+              </span>
+            ),
+            children: renderGeneralView(),
+          },
+          {
+            key: "2",
+            label: (
+              <span>
+                <IconAdapter icon={faRoad} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} /> 
+                {setLocale(locale, "resources.myprogress.progress&Tracking")}
+              </span>
+            ),
+            children: renderProgressTracking(),
+          },
+        ]}
+      />
     {renderUpserUserProgressBottom()}
     </div>
   );

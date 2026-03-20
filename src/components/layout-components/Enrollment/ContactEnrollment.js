@@ -4,7 +4,7 @@ import { bindActionCreators } from "redux";
 import { onRequestingGeographicalDivision } from "redux/actions/Lrn";
 import { Form, Input, Radio, Select, DatePicker, Checkbox, Button, Card, Divider, Row, Col, Space  } from "antd";
 import Flag from "react-world-flags"; // Correct import for flags
-import moment from "moment";
+import dayjs from "dayjs";
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 const { Option } = Select;
@@ -183,12 +183,12 @@ export const ContactEnrollment = (props) => {
         >
           <DatePicker
             style={{ width: "100%" }}
-            disabledDate={(current) => current && current > moment().endOf("day")}
+            disabledDate={(current) => current && current > dayjs().endOf("day")}
             defaultPickerValue={
               selectedDateOfBirth 
-                ? moment(selectedDateOfBirth, "YYYY-MM-DD")
+                ? dayjs(selectedDateOfBirth, "YYYY-MM-DD")
                 : selectedYearOfBirth
-                ? moment(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")
+                ? dayjs(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")
                 : undefined // Opens on selected date or year from parent component by default
             }
           />

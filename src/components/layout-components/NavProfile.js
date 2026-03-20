@@ -200,7 +200,7 @@ export const NavProfile = (props) => {
   );
   return (
     <>
-      <Dropdown placement="bottomRight" overlay={profileMenu} trigger={["click"]}>
+      <Dropdown placement="bottomRight" dropdownRender={() => profileMenu} trigger={["click"]}>
         <div className="avatar-menu d-flex align-items-center" mode="horizontal">
           <Avatar size={40} src={avatarImg} />
         </div>

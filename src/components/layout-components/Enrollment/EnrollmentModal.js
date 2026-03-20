@@ -42,7 +42,7 @@ const EnrollmentModal = ({ closeEnrollmentModal, visibleModal, courses = [] }) =
   return (
     <div>
       <Modal
-        visible={isModalVisible} // Show modal when successful
+        open={isModalVisible} // Show modal when successful
         title={setLocale(locale, 'enrollment.form.enrollmentCompleted')} // Translated title
         closable={false} // Removes the X button
         footer={[
@@ -50,7 +50,7 @@ const EnrollmentModal = ({ closeEnrollmentModal, visibleModal, courses = [] }) =
             {setLocale(locale, 'enrollment.form.close')}
           </Button>,
         ]}
-        bodyStyle={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} // Center content
+        styles={{ body: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } }} // Center content
       >
         <Lottie
           animationData={currentAnimation} // Dynamically switch animation

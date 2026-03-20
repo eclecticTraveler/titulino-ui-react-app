@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Form, Row, Col, DatePicker, Input, Button, message, Card } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import getLocaleText from "components/util-components/IntString";
 import { useHistory } from 'utils/routerCompat';
 import { onRetrievingUserProfile } from 'redux/actions/Grant';
@@ -254,7 +254,7 @@ useEffect(() => {
               <DatePicker
                 style={{ width: "100%" }}
                 picker="year"
-                defaultPickerValue={moment("1980", "YYYY")}
+                defaultPickerValue={dayjs("1980", "YYYY")}
                 disabledDate={(current) =>
                   current && (current.year() > 2017 || current.year() < 1900)
                 }
@@ -276,11 +276,11 @@ useEffect(() => {
               >
                 <DatePicker
                   style={{ width: "100%" }}
-                  disabledDate={current => current && current > moment().endOf("day")}
+                  disabledDate={current => current && current > dayjs().endOf("day")}
                   onChange={(date) => setFullDateOfBirth(date)}
                   defaultPickerValue={
                     selectedYearOfBirth
-                      ? moment(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")
+                      ? dayjs(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")
                       : undefined
                   }
                 />

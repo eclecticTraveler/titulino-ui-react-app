@@ -17,7 +17,6 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
-const { TabPane } = Tabs;
 
 const InsightsLandingDashboard = (props) => {
   const {
@@ -373,13 +372,12 @@ const InsightsLandingDashboard = (props) => {
       <Tabs
         activeKey={activeInnerTabs[outerKey]}
         onChange={(key) => handleInnerTabChange(outerKey, key)}
-      >
-        {tabsForOuter.map((tabConfig) => (
-          <TabPane tab={tabConfig.tab} key={tabConfig.key}>
-            {tabConfig.content}
-          </TabPane>
-        ))}
-      </Tabs>
+        items={tabsForOuter.map((tabConfig) => ({
+          key: tabConfig.key,
+          label: tabConfig.tab,
+          children: tabConfig.content,
+        }))}
+      />
     );
   };
 

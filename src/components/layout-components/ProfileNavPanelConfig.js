@@ -16,7 +16,7 @@ const ProfileNavPanelConfig = ({ visible, onClose, title, direction, locale }) =
       placement={direction === DIR_RTL ? 'left' : 'right'}
       width={350}
       onClose={onClose}
-      visible={visible}
+      open={visible}
     >
       <ThemeConfigurator />
     </Drawer>

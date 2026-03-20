@@ -153,8 +153,8 @@ const MenuContentTop = (props) => {
         <Popover
           content={menu}
           trigger="click"
-          visible={menuVisible}
-          onVisibleChange={toggleMenu}
+          open={menuVisible}
+          onOpenChange={toggleMenu}
         >
           <button
             className="menu-toggle-button"

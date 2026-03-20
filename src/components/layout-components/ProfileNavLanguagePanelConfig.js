@@ -50,7 +50,7 @@ const ProfileNavLanguagePanelConfig = ({ locale, onLocaleChange }) => {
 	  </Menu>
 	);
 	return (
-	  <Dropdown placement="bottomRight" overlay={languageOption} trigger={["click"]}>
+	  <Dropdown placement="bottomRight" dropdownRender={() => languageOption} trigger={["click"]}>
 		<a href="#/" className="text-gray" onClick={e => e.preventDefault()}>
 		  <SelectedLanguage locale={locale} />
 		</a>

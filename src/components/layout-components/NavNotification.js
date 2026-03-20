@@ -89,9 +89,9 @@ export const NavNotification = () => {
   return (
     <Dropdown 
       placement="bottomRight"
-      overlay={notificationList}
-      onVisibleChange={handleVisibleChange}
-      visible={visible}
+      dropdownRender={() => notificationList}
+      onOpenChange={handleVisibleChange}
+      open={visible}
       trigger={['click']}
     >
       <div className="nav-icon-container">

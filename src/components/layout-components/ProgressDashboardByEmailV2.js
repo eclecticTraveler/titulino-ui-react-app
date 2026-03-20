@@ -32,7 +32,6 @@ export const ProgressDashboardByEmailV2 = (props) => {
   const [isMassiveConfettiVisible, setIsMassiveConfettiVisible] = useState(false);
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
 
-  const { TabPane } = Tabs;
   const { width, height } = useWindowSize();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
@@ -359,32 +358,30 @@ useEffect(() => {
         </Col>
       </Row>
       {renderSubtitle()}
-      <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}>
-      <TabPane 
-        tab={
-          <span>
-            <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-            {setLocale(locale, "resources.myprogress.generalView")}
-          </span>
-        } 
-        key="1"
-      >
-        {/* Render your general view content */}
-        {renderGeneralView()}
-      </TabPane>
-      <TabPane 
-        tab={
-          <span>
-            <IconAdapter icon={faRoad} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} /> 
-            {setLocale(locale, "resources.myprogress.progress&Tracking")}
-          </span>
-        } 
-        key="2"
-      >
-        {/* Render your progress tracking content */}
-        {renderProgressTracking()}
-      </TabPane>
-    </Tabs>
+      <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}
+        items={[
+          {
+            key: "1",
+            label: (
+              <span>
+                <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
+                {setLocale(locale, "resources.myprogress.generalView")}
+              </span>
+            ),
+            children: renderGeneralView(),
+          },
+          {
+            key: "2",
+            label: (
+              <span>
+                <IconAdapter icon={faRoad} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} /> 
+                {setLocale(locale, "resources.myprogress.progress&Tracking")}
+              </span>
+            ),
+            children: renderProgressTracking(),
+          },
+        ]}
+      />
     {renderUpserUserProgressBottom()}
     </div>
   );

@@ -23,7 +23,8 @@ const loadCourseProgressStructure = async() => {
   const rawSavedLocalData = courseProgressData;
   const rawProgressData = await GoogleService.getCourseProgressData("loadCourseProgressStructure");
   //     console.log("Progress DATA", rawProgressData)
-  return rawProgressData ?? rawSavedLocalData;
+  const result = rawProgressData ?? rawSavedLocalData;
+  return Array.isArray(result) ? result : [];
 }
 
 const loadRequestedCourseStructure = async(nativeLanguage, course, courseCodeId) => {  
