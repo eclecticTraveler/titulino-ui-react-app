@@ -118,8 +118,20 @@ useEffect(() => {
   }
 
   const ProgressDashboardByEmailStyle = {
-    height: 600
+    minHeight: 620
   }
+
+  const requirementsTitleStyle = {
+    marginTop: 8,
+    marginBottom: 8,
+  };
+
+  const requirementsListStyle = {
+    paddingInlineStart: 22,
+    marginBottom: 0,
+    lineHeight: 1.6,
+    wordBreak: 'break-word',
+  };
 
   const renderGeneralView = () => (
     <>
@@ -128,8 +140,8 @@ useEffect(() => {
         {/* LiquidCirclePercent - Participation Certificate */}    
         <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidCirclePercent percent={studentPercentagesForCourse?.participationCertificatePercentage} />
-          <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
-          <ul>
+          <h5 style={requirementsTitleStyle}>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
+          <ul style={requirementsListStyle}>
           <li>{setLocale(locale, "resources.myprogress.generalGatherings")}: {studentCategoriesCompletedForCourse?.category1Total ?? 0}/8</li>
         </ul> 
         </Card>
@@ -137,9 +149,9 @@ useEffect(() => {
       <Col xs={24} sm={24} lg={12}>
         {/* LiquidStarPercent - Golden Certificate */}
         <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
-          <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />
-          <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
-          <ul>
+          <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />          
+          <h5 style={requirementsTitleStyle}>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
+          <ul style={requirementsListStyle}>
             <li>{setLocale(locale, "resources.myprogress.generalGatherings")}: {studentCategoriesCompletedForCourse?.category1Total ?? 0}/8</li>
             <li>{setLocale(locale, "resources.myprogress.watchedGrammarClasses")}: {studentCategoriesCompletedForCourse?.category2Total ?? 0}/8</li>
             <li>{setLocale(locale, "resources.myprogress.finalExam")}: {studentCategoriesCompletedForCourse?.category4Total ?? 0}/1:</li>
