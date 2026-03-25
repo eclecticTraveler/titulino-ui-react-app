@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { Row, Col, Card, Tabs, Input, message } from 'antd';
+import { useIntl } from 'react-intl';
 import IntlMessage from 'components/util-components/IntlMessage';
 import DropdownInsightSelection from './DropdownInsightSelection';
 import { faPersonPraying, faPieChart, faMapPin, faPersonHiking } from '@fortawesome/free-solid-svg-icons';
@@ -38,6 +39,7 @@ const InsightsLandingDashboard = (props) => {
     onLoadingAllDashboardContents
   } = props;
 
+  const intl = useIntl();
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('general');
   const [activeInnerTabs, setActiveInnerTabs] = useState({
     general: 'general-overview',
@@ -192,7 +194,7 @@ const InsightsLandingDashboard = (props) => {
     <Row gutter={16}>
       <Col span={24}>
         <Input
-          placeholder={setLocale(locale, "admin.dashboard.insights.search.placeholder")}
+          placeholder={intl.formatMessage({ id: "admin.dashboard.insights.search.placeholder" })}
           value={searchValue}
           onChange={handleSearch}
           prefix={<SearchOutlined />}
@@ -219,7 +221,7 @@ const InsightsLandingDashboard = (props) => {
     <Row gutter={16}>
       <Col span={24}>
         <Input
-          placeholder={setLocale(locale, "admin.dashboard.insights.search.placeholder")}
+          placeholder={intl.formatMessage({ id: "admin.dashboard.insights.search.placeholder" })}
           value={searchValue}
           onChange={handleSearch}
           prefix={<SearchOutlined />}

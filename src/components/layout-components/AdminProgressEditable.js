@@ -95,7 +95,6 @@ const AdminProgressEditable = ({
           {setLocale(locale, "resources.myprogress.progressFor")} {selectedEmail ?? "-"}
         </span>
       }
-      style={{ background: "#fafafa" }}
     >
       {emailCount > 0 && (
         <>

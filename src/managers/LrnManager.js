@@ -21,7 +21,8 @@ const getUserCourseProgress = async(courseCodeId, emailId) => {
   if (token) {
     courseProgress = await TitulinoAuthService.getCourseProgress(courseCodeId, token, "getUserCourseProgress");
 
-    // For now if the user is facilitador, filter to its own results: TODO
+    // For now if the user is facilitador or admin given that it will bring the progress of all the users for RLS
+    // filter to its own results: TODO
     courseFilteredProgress = courseProgress?.filter(item => item?.EmailId === user?.emailId);
   }
 

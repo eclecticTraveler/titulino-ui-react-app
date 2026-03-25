@@ -16,6 +16,14 @@
     .ant-tabs {
         margin-bottom: -21px;
     }
+
+    & when (@theme = light) {
+        background: @gray-lightest !important;
+    }
+
+    & when (@theme = dark) {       
+        background: @border-color-dark-upper !important;
+    }
 }
 
 .ant-card-head-title {
@@ -117,6 +125,19 @@
         & when (@theme = dark) {       
             background: @border-color-dark-upper;
         }
+    }
+
+    & when (@theme = dark) {
+        background: @component-background;
+    }
+}
+
+.ant-card-actions {
+    & when (@theme = dark) {
+        background: @border-color-dark-upper !important;
+    }
+    & when (@theme = light) {
+        background: @gray-lightest !important;
     }
 }
 
