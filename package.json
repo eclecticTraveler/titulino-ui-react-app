@@ -1,7 +1,7 @@
 {
   "name": "lrn-ui-react-app",
   "homepage": "https://titulino.com",
-  "version": "0.1.165",
+  "version": "0.1.166",
   "private": true,
   "dependencies": {
     "@ant-design/plots": "^2.6.8",
@@ -108,7 +108,7 @@
     "rollup": ">=3.0.0",
     "serialize-javascript": ">=7.0.3",
     "underscore": ">=1.13.7",
-    "webpack-dev-server": "^5.2.1"
+    "webpack-dev-server": "^4.15.2"
   },
   "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
   "main": "gulpfile.js",
