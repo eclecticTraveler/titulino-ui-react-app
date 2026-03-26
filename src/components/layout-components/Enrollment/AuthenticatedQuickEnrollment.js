@@ -492,9 +492,8 @@ const formatSubmissionData = (
                   initialValue={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId ?? undefined}               
                   >
                   <Select
-                    showSearch
+                    showSearch={{ optionFilterProp: "label" }}
                     placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
-                    optionFilterProp="children"
                     onChange={(value) => {
                       setSelectedCountryOfResidence(value); // Update selected country
                       setDivisions([]); // Reset divisions for residence
@@ -502,7 +501,7 @@ const formatSubmissionData = (
                     }}
                   >
                     {props.countries?.map((country) => (
-                      <Option key={country.CountryId} value={country.CountryId}>
+                      <Option key={country.CountryId} value={country.CountryId} label={`${country?.NativeCountryName} | ${country?.CountryName}`}>
                         <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
                         {`${country?.NativeCountryName} | ${country?.CountryName}`}
                       </Option>
@@ -517,15 +516,14 @@ const formatSubmissionData = (
                   
                   >
                     <Select
-                      showSearch
+                      showSearch={{ optionFilterProp: "label" }}
                       placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegion" })}
-                      optionFilterProp="children"
                       onChange={(value) => {
                         setEnrolleeResidencyDivision(value);
                       }}
                     >
                       {residencyDivisions?.map((division) => (
-                        <Option key={division?.CountryDivisionId} value={division?.CountryDivisionId}>
+                        <Option key={division?.CountryDivisionId} value={division?.CountryDivisionId} label={division?.CountryDivisionName}>
                           <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
                           {division?.CountryDivisionName}
                         </Option>
@@ -547,9 +545,8 @@ const formatSubmissionData = (
                 initialValue={returningEnrolleeCountryDivisionInfo?.countryOfBirthId ?? undefined}
               >
                 <Select
-                  showSearch
+                  showSearch={{ optionFilterProp: "label" }}
                   placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
-                  optionFilterProp="children"
                   onChange={(value) => {
                     setSelectedBirthCountry(value);
                     setBirthDivisions([]);
@@ -557,7 +554,7 @@ const formatSubmissionData = (
                   }}
                 >
                   {props.countries?.map((country) => (
-                    <Option key={country.CountryId} value={country.CountryId}>
+                    <Option key={country.CountryId} value={country.CountryId} label={`${country.NativeCountryName} | ${country.CountryName}`}>
                       <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
                       {`${country.NativeCountryName} | ${country.CountryName}`}
                     </Option>
@@ -573,15 +570,14 @@ const formatSubmissionData = (
                 initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth ?? undefined}
               >
                 <Select
-                  showSearch
+                  showSearch={{ optionFilterProp: "label" }}
                   placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegionOfBirth" })}
-                  optionFilterProp="children"
                   onChange={(value) => {
                     setEnrolleeBirthDivision(value);
                   }}
                 >
                   {birthDivisions?.map((division) => (
-                    <Option key={division.CountryDivisionId} value={division.CountryDivisionId}>
+                    <Option key={division.CountryDivisionId} value={division.CountryDivisionId} label={division.CountryDivisionName}>
                       <Flag code={division.CountryId} style={{ width: 20, marginRight: 10 }} />
                       {division.CountryDivisionName}
                     </Option>

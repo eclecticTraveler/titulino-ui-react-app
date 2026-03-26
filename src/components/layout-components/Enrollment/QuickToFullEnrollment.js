@@ -583,7 +583,7 @@ useEffect(() => {
                 </Form.Item>
 
                 {loading ? (
-                  <Spin tip={setLocale(locale, "enrollment.form.searchingRecord")} />
+                  <Spin description={setLocale(locale, "enrollment.form.searchingRecord")} />
                 ) : isFindMeSubmitted && !returningEnrolleeCountryDivisionInfo?.personalCommunicationName ? (
                   <h4>
                     {setLocale(locale, "enrollment.form.unableToFindRecord")}{` ${form.getFieldValue("emailAddress") || "N/A"} `}
@@ -629,9 +629,8 @@ useEffect(() => {
                   initialValue={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId ?? undefined}               
                   >
                   <Select
-                    showSearch
+                    showSearch={{ optionFilterProp: "label" }}
                     placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
-                    optionFilterProp="children"
                     size="large"
                     onChange={(value) => {
                       setSelectedCountryOfResidence(value); // Update selected country
@@ -640,7 +639,7 @@ useEffect(() => {
                     }}
                   >
                     {props.countries?.map((country) => (
-                      <Option key={country.CountryId} value={country.CountryId}>
+                      <Option key={country.CountryId} value={country.CountryId} label={`${country?.NativeCountryName} | ${country?.CountryName}`}>
                         <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
                         {`${country?.NativeCountryName} | ${country?.CountryName}`}
                       </Option>
@@ -655,16 +654,15 @@ useEffect(() => {
                   
                   >
                     <Select
-                      showSearch
+                      showSearch={{ optionFilterProp: "label" }}
                       placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegion" })}
-                      optionFilterProp="children"
                       size="large"
                       onChange={(value) => {
                         setEnrolleeResidencyDivision(value);
                       }}
                     >
                       {residencyDivisions?.map((division) => (
-                        <Option key={division?.CountryDivisionId} value={division?.CountryDivisionId}>
+                        <Option key={division?.CountryDivisionId} value={division?.CountryDivisionId} label={division?.CountryDivisionName}>
                           <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
                           {division?.CountryDivisionName}
                         </Option>
@@ -686,9 +684,8 @@ useEffect(() => {
                 initialValue={returningEnrolleeCountryDivisionInfo?.countryOfBirthId ?? undefined}
               >
                 <Select
-                  showSearch
+                  showSearch={{ optionFilterProp: "label" }}
                   placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
-                  optionFilterProp="children"
                   onChange={(value) => {
                     setSelectedBirthCountry(value);
                     setBirthDivisions([]);
@@ -696,7 +693,7 @@ useEffect(() => {
                   }}
                 >
                   {props.countries?.map((country) => (
-                    <Option key={country.CountryId} value={country.CountryId}>
+                    <Option key={country.CountryId} value={country.CountryId} label={`${country.NativeCountryName} | ${country.CountryName}`}>
                       <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
                       {`${country.NativeCountryName} | ${country.CountryName}`}
                     </Option>
@@ -712,15 +709,14 @@ useEffect(() => {
                 initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth ?? undefined}
               >
                 <Select
-                  showSearch
+                  showSearch={{ optionFilterProp: "label" }}
                   placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegionOfBirth" })}
-                  optionFilterProp="children"
                   onChange={(value) => {
                     setEnrolleeBirthDivision(value);
                   }}
                 >
                   {birthDivisions?.map((division) => (
-                    <Option key={division.CountryDivisionId} value={division.CountryDivisionId}>
+                    <Option key={division.CountryDivisionId} value={division.CountryDivisionId} label={division.CountryDivisionName}>
                       <Flag code={division.CountryId} style={{ width: 20, marginRight: 10 }} />
                       {division.CountryDivisionName}
                     </Option>

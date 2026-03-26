@@ -174,8 +174,8 @@ const SearchInputV2 = props => {
 		<AutoComplete
 			ref={inputRef} 
 			className={`nav-search-input ${isMobile ? 'is-mobile' : ''} ${!isMobile ? 'search-input-big' : ''} ${mode === 'light' ? 'light' : ''}`}
-			dropdownClassName="nav-search-dropdown"
-			dropdownMatchSelectWidth={false} // Disable the default width matching behavior
+			classNames={{ popup: { root: "nav-search-dropdown" } }}
+			popupMatchSelectWidth={false} // Disable the default width matching behavior
 			dropdownStyle={{ maxHeight: 400 }} // Adjust the maximum height of the dropdown menu
 			options={options} // Pass in more options to increase the number of displayed results
 			onSelect={onSelect}
