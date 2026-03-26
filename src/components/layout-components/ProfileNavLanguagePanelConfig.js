@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckOutlined, GlobalOutlined, DownOutlined  } from '@ant-design/icons';
+import { CheckOutlined, DownOutlined  } from '@ant-design/icons';
 import { Menu, Dropdown } from "antd";
 import lang from "assets/data/language.data.json";
 import { connect } from "react-redux";

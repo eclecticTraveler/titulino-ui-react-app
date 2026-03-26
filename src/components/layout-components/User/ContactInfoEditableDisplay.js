@@ -4,12 +4,11 @@ import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import { onSelectingCorrectionToEdit, onCorrectionsModalChange } from 'redux/actions/Lrn';
 import { withRouter } from "utils/routerCompat";
-import { Input, Row, Col, Card, Form, Button, message } from 'antd';
+import { Input, Row, Col, Card, Form, Button } from 'antd';
 import { 
     ContactsOutlined,
     PhoneOutlined, 
     MailOutlined, 
-    UsergroupAddOutlined, 
   } from '@ant-design/icons';
 
 const ContactInfoEditableDisplay = props => {

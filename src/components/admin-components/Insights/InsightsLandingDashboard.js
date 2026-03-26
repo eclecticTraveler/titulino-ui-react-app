@@ -137,6 +137,7 @@ const InsightsLandingDashboard = (props) => {
 			onRenderingLocationTypeSelectionsToDashboard();
 		  }
 		}
+	  // eslint-disable-next-line react-hooks/exhaustive-deps
 	  }, [allCourses, locationTypes]);
 	  
 	  

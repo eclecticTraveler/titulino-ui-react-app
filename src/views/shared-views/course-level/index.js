@@ -1,4 +1,4 @@
-import React, {Component, Suspense} from 'react'
+import React, {Component} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
 import { geteBookUrl, getUserEBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse }  from 'redux/actions/Lrn';

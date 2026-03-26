@@ -12,7 +12,7 @@ import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/
 
 
 export const ProgressDashboardByEmail = (props) => {
-  const { onSearchingForProgressByEmailId, registeredProgressByEmailId, nativeLanguage, onRenderingCourseRegistration,
+  const { onSearchingForProgressByEmailId, registeredProgressByEmailId, onRenderingCourseRegistration,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, course } = props;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);

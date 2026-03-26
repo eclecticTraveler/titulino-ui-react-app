@@ -1,6 +1,5 @@
 import React, {Component} from 'react'
-import { Row, Col, Card } from 'antd';
-import Iframe from 'react-iframe';
+import { Card } from 'antd';
 
 class AdjetiveOfTheDay extends Component {
     componentDidMount() {

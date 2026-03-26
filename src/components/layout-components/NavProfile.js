@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { Menu, Dropdown, Avatar, Drawer } from "antd";
+import { Menu, Avatar, Dropdown } from "antd";
 import { connect } from 'react-redux'
 import { 
-  EditOutlined, 
   SettingOutlined, 
-  ShopOutlined, 
-  QuestionCircleOutlined, 
   LogoutOutlined,
-  CloudUploadOutlined,
   SwapOutlined,
   LoginOutlined,
   GlobalOutlined,
@@ -17,12 +13,11 @@ import {
 import Icon from '../../components/util-components/Icon';
 import { signOut } from 'redux/actions/Auth';
 import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from 'configs/AppConfig';
-import { Link } from "react-router-dom";
 import IntlMessage from "../../components/util-components/IntlMessage";
 import ProfileNavPanelConfig from './ProfileNavPanelConfig';
-import { DIR_RTL } from 'constants/ThemeConstant';
-import NavSearchWrapper from './NavSearchWrapper';
 import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
+import NavSearchWrapper from './NavSearchWrapper';
+import { Link } from 'react-router-dom';
 import { env } from "configs/EnvironmentConfig";
 import { getWasUserConfigSetFlag, onUserSelectingCourse } from 'redux/actions/Lrn';
 
@@ -84,7 +79,7 @@ const configureMenuItems = (user, token) => {
 }
 
 export const NavProfile = (props) => {  
-  const { course, direction, mode, isMobile, getWasUserConfigSetFlag, onUserSelectingCourse, token, signOut, user } = props;
+  const { direction, mode, isMobile, getWasUserConfigSetFlag, onUserSelectingCourse, token, signOut, user } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
  
   const showDrawer = () => {

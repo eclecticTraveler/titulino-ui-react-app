@@ -1,12 +1,9 @@
 import React from 'react';
-import { Button } from 'antd';
-import { useHistory } from 'utils/routerCompat';
 import IntlMessage from "components/util-components/IntlMessage";
 import whatsApp from 'assets/lotties/whatsApp.json';
 import Lottie from 'lottie-react';
 
 const GoldTierProductConfirmationMessage = ({handlePostButtonClick}) => {
-  const history = useHistory();
   const locale = true;
 
   const setLocale = (isLocaleOn, localeKey) => {

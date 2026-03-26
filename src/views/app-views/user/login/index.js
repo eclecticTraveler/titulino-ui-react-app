@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { 		
@@ -78,18 +78,11 @@ export const LoginAdapter = (props) => {
 	
 
 	const { 
-		showLoading,
-		hideAuthMessage,
-		showAuthMessage,
 		authenticated,
 		signIn,
 		onAuthenticatingWithSSO,
 		onResolvingAuthenticationWhenRefreshing,
 		token,
-		message,
-		showMessage,
-		loading,
-		redirect
 	} = props;
 
 	const handleSuccessfulLogin = (session) => {  
@@ -155,6 +148,7 @@ export const LoginAdapter = (props) => {
 		});
 	
 		return () => listener.subscription.unsubscribe();
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 	
 

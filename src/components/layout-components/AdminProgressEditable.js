@@ -70,6 +70,7 @@ const AdminProgressEditable = ({
       });
 
     setSelectedLessons(preSelected);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progressData, selectedEmail]);
 
   const emailCount = emails?.length ?? 0;

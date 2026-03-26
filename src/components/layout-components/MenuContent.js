@@ -101,7 +101,7 @@ const SideNavContent = (props) => {
 
 
 const TopNavContent = (props) => {
-	const { topNavColor, localization, currentRoute } = props;
+	const { localization, currentRoute } = props;
 	
 	return (
 		<Menu mode="horizontal" >

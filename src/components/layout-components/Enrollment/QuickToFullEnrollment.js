@@ -5,7 +5,6 @@ import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, on
 import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs  } from "antd";
 import dayjs from "dayjs";
 import Flag from "react-world-flags";
-import CourseCards from "./CourseCards";
 import CourseDetails from "./CourseDetails";
 import ContactEnrollment from './ContactEnrollment';
 import { useIntl } from 'react-intl';
@@ -19,11 +18,11 @@ const { Option } = Select;
 
 export const QuickToFullEnrollment = (props) => {
   const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, nativeLanguage, passedEmail, passedDateOfBirth, passedSubmitBtnEnabled,
-         onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, isToDoFullEnrollment, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
+         onSubmittingEnrollee, selfLanguageLevel, countries, isToDoFullEnrollment, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
   const [isEmailVisible, setEmailVisible] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(true);
-  const [email, setEmail] = useState(passedEmail || "");
+  const [, setEmail] = useState(passedEmail || "");
   const [isFindMeVisible, setFindMeVisible] = useState(false);
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const [isGeographyInfoVisible, setGeographyInfoVisible] = useState(false);
@@ -36,9 +35,9 @@ export const QuickToFullEnrollment = (props) => {
   const [isToProceedToFullEnrollment, setIsToProceedToFullEnrollment] = useState(isToDoFullEnrollment ?? false);
   const [loading, setLoading] = useState(false);
   const [returningEnrolleeCountryDivisionInfo, setReturningEnrolleeCountryDivisionInfo] = useState(null);
-  const [resetChildStates, setResetChildStates] = useState(null);
-  const [enrolleeResidencyDivision, setEnrolleeResidencyDivision] = useState("");
-  const [enrolleeBirthDivision, setEnrolleeBirthDivision] = useState("");
+  const [, setResetChildStates] = useState(null);
+  const [, setEnrolleeResidencyDivision] = useState("");
+  const [, setEnrolleeBirthDivision] = useState("");
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [submittedRecords, setSubmittingRecords] = useState([]);
@@ -72,6 +71,7 @@ export const QuickToFullEnrollment = (props) => {
         };
         upsertFormattedData();
       }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [submittedRecords]);
     
   
@@ -83,7 +83,7 @@ export const QuickToFullEnrollment = (props) => {
   useEffect(() => {
     const checkFormValidity = async () => {
       try {
-        const values = await form.validateFields(); // Trigger validation for all fields
+        await form.validateFields(); // Trigger validation for all fields
         //setSubmitEnabled(true); 
       } catch (error) {
         console.log("Form invalid", error);
@@ -91,6 +91,7 @@ export const QuickToFullEnrollment = (props) => {
     };
 
     checkFormValidity(); // Run validation on form change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form]);
 
   useEffect(() => {
@@ -122,6 +123,7 @@ useEffect(() => {
   } else {
     setDivisions([]); // Reset if no country is selected
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [selectedCountryOfResidence]);
 
 useEffect(() => {
@@ -140,6 +142,7 @@ useEffect(() => {
   } else {
     setBirthDivisions([]); // Reset if no country is selected
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [selectedBirthCountry]);
 
   const onBirthDateSelect = () => setEmailVisible(true);
@@ -215,7 +218,7 @@ useEffect(() => {
       yearOfBirth,
       countryOfResidence,
       countryOfBirth,
-      languageLevelAbbreviation,
+      languageLevelAbbreviation, // eslint-disable-line no-unused-vars
       countryDivisionOfResidence,
       countryDivisionOfBirth,
       dateOfBirth,
@@ -849,7 +852,7 @@ function mapDispatchToProps(dispatch) {
 const mapStateToProps = ({ lrn, grant }) => {
   const { availableCourses, selfLanguageLevel, countries, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll } = lrn;
   const { isToDoFullEnrollment } = grant;
-  return { availableCourses, selfLanguageLevel, countries, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll };
+  return { availableCourses, selfLanguageLevel, countries, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll, isToDoFullEnrollment };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(QuickToFullEnrollment);

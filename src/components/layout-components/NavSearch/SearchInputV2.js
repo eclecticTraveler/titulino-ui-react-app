@@ -65,7 +65,7 @@ const SearchInputV2 = props => {
 	}
 
 
-	const getCategoryIcon = (category, level, icon) => {
+	const getCategoryIcon = (category, level, icon) => { // eslint-disable-line no-unused-vars
 		//  console.log("category", category);
 		//  console.log("level", level)
 		switch (category) {

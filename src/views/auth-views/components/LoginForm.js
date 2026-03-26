@@ -11,7 +11,6 @@ import {
 	hideAuthMessage,
 	authenticated
 } from 'redux/actions/Auth';
-import JwtAuthService from 'services/JwtAuthService'
 import { useHistory } from "utils/routerCompat";
 import { motion } from "framer-motion";
 import IntlMessage from "components/util-components/IntlMessage";
@@ -34,7 +33,6 @@ export const LoginForm = (props) => {
 		showMessage,
 		message,
 		authenticated,
-		showAuthMessage,
 		token,
 		redirect,
 		allowRedirect
@@ -81,6 +79,7 @@ export const LoginForm = (props) => {
 				clearTimeout(timeoutId);
 			}
 		};
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [token, redirect, showMessage]);
 	
 	
@@ -90,6 +89,7 @@ export const LoginForm = (props) => {
 			<Divider>
 				<span className="text-muted font-size-base font-weight-normal">
 					<span className=''>
+						{/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
 						<a href=""> {setLocale(localization, "profile.login.recommended")} </a>
 					</span>
 					{setLocale(localization, "profile.login.connectwith")} 

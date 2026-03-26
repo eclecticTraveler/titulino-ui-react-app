@@ -1,7 +1,6 @@
 import React from 'react'
 import RegisterForm from '../../components/RegisterForm';
 import { Card, Row, Col } from "antd";
-import { useSelector } from 'react-redux';
 import IntlMessage from "components/util-components/IntlMessage";
 import IconAdapter from 'components/util-components/IconAdapter';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
@@ -17,7 +16,6 @@ const setLocale = (isLocaleOn, localeKey) =>
 
 const RegisterOne = props => {
 	const localization = true;
-	const theme = useSelector(state => state.theme.currentTheme)
 	return (
 		<div className="h-100" style={backgroundStyle}>
 			<div className="container d-flex flex-column justify-content-center h-100">

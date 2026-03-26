@@ -3,45 +3,26 @@ import { connect } from "react-redux";
 import { Layout } from "antd";
 import LogoAlt from './LogoAlt';
 import NavSearch  from './NavSearch';
-import TopLinks  from './TopLinks';
 import NavProfile from './NavProfile';
-import NavNotification from './NavNotification';
-import NavSearchWrapper from './NavSearchWrapper';
-import NavPanel from './NavPanel';
 import MenuContentTop  from './MenuContentTop';
-import NavLanguage from './NavLanguage';
 import IconAdapter from "components/util-components/IconAdapter";
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import Toggle from 'react-toggle';
 import "react-toggle/style.css";
-import { env } from "../../configs/EnvironmentConfig";
 import { toggleCollapsedNav, onMobileNavToggle } from '../../redux/actions/Theme';
-import { NAV_TYPE_TOP, SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from '../../constants/ThemeConstant';
-import utils from '../../utils'
-import { Button } from "antd";
-import IntlMessage from "../../components/util-components/IntlMessage";
-import { MenuFoldOutlined, MenuUnfoldOutlined, SearchOutlined } from '@ant-design/icons';
-import SearchInput from './NavSearch/SearchInput.js'
+import { NAV_TYPE_TOP, SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from '../../constants/ThemeConstant';;
 
 
 const { Header } = Layout;
 
 export const HeaderNav = props => {
-	const { navCollapsed, mobileNav, navType, headerNavColor, toggleCollapsedNav, onMobileNavToggle, isMobile, currentTheme, 
-		    direction, pathLocation } = props;
+	const { navCollapsed, mobileNav, navType, toggleCollapsedNav, onMobileNavToggle, isMobile, 
+		    direction } = props;
 	const [searchActive, setSearchActive] = useState(false)
 	const [searchVisible, setSearchVisible] = useState(false)
-	const setLocale = (isLocaleOn, localeKey) =>{		
-		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-	  }
-	const locale = true;
 
 	const isToogleToBeDisplayedToUser =  false;
 	const defaultToogleFlagValue =  false;
-
-	const onSearchActive = () => {
-		setSearchActive(true)
-	  }
 
 	const onSearchClose = () => {
 		setSearchActive(false)
@@ -60,13 +41,6 @@ export const HeaderNav = props => {
 
 	const isNavTop = navType === NAV_TYPE_TOP ? true : false
 	const mode = ()=> {
-		if(!headerNavColor) {
-			return utils.getColorContrast(currentTheme === 'dark' ? '#00000' : '#ffffff' )
-		}
-		return utils.getColorContrast(headerNavColor)
-	}
-	const navMode = mode()
-	const getNavWidth = () => {
 		if(isNavTop || isMobile) {
 			return '0px'
 		}
@@ -81,6 +55,7 @@ export const HeaderNav = props => {
 		if(!isMobile) {
 			onSearchClose()
 		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 			
 	return (		

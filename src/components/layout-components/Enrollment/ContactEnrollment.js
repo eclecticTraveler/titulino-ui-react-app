@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef  } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onRequestingGeographicalDivision } from "redux/actions/Lrn";
-import { Form, Input, Radio, Select, DatePicker, Checkbox, Button, Card, Divider, Row, Col, Space  } from "antd";
+import { Form, Input, Radio, Select, DatePicker, Card, Space  } from "antd";
 import Flag from "react-world-flags"; // Correct import for flags
 import dayjs from "dayjs";
 import { useIntl } from 'react-intl';
@@ -12,7 +12,7 @@ const { Option } = Select;
 
 export const ContactEnrollment = (props) => {
   const { countries, selfLanguageLevel, onRequestingGeographicalDivision, selectedEmail, selectedYearOfBirth, selectedDateOfBirth,
-     onEmailChange, onFormSubmit, form, setResetChildStates, enrollmentStyle, submittingLoading, selectedCoursesToEnroll, availableCourses } = props;
+     onEmailChange, form, setResetChildStates, enrollmentStyle, submittingLoading, selectedCoursesToEnroll, availableCourses } = props;
   const [selectedCountryOfResidence, setSelectedCountryOfResidence] = useState(null);
   const [selectedBirthCountry, setSelectedBirthCountry] = useState(null);
   const [divisions, setDivisions] = useState([]);
@@ -65,6 +65,7 @@ export const ContactEnrollment = (props) => {
     };
     fetchDivisions();
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [selectedCountryOfResidence]);
 
   // Fetch divisions for country of birth
@@ -77,22 +78,19 @@ export const ContactEnrollment = (props) => {
       };
       fetchBirthDivisions();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBirthCountry]);
 
 
   useEffect(() => {
     form.setFieldsValue({ emailAddress: selectedEmail });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEmail]);
   
 
   const filterOption = (input, option) => {
     const label = option.label || '';
     return label.toLowerCase().includes(input.toLowerCase());
-  };
-
-  const onFinish = (values) => {
-    console.log("Child form values:", values);
-    onFormSubmit(values); // Pass the values back to the parent for further processing
   };
 
   return (

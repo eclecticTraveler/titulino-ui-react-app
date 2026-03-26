@@ -10,7 +10,7 @@ export const NavSearchWrapper = (props) => {
 	const {isMobile, mode, isSearchVisible, onSearchSelection } = props
 	const [searchVisible, setSearchVisible] = useState(false);
 
-	const experimentalVersion = (
+	const experimentalVersion = ( // eslint-disable-line no-unused-vars
 		<ul className="ant-menu ant-menu-root ant-menu-horizontal menu-right-padding">          
 		{
 			(!isMobile && !isSearchVisible) ?
@@ -27,7 +27,7 @@ export const NavSearchWrapper = (props) => {
 		</ul>
 	);
 
-	const oldVersion = (
+	const oldVersion = ( // eslint-disable-line no-unused-vars
 		<ul className="ant-menu ant-menu-root ant-menu-horizontal menu-right-padding">          
 		{
 			(!isMobile && !searchVisible) ?

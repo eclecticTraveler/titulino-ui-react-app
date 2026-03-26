@@ -3,13 +3,10 @@ import {
   Card,
   Checkbox,
   Select,
-  Button,
   Row,
   Col,
-  Input,
-  message,
   Badge,
-  notification 
+  message,
 } from 'antd';
 import {
   FacebookOutlined,
@@ -112,6 +109,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
       setSelectedLessons(selectedLessons); // Update parent's selectedLessons
       setHandleUserProgressSubmit(() => handleSubmit); // Provide handleSubmit function to the parent (Function delegate)
       setSelectedLessonsForSubmission(userProgressLessonsToUpsert)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedLessons, userProgressLessonsToUpsert]);
 
   // Handle checkbox change for class selection

@@ -1,12 +1,9 @@
 import React from 'react'
-import { createClient } from '@supabase/supabase-js';
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { useHistory } from "utils/routerCompat";
 
 
 const SupabaseLogin = () => {
-	let history = useHistory();
+	let history = useHistory(); // eslint-disable-line no-unused-vars
 	// supabase.auth.onAuthStateChange(async (event) => {
 	// 	if(event === "SIGNED_OUT"){
 	// 		// forward to succesful URL

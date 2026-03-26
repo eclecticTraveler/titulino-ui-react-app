@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Form, Row, Col, DatePicker, Input, Button, message, Card } from 'antd';
+import { Form, Row, Col, DatePicker, Button, message, Card } from 'antd';
 import dayjs from 'dayjs';
 import getLocaleText from "components/util-components/IntString";
 import { useHistory } from 'utils/routerCompat';
@@ -10,20 +10,17 @@ import IntlMessage from "components/util-components/IntlMessage";
 
 const EmailYearSearchForm = (props) => {
   // Destructure props
-  const { user, onRetrievingUserProfile, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = props;
+  const { user, onRetrievingUserProfile } = props;
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [searchResult, setSearchResult] = useState(null);
+  const [, setSearchResult] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [searchParams, setSearchParams] = useState({ email: null, yob: null });
-  const [profileData, setProfileData] = useState(null);
+  const [, setProfileData] = useState(null);
   const [yearOfBirth, setYearOfBirth] = useState(null);
   const [askFullBirthDate, setAskFullBirthDate] = useState(false);
   const [fullDateOfBirth, setFullDateOfBirth] = useState(null);
-  const [submittedRecords, setSubmittingRecords] = useState([]);
-  const [submittingLoading, setSubmittingLoading] = useState(false);
   const [isToDisplayFullEnrollment, setIsToDisplayFullEnrollment] = useState(false);
-  const [returningEnrolleeCountryDivisionInfo, setReturningEnrolleeCountryDivisionInfo] = useState(null);
 
 
   const history = useHistory();
@@ -81,7 +78,7 @@ const EmailYearSearchForm = (props) => {
   setSubmitted(true);
 };
 
-  const formatSubmissionData = (values, props, matchedEnrolleeInfo) => {
+  const formatSubmissionData = (values, props, matchedEnrolleeInfo) => { // eslint-disable-line no-unused-vars
   const {
     nativeLanguage,
     selectedCourse,
@@ -94,7 +91,6 @@ const EmailYearSearchForm = (props) => {
     lastNames,
     names,
     sex,
-    yearOfBirth,
     countryOfResidence,
     countryOfBirth,
     languageLevelAbbreviation,
@@ -159,27 +155,6 @@ const EmailYearSearchForm = (props) => {
 
   };
 
-  const onFormSubmit = async (values) => {
-    try {
-      // Trigger validation for the form during submit
-      await form.validateFields(); // Ensure all fields are valid before proceeding
-      const formattedDatatoSubmit = formatSubmissionData(values, {
-        nativeLanguage,
-        selectedCourse,
-        availableCourses,
-        countries
-      }, returningEnrolleeCountryDivisionInfo);
-
-      setSubmittingLoading(true);
-      setSubmittingRecords(formattedDatatoSubmit);
-
-    } catch (error) {
-      // Handle validation failure
-      console.log("Form invalid", error);
-      alert("Form is invalid. Please check the fields.");
-    }
-  };
-
 
 useEffect(() => {
   const fetchProfile = async () => {
@@ -219,13 +194,7 @@ useEffect(() => {
   fetchProfile();
 }, [submitted, searchParams, onRetrievingUserProfile, setProfileData, history, askFullBirthDate]);
 
-  const emailYearStyle = {
-    maxWidth: 600,
-    margin: "0 auto",
-    padding: "20px",
-    }
-
-  const selectedYearOfBirth = form?.getFieldValue("yearOfBirth")?.format("YYYY") ?? yearOfBirth?.format("YYYY");
+  const selectedYearOfBirth = form?.getFieldValue("yearOfBirth")?.format("YYYY");
   const coverUrl =
     "https://images.unsplash.com/photo-1516382799247-87df95d790b7?q=80&w=1748&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
@@ -344,11 +313,10 @@ function mapDispatchToProps(dispatch) {
     dispatch);
 }
 
-const mapStateToProps = ({ grant, lrn, auth }) => {
+const mapStateToProps = ({ grant, lrn }) => {
   const { user } = grant;
-  const { token } = auth; 
-  const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = lrn;
-  return { user, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful };
+  const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage } = lrn;
+  return { user, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EmailYearSearchForm);

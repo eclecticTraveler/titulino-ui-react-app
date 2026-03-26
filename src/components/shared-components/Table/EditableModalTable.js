@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Table, Input, InputNumber, Popconfirm, Form, Button, Modal } from 'antd';
+import React from 'react';
+import { Table, Input, InputNumber, Form, Button } from 'antd';
 import {connect} from 'react-redux';
 import { withRouter } from "utils/routerCompat";
 import { onSelectingCorrectionToEdit, onCorrectionsModalChange } from 'redux/actions/Lrn';
@@ -50,7 +50,7 @@ const EditableModalTable = props => {
   // console.log("tableColumns++++++++++++");
   // console.log(tableColumns);
 
-const [form] = Form.useForm();
+const [form] = Form.useForm(); // eslint-disable-line no-unused-vars
 
 const displayMoreInfo = (record, isToEdit) => {
   onCorrectionsModalChange(true);

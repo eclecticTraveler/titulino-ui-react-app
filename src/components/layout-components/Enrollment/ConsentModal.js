@@ -12,6 +12,7 @@ const ConsentModal = ({ label, title = "Detalles del consentimiento" }) => {
 
   return (
     <>
+      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
       <a href="#" onClick={showModal}>
         Terminos
       </a>

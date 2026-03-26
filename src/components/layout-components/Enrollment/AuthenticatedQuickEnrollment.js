@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee, onSelectingEnrollmentCourses } from "redux/actions/Lrn";
-import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs  } from "antd";
-import dayjs from "dayjs";
+import { Form, Select, Button, Card, Row, Col, Radio, Space, Tabs  } from "antd";
 import Flag from "react-world-flags";
-import CourseCards from "./CourseCards";
 import CourseDetails from "./CourseDetails";
 import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
@@ -18,7 +16,7 @@ const { Option } = Select;
 
 export const AuthenticatedQuickEnrollment = (props) => {
   const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, nativeLanguage, passedSubmitBtnEnabled,
-         onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, user, token, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
+         onSubmittingEnrollee, selfLanguageLevel, countries, user, token, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
   const [isConfirmVisible, setConfirmVisible] = useState(false);
   const [isGeographyInfoVisible, setGeographyInfoVisible] = useState(false);
@@ -63,6 +61,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
         };
         upsertFormattedData();
       }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [submittedRecords]);
     
   
@@ -74,7 +73,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
   useEffect(() => {
     const checkFormValidity = async () => {
       try {
-        const values = await form.validateFields(); // Trigger validation for all fields
+        await form.validateFields(); // Trigger validation for all fields
         //setSubmitEnabled(true); 
       } catch (error) {
         console.log("Form invalid", error);
@@ -82,6 +81,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
     };
 
     checkFormValidity(); // Run validation on form change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form]);
 
   useEffect(() => {
@@ -113,6 +113,7 @@ useEffect(() => {
   } else {
     setDivisions([]); // Reset if no country is selected
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [selectedCountryOfResidence]);
 
 useEffect(() => {
@@ -131,6 +132,7 @@ useEffect(() => {
   } else {
     setBirthDivisions([]); // Reset if no country is selected
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [selectedBirthCountry]);
 
 useEffect(() => {
@@ -159,6 +161,7 @@ useEffect(() => {
 
     onFindMe();
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [token, user?.contactId]);
 
  
@@ -179,7 +182,7 @@ const formatSubmissionData = (
       sex,
       countryOfResidence,
       countryOfBirth,
-      languageLevelAbbreviation,
+      languageLevelAbbreviation, // eslint-disable-line no-unused-vars
       countryDivisionOfResidence,
       countryDivisionOfBirth,
       termsAndConditionsVersion

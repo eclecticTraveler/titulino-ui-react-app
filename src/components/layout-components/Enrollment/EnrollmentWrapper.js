@@ -1,19 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from 'redux';
-import { Row, Col } from 'antd';
-import ContactEnrollment from './ContactEnrollment';
 import {toggleCollapsedNav, onMobileNavToggle} from 'redux/actions/Theme';
 import { onRenderingCourseRegistration, onLoginForEnrollment, onRenderingUserCoursesAvailableForRegistration } from "redux/actions/Lrn";
 import Loading from "components/shared-components/Loading";
-import CourseSelection from "./CourseSelection";
+import CourseSelection from "./CourseSelection"; // eslint-disable-line no-unused-vars
 import WeeklyCourseSelector from "./WeeklyCourseSelector";
 import QuickToFullEnrollment from "./QuickToFullEnrollment";
 import AuthenticatedQuickEnrollment from "./AuthenticatedQuickEnrollment";
 import CoursesNotAvailableMessage from "components/admin-components/ModalMessages/CoursesNotAvailableMessage";
 import { useLocation } from "react-router-dom";
 
-let courseData = [
+let courseData = [ // eslint-disable-line no-unused-vars
     {
       CourseCodeId: "SUPERMARKET_SEP_2024_COURSE_01",
       CourseDetails: [{
@@ -85,8 +83,8 @@ let courseData = [
   ];
  
 export const EnrollmentWrapper = (props) => {
-	const { user, token, mobileNav, onMobileNavToggle, toggleCollapsedNav, navCollapsed, onRenderingUserCoursesAvailableForRegistration, 
-         onRenderingCourseRegistration, availableCourses, onLoginForEnrollment, apiToken, selectedCoursesToEnroll } = props;
+	const { user, token,
+         onRenderingCourseRegistration, availableCourses, onRenderingUserCoursesAvailableForRegistration, selectedCoursesToEnroll } = props;
   const location = useLocation();
   const { email, dateOfBirth, isToDoFullEnrollment, isSubmitBtnEnabled } = location.state || {};
     // If you need componentDidMount/componentDidUpdate-like behavior, you can use useEffect:
@@ -98,6 +96,7 @@ export const EnrollmentWrapper = (props) => {
           onRenderingCourseRegistration();
         }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Empty array ensures this runs only once, similar to componentDidMount.
 
     if(!availableCourses){

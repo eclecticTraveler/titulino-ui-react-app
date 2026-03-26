@@ -52,7 +52,7 @@ const ShopWindow = (props) => {
           // ✅ Extract both values
           const courseCodeId = urlParams.get("courseCodeId");
           const tierId = urlParams.get("tierId");
-          const sessionId = urlParams.get("session_id");
+          // const sessionId = urlParams.get("session_id");
           setActiveCourseCode(courseCodeId);
           setSuccesfulCourseCodeOfPurchasedItem(courseCodeId);
           setSuccesfulPurchasedTierAccess(tierId);          
@@ -74,6 +74,7 @@ const ShopWindow = (props) => {
           resetState();          
           history.push("/");   
         }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [user?.emailId, purchasedCourseCode, purchasedTierAccess, isToProceedToSyncPurchasedTiers]);
 
 
@@ -117,6 +118,7 @@ const ShopWindow = (props) => {
     if (nativeLanguage?.localizationId && course && user?.emailId) {
       onGettingProductsAvailableForPurchase(nativeLanguage.localizationId, course, user?.emailId);      
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nativeLanguage, course, user?.emailId]);
 
   // Find the currently active course data from productCatalog

@@ -37,6 +37,7 @@ const VideoClasses = ({
       );
     }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location?.pathname, nativeLanguage?.localizationId, course, user?.emailId]);
 
   if (!videoClassUrls || videoClassUrls.length === 0) {

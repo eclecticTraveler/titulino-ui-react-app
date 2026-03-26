@@ -106,9 +106,12 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
   const [selectedClasses, setSelectedClasses] = useState({});
   const [email, setEmail] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(true);
-  const [isConfettiVisible, setIsConfettiVisible] = useState(false);
+  const [, setIsConfettiVisible] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const intl = useIntl();
+  // eslint-disable-next-line no-unused-vars
   const locale = true;
+  // eslint-disable-next-line no-unused-vars
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   };
@@ -118,6 +121,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
     console.log("EFFECT",nativeLanguage?.localizationId, course, pathInfo?.courseTheme);
     onRequestingCourseProgressStructure();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const success = () => {

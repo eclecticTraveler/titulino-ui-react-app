@@ -22,11 +22,6 @@ const ColumnBar = (props) => {
     value: item[passedValue],
   })) || [];
 
-  const generateSoberColor = () => {
-    const randomComponent = () => Math.floor(Math.random() * 100); // Restrict to lower values for darker colors
-    return `rgb(${randomComponent()}, ${randomComponent()}, ${randomComponent()})`;
-  };
-
   const soberColors = [
     '#2C3E50', // Dark Blue-Gray
     '#34495E', // Midnight Blue

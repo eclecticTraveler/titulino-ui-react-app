@@ -10,7 +10,6 @@ import {
 	faPencilAlt,
 	faChalkboard,
 	faFilePdf,
-	faChartSimple,
 	faMicrophone,
 	faPencilSquare,
 	faPeopleRoof,

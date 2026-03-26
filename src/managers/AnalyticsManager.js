@@ -1,10 +1,9 @@
-import LocalStorageService from "services/LocalStorageService";
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import TitulinoAuthService from "services/TitulinoAuthService";
 import GoogleService from "services/GoogleService";
+import LocalStorageService from "services/LocalStorageService";
 import AdminInsights from "lob/AdminInsights";
-import LrnConfiguration from "lob/LrnConfiguration";
 import utils from 'utils';
 
 // Use unified cache functions

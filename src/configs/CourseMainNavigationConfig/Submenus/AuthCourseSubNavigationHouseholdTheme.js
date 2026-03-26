@@ -8,7 +8,6 @@ import {
 	faPepperHot,
 	faAppleAlt,
 	faLemon,
-	faBookReader,
 	faBacon,
 	faFish,
 	faBoxArchive,

@@ -1,5 +1,4 @@
 import React from 'react';
-import { env } from 'configs/EnvironmentConfig';
 import IntlMessage from "components/util-components/IntlMessage";
 import { AUTH_PREFIX_PATH } from 'configs/AppConfig';
 import { Button } from 'antd';

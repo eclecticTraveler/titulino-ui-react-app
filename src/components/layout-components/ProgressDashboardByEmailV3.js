@@ -24,8 +24,8 @@ import ConfettiExplosion from 'react-confetti-explosion';
 
 export const ProgressDashboardByEmailV3 = (props) => {
   const { registeredProgressByEmailId,
-     nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId, isUserEmailRegisteredForCourse, onModalInteraction,
-     studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, hasUserInteractedWithModal } = props;
+     currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId, isUserEmailRegisteredForCourse, onModalInteraction,
+     studentPercentagesForCourse, studentCategoriesCompletedForCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, selectedCourse, hasUserInteractedWithModal } = props;
 
   const [form] = Form.useForm();
   const [selectedLessonsForSubmission, setSelectedLessonsForSubmission] = useState({});
@@ -147,6 +147,7 @@ useEffect(() => {
       );
     });
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [selectedLessonsForSubmission]);
 
 // Handle progress updates and UI effects
@@ -201,6 +202,7 @@ useEffect(() => {
   return () => {
     resetState();
   };
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [onModalInteraction]);
 
   const renderMessageResults = () => {
@@ -348,7 +350,6 @@ useEffect(() => {
         </>
       );
     }
-    return null; // Default if no active key
   };
 
   const capitalizeFirstLetter = (str) => {

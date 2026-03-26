@@ -28,7 +28,7 @@ const MenuContentTop = (props) => {
     dynamicUpperMainNavigation,
     topNavColor,
     localization,
-    toggleUpperNavigationLevelSelection,
+    toggleUpperNavigationLevelSelection, // eslint-disable-line no-unused-vars
     getUpperNavigationBasedOnUserConfig,
     user,
     token
@@ -42,6 +42,7 @@ const MenuContentTop = (props) => {
 
   useEffect(() => {
     getUpperNavigationBasedOnUserConfig(((user?.contactId && token) ? true : false), user?.emailId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.contactId, token, user?.emailId]);
 
   toggleSelectedUpperNavigationTabOnLoad(

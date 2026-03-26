@@ -2,8 +2,6 @@ import React, {Component} from 'react'
 import { Row, Col } from 'antd';
 import SlimEbookRenderer from './SlimEbookRenderer';
 import OverviewLesson from './OverviewLesson';
-import PhasalVerbOfTheDay from '../PhasalVerbOfTheDay';
-import AdjetiveOfTheDay from '../AdjetiveOfTheDay';
 import EnrolleeByRegionWidget from './EnrolleeByRegionWidget';
 import EnrolledOdometer from './EnrolledOdometer';
 

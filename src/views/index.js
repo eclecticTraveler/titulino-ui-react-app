@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
@@ -6,7 +6,7 @@ import { IntlProvider } from "react-intl";
 import { ConfigProvider, theme } from "antd";
 import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH, AUTH_PREFIX_PATH } from "../configs/AppConfig";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { withRouter, Redirect } from "utils/routerCompat";
+import { withRouter } from "utils/routerCompat";
 import AuthLayout from '../layouts/auth-layout';
 import AppLayout from "../layouts/app-layout";
 import CourseSelection from './app-views/course-selection';
@@ -15,14 +15,9 @@ import { onLocaleChange, onCourseChange, onLoadingUserSelectedTheme } from '../r
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
 import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
-import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
 import { authenticated, signIn, onResolvingAuthenticationWhenRefreshing } from "redux/actions/Auth";
 import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
-import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
-import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPolicy";
-
 import Loading from 'components/shared-components/Loading';
-import SupabaseAuthService from "services/SupabaseAuthService";
  
 function RouteInterceptor({ children, isAuthenticated }) {
   const { pathname } = useLocation();
@@ -83,6 +78,7 @@ export const Views = (props) => {
         }else{
             onResolvingAuthenticationWhenRefreshing(false);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.contactId, token?.email]);
 
     //   useEffect(() => {

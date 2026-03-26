@@ -1,6 +1,3 @@
-import { env } from '../configs/EnvironmentConfig';
-import LocalStorageService from "services/LocalStorageService";
-
 const courseProgressApi = `https://script.google.com/macros/s/AKfycbzUE5iJHp2peLS1eZmm0ED14ihoYv5chFxoU53rgKcGyVjLku8l7CT_5ZsoUf3oOa2u/exec`;
 const gcbucketBaseUrl = `https://storage.googleapis.com/titulino-bucket`;
 const gcBucketName = `titulino-spine-data`;

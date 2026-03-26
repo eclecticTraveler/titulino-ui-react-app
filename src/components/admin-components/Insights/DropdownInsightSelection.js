@@ -56,6 +56,7 @@ const DropdownInsightSelection = (props) => {
       onLoadingAllDashboardContents(selectedCourse, selectedLocationType, selectedCountry, user?.emailId)
       ?.finally(() => setLoading(false)); // Stop loading after data fetch
     } 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLocationType, selectedCourse, selectedCountry]);
 
 

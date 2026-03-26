@@ -1,13 +1,9 @@
 import React from "react";
-import { Form, Input, Checkbox, Card, Spin, Upload, message } from "antd";
-import IntlMessage from "components/util-components/IntlMessage";
+import { Form, Input, Checkbox, Card, Upload, message } from "antd";
 import ConsentModal from "components/layout-components/Enrollment/ConsentModal";
 import { PlusOutlined } from "@ant-design/icons";
 
 export default function DynamicFormRenderer({ questions, locale = false, loading = false }) {
-  const setLocale = (isLocaleOn, localeKey) => {
-    return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-  };
 
   return (
     <>

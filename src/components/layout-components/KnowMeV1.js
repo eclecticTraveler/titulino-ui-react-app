@@ -3,7 +3,7 @@ import { Form, Button, message, Card } from "antd";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import DynamicFormRenderer from "./DynamicFormRenderer";
-import { onUpsertingKnowMeByChapter, onFetchingUserAuthenticatedProgressForCourse } from "redux/actions/Lrn"; // your redux action
+import { onUpsertingKnowMeByChapter } from "redux/actions/Lrn"; // your redux action
 
 
 const questions = [
@@ -127,6 +127,7 @@ useEffect(() => {
     };
     doUpsert();
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [submittedKnowMe]);
 
 

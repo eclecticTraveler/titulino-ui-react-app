@@ -2,12 +2,11 @@ import React, { useState, useEffect } from "react";
 import { onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs, DatePicker } from 'antd';
+import { Card, Button, Form, Row, Col, message, Tabs } from 'antd';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
 import UserProgress from './UserProgress'
-import dayjs from "dayjs";
 import { withRouter } from "utils/routerCompat";
 import Confetti from 'react-confetti';
 import useWindowSize from 'react-use/lib/useWindowSize';
@@ -19,19 +18,18 @@ import ConfettiExplosion from 'react-confetti-explosion';
 
 export const ProgressDashboardByEmailV4 = (props) => {
   const { userRegisteredProgressByCourse, user,
-     nativeLanguage, currentCourseCodeId, courseConfiguration, onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse,
-     studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme, hasUserInteractedWithModal } = props;
+     currentCourseCodeId, courseConfiguration, onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse,
+     studentPercentagesForCourse, studentCategoriesCompletedForCourse, courseTheme } = props;
 
-  const [form] = Form.useForm();
+  const [form] = Form.useForm(); // eslint-disable-line no-unused-vars
   const [selectedLessonsForSubmission, setSelectedLessonsForSubmission] = useState({});
   const [selectedLessons, setSelectedLessons] = useState({});
   const [handleUserProgressSubmit, setHandleUserProgressSubmit] = useState(null); // To hold the child's submit function
   const [activeKey, setActiveKey] = useState('1');
   const [loading, setLoading] = useState(false);
-  const [isEmailValid, setIsEmailValid] = useState(true);
+  const [isEmailValid] = useState(true);
   const [isMassiveConfettiVisible, setIsMassiveConfettiVisible] = useState(false);
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const { width, height } = useWindowSize();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
@@ -52,6 +50,7 @@ export const ProgressDashboardByEmailV4 = (props) => {
       handleSearch();
     }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCourseCodeId, user?.emailId, user?.yearOfBirth ]);
 
   // Submit progress and refetch data
@@ -64,6 +63,7 @@ useEffect(() => {
       onFetchingUserAuthenticatedProgressForCourse(currentCourseCodeId, user?.emailId);
     });
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [selectedLessonsForSubmission]);
 
 // Handle progress updates and UI effects

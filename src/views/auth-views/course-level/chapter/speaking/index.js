@@ -2,7 +2,6 @@ import React, {Component} from 'react'
 import {connect} from 'react-redux';
 import {getUserNativeLanguage, getSpeakingPracticeModule}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
-import { env } from 'configs/EnvironmentConfig';
 import Loading from 'components/shared-components/Loading';
 import SpeechPractice from "components/layout-components/SpeechPractice";
 import UnderConstruccion from 'components/layout-components/UnderConstruccion';
