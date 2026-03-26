@@ -14,7 +14,7 @@ const ProfileNavPanelConfig = ({ visible, onClose, title, direction, locale }) =
     <Drawer
       title={setLocale(locale, title)}
       placement={direction === DIR_RTL ? 'left' : 'right'}
-      width={350}
+      size={350}
       onClose={onClose}
       open={visible}
     >

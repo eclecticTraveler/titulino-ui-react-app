@@ -34,7 +34,7 @@ class Profile extends Component {
 	}
 
 	cardDropdown = (menu) => (
-		<Dropdown dropdownRender={() => menu} trigger={['click']} placement="bottomRight">
+		<Dropdown popupRender={() => menu} trigger={['click']} placement="bottomRight">
 		  <a href="/#" className="text-gray font-size-lg" onClick={e => e.preventDefault()}>
 			<EllipsisOutlined />
 		  </a>

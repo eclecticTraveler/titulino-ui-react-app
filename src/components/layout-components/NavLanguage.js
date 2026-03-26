@@ -52,7 +52,7 @@ export const NavLanguage = ({ locale, configDisplay, onLocaleChange }) => {
 		</Menu>
 	)
 	return (
-		<Dropdown placement="bottomRight" dropdownRender={() => languageOption} trigger={["click"]}>
+		<Dropdown placement="bottomRight" popupRender={() => languageOption} trigger={["click"]}>
 			{
 				configDisplay ?
 				(

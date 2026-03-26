@@ -208,14 +208,13 @@ export const ContactEnrollment = (props) => {
          <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
          rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}>
           <Select
-            showSearch={{ optionFilterProp: "label" }}
+            showSearch={{ optionFilterProp: "label", filterOption: filterOption }}
             placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
             onChange={(value) => {
               setSelectedCountryOfResidence(value); // Update selected country
               setDivisions([]); // Reset divisions for residence
               form.setFieldsValue({ countryDivisionOfResidence: null }); // Clear form division value
             }}
-            filterOption={filterOption}
           >
             {countries?.map((country) => (
               <Option key={country.CountryId} value={country.CountryId} label={`${country?.NativeCountryName} | ${country?.CountryName}`}>
@@ -246,14 +245,13 @@ export const ContactEnrollment = (props) => {
         <Form.Item name="countryOfBirth" label={setLocale(locale, "enrollment.form.countryOfNationalityOfBirth")} 
         rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfBirth") }]}>
           <Select
-            showSearch={{ optionFilterProp: "label" }}
+            showSearch={{ optionFilterProp: "label", filterOption: filterOption }}
             placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
             onChange={(value) => {
               setSelectedBirthCountry(value); // Update selected country
               setBirthDivisions([]); // Reset divisions for birth country
               form.setFieldsValue({ countryDivisionOfBirth: null }); // Clear form division value
             }}
-            filterOption={filterOption}
           >
             {countries?.map((country) => (
               <Option key={country.CountryId} value={country.CountryId} label={`${country?.NativeCountryName} | ${country?.CountryName}`}>

@@ -89,7 +89,7 @@ export const NavNotification = () => {
   return (
     <Dropdown 
       placement="bottomRight"
-      dropdownRender={() => notificationList}
+      popupRender={() => notificationList}
       onOpenChange={handleVisibleChange}
       open={visible}
       trigger={['click']}

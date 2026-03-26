@@ -395,7 +395,7 @@ const formatSubmissionData = (
                   {coursesToDisplay?.length}
                 </h2>
 
-                <Tabs tabPosition="top" type="line"
+                <Tabs tabPlacement="top" type="line"
                   items={coursesToDisplay?.map((course, index) => ({
                     key: course?.CourseCodeId || index,
                     label: course?.CourseDetails?.course || `Course ${index + 1}`,

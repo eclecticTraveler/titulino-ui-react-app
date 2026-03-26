@@ -176,14 +176,14 @@ const SearchInputV2 = props => {
 			className={`nav-search-input ${isMobile ? 'is-mobile' : ''} ${!isMobile ? 'search-input-big' : ''} ${mode === 'light' ? 'light' : ''}`}
 			classNames={{ popup: { root: "nav-search-dropdown" } }}
 			popupMatchSelectWidth={false} // Disable the default width matching behavior
-			dropdownStyle={{ maxHeight: 400 }} // Adjust the maximum height of the dropdown menu
+			styles={{ popup: { root: { maxHeight: 400 } } }}
 			options={options} // Pass in more options to increase the number of displayed results
 			onSelect={onSelect}
 			onSearch={onSearch}
 			value={value}
-			filterOption={(inputValue, option) => 
+			showSearch={{ filterOption: (inputValue, option) => 
 				option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-			}
+			}}
 		>
 			<Input className='search-input-override' placeholder={intl.formatMessage({ id: "nav.search.placeholder" })}  prefix={<SearchOutlined className="mr-0 search-icon-override" />} />
 		</AutoComplete>
