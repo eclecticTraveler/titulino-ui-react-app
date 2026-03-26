@@ -2,6 +2,7 @@ import Flag from "react-world-flags";
 import { Tag, Table, Progress } from 'antd';
 import StudentProgress from "lob/StudentProgress";
 import AdminProgressEditable from "components/layout-components/AdminProgressEditable";
+import IntlMessage from "components/util-components/IntlMessage";
 
 const getLatestProficiencyForCourse = (item, courseCodeId) => {
   if (!item) {
@@ -569,16 +570,33 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
       const contactId = item.ContactInternalId;
       const userProgressRows = progressMap?.[contactId] ?? [];
 
-      const result =
-        await StudentProgress.calculateUserCourseProgressPercentageForCertificates(
-          userProgressRows
-        );
+      const emails = item?.Emails?.filter(e => e.IsEmailParseValid)
+                .map(e => e.EmailId) || [];
 
-      const goldenCertificatePercentage =
-        Number(result?.goldenCertificatePercentage ?? 0);
+      // Calculate progress per email
+      const emailProgressMap = {};
+      for (const email of emails) {
+        const emailRows = userProgressRows.filter(r => r.EmailId === email);
+        const emailResult =
+          await StudentProgress.calculateUserCourseProgressPercentageForCertificates(emailRows);
+        emailProgressMap[email] = {
+          participationPercent: Number((Number(emailResult?.participationCertificatePercentage ?? 0) * 100).toFixed(1)),
+          goldenPercent: Number((Number(emailResult?.goldenCertificatePercentage ?? 0) * 100).toFixed(1))
+        };
+      }
 
-      const participationCertificatePercentage =
-        Number(result?.participationCertificatePercentage ?? 0);
+      // Default to the email with highest combined progress
+      let bestEmail = emails[0] || null;
+      let bestCombined = -1;
+      for (const [email, progress] of Object.entries(emailProgressMap)) {
+        const combined = progress.participationPercent + progress.goldenPercent;
+        if (combined > bestCombined) {
+          bestCombined = combined;
+          bestEmail = email;
+        }
+      }
+
+      const defaultProgress = emailProgressMap[bestEmail] ?? { participationPercent: 0, goldenPercent: 0 };
 
       const countryOfResidency =
         item?.Location?.ResidencyLocation?.CountryOfResidency || null;
@@ -595,14 +613,13 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
         fullName: `${item.LastNames}, ${item.Names}`,
         countryOfResidency,
         countryOfBirth,
-        participationPercent:
-          Number((participationCertificatePercentage * 100).toFixed(1)),
-        goldenPercent:
-          Number((goldenCertificatePercentage * 100).toFixed(1)),
+        participationPercent: defaultProgress.participationPercent,
+        goldenPercent: defaultProgress.goldenPercent,
         rawProgress: userProgressRows,
-        emails: item?.Emails?.filter(e => e.IsEmailParseValid)
-                .map(e => e.EmailId) || [],
-         contactProficiency: courseAbbreviation
+        emails,
+        selectedEmail: bestEmail,
+        emailProgressMap,
+        contactProficiency: courseAbbreviation
       });
 
       // Populate filters (same architecture as other function)
@@ -671,10 +688,10 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
 
   const columns = [
     {
-      title: "Profile",
+      title: <IntlMessage id="admin.dashboard.insights.progress.profile" />,
       children: [
               {
-            title: 'Level',
+            title: <IntlMessage id="admin.dashboard.insights.progress.level" />,
             dataIndex: 'contactProficiency',
             editable: false,
             filterSearch: true,
@@ -690,7 +707,7 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
             }
         },
         {
-          title: "Id",
+          title: <IntlMessage id="admin.dashboard.insights.progress.id" />,
           dataIndex: "enrolleeId",
           filterSearch: true, 
           filters: Array.from(filters.enrolleeIdFilter || []), 
@@ -698,17 +715,17 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
           sorter: (a, b) => a.enrolleeId - b.enrolleeId
         },
         {
-          title: "Full Name",
+          title: <IntlMessage id="admin.dashboard.insights.progress.fullName" />,
           dataIndex: "fullName"
         }
       ]
     },
 
     {
-      title: "Student Progress",
+      title: <IntlMessage id="admin.dashboard.insights.progress.studentProgress" />,
       children: [
         {
-          title: "Participation",
+          title: <IntlMessage id="admin.dashboard.insights.progress.participation" />,
           dataIndex: "participationPercent",
           sorter: (a, b) =>
             a.participationPercent - b.participationPercent,
@@ -718,7 +735,7 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
             <Progress percent={value} strokeColor="#1677ff" />
         },
         {
-          title: "Golden",
+          title: <IntlMessage id="admin.dashboard.insights.progress.golden" />,
           dataIndex: "goldenPercent",
           sorter: (a, b) =>
             a.goldenPercent - b.goldenPercent,
@@ -732,10 +749,10 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
     ...(locationType === "all" || locationType === "residency"
       ? [
           {
-            title: "Residency",
+            title: <IntlMessage id="admin.dashboard.dropdown.selection.residency" />,
             children: [
               {
-                title: "Country",
+                title: <IntlMessage id="admin.dashboard.insights.progress.country" />,
                 dataIndex: "countryOfResidency",
                 align: "center",
                 filters: Array.from(filters.countryOfResidencyFilter),
@@ -756,10 +773,10 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
     ...(locationType === "all" || locationType === "birth"
       ? [
           {
-            title: "Birth",
+            title: <IntlMessage id="admin.dashboard.dropdown.selection.birth" />,
             children: [
               {
-                title: "Country",
+                title: <IntlMessage id="admin.dashboard.insights.progress.country" />,
                 dataIndex: "countryOfBirth",
                 align: "center",
                 filters: Array.from(filters.countryOfBirthFilter),
@@ -780,19 +797,23 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
         
 
   const expandable = {
-    expandedRowRender: (record, injectedSubmit) => {
+    expandedRowRender: (record, injectedSubmit, injectedEmailChange) => {
 
       const courseConfig = courseProgressConfigJson;
-      console.log("record.contactProficiency", record.contactProficiency);
       return (
         <AdminProgressEditable
           categories={courseConfig?.categories}
           progressData={record.rawProgress}
           contactId={record.contactInternalId}
           emails={record.emails}
+          defaultEmail={record.selectedEmail}
+          emailProgressMap={record.emailProgressMap}
           courseCodeId={courseConfig?.courseId}
           userProficiency={record.contactProficiency}
           onSubmit={injectedSubmit}
+          onEmailChange={(email) =>
+            injectedEmailChange?.(record.contactInternalId, email, record.emailProgressMap?.[email])
+          }
         />
       );
     }

@@ -83,6 +83,20 @@ const InsightsLandingDashboard = (props) => {
 	}
 	};
 
+	const handleEmailChange = (contactInternalId, email, progress) => {
+		setFilteredProgressData(prev => prev.map(row => {
+			if (row.contactInternalId === contactInternalId) {
+				return {
+					...row,
+					selectedEmail: email,
+					participationPercent: progress?.participationPercent ?? row.participationPercent,
+					goldenPercent: progress?.goldenPercent ?? row.goldenPercent
+				};
+			}
+			return row;
+		}));
+	};
+
 
 	const handleInnerTabChange = (outerKey, key) => {
 		setActiveInnerTabs((prev) => ({ ...prev, [outerKey]: key }));
@@ -241,7 +255,8 @@ const InsightsLandingDashboard = (props) => {
                   expandedRowRender: (record) =>
                     enrolleesCourseProgressData.expandable.expandedRowRender(
                       record,
-                      handleAdminProgressSubmit
+                      handleAdminProgressSubmit,
+                      handleEmailChange
                     )
                 }
               : undefined;
