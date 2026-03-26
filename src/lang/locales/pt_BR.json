@@ -371,7 +371,22 @@
 	"shop.succesPurchase.headerMessageContent":"Gostaria de expressar minha gratidão pelo seu apoio e por tornar este projeto comunitário sustentável.\n Espero um dia poder me dedicar totalmente a ele com o seu apoio.\n",
 	"shop.succesPurchase.headerMessageContentGold": "Acesse este grupo exclusivo do WhatsApp para obter benefícios exclusivos!!",
 	"shop.succesPurchase.letsExplore":"Vamos explorar 🏠",
-	"group.modal.enrollmentCompleted":"Experiência Titulino Gold"
+	"group.modal.enrollmentCompleted":"Experiência Titulino Gold",
+
+	"enrollment.form.enterContactEmail": "Digite seu e-mail de contato",
+	"profile.address.address1": "Endereço #1",
+	"profile.address.address2Optional": "Endereço #2 (opcional)",
+	"profile.address.city": "Cidade",
+	"profile.address.state": "Estado",
+	"profile.address.zipCode": "CEP",
+	"profile.contact.firstName": "Nome do contato",
+	"profile.contact.primaryLanguage": "Idioma principal do contato",
+	"nav.search.placeholder": "Pesquisar...",
+	"forgot.password.emailAddress": "Endereço de e-mail",
+	"admin.dashboard.insights.selectCourse": "Selecionar curso",
+	"admin.dashboard.insights.selectLocationType": "Selecionar tipo de localização",
+	"admin.dashboard.insights.selectCountry": "Selecionar país",
+	"enrollment.form.enterYourEmail": "Digite seu e-mail"
 
 
 

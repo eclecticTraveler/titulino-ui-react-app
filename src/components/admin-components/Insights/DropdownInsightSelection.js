@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Select, Row, Col } from "antd";
 import Flag from "react-world-flags";
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
@@ -19,6 +20,7 @@ const DropdownInsightSelection = (props) => {
   const CoursesOptions = allCourses ? [...allCourses] : [];
   const LocationTypeOptions = locationTypes ? [...locationTypes] : [];
   const CountryOptions = [...countriesBySelectedLocationType];
+  const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -83,7 +85,7 @@ const DropdownInsightSelection = (props) => {
       <Row gutter={16}>
           <Col xs={24} sm={24} md={24} lg={8}>
               <Select
-              placeholder="Select Course"
+              placeholder={intl.formatMessage({ id: "admin.dashboard.insights.selectCourse" })}
               style={{ width: "100%" }}
               value={selectedCourse}
               size="medium"
@@ -99,7 +101,7 @@ const DropdownInsightSelection = (props) => {
 
           <Col xs={24} sm={24} md={24} lg={8}>
               <Select
-              placeholder="Select Location Type"
+              placeholder={intl.formatMessage({ id: "admin.dashboard.insights.selectLocationType" })}
               style={{ width: "100%" }}
               value={selectedLocationType}
               size="medium"
@@ -115,7 +117,7 @@ const DropdownInsightSelection = (props) => {
           </Col>
           <Col xs={24} sm={24} md={24} lg={8}>
               <Select
-              placeholder="Select Country"
+              placeholder={intl.formatMessage({ id: "admin.dashboard.insights.selectCountry" })}
               style={{ width: "100%" }}
               value={selectedCountry}
               onChange={(value) => setSelectedCountry(value)}

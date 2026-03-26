@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useIntl } from 'react-intl';
 import { Card, Row, Col, Form, Input, Button, message } from "antd";
 import { MailOutlined } from '@ant-design/icons';
 
@@ -9,6 +10,7 @@ const backgroundStyle = {
 }
 
 const ForgotPassword = () => {
+	const intl = useIntl();
 	const [form] = Form.useForm();
 	const [loading, setLoading] = useState(false);
 
@@ -49,7 +51,7 @@ const ForgotPassword = () => {
 														}
 													]
 												}>
-												<Input placeholder="Email Address" prefix={<MailOutlined className="text-primary" />}/>
+												<Input placeholder={intl.formatMessage({ id: "forgot.password.emailAddress" })} prefix={<MailOutlined className="text-primary" />}/>
 											</Form.Item>
 											<Form.Item>
 												<Button loading={loading} type="primary" htmlType="submit" block>{loading? 'Sending' : 'Send'}</Button>

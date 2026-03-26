@@ -1,4 +1,5 @@
 import React from 'react'
+import { useIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import { onSelectingCorrectionToEdit, onCorrectionsModalChange } from 'redux/actions/Lrn';
@@ -13,6 +14,7 @@ import {
 
 const ContactInfoEditableDisplay = props => {
 	const [form] = Form.useForm();
+	const intl = useIntl();
 	const { selectedCorrectionRecord } = props;	
 
     let corrections = [];
@@ -102,15 +104,15 @@ const ContactInfoEditableDisplay = props => {
                             <h2><ContactsOutlined />{` ${selectedCorrectionRecord?.fullCorrectionObj?.ContactTerm?.ContactRelationId} Info:`}</h2>                
                             <div>First Name*</div>
                             <Form.Item name="firstName" rules={rules.firstName}>
-                                <Input placeholder="Contact First Name" />
+                                <Input placeholder={intl.formatMessage({ id: "profile.contact.firstName" })} />
                             </Form.Item>
                             <div>Last Name*</div>
                             <Form.Item name="lastName" rules={rules.lastName}>								
-                                <Input placeholder="Contact First Name" />
+                                <Input placeholder={intl.formatMessage({ id: "profile.contact.firstName" })} />
                             </Form.Item>
                             <div>Language</div>
                             <Form.Item name="language">								
-                                <Input placeholder="Contact Primary Language" />
+                                <Input placeholder={intl.formatMessage({ id: "profile.contact.primaryLanguage" })} />
                             </Form.Item>
                             <br/>  
                             <h2><PhoneOutlined />{` Phones:`}</h2>

@@ -14,6 +14,7 @@ import useWindowSize from 'react-use/lib/useWindowSize';
 import { faRoad, faPieChart } from '@fortawesome/free-solid-svg-icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
+import { useIntl } from 'react-intl';
 import getLocaleText from "components/util-components/IntString";
 import GenericModal from "./GenericModal";
 import registerForm from 'assets/lotties/registerForm.json';
@@ -39,6 +40,7 @@ export const ProgressDashboardByEmailV3 = (props) => {
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { width, height } = useWindowSize();
+  const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -438,7 +440,7 @@ useEffect(() => {
               <Input
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
-                placeholder="Enter email"
+                placeholder={intl.formatMessage({ id: "resources.myprogress.inputEmail" })}
                 style={{ marginBottom: 10 }}
                 status={!isEmailValid ? 'error' : ''}
               />

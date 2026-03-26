@@ -11,6 +11,7 @@ import {
 import { onRequestingCourseProgressStructure } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import { withRouter } from "utils/routerCompat";
 import utils from 'utils';
@@ -106,6 +107,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
   const [email, setEmail] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [isConfettiVisible, setIsConfettiVisible] = useState(false);
+  const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -256,7 +258,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
         <Col xs={24} sm={24} lg={8}>
           <Card title="Enter Your Email" variant="outlined">
             <Input
-              placeholder="Enter your email"
+              placeholder={intl.formatMessage({ id: "enrollment.form.enterYourEmail" })}
               value={email}
               onChange={handleEmailChange}
               style={{ marginBottom: 10 }}
@@ -409,7 +411,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
                             />
                             {requiresDropdown && isSelected && (
                               <Select
-                                placeholder="Select Participation Type"
+                                placeholder={intl.formatMessage({ id: "resources.userProgress.participationType" })}
                                 onChange={(value) =>
                                   handleParticipationTypeChange(
                                     category.categoryId,

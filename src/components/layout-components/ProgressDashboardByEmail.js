@@ -3,6 +3,7 @@ import { onSearchingForProgressByEmailId, onRenderingCourseRegistration } from '
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message } from 'antd';
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
@@ -17,6 +18,7 @@ export const ProgressDashboardByEmail = (props) => {
   const [loading, setLoading] = useState(false);
   
 
+  const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -126,7 +128,7 @@ export const ProgressDashboardByEmail = (props) => {
                 <Input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter email"
+                  placeholder={intl.formatMessage({ id: "resources.myprogress.inputEmail" })}
                 />
               </Form.Item>
               <Form.Item>

@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import { Link } from "react-router-dom";
 import { AutoComplete, Input } from 'antd';
+import { useIntl } from 'react-intl';
 import IntlMessage from '../../util-components/IntlMessage';
 import { connect } from "react-redux";
 import { COURSE_COLOR_CONFIG } from 'configs/CourseThemeConfig';
@@ -17,6 +18,7 @@ import { onSearchSelection } from 'redux/actions/Theme';
 
 const SearchInput = props => {
 	const { active, close, isMobile, mode, dynamicUpperMainNavigation, locale, onSearchSelection } = props
+	const intl = useIntl();
 	const [value, setValue] = useState('');
 	const [options, setOptions] = useState([])
 	const inputRef = useRef(null);
@@ -154,7 +156,7 @@ const SearchInput = props => {
 				option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
 			}
 		>
-			<Input className='search-input-override' placeholder="Search..."  prefix={<SearchOutlined className="mr-0 search-icon-override" />} />
+			<Input className='search-input-override' placeholder={intl.formatMessage({ id: "nav.search.placeholder" })}  prefix={<SearchOutlined className="mr-0 search-icon-override" />} />
 		</AutoComplete>
 	)
 }

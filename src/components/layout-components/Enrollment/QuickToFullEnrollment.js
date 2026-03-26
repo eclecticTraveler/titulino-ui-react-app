@@ -8,6 +8,7 @@ import Flag from "react-world-flags";
 import CourseCards from "./CourseCards";
 import CourseDetails from "./CourseDetails";
 import ContactEnrollment from './ContactEnrollment';
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
@@ -43,6 +44,7 @@ export const QuickToFullEnrollment = (props) => {
   const [submittedRecords, setSubmittingRecords] = useState([]);
   const history = useHistory();
     console.log("passedEmail ", passedEmail, passedDateOfBirth);
+  const intl = useIntl();
   const locale = true;
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -574,7 +576,7 @@ useEffect(() => {
                   <Input
                     size="large"
                     onChange={(e) => handleEmailChange(e.target.value)}
-                    placeholder="Enter your contact email"
+                    placeholder={intl.formatMessage({ id: "enrollment.form.contactEmail" })}
                     style={{ marginBottom: 10 }}
                     status={!isEmailValid ? 'error email not valid' : ''}
                   />                      
@@ -628,7 +630,7 @@ useEffect(() => {
                   >
                   <Select
                     showSearch
-                    placeholder="Select your country of residence"
+                    placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
                     optionFilterProp="children"
                     size="large"
                     onChange={(value) => {
@@ -654,7 +656,7 @@ useEffect(() => {
                   >
                     <Select
                       showSearch
-                      placeholder="Select a state/region where you currently live"
+                      placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegion" })}
                       optionFilterProp="children"
                       size="large"
                       onChange={(value) => {
@@ -685,7 +687,7 @@ useEffect(() => {
               >
                 <Select
                   showSearch
-                  placeholder="Select country of nationality of birth"
+                  placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
                   optionFilterProp="children"
                   onChange={(value) => {
                     setSelectedBirthCountry(value);
@@ -711,7 +713,7 @@ useEffect(() => {
               >
                 <Select
                   showSearch
-                  placeholder="Select state/region of nationality of birth"
+                  placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegionOfBirth" })}
                   optionFilterProp="children"
                   onChange={(value) => {
                     setEnrolleeBirthDivision(value);

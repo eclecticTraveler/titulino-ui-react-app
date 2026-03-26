@@ -3,6 +3,7 @@ import { onSearchingForProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseP
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs } from 'antd';
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
@@ -33,6 +34,7 @@ export const ProgressDashboardByEmailV2 = (props) => {
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
 
   const { width, height } = useWindowSize();
+  const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -347,7 +349,7 @@ useEffect(() => {
                 <Input
                   value={email}
                   onChange={(e) => handleEmailChange(e.target.value)}
-                  placeholder="Enter email"
+                  placeholder={intl.formatMessage({ id: "resources.myprogress.inputEmail" })}
                   style={{ marginBottom: 10 }}
                   status={!isEmailValid ? 'error email not valid' : ''}
                 />

@@ -5,6 +5,7 @@ import { onRequestingGeographicalDivision } from "redux/actions/Lrn";
 import { Form, Input, Radio, Select, DatePicker, Checkbox, Button, Card, Divider, Row, Col, Space  } from "antd";
 import Flag from "react-world-flags"; // Correct import for flags
 import dayjs from "dayjs";
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 const { Option } = Select;
@@ -106,7 +107,7 @@ export const ContactEnrollment = (props) => {
           ]}
         >
           <Input
-            placeholder="Enter your contact email"
+            placeholder={intl.formatMessage({ id: "enrollment.form.enterContactEmail" })}
             value={selectedEmail} // Use the processed value from the parent
             onChange={(e) => onEmailChange(e.target.value)} // Delegate to the parent handler
           />
@@ -170,12 +171,12 @@ export const ContactEnrollment = (props) => {
       <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.personalInfo")} loading={submittingLoading} variant="outlined">
           <Form.Item name="lastNames" label={setLocale(locale, "enrollment.form.lastNames")} 
           rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.enterLastNames") }]}>
-            <Input placeholder="Enter your last names" />
+            <Input placeholder={intl.formatMessage({ id: "enrollment.form.enterLastNames" })} />
           </Form.Item>
 
           <Form.Item name="names" label={setLocale(locale, "enrollment.form.names")} 
           rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.enterFirstMiddleName") }]}>
-            <Input placeholder="Enter your first and/or middle name" />
+            <Input placeholder={intl.formatMessage({ id: "enrollment.form.enterFirstMiddleName" })} />
           </Form.Item>
 
         <Form.Item name="dateOfBirth" label={setLocale(locale, "enrollment.form.dateOfBirth")}
@@ -209,7 +210,7 @@ export const ContactEnrollment = (props) => {
          rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}>
           <Select
             showSearch
-            placeholder="Select your country of residence"
+            placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
             optionFilterProp="children"
             onChange={(value) => {
               setSelectedCountryOfResidence(value); // Update selected country
@@ -232,7 +233,7 @@ export const ContactEnrollment = (props) => {
         rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegion") }]}>
             <Select
             showSearch
-            placeholder="Select a state/region where you currently live"
+            placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegion" })}
             optionFilterProp="children"
             >
             {divisions?.map((division) => (
@@ -249,7 +250,7 @@ export const ContactEnrollment = (props) => {
         rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfBirth") }]}>
           <Select
             showSearch
-            placeholder="Select country of nationality of birth"
+            placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
             optionFilterProp="children"
             onChange={(value) => {
               setSelectedBirthCountry(value); // Update selected country
@@ -272,7 +273,7 @@ export const ContactEnrollment = (props) => {
         rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegionOfBirth") }]}>
             <Select
             showSearch
-            placeholder="Select state/region of nationality of birth"
+            placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegionOfBirth" })}
             optionFilterProp="children"            
             >
             {birthDivisions?.map((division) => (

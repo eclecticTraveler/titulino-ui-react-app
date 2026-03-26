@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 import Flag from "react-world-flags";
 import CourseCards from "./CourseCards";
 import CourseDetails from "./CourseDetails";
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
@@ -34,6 +35,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [submittedRecords, setSubmittingRecords] = useState([]);
   const history = useHistory();
+  const intl = useIntl();
   const locale = true;
 
 
@@ -491,7 +493,7 @@ const formatSubmissionData = (
                   >
                   <Select
                     showSearch
-                    placeholder="Select your country of residence"
+                    placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
                     optionFilterProp="children"
                     onChange={(value) => {
                       setSelectedCountryOfResidence(value); // Update selected country
@@ -516,7 +518,7 @@ const formatSubmissionData = (
                   >
                     <Select
                       showSearch
-                      placeholder="Select a state/region where you currently live"
+                      placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegion" })}
                       optionFilterProp="children"
                       onChange={(value) => {
                         setEnrolleeResidencyDivision(value);
@@ -546,7 +548,7 @@ const formatSubmissionData = (
               >
                 <Select
                   showSearch
-                  placeholder="Select country of nationality of birth"
+                  placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
                   optionFilterProp="children"
                   onChange={(value) => {
                     setSelectedBirthCountry(value);
@@ -572,7 +574,7 @@ const formatSubmissionData = (
               >
                 <Select
                   showSearch
-                  placeholder="Select state/region of nationality of birth"
+                  placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegionOfBirth" })}
                   optionFilterProp="children"
                   onChange={(value) => {
                     setEnrolleeBirthDivision(value);

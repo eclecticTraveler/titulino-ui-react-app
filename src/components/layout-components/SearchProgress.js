@@ -3,6 +3,7 @@ import { onSearchingForProgressByEmailId } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message } from 'antd';
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 
 export const SearchProgress = (props) => {
@@ -10,6 +11,7 @@ export const SearchProgress = (props) => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   console.log("nativeLanguage", nativeLanguage)
+  const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) =>{		
 		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -70,7 +72,7 @@ export const SearchProgress = (props) => {
         <Input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter email"
+          placeholder={intl.formatMessage({ id: "resources.myprogress.inputEmail" })}
         />
       </Form.Item>
       <Form.Item>
