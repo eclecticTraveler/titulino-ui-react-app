@@ -111,7 +111,7 @@ export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {
 				breadcrumb: false,
 				isRootMenuItem: false,				
 				submenu: [						
-					...(levelNo === "household"
+					...(levelNo === "household" || levelNo === "work-n-jobs" || levelNo === "supermarket"
 						? [			{
 							key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
 							path: `${commonPath}/${getLocalizedConfig(lang)?.speaking}`,
@@ -212,7 +212,7 @@ export const getAuthCourseInnerSubMenuNoClass = (lang, levelNo, chapterNo) => {
 						submenu: [],
 						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'review')
 					},
-					...(levelNo === "household"
+					...(levelNo === "household" || levelNo === "work-n-jobs" || levelNo === "supermarket"
 						? [			{
 							key: `module-class-${levelNo}-${chapterNo}-${uuidv4()}`,
 							path: `${commonPath}/${getLocalizedConfig(lang)?.speaking}`,
