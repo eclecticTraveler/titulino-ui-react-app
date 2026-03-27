@@ -106,7 +106,7 @@ export const getCourseProgressCountryCount = async (courseCodeId, token, whoCall
     return _results;
   }
 
-  const countryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryCountByCourseCodeId`;
+  const countryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryCountWithRecordedCourseProgressByCourseCodeId`;
 
   const payload = JSON.stringify({ "p_coursecodeid": courseCodeId });
 
@@ -144,7 +144,7 @@ export const getCourseProgressCountryDivisionCount = async (courseCodeId, countr
     return _results;
   }
 
-  const countryDivisionUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryDivisionCount`;
+  const countryDivisionUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryDivisionWithRecordedCourseProgressCount`;
 
   const payload = JSON.stringify({
     "p_coursecodeid": courseCodeId,

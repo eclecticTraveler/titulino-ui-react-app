@@ -214,10 +214,25 @@ const colorPalette = [
   '#3498db', '#1abc9c', '#f39c12', '#e67e22', '#e74c3c', '#8e44ad', '#16a085', '#ff8c00', '#00bfff'
 ];
 
+// Session-scoped color registry: ensures the same region always gets the same
+// color across all map instances (General demographics, Progress demographics, etc.)
+// Resets automatically on page reload (new session).
+const sessionColorMap = new Map();
+let nextColorIndex = 0;
+
+const getSessionColor = (regionName) => {
+  if (!regionName) return colorPalette[0];
+  if (sessionColorMap.has(regionName)) return sessionColorMap.get(regionName);
+  const color = colorPalette[nextColorIndex % colorPalette.length];
+  sessionColorMap.set(regionName, color);
+  nextColorIndex++;
+  return color;
+};
+
 // Helper function to transform demographic data
 const transformDemographicArray = (dataArray, nameKey, nativeNameKey, extraKeys = () => ({})) => {
-  return dataArray?.map((item, index) => ({
-    color: colorPalette[index % colorPalette?.length],
+  return dataArray?.map((item) => ({
+    color: getSessionColor(item[nameKey]),
     name: item[nameKey],
     value: `${item.Percentage?.toFixed(2)}%`,
     nativeName: item[nativeNameKey] ?? item[nameKey],
