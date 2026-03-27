@@ -14,7 +14,6 @@ import {
 } from "../../redux/actions/Lrn";
 
 const { useBreakpoint } = Grid;
-const { SubMenu, Item } = Menu;
 
 const setLocale = (isLocaleOn, localeKey) =>
   isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -60,65 +59,43 @@ const MenuContentTop = (props) => {
     setOpenKeys(keys);
   };
 
-  const renderSubMenu = (menu, menuIndex) => (
-    <SubMenu
-      key={`menu-${menu?.key}-parent`}
-      title={
-        <span className="upper-submenu-title-top">
-          {setLocale(localization, menu?.title)}
-        </span>
-      }
-      icon={
-        menu.icon ? (
-          <span className="upper-submenu-icon-parent">
-            <IconAdapter
-              icon={menu?.icon}
-              iconPosition={menu?.iconPosition}
-            />
-          </span>
+  const buildSubMenuItems = (menu, menuIndex) => ({
+    key: `menu-${menu?.key}-parent`,
+    label: <span className="upper-submenu-title-top">{setLocale(localization, menu?.title)}</span>,
+    icon: menu.icon ? (
+      <span className="upper-submenu-icon-parent">
+        <IconAdapter icon={menu?.icon} iconPosition={menu?.iconPosition} />
+      </span>
+    ) : (
+      <span className="upper-submenu-icon-parent">
+        <IconAdapter icon={menu?.iconAlt} />
+      </span>
+    ),
+    children: menu?.topSubmenu?.map((topSubMenuFirstChild, subMenuIndex) =>
+      topSubMenuFirstChild?.topSubmenu?.length > 0 ? {
+        key: `subMenuFirst-${menuIndex}-${subMenuIndex}`,
+        label: <span className="upper-submenu-title">{setLocale(localization, topSubMenuFirstChild?.title)}</span>,
+        children: topSubMenuFirstChild?.topSubmenu.map(
+          (subMenuSecond, subMenuSecondIndex) => ({
+            key: `subMenuSecond-${menuIndex}-${subMenuIndex}-${subMenuSecondIndex}`,
+            label: subMenuSecond?.path ? (
+              <NavLink to={subMenuSecond?.path}>{setLocale(localization, subMenuSecond?.title)}</NavLink>
+            ) : (
+              setLocale(localization, subMenuSecond?.title)
+            ),
+          })
+        ),
+      } : {
+        key: `subMenuFirst-item-${menuIndex}-${subMenuIndex}`,
+        icon: <IconAdapter icon={topSubMenuFirstChild?.icon} iconPosition={topSubMenuFirstChild?.iconPosition} />,
+        label: topSubMenuFirstChild?.path ? (
+          <NavLink to={topSubMenuFirstChild?.path}>{setLocale(localization, topSubMenuFirstChild?.title)}</NavLink>
         ) : (
-          <span className="upper-submenu-icon-parent">
-            <IconAdapter icon={menu?.iconAlt} />
-          </span>
-        )
+          setLocale(localization, topSubMenuFirstChild?.title)
+        ),
       }
-    >
-      {menu?.topSubmenu?.map((topSubMenuFirstChild, subMenuIndex) =>
-        topSubMenuFirstChild?.topSubmenu?.length > 0 ? (
-          <SubMenu
-            key={`subMenuFirst-${menuIndex}-${subMenuIndex}`}
-            title={
-              <span className="upper-submenu-title">
-                {setLocale(localization, topSubMenuFirstChild?.title)}
-              </span>
-            }
-          >
-            {topSubMenuFirstChild?.topSubmenu.map(
-              (subMenuSecond, subMenuSecondIndex) => (
-                <Item
-                  key={`subMenuSecond-${menuIndex}-${subMenuIndex}-${subMenuSecondIndex}`}
-                >
-                  <span>{setLocale(localization, subMenuSecond?.title)}</span>
-                  {subMenuSecond?.path ? <NavLink to={subMenuSecond?.path} /> : null}
-                </Item>
-              )
-            )}
-          </SubMenu>
-        ) : (
-          <Item key={`subMenuFirst-item-${menuIndex}-${subMenuIndex}`}>
-            <IconAdapter
-              icon={topSubMenuFirstChild?.icon}
-              iconPosition={topSubMenuFirstChild?.iconPosition}
-            />
-            <span>{setLocale(localization, topSubMenuFirstChild?.title)}</span>
-            {topSubMenuFirstChild?.path ? (
-              <NavLink to={topSubMenuFirstChild?.path} />
-            ) : null}
-          </Item>
-        )
-      )}
-    </SubMenu>
-  );
+    ),
+  });
 
   const menu = (
     <Menu
@@ -128,24 +105,22 @@ const MenuContentTop = (props) => {
       triggerSubMenuAction={isMobileView ? "click" : "hover"}
       openKeys={openKeys}
       onOpenChange={handleOpenChange}
-    >
-      {dynamicUpperMainNavigation
+      items={dynamicUpperMainNavigation
         ?.filter((menu) => menu?.isToDisplayInNavigation)
         ?.map((menu, menuIndex) =>
           menu?.topSubmenu?.length > 0
-            ? renderSubMenu(menu, menuIndex)
-            : (
-                <Item key={`menu-${menuIndex}`}>
-                  <IconAdapter
-                    icon={menu?.icon}
-                    iconPosition={menu?.iconPosition}
-                  />
-                  <span>{setLocale(localization, menu?.title)}</span>
-                  {menu?.path ? <NavLink to={menu?.path} /> : null}
-                </Item>
-              )
+            ? buildSubMenuItems(menu, menuIndex)
+            : {
+                key: `menu-${menuIndex}`,
+                icon: <IconAdapter icon={menu?.icon} iconPosition={menu?.iconPosition} />,
+                label: menu?.path ? (
+                  <NavLink to={menu?.path}>{setLocale(localization, menu?.title)}</NavLink>
+                ) : (
+                  setLocale(localization, menu?.title)
+                ),
+              }
         )}
-    </Menu>
+    />
   );
 
   return (

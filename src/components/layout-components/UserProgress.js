@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
+  App,
   Card,
   Checkbox,
   Select,
   Row,
   Col,
   Badge,
-  message,
 } from 'antd';
 import {
   FacebookOutlined,
@@ -23,6 +23,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
    setSelectedLessons, emailId, setIsSmallConfettiVisible, setSelectedLessonsForSubmission, contactId, userProficiency }) => {
     const [selectedLessons, internalSetSelectedLessons] = useState({});
     const [userProgressLessonsToUpsert, internalSetUserProgressLessonsToUpsert] = useState({});
+    const { message } = App.useApp();
     const locale = true;
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();

@@ -224,7 +224,7 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
 
           return (
             <path
-              key={geoFeature?.id || `${geoName}-${index}`}
+              key={`${geoFeature?.id ?? geoName}-${index}`}
               d={pathData}
               fill={fill}
               stroke="#D6D6DA"

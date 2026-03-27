@@ -3,7 +3,7 @@ import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
 import { IntlProvider } from "react-intl";
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider, App as AntdApp, theme } from "antd";
 import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH, AUTH_PREFIX_PATH } from "../configs/AppConfig";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { withRouter } from "utils/routerCompat";
@@ -159,7 +159,9 @@ export const Views = (props) => {
         return (
             <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
                 <ConfigProvider locale={currentAppLocale.antd} direction={direction} theme={antdTheme}>
-                    <CourseSelection />
+                    <AntdApp>
+                        <CourseSelection />
+                    </AntdApp>
                 </ConfigProvider>
             </IntlProvider>
         )
@@ -172,15 +174,17 @@ export const Views = (props) => {
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
             <ConfigProvider locale={currentAppLocale.antd} direction={direction} theme={antdTheme}>
-                <Routes>
-                    <Route path={DEFAULT_PREFIX_VIEW} element={<Navigate to={APP_PREFIX_PATH} replace />} />
-                    <Route path={`${APP_PREFIX_PATH}/*`} element={<AppLayout direction={direction} location={location} />} />
-                    <Route path={`${AUTH_PREFIX_PATH}/*`} element={
-                        <RouteInterceptor isAuthenticated={token}>
-                            <AuthLayout direction={direction} location={location} />
-                        </RouteInterceptor>
-                    } />
-                </Routes>                            
+                <AntdApp>
+                    <Routes>
+                        <Route path={DEFAULT_PREFIX_VIEW} element={<Navigate to={APP_PREFIX_PATH} replace />} />
+                        <Route path={`${APP_PREFIX_PATH}/*`} element={<AppLayout direction={direction} location={location} />} />
+                        <Route path={`${AUTH_PREFIX_PATH}/*`} element={
+                            <RouteInterceptor isAuthenticated={token}>
+                                <AuthLayout direction={direction} location={location} />
+                            </RouteInterceptor>
+                        } />
+                    </Routes>
+                </AntdApp>                            
             </ConfigProvider>
         </IntlProvider>  
     );

@@ -26,29 +26,25 @@ const SelectedLanguage = ({ locale }) => {
 }
 
 const ProfileNavLanguagePanelConfig = ({ locale, onLocaleChange }) => {
-	const languageOption = (
-	  <Menu>
-		{lang.map((elm, i) => {
-		  return (
-			<Menu.Item 
-			  key={i} 
-			  className={locale === elm.langId ? 'ant-dropdown-menu-item-active' : ''} 
-			  onClick={() => onLocaleChange(elm.langId)}
-			>
-			  <span className="d-flex justify-content-between align-items-center">
-				<div>				 
-				  	<div className="course-flag course-selection-flag">
+	const languageItems = lang.map((elm, i) => ({
+		key: i,
+		className: locale === elm.langId ? 'ant-dropdown-menu-item-active' : '',
+		onClick: () => onLocaleChange(elm.langId),
+		label: (
+			<span className="d-flex justify-content-between align-items-center">
+				<div>
+					<div className="course-flag course-selection-flag">
 						<Flag code={elm.icon} />
 					</div>
-				  <span className="font-weight-normal ml-2">{elm.langName}</span>
+					<span className="font-weight-normal ml-2">{elm.langName}</span>
 				</div>
 				{locale === elm.langId ? <CheckOutlined className="text-success" /> : null}
-			  </span>
-			</Menu.Item>
-		  );
-		})}
-	  </Menu>
-	);
+			</span>
+		),
+	}));
+
+	const languageOption = <Menu items={languageItems} />;
+
 	return (
 	  <Dropdown placement="bottomRight" popupRender={() => languageOption} trigger={["click"]}>
 		<a href="#/" className="text-gray" onClick={e => e.preventDefault()}>

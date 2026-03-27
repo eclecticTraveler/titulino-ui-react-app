@@ -46,24 +46,30 @@ export const NavSearchWrapper = (props) => {
 		<div className="nav-search-wrapper">        
 		{
 			(!isMobile && !isSearchVisible) ?
-			<Menu mode="horizontal" className="untoggled-search">
-			<Menu.Item key="1" className="menu-right-padding">
-				<div>
-					<SearchOutlined className="nav-icon mr-0 menu-right-size" onClick={() => onSearchSelection(!isSearchVisible)}/>
-				</div>
-			</Menu.Item>
-			</Menu>
+			<Menu mode="horizontal" className="untoggled-search" items={[
+				{
+					key: '1',
+					className: 'menu-right-padding',
+					label: (
+						<div>
+							<SearchOutlined className="nav-icon mr-0 menu-right-size" onClick={() => onSearchSelection(!isSearchVisible)}/>
+						</div>
+					),
+				}
+			]} />
 			:
-			<Menu mode="horizontal" className="toggled-search">
-			<Menu.Item key="1" className="menu-right-padding">
-				<div>
-					<SearchInput mode={mode} isMobile={false} />
-					<CloseCircleOutlined className="nav-icon mr-0 menu-right-size close-search" onClick={() => onSearchSelection(!isSearchVisible)}/>
-				</div>
-			</Menu.Item>
-			</Menu>	
-
-		
+			<Menu mode="horizontal" className="toggled-search" items={[
+				{
+					key: '1',
+					className: 'menu-right-padding',
+					label: (
+						<div>
+							<SearchInput mode={mode} isMobile={false} />
+							<CloseCircleOutlined className="nav-icon mr-0 menu-right-size close-search" onClick={() => onSearchSelection(!isSearchVisible)}/>
+						</div>
+					),
+				}
+			]} />
 		}
 		</div>
 	)

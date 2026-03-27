@@ -53,12 +53,22 @@ export const getOverviewInfoAdminDashboard = async (courseCodeId, locationType, 
   return await AdminInsights.overviewInfoConvertion(overview);
 };
 
-export const getProgressOverviewInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
-  const progressOverview = await TitulinoRestService.getAdminDashboardProgressOverview(
+export const getCourseProgressOverviewInfoAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
+
+  if (!token) {
+    console.warn("No token found for course in getCourseProgressOverviewInfoAdminDashboard");
+    return null;
+  }
+
+  const progressOverview = await TitulinoAuthService.getCourseProgressDemographicOverview(
     courseCodeId,
     locationType,
     countryId,
-    "getProgressOverviewInfoAdminDashboard"
+    token,
+    "getCourseProgressOverviewInfoAdminDashboard"
   );
   return await AdminInsights.overviewInfoConvertion(progressOverview);
 };
@@ -84,8 +94,34 @@ export const getDemographicInfoAdminDashboard = async (courseCodeId, locationTyp
   };
 };
 
-export const getProgressDemographicInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
-  return getDemographicInfoAdminDashboard(courseCodeId, locationType, countryId);
+export const getCourseProgressDemographicInfoAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
+
+  if (!token) {
+    console.warn("No token found for course in getCourseProgressDemographicInfoAdminDashboard");
+    return null;
+  }
+
+  const isAll = locationType?.toLowerCase() === "all";
+
+  const rawData = isAll
+    ? await TitulinoAuthService.getCourseProgressCountryCount(courseCodeId, token, "getCourseProgressDemographicInfoAdminDashboard")
+    : await TitulinoAuthService.getCourseProgressCountryDivisionCount(courseCodeId, countryId, token, "getCourseProgressDemographicInfoAdminDashboard");
+
+  const transformedArrays = isAll
+    ? await AdminInsights.transformEnrolleeGeneralDemographicData(rawData)
+    : await AdminInsights.transformEnrolleeDivisionDemographicData(rawData);
+
+  const mapType = (isAll || countryId === 'GI') ? "world" : countryId;
+  const mapJson = await GoogleService.getGeoMapResource(isAll ? undefined : countryId, "getCourseProgressDemographicInfoAdminDashboard");
+
+  return {
+    transformedArrays,
+    mapType,
+    mapJson
+  };
 };
 
 export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
@@ -120,7 +156,7 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
       "getEnrolleesCourseProgressAdminDashboard"
     );
 
-    console.log("Fetched course progress rows:", progressRows);
+    // console.log("Fetched course progress rows:", progressRows);
 
       // 3️⃣ Fetch enrollee list EXACTLY like getEnrolleeInfoAdminDashboard does
   const isAll = locationType?.toLowerCase() === "all";
@@ -201,9 +237,9 @@ const AnalyticsManager = {
   getLocationTypesForInsights,
   getCountriesByLocationType,
   getOverviewInfoAdminDashboard,
-  getProgressOverviewInfoAdminDashboard,
+  getCourseProgressOverviewInfoAdminDashboard,
   getDemographicInfoAdminDashboard,
-  getProgressDemographicInfoAdminDashboard,
+  getCourseProgressDemographicInfoAdminDashboard,
   getEnrolleeInfoAdminDashboard,
   getEnrolleeKnowMeProfilePictureForCourse,
   getEnrolleesCourseProgressAdminDashboard,

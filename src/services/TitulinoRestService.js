@@ -622,11 +622,9 @@ export const getAdminDashboardDemographicEnrolleeOverview = async (courseCodeId,
   }
 }
 
-// Stubbed dedicated endpoint for Progress dashboard overview.
-// Falls back to the general overview endpoint until backend is ready.
 export const getAdminDashboardProgressOverview = async (courseCodeId, locationType, countryId, whoCalledMe) => {
   if (locationType && courseCodeId && countryId) {
-    const progressOverviewUrl = `${SupabaseConfig.baseApiUrl}/GetAdminDashboardProgressOverview`;
+    const progressOverviewUrl = `${SupabaseConfig.baseApiUrl}/GetAdminDashboardCourseProgressDemographicOverview`;
 
     const raw = JSON.stringify({
       "p_locationtype": locationType,
@@ -648,7 +646,7 @@ export const getAdminDashboardProgressOverview = async (courseCodeId, locationTy
     } catch (error) {
       console.log(`Error Retrieving API payload in getAdminDashboardProgressOverview: from ${whoCalledMe}`);
       console.error(error);
-      return getAdminDashboardDemographicEnrolleeOverview(courseCodeId, locationType, countryId, whoCalledMe);
+      return false;
     }
   }
 
