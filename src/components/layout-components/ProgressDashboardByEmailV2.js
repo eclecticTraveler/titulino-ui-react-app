@@ -3,6 +3,7 @@ import { onSearchingForProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseP
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs } from 'antd';
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
@@ -32,8 +33,8 @@ export const ProgressDashboardByEmailV2 = (props) => {
   const [isMassiveConfettiVisible, setIsMassiveConfettiVisible] = useState(false);
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
 
-  const { TabPane } = Tabs;
   const { width, height } = useWindowSize();
+  const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -168,7 +169,7 @@ useEffect(() => {
       <Row gutter={16}>
         <Col xs={24} sm={24} lg={12}>		
         {/* LiquidCirclePercent - Participation Certificate */}    
-        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidCirclePercent percent={studentPercentagesForCourse?.participationCertificatePercentage} />
           <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
           <ul>
@@ -178,7 +179,7 @@ useEffect(() => {
       </Col>
       <Col xs={24} sm={24} lg={12}>
         {/* LiquidStarPercent - Golden Certificate */}
-        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />
           <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
           <ul>
@@ -336,19 +337,19 @@ useEffect(() => {
           }}
         />
       )}
-    <Card bordered loading={loading}>
+    <Card variant="outlined" loading={loading}>
       <h1>{renderDashboardTitle()}</h1>
      </Card>
     <Row justify="center" style={{ marginBottom: 20 }}>
         <Col xs={24} sm={24} lg={24}>
-            <Card title={setLocale(locale, "resources.myprogress.searchYourEmail")}  loading={loading} bordered>
+            <Card title={setLocale(locale, "resources.myprogress.searchYourEmail")}  loading={loading} variant="outlined">
             {registeredProgressByEmailId && <h2>{renderMessageResults()}</h2>}
             <Form layout="vertical" onFinish={handleSearch}>
               <Form.Item>
                 <Input
                   value={email}
                   onChange={(e) => handleEmailChange(e.target.value)}
-                  placeholder="Enter email"
+                  placeholder={intl.formatMessage({ id: "resources.myprogress.inputEmail" })}
                   style={{ marginBottom: 10 }}
                   status={!isEmailValid ? 'error email not valid' : ''}
                 />
@@ -359,32 +360,30 @@ useEffect(() => {
         </Col>
       </Row>
       {renderSubtitle()}
-      <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}>
-      <TabPane 
-        tab={
-          <span>
-            <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-            {setLocale(locale, "resources.myprogress.generalView")}
-          </span>
-        } 
-        key="1"
-      >
-        {/* Render your general view content */}
-        {renderGeneralView()}
-      </TabPane>
-      <TabPane 
-        tab={
-          <span>
-            <IconAdapter icon={faRoad} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} /> 
-            {setLocale(locale, "resources.myprogress.progress&Tracking")}
-          </span>
-        } 
-        key="2"
-      >
-        {/* Render your progress tracking content */}
-        {renderProgressTracking()}
-      </TabPane>
-    </Tabs>
+      <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}
+        items={[
+          {
+            key: "1",
+            label: (
+              <span>
+                <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
+                {setLocale(locale, "resources.myprogress.generalView")}
+              </span>
+            ),
+            children: renderGeneralView(),
+          },
+          {
+            key: "2",
+            label: (
+              <span>
+                <IconAdapter icon={faRoad} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} /> 
+                {setLocale(locale, "resources.myprogress.progress&Tracking")}
+              </span>
+            ),
+            children: renderProgressTracking(),
+          },
+        ]}
+      />
     {renderUpserUserProgressBottom()}
     </div>
   );

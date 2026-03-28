@@ -1,18 +1,19 @@
 import React from 'react'
+import { useIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import { onSelectingCorrectionToEdit, onCorrectionsModalChange } from 'redux/actions/Lrn';
 import { withRouter } from "utils/routerCompat";
-import { Input, Row, Col, Card, Form, Button, message } from 'antd';
+import { Input, Row, Col, Card, Form, Button } from 'antd';
 import { 
     ContactsOutlined,
     PhoneOutlined, 
     MailOutlined, 
-    UsergroupAddOutlined, 
   } from '@ant-design/icons';
 
 const ContactInfoEditableDisplay = props => {
 	const [form] = Form.useForm();
+	const intl = useIntl();
 	const { selectedCorrectionRecord } = props;	
 
     let corrections = [];
@@ -98,19 +99,19 @@ const ContactInfoEditableDisplay = props => {
             >
                 <Row>
                     <Col span={12}>
-                        <Card bordered={false}>
+                        <Card variant="borderless">
                             <h2><ContactsOutlined />{` ${selectedCorrectionRecord?.fullCorrectionObj?.ContactTerm?.ContactRelationId} Info:`}</h2>                
                             <div>First Name*</div>
                             <Form.Item name="firstName" rules={rules.firstName}>
-                                <Input placeholder="Contact First Name" />
+                                <Input placeholder={intl.formatMessage({ id: "profile.contact.firstName" })} />
                             </Form.Item>
                             <div>Last Name*</div>
                             <Form.Item name="lastName" rules={rules.lastName}>								
-                                <Input placeholder="Contact First Name" />
+                                <Input placeholder={intl.formatMessage({ id: "profile.contact.firstName" })} />
                             </Form.Item>
                             <div>Language</div>
                             <Form.Item name="language">								
-                                <Input placeholder="Contact Primary Language" />
+                                <Input placeholder={intl.formatMessage({ id: "profile.contact.primaryLanguage" })} />
                             </Form.Item>
                             <br/>  
                             <h2><PhoneOutlined />{` Phones:`}</h2>
@@ -138,7 +139,7 @@ const ContactInfoEditableDisplay = props => {
                             }
                             <div className="mb-3">
                             <Button className="mr-2" onClick={() => discardChanges()}>Discard</Button>
-                            <Button type="primary" onClick={() => onFinish()} htmlType="submit" >
+                            <Button type="primary" size="large" onClick={() => onFinish()} htmlType="submit" >
                                 Update
                             </Button>
                             </div> 		

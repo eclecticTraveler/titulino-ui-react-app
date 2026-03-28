@@ -1,5 +1,5 @@
 import React from 'react'
-import SupabaseLogin from '../supabase-login';
+// import SupabaseLogin from '../supabase-login';
 
 const Login = () => {
 	alert("HELLO WORLD")

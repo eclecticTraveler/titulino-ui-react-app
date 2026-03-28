@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import 'antd/dist/reset.css';
 import './App.css';
 import Views from './views'
 import { Provider } from 'react-redux';

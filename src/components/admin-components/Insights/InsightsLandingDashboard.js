@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { Row, Col, Card, Tabs, Input, message } from 'antd';
+import { useIntl } from 'react-intl';
 import IntlMessage from 'components/util-components/IntlMessage';
 import DropdownInsightSelection from './DropdownInsightSelection';
 import { faPersonPraying, faPieChart, faMapPin, faPersonHiking } from '@fortawesome/free-solid-svg-icons';
@@ -17,7 +18,6 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
-const { TabPane } = Tabs;
 
 const InsightsLandingDashboard = (props) => {
   const {
@@ -39,6 +39,7 @@ const InsightsLandingDashboard = (props) => {
     onLoadingAllDashboardContents
   } = props;
 
+  const intl = useIntl();
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('general');
   const [activeInnerTabs, setActiveInnerTabs] = useState({
     general: 'general-overview',
@@ -80,6 +81,20 @@ const InsightsLandingDashboard = (props) => {
 		console.error("Error submitting admin progress:", error);
 		message.error("Error saving progress.");
 	}
+	};
+
+	const handleEmailChange = (contactInternalId, email, progress) => {
+		setFilteredProgressData(prev => prev.map(row => {
+			if (row.contactInternalId === contactInternalId) {
+				return {
+					...row,
+					selectedEmail: email,
+					participationPercent: progress?.participationPercent ?? row.participationPercent,
+					goldenPercent: progress?.goldenPercent ?? row.goldenPercent
+				};
+			}
+			return row;
+		}));
 	};
 
 
@@ -136,6 +151,7 @@ const InsightsLandingDashboard = (props) => {
 			onRenderingLocationTypeSelectionsToDashboard();
 		  }
 		}
+	  // eslint-disable-next-line react-hooks/exhaustive-deps
 	  }, [allCourses, locationTypes]);
 	  
 	  
@@ -193,7 +209,7 @@ const InsightsLandingDashboard = (props) => {
     <Row gutter={16}>
       <Col span={24}>
         <Input
-          placeholder={setLocale(locale, "admin.dashboard.insights.search.placeholder")}
+          placeholder={intl.formatMessage({ id: "admin.dashboard.insights.search.placeholder" })}
           value={searchValue}
           onChange={handleSearch}
           prefix={<SearchOutlined />}
@@ -220,7 +236,7 @@ const InsightsLandingDashboard = (props) => {
     <Row gutter={16}>
       <Col span={24}>
         <Input
-          placeholder={setLocale(locale, "admin.dashboard.insights.search.placeholder")}
+          placeholder={intl.formatMessage({ id: "admin.dashboard.insights.search.placeholder" })}
           value={searchValue}
           onChange={handleSearch}
           prefix={<SearchOutlined />}
@@ -239,7 +255,8 @@ const InsightsLandingDashboard = (props) => {
                   expandedRowRender: (record) =>
                     enrolleesCourseProgressData.expandable.expandedRowRender(
                       record,
-                      handleAdminProgressSubmit
+                      handleAdminProgressSubmit,
+                      handleEmailChange
                     )
                 }
               : undefined;
@@ -373,13 +390,12 @@ const InsightsLandingDashboard = (props) => {
       <Tabs
         activeKey={activeInnerTabs[outerKey]}
         onChange={(key) => handleInnerTabChange(outerKey, key)}
-      >
-        {tabsForOuter.map((tabConfig) => (
-          <TabPane tab={tabConfig.tab} key={tabConfig.key}>
-            {tabConfig.content}
-          </TabPane>
-        ))}
-      </Tabs>
+        items={tabsForOuter.map((tabConfig) => ({
+          key: tabConfig.key,
+          label: tabConfig.tab,
+          children: tabConfig.content,
+        }))}
+      />
     );
   };
 
@@ -407,7 +423,7 @@ const InsightsLandingDashboard = (props) => {
   return (
     <div className="container customerName">
       <Card
-        bordered
+        variant="outlined"
         cover={
           <img
             alt={titleOfEnrollment}
@@ -422,14 +438,14 @@ const InsightsLandingDashboard = (props) => {
       </Card>
 
       <Card
-        bordered
+        variant="outlined"
         title={setLocale(locale, 'admin.dashboard.selections')}
       >
         <DropdownInsightSelection setLoading={setLoading}/>
       </Card>
       <Card
         loading={loading}
-        bordered
+        variant="outlined"
         tabList={outerTabsConfig}
         activeTabKey={activeOuterTabKey}
         onTabChange={setActiveOuterTabKey}

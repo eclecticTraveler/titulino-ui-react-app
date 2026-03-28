@@ -10,25 +10,33 @@ import LrnConfiguration from "lob/LrnConfiguration";
 import utils from 'utils';
 
 const getUserCourseProgress = async(courseCodeId, emailId) => {
-  let courseProgress = [];
   let courseFilteredProgress = [];
-  const localStorageKey = `UserProfile_${emailId}`;
+  let studentPercentagesForCourse = {};
+  let studentCategoriesCompletedForCourse = {};
 
-  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  try {
+    let courseProgress = [];
+    const localStorageKey = `UserProfile_${emailId}`;
 
-  const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
+    const user = await LocalStorageService.getCachedObject(localStorageKey);
 
-  if (token) {
-    courseProgress = await TitulinoAuthService.getCourseProgress(courseCodeId, token, "getUserCourseProgress");
+    const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
 
-    // For now if the user is facilitador, filter to its own results: TODO
-    courseFilteredProgress = courseProgress?.filter(item => item?.EmailId === user?.emailId);
+    if (token) {
+      courseProgress = await TitulinoAuthService.getCourseProgress(courseCodeId, token, "getUserCourseProgress");
+
+      // For now if the user is facilitador or admin given that it will bring the progress of all the users for RLS
+      // filter to its own results: TODO
+      courseFilteredProgress = courseProgress?.filter(item => item?.EmailId === user?.emailId);
+    }
+
+    [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
+      StudentProgress.calculateUserCourseProgressPercentageForCertificates(courseFilteredProgress),
+      StudentProgress.getUserCourseProgressCategories(courseFilteredProgress)
+    ]);
+  } catch (err) {
+    console.error("getUserCourseProgress: failed to fetch progress", err);
   }
-
-  const [studentPercentagesForCourse, studentCategoriesCompletedForCourse] = await Promise.all([
-    StudentProgress.calculateUserCourseProgressPercentageForCertificates(courseFilteredProgress),
-    StudentProgress.getUserCourseProgressCategories(courseFilteredProgress)
-  ]);
 
   return {
     courseFilteredProgress,

@@ -1,10 +1,13 @@
 import React from 'react';
 import { Column } from '@ant-design/plots';
 import { Card } from 'antd';
+import { connect } from 'react-redux';
 import IntlMessage from "components/util-components/IntlMessage";
 
 const ColumnBar = (props) => {
-  const { localizedTitle, graphData, passedValue, passedType, symbol } = props;
+  const { localizedTitle, graphData, passedValue, passedType, symbol, currentTheme } = props;
+  const isDark = currentTheme === 'dark';
+  const axisLabelColor = isDark ? '#b4bed2' : '#000';
   const locale = true;
   const sign = symbol || "";
 
@@ -18,11 +21,6 @@ const ColumnBar = (props) => {
     [passedType]: item[passedType],
     value: item[passedValue],
   })) || [];
-
-  const generateSoberColor = () => {
-    const randomComponent = () => Math.floor(Math.random() * 100); // Restrict to lower values for darker colors
-    return `rgb(${randomComponent()}, ${randomComponent()}, ${randomComponent()})`;
-  };
 
   const soberColors = [
     '#2C3E50', // Dark Blue-Gray
@@ -43,28 +41,32 @@ const ColumnBar = (props) => {
     data: columnData,
     xField: passedType,
     yField: 'value',
-    color: () => generateSoberColorV2(), // Directly call the external function
+    color: () => generateSoberColorV2(),
+    theme: isDark ? 'classicDark' : 'classic',
+    axis: {
+      x: {
+        label: {
+          autoHide: true,
+          autoRotate: false,
+        },
+        labelFill: axisLabelColor,
+        titleFill: axisLabelColor,
+      },
+      y: { labelFill: axisLabelColor, titleFill: axisLabelColor },
+    },
+    legend: {
+      color: { itemLabelFill: axisLabelColor },
+    },
     label: {
-      position: 'middle',
+      text: ({ value }) => `${value}${sign}`,
+      position: 'inside',
       style: {
         fill: '#FFFFFF',
         opacity: 0.6,
       },
-      content: ({ value }) => `${value}${sign}`,
     },
-    xAxis: {
-      label: {
-        autoHide: true,
-        autoRotate: false,
-      },
-    },
-    meta: {
-      [passedValue]: {
-        alias: 'Category',
-      },
-      [passedType]: {
-        alias: 'Value',
-      },
+    interaction: {
+      elementHighlight: true,
     },
   };
 
@@ -73,11 +75,12 @@ const ColumnBar = (props) => {
 
   return (
     <div>
-      <Card bordered={true} title={setLocale(locale, title)}>
+      <Card variant="outlined" title={setLocale(locale, title)}>
         <Column {...config} />
       </Card>
     </div>
   );
 };
 
-export default ColumnBar;
+const mapStateToProps = ({ theme }) => ({ currentTheme: theme.currentTheme });
+export default connect(mapStateToProps)(ColumnBar);

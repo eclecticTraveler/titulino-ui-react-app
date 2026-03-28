@@ -35,7 +35,7 @@ class Profile extends Component {
 	}
 
 	cardDropdown = (menu) => (
-		<Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+		<Dropdown popupRender={() => menu} trigger={['click']} placement="bottomRight">
 		  <a href="/#" className="text-gray font-size-lg" onClick={e => e.preventDefault()}>
 			<EllipsisOutlined />
 		  </a>
@@ -172,7 +172,7 @@ class Profile extends Component {
 				</Card>
 
 					<Col lg={8}>
-						<Card title="Card title" bordered={true}>
+						<Card title="Card title" variant="outlined">
 						Card content
 						
 							<Card type="inner" title="Inner Card title" actions={[
@@ -200,10 +200,10 @@ class Profile extends Component {
 						</Card>
 					</Col>
 					<Col lg={8}>
-						<Card title="Card title" bordered={true}>
+						<Card title="Card title" variant="outlined">
 						Card content
 						</Card>
-						<Card title="Card title" bordered={true}>
+						<Card title="Card title" variant="outlined">
 							<Card
 							style={{ width: '100%' }}
 							tabList={tabListNoTitle}
@@ -217,7 +217,7 @@ class Profile extends Component {
 						</Card>
 					</Col>
 					<Col span={8}>
-						<Card title="Card title" bordered={true}>
+						<Card title="Card title" variant="outlined">
 						Card content
 							<Card
 							style={{ width: '100%' }}

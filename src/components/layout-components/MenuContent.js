@@ -9,7 +9,6 @@ import utils from '../../utils'
 import { onMobileNavToggle } from "../../redux/actions/Theme";
 import { onCurrentRouteInfo } from '../../redux/actions/Lrn';
 
-const { SubMenu } = Menu;
 const { useBreakpoint } = Grid;
 
 const setLocale = (isLocaleOn, localeKey) =>
@@ -48,109 +47,80 @@ const SideNavContent = (props) => {
 			defaultSelectedKeys={[routeInfo?.key]}
 			defaultOpenKeys={setDefaultOpen(routeInfo?.key)}
 			className={hideGroupTitle ? "hide-group-title" : ""}
-		>
-			{currentRoute?.submenu.map((menu) =>
-				menu?.submenu.length > 0 ? 
-				(					
-					<SubMenu
-						key={menu.key}
-						title={(!navCollapsed) ? <span>{setLocale(localization, menu.title)}</span> : null}
-						icon={<IconAdapter icon={menu.icon} iconType={menu.iconType} />}
-					>
-						{menu.submenu.map((subMenuFirst) =>
-							subMenuFirst?.submenu.length > 0 ? (							
-								<SubMenu
-									key={subMenuFirst.key}
-									title={setLocale(localization, subMenuFirst?.title)}
-									icon={<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} />}
-									
-								>
-									{
-										subMenuFirst.submenu?.map((subMenuSecond) => (
-											<Menu.Item key={subMenuSecond?.key} >
-												<IconAdapter icon={subMenuSecond.icon} iconType={subMenuSecond.iconType} />
-												<span>
-													{setLocale(localization, subMenuSecond?.title)}
-												</span>
-												<Link onClick={() => closeMobileNav()} to={subMenuSecond.path} />
-											</Menu.Item>
-										))
-									}
-								</SubMenu>
-							) : (
-								<Menu.Item key={subMenuFirst.key} className="number223">
-									<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} />
-									<span>{setLocale(localization, subMenuFirst.title)}</span>
-									<Link onClick={() => closeMobileNav()} to={subMenuFirst.path} />
-								</Menu.Item>
-							)
-						)
+			items={currentRoute?.submenu.map((menu) =>
+				menu?.submenu.length > 0 ? {
+					key: menu.key,
+					icon: <IconAdapter icon={menu.icon} iconType={menu.iconType} />,
+					label: (!navCollapsed) ? setLocale(localization, menu.title) : null,
+					children: menu.submenu.map((subMenuFirst) =>
+						subMenuFirst?.submenu.length > 0 ? {
+							key: subMenuFirst.key,
+							icon: <IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} />,
+							label: setLocale(localization, subMenuFirst?.title),
+							children: subMenuFirst.submenu?.map((subMenuSecond) => ({
+								key: subMenuSecond?.key,
+								icon: <IconAdapter icon={subMenuSecond.icon} iconType={subMenuSecond.iconType} />,
+								label: <Link onClick={() => closeMobileNav()} to={subMenuSecond.path}>{setLocale(localization, subMenuSecond?.title)}</Link>,
+							})),
+						} : {
+							key: subMenuFirst.key,
+							className: "number223",
+							icon: <IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} />,
+							label: <Link onClick={() => closeMobileNav()} to={subMenuFirst.path}>{setLocale(localization, subMenuFirst.title)}</Link>,
 						}
-					</SubMenu>
-				) : (
-					<Menu.Item key={menu.key}>
-						{<IconAdapter icon={menu.icon} iconType={menu.iconType} />}
-						{(!navCollapsed) ? <span>{setLocale(localization, menu?.title)}</span> : null}
-						{menu.path ? <span><Link onClick={() => closeMobileNav()} to={menu.path} /></span> : null}
-					</Menu.Item>
-				)
+					),
+				} : {
+					key: menu.key,
+					icon: <IconAdapter icon={menu.icon} iconType={menu.iconType} />,
+					label: menu.path ? (
+						<Link onClick={() => closeMobileNav()} to={menu.path}>
+							{(!navCollapsed) ? setLocale(localization, menu?.title) : null}
+						</Link>
+					) : (
+						(!navCollapsed) ? setLocale(localization, menu?.title) : null
+					),
+				}
 			)}
-		</Menu>
+		/>
 	);
 };
 
 
 const TopNavContent = (props) => {
-	const { topNavColor, localization, currentRoute } = props;
+	const { localization, currentRoute } = props;
 	
 	return (
-		<Menu mode="horizontal" >
-			{currentRoute?.submenu?.map((menu) =>
-				menu.submenu.length > 0 ? (
-					<SubMenu
-						key={menu.key}
-						popupClassName="top-nav-menu"
-						title={
-							<span>
-								{<IconAdapter icon={menu.icon} iconType={menu.iconType} iconPosition={'upperNav'}/>}
-								<span className="side-nav--alt">{setLocale(localization, menu.title)}</span>
-							</span>
-						}
-					>
-						{menu.submenu.map((subMenuFirst) =>
-							subMenuFirst.submenu.length > 0 ? (
-								<SubMenu
-									key={subMenuFirst.key}
-									icon={<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} iconPosition={'upperNav'}/>}
-									title={setLocale(localization, subMenuFirst.title)}
-								>
-									{subMenuFirst.submenu.map((subMenuSecond) => (
-										<Menu.Item key={subMenuSecond.key}>
-											<span>
-												{setLocale(localization, subMenuSecond.title)}
-											</span>
-											<Link to={subMenuSecond.path} />
-										</Menu.Item>
-									))}
-								</SubMenu>
-							) : (
-								<Menu.Item key={subMenuFirst.key}>
-									<IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} iconPosition={'upperNav'}/>
-									<span>{setLocale(localization, subMenuFirst.title)}</span>
-									<Link to={subMenuFirst.path} />
-								</Menu.Item>
-							)
-						)}
-					</SubMenu>
+		<Menu mode="horizontal" items={currentRoute?.submenu?.map((menu) =>
+			menu.submenu.length > 0 ? {
+				key: menu.key,
+				popupClassName: "top-nav-menu",
+				icon: <IconAdapter icon={menu.icon} iconType={menu.iconType} iconPosition={'upperNav'}/>,
+				label: <span className="side-nav--alt">{setLocale(localization, menu.title)}</span>,
+				children: menu.submenu.map((subMenuFirst) =>
+					subMenuFirst.submenu.length > 0 ? {
+						key: subMenuFirst.key,
+						icon: <IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} iconPosition={'upperNav'}/>,
+						label: setLocale(localization, subMenuFirst.title),
+						children: subMenuFirst.submenu.map((subMenuSecond) => ({
+							key: subMenuSecond.key,
+							label: <Link to={subMenuSecond.path}>{setLocale(localization, subMenuSecond.title)}</Link>,
+						})),
+					} : {
+						key: subMenuFirst.key,
+						icon: <IconAdapter icon={subMenuFirst.icon} iconType={subMenuFirst.iconType} iconPosition={'upperNav'}/>,
+						label: <Link to={subMenuFirst.path}>{setLocale(localization, subMenuFirst.title)}</Link>,
+					}
+				),
+			} : {
+				key: menu.key,
+				icon: <IconAdapter icon={menu.icon} iconType={menu.iconType} iconPosition={'upperNav'}/>,
+				label: menu.path ? (
+					<Link to={menu.path}>{setLocale(localization, menu?.title)}</Link>
 				) : (
-					<Menu.Item key={menu.key}>
-						<IconAdapter icon={menu.icon} iconType={menu.iconType} iconPosition={'upperNav'}/>
-						<span>{setLocale(localization, menu?.title)}</span>
-						{menu.path ? <Link to={menu.path} /> : <span><IconAdapter icon={menu?.icon} iconPosition={'upperNav'}/></span>}
-					</Menu.Item>
-				)
-			)}
-		</Menu>
+					<span>{setLocale(localization, menu?.title)}<IconAdapter icon={menu?.icon} iconPosition={'upperNav'}/></span>
+				),
+			}
+		)} />
 	);
 };
 

@@ -12,12 +12,13 @@ const ConsentModal = ({ label, title = "Detalles del consentimiento" }) => {
 
   return (
     <>
+      {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
       <a href="#" onClick={showModal}>
         Terminos
       </a>
       <Modal
         title={title}
-        visible={isVisible}
+        open={isVisible}
         onCancel={handleClose}
         footer={[
           <Button key="close" type="primary" onClick={handleClose}>

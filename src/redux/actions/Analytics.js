@@ -53,9 +53,9 @@ export const onLoadingAllDashboardContents = async (courseCodeId, locationType, 
       enrolleesCourseProgressData
     ] = await Promise.all([
       TitulinoManager.getOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
-      TitulinoManager.getProgressOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getCourseProgressOverviewInfoAdminDashboard(courseCodeId, locationType, countryId, emailId),
       TitulinoManager.getDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
-      TitulinoManager.getProgressDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getCourseProgressDemographicInfoAdminDashboard(courseCodeId, locationType, countryId, emailId),
       TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, locationType, countryId),
       TitulinoManager.getEnrolleesCourseProgressAdminDashboard(courseCodeId, locationType, countryId, emailId)
     ]);

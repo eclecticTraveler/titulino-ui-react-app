@@ -224,7 +224,7 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
 
           return (
             <path
-              key={geoFeature?.id || `${geoName}-${index}`}
+              key={`${geoFeature?.id ?? geoName}-${index}`}
               d={pathData}
               fill={fill}
               stroke="#D6D6DA"
@@ -275,7 +275,7 @@ export const RegiondataWidget = (props) => {
   const { data = [], mapSource = geoUrl, mapType = "world", title, content, list } = props;
   const isMobile = !utils.getBreakPoint(useBreakpoint()).includes("lg");
   return (
-    <Card bodyStyle={{ padding: 0 }}>
+    <Card styles={{ body: { padding: 0 } }}>
       <Row>
         <Col xs={24} sm={24} md={24} lg={7} className="border-right">
           <div className="d-flex flex-column p-3 justify-content-between">

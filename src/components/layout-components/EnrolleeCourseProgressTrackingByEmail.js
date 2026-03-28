@@ -11,6 +11,7 @@ import {
 import { onRequestingCourseProgressStructure } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import { withRouter } from "utils/routerCompat";
 import utils from 'utils';
@@ -105,8 +106,12 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
   const [selectedClasses, setSelectedClasses] = useState({});
   const [email, setEmail] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(true);
-  const [isConfettiVisible, setIsConfettiVisible] = useState(false);
+  const [, setIsConfettiVisible] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const intl = useIntl();
+  // eslint-disable-next-line no-unused-vars
   const locale = true;
+  // eslint-disable-next-line no-unused-vars
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   };
@@ -116,6 +121,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
     console.log("EFFECT",nativeLanguage?.localizationId, course, pathInfo?.courseTheme);
     onRequestingCourseProgressStructure();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const success = () => {
@@ -247,16 +253,16 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
           }}
         />
       )} */}
-      <Card bordered>
+      <Card variant="outlined">
         <h1>{`Course Progress Dashboard`}</h1>
         {/* <br /> */}
         {/* <div>{setLocale(locale, "resources.myprogress.requirements")}</div> */}
       </Card>
       <Row justify="center" style={{ marginBottom: 20 }}>
         <Col xs={24} sm={24} lg={8}>
-          <Card title="Enter Your Email" bordered>
+          <Card title="Enter Your Email" variant="outlined">
             <Input
-              placeholder="Enter your email"
+              placeholder={intl.formatMessage({ id: "enrollment.form.enterYourEmail" })}
               value={email}
               onChange={handleEmailChange}
               style={{ marginBottom: 10 }}
@@ -287,7 +293,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
                     />
                   )
                 }
-                bordered
+                variant="outlined"
               >
                 {category?.lessons
                   ?.filter((lesson) => lesson?.isToDisplay)
@@ -312,7 +318,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
                         className={`course-card ${isSelected ? 'selected' : ''}`}
                         hoverable
                         title={`Class: ${classNumber}`}
-                        bordered
+                        variant="outlined"
                         extra={
                           <Checkbox
                             onChange={(e) =>
@@ -409,7 +415,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
                             />
                             {requiresDropdown && isSelected && (
                               <Select
-                                placeholder="Select Participation Type"
+                                placeholder={intl.formatMessage({ id: "resources.userProgress.participationType" })}
                                 onChange={(value) =>
                                   handleParticipationTypeChange(
                                     category.categoryId,

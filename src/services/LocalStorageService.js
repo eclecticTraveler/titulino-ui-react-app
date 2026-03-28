@@ -80,7 +80,7 @@ const getLocalStorageObjectWithExpiry = async (localStorageKey) => {
 };
 
 
-const getRandomObjectFromArray = async(objectsArray, storageKey, isToRetrieveByNewDate) => {
+const getRandomObjectFromArray = async(objectsArray, storageKey, isToRetrieveByNewDate) => { // eslint-disable-line no-unused-vars
 
   const localStorageKey = storageKey;  
   const localStorageDateKey = 'RandomObjectSavedDate';
@@ -111,7 +111,7 @@ const processRandomObject = async(randomObject, storageKey, isToRetrieveByNewDat
 
   if(isToRetrieveByNewDate){
   const today = new Date().toDateString();
-  const formedKey = `${today}-${localStorageKey}`
+  const formedKey = `${today}-${localStorageKey}` // eslint-disable-line no-unused-vars
 
   const existingLocalStorageObject = await getLocalStorageObject(localStorageKey);
   const existingDateLocalStorage = await getLocalStorageObject(`${localStorageDateKey}-${localStorageKey}`);

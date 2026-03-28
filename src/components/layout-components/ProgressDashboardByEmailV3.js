@@ -7,13 +7,14 @@ import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
 import UserProgress from './UserProgress'
-import moment from "moment";
+import dayjs from "dayjs";
 import { withRouter } from "utils/routerCompat";
 import Confetti from 'react-confetti';
 import useWindowSize from 'react-use/lib/useWindowSize';
 import { faRoad, faPieChart } from '@fortawesome/free-solid-svg-icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
+import { useIntl } from 'react-intl';
 import getLocaleText from "components/util-components/IntString";
 import GenericModal from "./GenericModal";
 import registerForm from 'assets/lotties/registerForm.json';
@@ -23,8 +24,8 @@ import ConfettiExplosion from 'react-confetti-explosion';
 
 export const ProgressDashboardByEmailV3 = (props) => {
   const { registeredProgressByEmailId,
-     nativeLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId, isUserEmailRegisteredForCourse, onModalInteraction,
-     studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, hasUserInteractedWithModal } = props;
+     currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId, isUserEmailRegisteredForCourse, onModalInteraction,
+     studentPercentagesForCourse, studentCategoriesCompletedForCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, selectedCourse, hasUserInteractedWithModal } = props;
 
   const [form] = Form.useForm();
   const [selectedLessonsForSubmission, setSelectedLessonsForSubmission] = useState({});
@@ -38,8 +39,8 @@ export const ProgressDashboardByEmailV3 = (props) => {
   const [isMassiveConfettiVisible, setIsMassiveConfettiVisible] = useState(false);
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { TabPane } = Tabs;
   const { width, height } = useWindowSize();
+  const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -146,6 +147,7 @@ useEffect(() => {
       );
     });
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [selectedLessonsForSubmission]);
 
 // Handle progress updates and UI effects
@@ -200,6 +202,7 @@ useEffect(() => {
   return () => {
     resetState();
   };
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [onModalInteraction]);
 
   const renderMessageResults = () => {
@@ -219,7 +222,7 @@ useEffect(() => {
       <Row gutter={16}>
         <Col xs={24} sm={24} lg={12}>		
         {/* LiquidCirclePercent - Participation Certificate */}    
-        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidCirclePercent percent={studentPercentagesForCourse?.participationCertificatePercentage} />
           <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
           <ul>
@@ -229,7 +232,7 @@ useEffect(() => {
       </Col>
       <Col xs={24} sm={24} lg={12}>
         {/* LiquidStarPercent - Golden Certificate */}
-        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />
           <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
           <ul>
@@ -347,7 +350,6 @@ useEffect(() => {
         </>
       );
     }
-    return null; // Default if no active key
   };
 
   const capitalizeFirstLetter = (str) => {
@@ -398,7 +400,7 @@ useEffect(() => {
               transitionTimming={1500}
           />
     }
-    <Card bordered loading={loading}>
+    <Card variant="outlined" loading={loading}>
       <h1>{renderDashboardTitle()}</h1>
      </Card>
      <Row justify="center" style={{ marginBottom: 20 }}>
@@ -406,7 +408,7 @@ useEffect(() => {
     <Card 
       title={setLocale(locale, "resources.myprogress.searchbyEmailandYear")} 
       loading={loading} 
-      bordered
+      variant="outlined"
     >
       {registeredProgressByEmailId && <h2>{renderMessageResults()}</h2>}
       <Form layout="vertical" onFinish={handleSearch} form={form}>
@@ -420,7 +422,7 @@ useEffect(() => {
               <DatePicker
                 style={{ width: "100%" }}
                 picker="year"
-                defaultPickerValue={moment("1980", "YYYY")}
+                defaultPickerValue={dayjs("1980", "YYYY")}
                 disabledDate={(current) =>
                   current && (current.year() > 2017 || current.year() < 1900)
                 }
@@ -439,7 +441,7 @@ useEffect(() => {
               <Input
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
-                placeholder="Enter email"
+                placeholder={intl.formatMessage({ id: "resources.myprogress.inputEmail" })}
                 style={{ marginBottom: 10 }}
                 status={!isEmailValid ? 'error' : ''}
               />
@@ -455,32 +457,30 @@ useEffect(() => {
 </Row>
 
       {renderSubtitle()}
-      <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}>
-      <TabPane 
-        tab={
-          <span>
-            <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-            {setLocale(locale, "resources.myprogress.generalView")}
-          </span>
-        } 
-        key="1"
-      >
-        {/* Render your general view content */}
-        {renderGeneralView()}
-      </TabPane>
-      <TabPane 
-        tab={
-          <span>
-            <IconAdapter icon={faRoad} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} /> 
-            {setLocale(locale, "resources.myprogress.progress&Tracking")}
-          </span>
-        } 
-        key="2"
-      >
-        {/* Render your progress tracking content */}
-        {renderProgressTracking()}
-      </TabPane>
-    </Tabs>
+      <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}
+        items={[
+          {
+            key: "1",
+            label: (
+              <span>
+                <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
+                {setLocale(locale, "resources.myprogress.generalView")}
+              </span>
+            ),
+            children: renderGeneralView(),
+          },
+          {
+            key: "2",
+            label: (
+              <span>
+                <IconAdapter icon={faRoad} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} /> 
+                {setLocale(locale, "resources.myprogress.progress&Tracking")}
+              </span>
+            ),
+            children: renderProgressTracking(),
+          },
+        ]}
+      />
     {renderUpserUserProgressBottom()}
     </div>
   );

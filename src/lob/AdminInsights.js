@@ -2,6 +2,7 @@ import Flag from "react-world-flags";
 import { Tag, Table, Progress } from 'antd';
 import StudentProgress from "lob/StudentProgress";
 import AdminProgressEditable from "components/layout-components/AdminProgressEditable";
+import IntlMessage from "components/util-components/IntlMessage";
 
 const getLatestProficiencyForCourse = (item, courseCodeId) => {
   if (!item) {
@@ -213,10 +214,25 @@ const colorPalette = [
   '#3498db', '#1abc9c', '#f39c12', '#e67e22', '#e74c3c', '#8e44ad', '#16a085', '#ff8c00', '#00bfff'
 ];
 
+// Session-scoped color registry: ensures the same region always gets the same
+// color across all map instances (General demographics, Progress demographics, etc.)
+// Resets automatically on page reload (new session).
+const sessionColorMap = new Map();
+let nextColorIndex = 0;
+
+const getSessionColor = (regionName) => {
+  if (!regionName) return colorPalette[0];
+  if (sessionColorMap.has(regionName)) return sessionColorMap.get(regionName);
+  const color = colorPalette[nextColorIndex % colorPalette.length];
+  sessionColorMap.set(regionName, color);
+  nextColorIndex++;
+  return color;
+};
+
 // Helper function to transform demographic data
 const transformDemographicArray = (dataArray, nameKey, nativeNameKey, extraKeys = () => ({})) => {
-  return dataArray?.map((item, index) => ({
-    color: colorPalette[index % colorPalette?.length],
+  return dataArray?.map((item) => ({
+    color: getSessionColor(item[nameKey]),
     name: item[nameKey],
     value: `${item.Percentage?.toFixed(2)}%`,
     nativeName: item[nativeNameKey] ?? item[nameKey],
@@ -406,7 +422,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
           dataIndex: 'langLevel',
           editable: false,
           filterSearch: true,
-          width: '20%',
+          width: '30%',
           filters: Array.from(filters.langLevelFilter),
           onFilter: (value, record) => record.langLevel?.indexOf(value) === 0,
           sorter: (a, b) => a.langLevel.localeCompare(b.langLevel),
@@ -420,15 +436,15 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
       {
           title: 'Profile',
           children: [
-              { title: 'Id', width: '15%', dataIndex: 'enrolleeId', editable: false, filterSearch: true, filters: Array.from(filters.enrolleeIdFilter), onFilter: (value, record) => record.enrolleeId === value ? true : false, sorter: (a, b) => a.enrolleeId - b.enrolleeId },
-              { title: 'Names', width: '20%', dataIndex: 'names', editable: false, filterSearch: true, filters: Array.from(filters.namesFilter), onFilter: (value, record) => record.names?.indexOf(value) === 0, sorter: (a, b) => a.names.localeCompare(b.names), sortDirections: ["ascend", "descend"] },
-              { title: 'Last Names', width: '20%', dataIndex: 'lastNames', editable: false, filterSearch: true, filters: Array.from(filters.lastNamesFilter), onFilter: (value, record) => record.lastNames?.indexOf(value) === 0, sorter: (a, b) => a.lastNames.localeCompare(b.lastNames), sortDirections: ["ascend", "descend"] },
-              { title: 'Age', width: '10%', dataIndex: 'age', editable: false, filterSearch: true, filters: Array.from(filters.ageFilter), onFilter: (value, record) => record.age === value ? true : false, sorter: (a, b) => a.age - b.age },
-              { title: 'Days To B-day', width: '10%', dataIndex: 'daysToBday', editable: false, filterSearch: true, filters: Array.from(filters.daysToBdayFilter), onFilter: (value, record) => record.daysToBday === value ? true : false, sorter: (a, b) => a.daysToBday - b.daysToBday },
-              { title: 'B-day', width: '20%', dataIndex: 'birthday', editable: false, filterSearch: true, filters: Array.from(filters.birthdayFilter), onFilter: (value, record) => record.birthday.startsWith(value), sorter: (a, b) => new Date(a.birthday) - new Date(b.birthday) },
+              { title: 'Id', width: '25%', dataIndex: 'enrolleeId', editable: false, filterSearch: true, filters: Array.from(filters.enrolleeIdFilter), onFilter: (value, record) => record.enrolleeId === value ? true : false, sorter: (a, b) => a.enrolleeId - b.enrolleeId },
+              { title: 'Names', width: '28%', dataIndex: 'names', editable: false, filterSearch: true, filters: Array.from(filters.namesFilter), onFilter: (value, record) => record.names?.indexOf(value) === 0, sorter: (a, b) => a.names.localeCompare(b.names), sortDirections: ["ascend", "descend"] },
+              { title: 'Last Names', width: '28%', dataIndex: 'lastNames', editable: false, filterSearch: true, filters: Array.from(filters.lastNamesFilter), onFilter: (value, record) => record.lastNames?.indexOf(value) === 0, sorter: (a, b) => a.lastNames.localeCompare(b.lastNames), sortDirections: ["ascend", "descend"] },
+              { title: 'Age', width: '25%', dataIndex: 'age', editable: false, filterSearch: true, filters: Array.from(filters.ageFilter), onFilter: (value, record) => record.age === value ? true : false, sorter: (a, b) => a.age - b.age },
+              { title: 'Days To B-day', width: '25%', dataIndex: 'daysToBday', editable: false, filterSearch: true, filters: Array.from(filters.daysToBdayFilter), onFilter: (value, record) => record.daysToBday === value ? true : false, sorter: (a, b) => a.daysToBday - b.daysToBday },
+              { title: 'B-day', width: '25%', dataIndex: 'birthday', editable: false, filterSearch: true, filters: Array.from(filters.birthdayFilter), onFilter: (value, record) => record.birthday.startsWith(value), sorter: (a, b) => new Date(a.birthday) - new Date(b.birthday) },
               {
                 title: 'Gender',
-                width: '15%',
+                width: '30%',
                 dataIndex: 'sex',
                 editable: false,
                 filterSearch: true,
@@ -450,30 +466,30 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
       ...(locationType === "all" || locationType === "residency" ? [{
           title: 'Residency',
           children: [
-              { title: 'Country', width: '20%', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
-              { title: 'Region', width: '20%', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
+              { title: 'Country', width: '35%', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
+              { title: 'Region', width: '30%', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
           ]
           },
           {
             title: 'Birth',
             children: [
-                { title: 'Country', width: '20%', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
-                { title: 'Region', width: '20%', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
+                { title: 'Country', width: '35%', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
+                { title: 'Region', width: '30%', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
             ]
         }
     ] : []),
       ...(locationType === "birth" ? [{
           title: 'Birth',
           children: [
-              { title: 'Country', width: '20%', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
-              { title: 'Region', width: '20%', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
+              { title: 'Country', width: '35%', dataIndex: 'countryOfBirth', editable: false, filters: Array.from(filters.countryOfBirthFilter), align: "center", onFilter: (value, record) => record.countryOfBirth === value, sorter: (a, b) => a.countryOfBirth - b.countryOfBirth, sortDirections: ["ascend", "descend"], render: (countryOfBirth) => <Flag code={countryOfBirth}  style={{ width: 40, marginRight: 10 }}/> },
+              { title: 'Region', width: '30%', dataIndex: 'regionOfBirth', editable: false, filters: Array.from(filters.regionOfBirthFilter), align: "center", onFilter: (value, record) => record.regionOfBirth?.indexOf(value) === 0, sorter: (a, b) => a.regionOfBirth - b.regionOfBirth, sortDirections: ["ascend", "descend"] }
           ]
       },
       {
         title: 'Residency',
         children: [
-            { title: 'Country', width: '20%', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
-            { title: 'Region',  width: '20%', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
+            { title: 'Country', width: '35%', dataIndex: 'countryOfResidency', editable: false, filters: Array.from(filters.countryOfResidencyFilter), align: "center", onFilter: (value, record) => record.countryOfResidency === value, sorter: (a, b) => a.countryOfResidency - b.countryOfResidency, sortDirections: ["ascend", "descend"], render: (countryOfResidency) => <Flag code={countryOfResidency} style={{ width: 40, marginRight: 10 }} /> },
+            { title: 'Region',  width: '30%', dataIndex: 'regionOfResidency', editable: false, filters: Array.from(filters.regionOfResidencyFilter), align: "center", onFilter: (value, record) => record.regionOfResidency?.indexOf(value) === 0, sorter: (a, b) => a.regionOfResidency - b.regionOfResidency, sortDirections: ["ascend", "descend"] }
         ]
       }
     ] : [])
@@ -569,16 +585,33 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
       const contactId = item.ContactInternalId;
       const userProgressRows = progressMap?.[contactId] ?? [];
 
-      const result =
-        await StudentProgress.calculateUserCourseProgressPercentageForCertificates(
-          userProgressRows
-        );
+      const emails = item?.Emails?.filter(e => e.IsEmailParseValid)
+                .map(e => e.EmailId) || [];
 
-      const goldenCertificatePercentage =
-        Number(result?.goldenCertificatePercentage ?? 0);
+      // Calculate progress per email
+      const emailProgressMap = {};
+      for (const email of emails) {
+        const emailRows = userProgressRows.filter(r => r.EmailId === email);
+        const emailResult =
+          await StudentProgress.calculateUserCourseProgressPercentageForCertificates(emailRows);
+        emailProgressMap[email] = {
+          participationPercent: Number((Number(emailResult?.participationCertificatePercentage ?? 0) * 100).toFixed(1)),
+          goldenPercent: Number((Number(emailResult?.goldenCertificatePercentage ?? 0) * 100).toFixed(1))
+        };
+      }
 
-      const participationCertificatePercentage =
-        Number(result?.participationCertificatePercentage ?? 0);
+      // Default to the email with highest combined progress
+      let bestEmail = emails[0] || null;
+      let bestCombined = -1;
+      for (const [email, progress] of Object.entries(emailProgressMap)) {
+        const combined = progress.participationPercent + progress.goldenPercent;
+        if (combined > bestCombined) {
+          bestCombined = combined;
+          bestEmail = email;
+        }
+      }
+
+      const defaultProgress = emailProgressMap[bestEmail] ?? { participationPercent: 0, goldenPercent: 0 };
 
       const countryOfResidency =
         item?.Location?.ResidencyLocation?.CountryOfResidency || null;
@@ -595,14 +628,13 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
         fullName: `${item.LastNames}, ${item.Names}`,
         countryOfResidency,
         countryOfBirth,
-        participationPercent:
-          Number((participationCertificatePercentage * 100).toFixed(1)),
-        goldenPercent:
-          Number((goldenCertificatePercentage * 100).toFixed(1)),
+        participationPercent: defaultProgress.participationPercent,
+        goldenPercent: defaultProgress.goldenPercent,
         rawProgress: userProgressRows,
-        emails: item?.Emails?.filter(e => e.IsEmailParseValid)
-                .map(e => e.EmailId) || [],
-         contactProficiency: courseAbbreviation
+        emails,
+        selectedEmail: bestEmail,
+        emailProgressMap,
+        contactProficiency: courseAbbreviation
       });
 
       // Populate filters (same architecture as other function)
@@ -671,10 +703,10 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
 
   const columns = [
     {
-      title: "Profile",
+      title: <IntlMessage id="admin.dashboard.insights.progress.profile" />,
       children: [
               {
-            title: 'Level',
+            title: <IntlMessage id="admin.dashboard.insights.progress.level" />,
             dataIndex: 'contactProficiency',
             editable: false,
             filterSearch: true,
@@ -690,7 +722,7 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
             }
         },
         {
-          title: "Id",
+          title: <IntlMessage id="admin.dashboard.insights.progress.id" />,
           dataIndex: "enrolleeId",
           filterSearch: true, 
           filters: Array.from(filters.enrolleeIdFilter || []), 
@@ -698,17 +730,17 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
           sorter: (a, b) => a.enrolleeId - b.enrolleeId
         },
         {
-          title: "Full Name",
+          title: <IntlMessage id="admin.dashboard.insights.progress.fullName" />,
           dataIndex: "fullName"
         }
       ]
     },
 
     {
-      title: "Student Progress",
+      title: <IntlMessage id="admin.dashboard.insights.progress.studentProgress" />,
       children: [
         {
-          title: "Participation",
+          title: <IntlMessage id="admin.dashboard.insights.progress.participation" />,
           dataIndex: "participationPercent",
           sorter: (a, b) =>
             a.participationPercent - b.participationPercent,
@@ -718,7 +750,7 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
             <Progress percent={value} strokeColor="#1677ff" />
         },
         {
-          title: "Golden",
+          title: <IntlMessage id="admin.dashboard.insights.progress.golden" />,
           dataIndex: "goldenPercent",
           sorter: (a, b) =>
             a.goldenPercent - b.goldenPercent,
@@ -732,10 +764,10 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
     ...(locationType === "all" || locationType === "residency"
       ? [
           {
-            title: "Residency",
+            title: <IntlMessage id="admin.dashboard.dropdown.selection.residency" />,
             children: [
               {
-                title: "Country",
+                title: <IntlMessage id="admin.dashboard.insights.progress.country" />,
                 dataIndex: "countryOfResidency",
                 align: "center",
                 filters: Array.from(filters.countryOfResidencyFilter),
@@ -756,10 +788,10 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
     ...(locationType === "all" || locationType === "birth"
       ? [
           {
-            title: "Birth",
+            title: <IntlMessage id="admin.dashboard.dropdown.selection.birth" />,
             children: [
               {
-                title: "Country",
+                title: <IntlMessage id="admin.dashboard.insights.progress.country" />,
                 dataIndex: "countryOfBirth",
                 align: "center",
                 filters: Array.from(filters.countryOfBirthFilter),
@@ -780,19 +812,23 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
         
 
   const expandable = {
-    expandedRowRender: (record, injectedSubmit) => {
+    expandedRowRender: (record, injectedSubmit, injectedEmailChange) => {
 
       const courseConfig = courseProgressConfigJson;
-      console.log("record.contactProficiency", record.contactProficiency);
       return (
         <AdminProgressEditable
           categories={courseConfig?.categories}
           progressData={record.rawProgress}
           contactId={record.contactInternalId}
           emails={record.emails}
+          defaultEmail={record.selectedEmail}
+          emailProgressMap={record.emailProgressMap}
           courseCodeId={courseConfig?.courseId}
           userProficiency={record.contactProficiency}
           onSubmit={injectedSubmit}
+          onEmailChange={(email) =>
+            injectedEmailChange?.(record.contactInternalId, email, record.emailProgressMap?.[email])
+          }
         />
       );
     }

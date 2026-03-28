@@ -18,7 +18,7 @@ class EnrolledOdometer extends Component {
 		const count = this.props.count || 0;
 		return (
 			<div>	
-				<Card bordered={true} title={setLocale(locale, "unauthenticated.dashboard.totalStudents")}>
+				<Card variant="outlined" title={setLocale(locale, "unauthenticated.dashboard.totalStudents")}>
 					<div className='student-count-card'>
 						{count}	
 					</div>

@@ -14,6 +14,7 @@ gulp.task('theme', function () {
     .pipe(debug({title: 'Less files:'}))
     .pipe(
       gulpless({
+        math: 'always',
         javascriptEnabled: true,
         plugins: [new NpmImportPlugin({prefix: '~'})],
       }),
@@ -33,6 +34,7 @@ gulp.task('less', () => {
   return gulp.src('./src/assets/less/index.less')
   .pipe(
     gulpless({
+      math: 'always',
       javascriptEnabled: true,
       plugins: [new NpmImportPlugin({prefix: '~'})],
     }),

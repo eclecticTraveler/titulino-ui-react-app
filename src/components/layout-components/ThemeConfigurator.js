@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Radio, Switch, Button, message } from 'antd';
+import { Radio, Switch } from 'antd';
 import IntlMessage from "../util-components/IntlMessage";
 import { 
 	toggleCollapsedNav, 
@@ -13,12 +13,8 @@ import {
 } from 'redux/actions/Theme';
 import NavLanguage from './NavLanguage';
 import { 
-	SIDE_NAV_LIGHT,
 	NAV_TYPE_SIDE,
 	NAV_TYPE_TOP,
-	SIDE_NAV_DARK,
-	DIR_RTL,
-	DIR_LTR
 } from '../../constants/ThemeConstant';
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import utils from 'utils/index';
@@ -70,14 +66,14 @@ export const ThemeConfigurator = ({
     switcher({ theme: themes[changedTheme] });
   };
 
-	const ontopNavColorClick = (value) => {
+	const ontopNavColorClick = (value) => { // eslint-disable-line no-unused-vars
 		onHeaderNavColorChange('')
 		const { rgb } = value
 		const rgba = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${rgb.a})`
 		const hex = utils.rgbaToHex(rgba)
 		onTopNavColorChange(hex)
 	}
-	const onHeaderNavColorClick = (value) => {
+	const onHeaderNavColorClick = (value) => { // eslint-disable-line no-unused-vars
 		const { rgb } = value
 		const rgba = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${rgb.a})`
 		const hex = utils.rgbaToHex(rgba)

@@ -20,7 +20,7 @@ class FiveMinLesson extends Component {
 	render(){ 
 		return (
 			<div>	
-				<Card bordered={true} >
+				<Card variant="outlined" >
 				<h2>{`5 minute lesson: ${this.props.fiveMinuteLesson?.lessonTitle}`}</h2>
 					<Card>						
 						<Iframe url={this.props.fiveMinuteLesson?.url}

@@ -1,10 +1,13 @@
 import React from 'react';
 import { Bar } from '@ant-design/plots';
 import { Card } from 'antd';
+import { connect } from 'react-redux';
 import IntlMessage from "components/util-components/IntlMessage";
 
 const BarGraph = (props) => {
-  const { localizedTitle, graphData, passedValue, passedType, symbol } = props;
+  const { localizedTitle, graphData, passedValue, passedType, symbol, currentTheme } = props;
+  const isDark = currentTheme === 'dark';
+  const axisLabelColor = isDark ? '#b4bed2' : '#000';
   const locale = true;
 
   // Locale setting function
@@ -20,33 +23,41 @@ const BarGraph = (props) => {
 
   const config = {
     data: barData,
-    xField: 'value',
-    yField: passedType, // Use dynamic passedType for y-axis labels
-    seriesField: passedType, // Dynamically bind series with passedType
+    xField: passedType,
+    yField: 'value',
+    colorField: passedType,
+    theme: isDark ? 'classicDark' : 'classic',
+    interaction: {
+      elementHighlight: true,
+    },
+    axis: {
+      x: { labelFill: axisLabelColor, titleFill: axisLabelColor },
+      y: { labelFill: axisLabelColor, titleFill: axisLabelColor },
+    },
     legend: {
-      position: 'top-left',
+      color: { itemLabelFill: axisLabelColor, position: 'top-left' },
     },
     label: {
-      position: 'middle', // Label position in the middle of bars
+      text: ({ value }) => `${value}${sign}`,
+      position: 'inside',
       style: {
         fill: '#FFFFFF',
         fontSize: 12,
         fontWeight: 'bold',
       },
-      content: ({ value }) => `${value}${sign}`, // Showing percentage on top of bars
     },
-    // color: ['#e35aff', '#3e82f7'], // Custom colors for your dataset
   };
 
   const title = localizedTitle || "Unavailable";
 
   return (
     <div>
-      <Card bordered={true} title={setLocale(locale, title)}>
+      <Card variant="outlined" title={setLocale(locale, title)}>
         <Bar {...config} />
       </Card>
     </div>
   );
 };
 
-export default BarGraph;
+const mapStateToProps = ({ theme }) => ({ currentTheme: theme.currentTheme });
+export default connect(mapStateToProps)(BarGraph);

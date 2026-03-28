@@ -3,9 +3,9 @@ import { env } from 'configs/EnvironmentConfig';
 import IntlMessage from "components/util-components/IntlMessage";
 
 export const DonationCenter = ({ isCollapsed }) => {
-	const locale = true;
+	const locale = true; // eslint-disable-line no-unused-vars
 
-	const setLocale = (isLocaleOn, localeKey) => {
+	const setLocale = (isLocaleOn, localeKey) => { // eslint-disable-line no-unused-vars
 		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
 	};
 

@@ -20,7 +20,7 @@ class DoubleCounterDisplay extends Component {
 		const title = this.props.localizedTitle || "unavailable";
 		return (
 			<div>	
-				<Card bordered={true} title={setLocale(locale, title)}>
+				<Card variant="outlined" title={setLocale(locale, title)}>
 					<div className='double-count-card'>
 						<span className='double-count-card-first'>{countOne} </span> | 
 						<span className='double-count-card-second'> {countTwo}</span>

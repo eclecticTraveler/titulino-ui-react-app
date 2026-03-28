@@ -26,33 +26,27 @@ const SelectedLanguage = ({ locale }) => {
 }
 
 export const NavLanguage = ({ locale, configDisplay, onLocaleChange }) => {
-	const languageOption = (
-		<Menu>
-			{
-				lang.map((elm, i) => {
-					return (
-					<Menu.Item 
-						key={i} 
-						className={locale === elm.langId ? 'ant-dropdown-menu-item-active': ''} 
-						onClick={() => onLocaleChange(elm.langId)}
-					>
-						<span className="d-flex justify-content-between align-items-center" >
-							<div>
-								{/* <img style={{maxWidth: '20px'}} src={`/img/flags/${elm.icon}.png`} alt={elm.langName}/> */}
-								<div className="course-flag course-selection-flag">
-									<Flag code={elm?.icon} />
-								</div>
-								<span className="font-weight-normal ml-2">{elm.langName}</span>
-							</div>
-							{locale === elm.langId? <CheckOutlined className="text-success" /> : null}
-						</span>
-					</Menu.Item>
-				)})
-			}
-		</Menu>
-	)
+	const languageItems = lang.map((elm, i) => ({
+		key: i,
+		className: locale === elm.langId ? 'ant-dropdown-menu-item-active' : '',
+		onClick: () => onLocaleChange(elm.langId),
+		label: (
+			<span className="d-flex justify-content-between align-items-center">
+				<div>
+					<div className="course-flag course-selection-flag">
+						<Flag code={elm?.icon} />
+					</div>
+					<span className="font-weight-normal ml-2">{elm.langName}</span>
+				</div>
+				{locale === elm.langId ? <CheckOutlined className="text-success" /> : null}
+			</span>
+		),
+	}));
+
+	const languageOption = <Menu items={languageItems} />;
+
 	return (
-		<Dropdown placement="bottomRight" overlay={languageOption} trigger={["click"]}>
+		<Dropdown placement="bottomRight" popupRender={() => languageOption} trigger={["click"]}>
 			{
 				configDisplay ?
 				(
@@ -62,13 +56,17 @@ export const NavLanguage = ({ locale, configDisplay, onLocaleChange }) => {
 				)
 				:
 				(
-					<Menu mode="horizontal" className="menu-right-padding">
-						<Menu.Item key="1" className="menu-right-padding">
-							<a href="#/" onClick={e => e.preventDefault()}>
-								<GlobalOutlined className="nav-icon mr-0 menu-right-size" />
-							</a>
-						</Menu.Item>
-					</Menu>
+					<Menu mode="horizontal" className="menu-right-padding" items={[
+						{
+							key: '1',
+							className: 'menu-right-padding',
+							label: (
+								<a href="#/" onClick={e => e.preventDefault()}>
+									<GlobalOutlined className="nav-icon mr-0 menu-right-size" />
+								</a>
+							),
+						}
+					]} />
 				)
 			}
 		</Dropdown>

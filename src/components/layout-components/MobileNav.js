@@ -8,7 +8,6 @@ import { onMobileNavToggle } from "../../redux/actions/Theme";
 import LogoAlt from "./LogoAlt";
 import Flex from "../../components/shared-components/Flex";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import WidgetAction from 'components/shared-components/WidgetAction';
 import DonationCenter from "components/shared-components/DonationCenter";
 import ShoppingCenter from "components/shared-components/Shopping";
 import { env } from "configs/EnvironmentConfig";
@@ -35,8 +34,8 @@ export const MobileNav = ({
 		placement="left"
 		closable={false}
 		onClose={onClose}
-		visible={mobileNav}
-		bodyStyle={{ padding: 5 }}
+		open={mobileNav}
+		styles={{ body: { padding: 5 } }}
 	>
 		<Flex flexDirection="column" className="h-100">
 			<div className="mobile-logo">

@@ -1,12 +1,7 @@
 import LocalStorageService from "services/LocalStorageService";
-import TitulinoAuthService from "services/TitulinoAuthService";
-import GrammarClassService from "services/GrammarClassService";
-import BookChapterService  from "services/BookChapterService";
-import DynamicNavigationRouter from "services/DynamicNavigationRouter";
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import ShoppingCatalogService from "services/ShoppingCatalogService";
-import StudentProgress from "lob/StudentProgress";
 import ShopPurchaseExperience from "lob/ShopPurchaseExperience"
 import utils from 'utils';
 
@@ -45,7 +40,7 @@ const getPurchaseSessionUrlId = async(product, emailId) => {
 
 const getProductsForPurchase = async(nativeLanguage, course, emailId) => { 
   const localStorageKey = `UserProfile_${emailId}`;  
-  const user = await LocalStorageService.getCachedObject(localStorageKey); 
+  const user = await LocalStorageService.getCachedObject(localStorageKey); // eslint-disable-line no-unused-vars
   const catalog = await ShoppingCatalogService.getProductCatalog(nativeLanguage, course);
   const auditedCatalog = await ShopPurchaseExperience.setUserCoursePurchasesInAvailableCatalog(user?.userCourses, catalog);  
   return auditedCatalog;
@@ -53,9 +48,9 @@ const getProductsForPurchase = async(nativeLanguage, course, emailId) => {
 
 const getProductsPurchasedByUser = async(nativeLanguage, course, emailId) => {  
   const localStorageKey = `UserProfile_${emailId}`;  
-  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const user = await LocalStorageService.getCachedObject(localStorageKey); // eslint-disable-line no-unused-vars
   // const purchases = await TitulinoNetService.getUserPurchasedProducts(user?.innerToken, user?.contactInternalId);
-  const catalog = await ShoppingCatalogService.getProductCatalog(nativeLanguage, course);
+  const catalog = await ShoppingCatalogService.getProductCatalog(nativeLanguage, course); // eslint-disable-line no-unused-vars
 
   return [];
   

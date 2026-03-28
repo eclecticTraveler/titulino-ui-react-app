@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee } from "redux/actions/Lrn";
 import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space  } from "antd";
-import moment from "moment";
+import dayjs from "dayjs";
 import Flag from "react-world-flags";
 import CourseCards from "./CourseCards";
 import CourseDetails from "./CourseDetails";
@@ -380,7 +380,7 @@ useEffect(() => {
         >
         <Row gutter={24}>
           <Col lg={24}>
-            <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered
+            <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined"
               cover={
                 <img
                 alt={titleOfEnrollment}
@@ -398,7 +398,7 @@ useEffect(() => {
                 <Card
                   key={course.id || index}
                   style={quickEnrollmentStyle}
-                  bordered
+                  variant="outlined"
                   title={setLocale(locale, "enrollment.courseDetails")}
                   loading={submittingLoading}
                 >
@@ -444,7 +444,7 @@ useEffect(() => {
             )
           }
 
-            <Card style={quickEnrollmentStyle} loading={submittingLoading} bordered>
+            <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined">
               <p>
                 {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")}-{enrollmentVersion}
                 <TermsModal />{" "}

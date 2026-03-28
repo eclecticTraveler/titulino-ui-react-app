@@ -50,7 +50,7 @@ const GenericModal = ({ closeGenericModal, visibleModal, title, animation, messa
   return (
     <div>
       <Modal
-        visible={isModalVisible} // Show modal when successful
+        open={isModalVisible} // Show modal when successful
         title={setLocale(locale, title)} // Translated title
         closable={false} // Removes the X button
         footer={[
@@ -58,7 +58,7 @@ const GenericModal = ({ closeGenericModal, visibleModal, title, animation, messa
             {setLocale(locale, closingButtonTitle)}
           </Button>,
         ]}
-        bodyStyle={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} // Center content
+        styles={{ body: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } }} // Center content
       >
         <Lottie
           animationData={currentAnimation} // Dynamically switch animation

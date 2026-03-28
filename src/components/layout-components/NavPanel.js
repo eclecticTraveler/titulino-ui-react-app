@@ -28,17 +28,20 @@ export class NavPanel extends Component {
 
 		return (
       <>
-        <Menu mode="horizontal">
-          <Menu.Item key="1" onClick={this.showDrawer } className="menu-right-padding">
-            <SettingOutlined className="nav-icon mr-0 menu-right-size" />
-          </Menu.Item>
-        </Menu>
+        <Menu mode="horizontal" items={[
+          {
+            key: '1',
+            className: 'menu-right-padding',
+            icon: <SettingOutlined className="nav-icon mr-0 menu-right-size" />,
+            onClick: this.showDrawer,
+          }
+        ]} />
         <Drawer
           title={setLocale(this.props.locale, 'settings.menu.main.title')}
           placement={this.props.direction === DIR_RTL ? 'left' : 'right'} 
           width={350}
           onClose={this.onClose}
-          visible={this.state.visible}
+          open={this.state.visible}
         >
           <ThemeConfigurator/>
         </Drawer>

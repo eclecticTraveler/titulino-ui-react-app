@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
 
 export const SessionRetrival = () => {

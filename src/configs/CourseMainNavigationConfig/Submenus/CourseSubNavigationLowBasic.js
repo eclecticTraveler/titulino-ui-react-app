@@ -25,8 +25,6 @@ import { faSchool,
 		 faUserMd,		
 		} from '@fortawesome/free-solid-svg-icons';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
-import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
-
 export const getCourseSubNavigationLowBasic = (lang) => {
 	const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-1/${getLocalizedConfig(lang)?.chapter}`;	
   	return [

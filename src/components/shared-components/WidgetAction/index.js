@@ -1,11 +1,7 @@
 import React from 'react';
 import { Button } from 'antd';
-import { Link } from 'react-router-dom';
-import { APP_PREFIX_PATH } from '../../../configs/AppConfig';
 import { env } from '../../../configs/EnvironmentConfig';
 import IntlMessage from "../../../components/util-components/IntlMessage";
-import utils from '../../../utils';
-import { connect } from "react-redux";
 
 // export const WidgetAction = props => {
 export const WidgetAction = ({ isCollapsed }) => {

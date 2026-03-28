@@ -6,6 +6,19 @@
     border-top: 1px solid @border-color-base;
     justify-content: space-between;
 
+    & when (@theme = dark) {
+        background-color: @body-background;
+        color: @text-color;
+
+        a, .footer-link {
+            color: @primary-color;
+
+            &:hover {
+                color: lighten(@primary-color, 10%);
+            }
+        }
+    }
+
     .screen-mobile({
         justify-content: center;
         flex-direction: column;

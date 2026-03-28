@@ -4,8 +4,7 @@ import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import { Button, Form, Input, Alert } from "antd";
 import { showAuthMessage, showLoading, hideAuthMessage, authenticated } from 'redux/actions/Auth';
 import { useHistory } from "utils/routerCompat";
-import { motion } from "framer-motion"
-import JwtAuthService from 'services/JwtAuthService';
+import { motion } from "framer-motion";
 import IntlMessage from "components/util-components/IntlMessage";
 
 const setLocale = (isLocaleOn, localeKey) =>
@@ -87,6 +86,7 @@ export const RegisterForm = (props) => {
 				clearTimeout(timeoutId);
 			}
 		};
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, redirect, showMessage]);
 	
 	return (
@@ -125,7 +125,7 @@ export const RegisterForm = (props) => {
 					<Input.Password prefix={<LockOutlined className="text-primary" />}/>
 				</Form.Item>
 				<Form.Item>
-					<Button type="primary" htmlType="submit" block loading={loading}>
+					<Button type="primary" size="large" htmlType="submit" block loading={loading}>
 						{setLocale(localization, "profile.login.signup")}
 					</Button>
 				</Form.Item>

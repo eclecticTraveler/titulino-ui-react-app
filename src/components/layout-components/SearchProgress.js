@@ -3,6 +3,7 @@ import { onSearchingForProgressByEmailId } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message } from 'antd';
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 
 export const SearchProgress = (props) => {
@@ -10,6 +11,7 @@ export const SearchProgress = (props) => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   console.log("nativeLanguage", nativeLanguage)
+  const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) =>{		
 		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -46,7 +48,7 @@ export const SearchProgress = (props) => {
         <Row gutter={[16, 16]}>
           {registeredProgressByEmailId?.map((record, index) => (
             <Col key={index} xs={24} sm={12} lg={8}>
-              <Card title={`Class: ${record?.Class}`} bordered>
+              <Card title={`Class: ${record?.Class}`} variant="outlined">
               <h5><strong>{setLocale(locale, "resources.myprogress.participation")}:</strong> {record?.TypeOfParticipation}</h5>
                 <p><strong>{setLocale(locale, "resources.myprogress.email")}:</strong> {record?.EmailAddress}</p>
                 <p>  <strong>{setLocale(locale, "resources.myprogress.date")}:</strong> {new Date(record?.Date).toLocaleDateString('en-US', {
@@ -64,17 +66,17 @@ export const SearchProgress = (props) => {
 
   return (
 <div className="search-container">
-  <Card title={setLocale(locale, "resources.myprogress.title")} bordered>
+  <Card title={setLocale(locale, "resources.myprogress.title")} variant="outlined">
     <Form layout="inline" onFinish={handleSearch}>
       <Form.Item>
         <Input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter email"
+          placeholder={intl.formatMessage({ id: "resources.myprogress.inputEmail" })}
         />
       </Form.Item>
       <Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading}>
+        <Button type="primary" size="large" htmlType="submit" loading={loading}>
         {setLocale(locale, "resources.myprogress.search")}
         </Button>
       </Form.Item>

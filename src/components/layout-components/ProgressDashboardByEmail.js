@@ -3,6 +3,7 @@ import { onSearchingForProgressByEmailId, onRenderingCourseRegistration } from '
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Card, Input, Button, Form, Row, Col, Divider, message } from 'antd';
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
@@ -11,12 +12,13 @@ import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/
 
 
 export const ProgressDashboardByEmail = (props) => {
-  const { onSearchingForProgressByEmailId, registeredProgressByEmailId, nativeLanguage, onRenderingCourseRegistration,
+  const { onSearchingForProgressByEmailId, registeredProgressByEmailId, onRenderingCourseRegistration,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, course } = props;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   
 
+  const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -96,7 +98,7 @@ export const ProgressDashboardByEmail = (props) => {
         <Row gutter={[16, 16]}>
           {registeredProgressByEmailId?.map((record, index) => (
             <Col key={index} xs={24} sm={12} lg={8}>
-              <Card title={`Class: ${record?.Class}`} bordered>
+              <Card title={`Class: ${record?.Class}`} variant="outlined">
                 <h5><strong>{setLocale(locale, "resources.myprogress.participation")}:</strong> {record?.TypeOfParticipation}</h5>
                 <p><strong>{setLocale(locale, "resources.myprogress.email")}:</strong> {record?.EmailAddress}</p>
                 <p><strong>{setLocale(locale, "resources.myprogress.date")}:</strong> {new Date(record?.Date).toLocaleDateString('en-US', {
@@ -114,23 +116,23 @@ export const ProgressDashboardByEmail = (props) => {
 
   return (
     <div className="search-container">
-      <Card title={setLocale(locale, "resources.myprogress.title")} bordered>
+      <Card title={setLocale(locale, "resources.myprogress.title")} variant="outlined">
       <div>{setLocale(locale, "resources.myprogress.requirements")}</div>
       <br />
         <Row gutter={[16, 16]}>
           {/* Input email and search functionality */}
           <Col xs={24} sm={8}>
-            <Card title={setLocale(locale, "resources.myprogress.searchYourEmail")} bordered>
+            <Card title={setLocale(locale, "resources.myprogress.searchYourEmail")} variant="outlined">
             <Form layout="inline" onFinish={handleSearch}>
               <Form.Item>
                 <Input
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter email"
+                  placeholder={intl.formatMessage({ id: "resources.myprogress.inputEmail" })}
                 />
               </Form.Item>
               <Form.Item>
-                <Button type="primary" htmlType="submit" loading={loading}>
+                <Button type="primary" size="large" htmlType="submit" loading={loading}>
                   {setLocale(locale, "resources.myprogress.search")}
                 </Button>
               </Form.Item>
@@ -145,16 +147,14 @@ export const ProgressDashboardByEmail = (props) => {
             {renderMessageResults()}
             <Divider />
             <h4>{setLocale(locale, "resources.myprogress.recordProgress")}</h4>
-              <Button type="primary" onClick={() => props.history.push(getLocalizedConfig(course).progress)}>
+              <Button type="primary" size="large" onClick={() => props.history.push(getLocalizedConfig(course).progress)}>
               {setLocale(locale, "resources.myprogress.here")}
               </Button>
             </Card>
           </Col>
-1460
-to 1200 resta 1388.24
           {/* LiquidCirclePercent - Participation Certificate */}
           <Col xs={24} sm={8}>
-            <Card title={setLocale(locale, "resources.myprogress.participationcert")} bordered>
+            <Card title={setLocale(locale, "resources.myprogress.participationcert")} variant="outlined">
               <LiquidCirclePercent percent={studentPercentagesForCourse?.participationCertificatePercentage} />
               <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
               <ul>
@@ -165,7 +165,7 @@ to 1200 resta 1388.24
 
           {/* LiquidStarPercent - Golden Certificate */}
           <Col xs={24} sm={8}>
-            <Card title={setLocale(locale, "resources.myprogress.goldencert")} bordered>
+            <Card title={setLocale(locale, "resources.myprogress.goldencert")} variant="outlined">
               <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />
             <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
               <ul>

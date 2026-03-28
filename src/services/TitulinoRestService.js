@@ -1,7 +1,5 @@
-import { env } from '../configs/EnvironmentConfig';
 import SupabaseConfig from '../configs/SupabaseConfig';
 import courseProgressData from '../assets/data/course-progress-data.json';
-import CentralCourseThemeService from 'services/CentralCourseThemeService';
 import GoogleService from './GoogleService';
 
 
@@ -23,7 +21,8 @@ const loadCourseProgressStructure = async() => {
   const rawSavedLocalData = courseProgressData;
   const rawProgressData = await GoogleService.getCourseProgressData("loadCourseProgressStructure");
   //     console.log("Progress DATA", rawProgressData)
-  return rawProgressData ?? rawSavedLocalData;
+  const result = rawProgressData ?? rawSavedLocalData;
+  return Array.isArray(result) ? result : [];
 }
 
 const loadRequestedCourseStructure = async(nativeLanguage, course, courseCodeId) => {  
@@ -623,11 +622,9 @@ export const getAdminDashboardDemographicEnrolleeOverview = async (courseCodeId,
   }
 }
 
-// Stubbed dedicated endpoint for Progress dashboard overview.
-// Falls back to the general overview endpoint until backend is ready.
 export const getAdminDashboardProgressOverview = async (courseCodeId, locationType, countryId, whoCalledMe) => {
   if (locationType && courseCodeId && countryId) {
-    const progressOverviewUrl = `${SupabaseConfig.baseApiUrl}/GetAdminDashboardProgressOverview`;
+    const progressOverviewUrl = `${SupabaseConfig.baseApiUrl}/GetAdminDashboardCourseProgressDemographicOverview`;
 
     const raw = JSON.stringify({
       "p_locationtype": locationType,
@@ -649,7 +646,7 @@ export const getAdminDashboardProgressOverview = async (courseCodeId, locationTy
     } catch (error) {
       console.log(`Error Retrieving API payload in getAdminDashboardProgressOverview: from ${whoCalledMe}`);
       console.error(error);
-      return getAdminDashboardDemographicEnrolleeOverview(courseCodeId, locationType, countryId, whoCalledMe);
+      return false;
     }
   }
 

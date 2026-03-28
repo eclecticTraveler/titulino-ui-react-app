@@ -1,12 +1,12 @@
-import React, { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useMemo } from "react";
 import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
 import { IntlProvider } from "react-intl";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, App as AntdApp, theme } from "antd";
 import { DEFAULT_PREFIX_VIEW, APP_PREFIX_PATH, AUTH_PREFIX_PATH } from "../configs/AppConfig";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { withRouter, Redirect } from "utils/routerCompat";
+import { withRouter } from "utils/routerCompat";
 import AuthLayout from '../layouts/auth-layout';
 import AppLayout from "../layouts/app-layout";
 import CourseSelection from './app-views/course-selection';
@@ -15,14 +15,9 @@ import { onLocaleChange, onCourseChange, onLoadingUserSelectedTheme } from '../r
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
 import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
-import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
 import { authenticated, signIn, onResolvingAuthenticationWhenRefreshing } from "redux/actions/Auth";
 import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
-import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
-import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPolicy";
-
 import Loading from 'components/shared-components/Loading';
-import SupabaseAuthService from "services/SupabaseAuthService";
  
 function RouteInterceptor({ children, isAuthenticated }) {
   const { pathname } = useLocation();
@@ -83,6 +78,7 @@ export const Views = (props) => {
         }else{
             onResolvingAuthenticationWhenRefreshing(false);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.contactId, token?.email]);
 
     //   useEffect(() => {
@@ -124,12 +120,48 @@ export const Views = (props) => {
 
     }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);          
 
+    const antdTheme = useMemo(() => {
+        const baseToken = {
+            colorPrimary: '#e79547',
+            colorSuccess: '#04d182',
+            colorError: '#ff6b72',
+            colorWarning: '#ffc542',
+            colorInfo: '#e79547',
+            fontFamily: "'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
+            borderRadius: 10,
+            controlHeightLG: 48,
+        };
+
+        if (currentTheme === 'dark') {
+            return {
+                algorithm: theme.darkAlgorithm,
+                token: {
+                    ...baseToken,
+                    colorBgContainer: '#283142',
+                    colorBgElevated: '#283142',
+                    colorBgLayout: '#1b2531',
+                    colorText: '#b4bed2',
+                    colorTextSecondary: '#72849a',
+                    colorBorder: '#4d5b75',
+                    colorBorderSecondary: '#4d5b75',
+                    colorLink: '#e79547',
+                },
+            };
+        }
+
+        return {
+            algorithm: theme.defaultAlgorithm,
+            token: baseToken,
+        };
+    }, [currentTheme]);
 
     if(!wasUserConfigSet){
         return (
             <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
-                <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
-                    <CourseSelection />
+                <ConfigProvider locale={currentAppLocale.antd} direction={direction} theme={antdTheme}>
+                    <AntdApp>
+                        <CourseSelection />
+                    </AntdApp>
                 </ConfigProvider>
             </IntlProvider>
         )
@@ -141,16 +173,18 @@ export const Views = (props) => {
 
     return (
         <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
-            <ConfigProvider locale={currentAppLocale.antd} direction={direction}>
-                <Routes>
-                    <Route path={DEFAULT_PREFIX_VIEW} element={<Navigate to={APP_PREFIX_PATH} replace />} />
-                    <Route path={`${APP_PREFIX_PATH}/*`} element={<AppLayout direction={direction} location={location} />} />
-                    <Route path={`${AUTH_PREFIX_PATH}/*`} element={
-                        <RouteInterceptor isAuthenticated={token}>
-                            <AuthLayout direction={direction} location={location} />
-                        </RouteInterceptor>
-                    } />
-                </Routes>                            
+            <ConfigProvider locale={currentAppLocale.antd} direction={direction} theme={antdTheme}>
+                <AntdApp>
+                    <Routes>
+                        <Route path={DEFAULT_PREFIX_VIEW} element={<Navigate to={APP_PREFIX_PATH} replace />} />
+                        <Route path={`${APP_PREFIX_PATH}/*`} element={<AppLayout direction={direction} location={location} />} />
+                        <Route path={`${AUTH_PREFIX_PATH}/*`} element={
+                            <RouteInterceptor isAuthenticated={token}>
+                                <AuthLayout direction={direction} location={location} />
+                            </RouteInterceptor>
+                        } />
+                    </Routes>
+                </AntdApp>                            
             </ConfigProvider>
         </IntlProvider>  
     );

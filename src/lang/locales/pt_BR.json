@@ -289,7 +289,7 @@
 	"enrollment.form.enrollmentWhatsApp":"Entre no nosso grupo de WhatsApp clicando no link abaixo!!",
 	"enrollment.form.whatsAppLinks":"Links:",
 	"speech.practice":"Prática",
-	"speech.playWord":"Jogar palavra",
+	"speech.playWord":"Reproduzir palavra",
 	"speech.correct":"Correto!!",
 	"speech.tryAgain":"Tente novamente ou passe para a próxima",
 	"unauthenticated.dashboard.welcome":"Bem-vindo ao",
@@ -318,6 +318,14 @@
 	"admin.dashboard.insights.overview.newVsReturning": "Inscrito novo vs recorrente",
 	"admin.dashboard.insights.overview.languageProficiency": "Distribuição de proficiência linguística",
 	"admin.dashboard.insights.overview.enrolleeType": "Tipo de categoria de inscrito",
+	"admin.dashboard.insights.progress.profile": "Perfil",
+	"admin.dashboard.insights.progress.level": "Nível",
+	"admin.dashboard.insights.progress.id": "Id",
+	"admin.dashboard.insights.progress.fullName": "Nome Completo",
+	"admin.dashboard.insights.progress.studentProgress": "Progresso do Estudante",
+	"admin.dashboard.insights.progress.participation": "Participação",
+	"admin.dashboard.insights.progress.golden": "Dourado",
+	"admin.dashboard.insights.progress.country": "País",
 	"admin.progressEditable.emails":"E-mails",
 	"admin.progressEditable.saveProgress":"Salvar progresso",
 	"userprogress.enrollment.invitationMessage":"Prosseguir para inscrição no curso",
@@ -371,7 +379,22 @@
 	"shop.succesPurchase.headerMessageContent":"Gostaria de expressar minha gratidão pelo seu apoio e por tornar este projeto comunitário sustentável.\n Espero um dia poder me dedicar totalmente a ele com o seu apoio.\n",
 	"shop.succesPurchase.headerMessageContentGold": "Acesse este grupo exclusivo do WhatsApp para obter benefícios exclusivos!!",
 	"shop.succesPurchase.letsExplore":"Vamos explorar 🏠",
-	"group.modal.enrollmentCompleted":"Experiência Titulino Gold"
+	"group.modal.enrollmentCompleted":"Experiência Titulino Gold",
+
+	"enrollment.form.enterContactEmail": "Digite seu e-mail de contato",
+	"profile.address.address1": "Endereço #1",
+	"profile.address.address2Optional": "Endereço #2 (opcional)",
+	"profile.address.city": "Cidade",
+	"profile.address.state": "Estado",
+	"profile.address.zipCode": "CEP",
+	"profile.contact.firstName": "Nome do contato",
+	"profile.contact.primaryLanguage": "Idioma principal do contato",
+	"nav.search.placeholder": "Pesquisar...",
+	"forgot.password.emailAddress": "Endereço de e-mail",
+	"admin.dashboard.insights.selectCourse": "Selecionar curso",
+	"admin.dashboard.insights.selectLocationType": "Selecionar tipo de localização",
+	"admin.dashboard.insights.selectCountry": "Selecionar país",
+	"enrollment.form.enterYourEmail": "Digite seu e-mail"
 
 
 

@@ -10,9 +10,12 @@ const AdminProgressEditable = ({
   progressData,
   contactId,
   emails,
+  defaultEmail,
+  emailProgressMap,
   courseCodeId,
   userProficiency,
-  onSubmit
+  onSubmit,
+  onEmailChange
 }) => {
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
@@ -20,8 +23,13 @@ const AdminProgressEditable = ({
   };
 
   const [selectedEmail, setSelectedEmail] = useState(
-    emails?.length ? emails[0] : null
+    defaultEmail ?? (emails?.length ? emails[0] : null)
   );
+
+  const handleEmailSelection = (value) => {
+    setSelectedEmail(value);
+    onEmailChange?.(value);
+  };
 
   const selectionKey = (categoryId, classNumber) => `${categoryId}-${classNumber}`;
 
@@ -70,6 +78,7 @@ const AdminProgressEditable = ({
       });
 
     setSelectedLessons(preSelected);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [progressData, selectedEmail]);
 
   const emailCount = emails?.length ?? 0;
@@ -95,7 +104,6 @@ const AdminProgressEditable = ({
           {setLocale(locale, "resources.myprogress.progressFor")} {selectedEmail ?? "-"}
         </span>
       }
-      style={{ background: "#fafafa" }}
     >
       {emailCount > 0 && (
         <>
@@ -112,7 +120,7 @@ const AdminProgressEditable = ({
           <Select
             value={selectedEmail}
             style={{ width: 350, marginBottom: 16 }}
-            onChange={(value) => setSelectedEmail(value)}
+            onChange={handleEmailSelection}
           >
             {emails.map((email) => (
               <Option key={`email-${email}`} value={email}>
@@ -186,7 +194,7 @@ const AdminProgressEditable = ({
         })}
       </Row>
 
-      <Button type="primary" onClick={handleSubmit} style={{ marginTop: 20 }}>
+      <Button type="primary" size="large" onClick={handleSubmit} style={{ marginTop: 20 }}>
         {setLocale(locale, "admin.progressEditable.saveProgress")}
       </Button>
     </Card>

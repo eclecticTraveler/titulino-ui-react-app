@@ -318,6 +318,14 @@
 	"admin.dashboard.insights.overview.newVsReturning": "Afiliado nuevo versus afiliado recurrente",
 	"admin.dashboard.insights.overview.languageProficiency": "Distribución del dominio del idioma",
 	"admin.dashboard.insights.overview.enrolleeType": "Tipo de categoría de afiliado",
+	"admin.dashboard.insights.progress.profile": "Perfil",
+	"admin.dashboard.insights.progress.level": "Nivel",
+	"admin.dashboard.insights.progress.id": "Id",
+	"admin.dashboard.insights.progress.fullName": "Nombre Completo",
+	"admin.dashboard.insights.progress.studentProgress": "Progreso del Estudiante",
+	"admin.dashboard.insights.progress.participation": "Participación",
+	"admin.dashboard.insights.progress.golden": "Dorado",
+	"admin.dashboard.insights.progress.country": "País",
 	"admin.progressEditable.emails":"Correos electrónicos",
 	"admin.progressEditable.saveProgress":"Guardar progreso",
 	"userprogress.enrollment.invitationMessage":"Continúe con la inscripción en el curso",
@@ -371,7 +379,22 @@
 	"shop.succesPurchase.headerMessageContent":"Quería expresar mi gratitud por su apoyo y por hacer que este proyecto comunitario sea sostenible.\n Espero algún día poder dedicarme por completo a él con su apoyo.\n",
 	"shop.succesPurchase.headerMessageContentGold": "¡Acceda a este grupo exclusivo de WhatsApp para obtener beneficios exclusivos!",
 	"shop.succesPurchase.letsExplore":"Exploremos 🏠",
-	"group.modal.enrollmentCompleted":"Titulino Experiencia de Oro"
+	"group.modal.enrollmentCompleted":"Titulino Experiencia de Oro",
+
+	"enrollment.form.enterContactEmail": "Ingrese su correo electrónico de contacto",
+	"profile.address.address1": "Dirección #1",
+	"profile.address.address2Optional": "Dirección #2 (opcional)",
+	"profile.address.city": "Ciudad",
+	"profile.address.state": "Estado",
+	"profile.address.zipCode": "Código postal",
+	"profile.contact.firstName": "Nombre del contacto",
+	"profile.contact.primaryLanguage": "Idioma principal del contacto",
+	"nav.search.placeholder": "Buscar...",
+	"forgot.password.emailAddress": "Correo electrónico",
+	"admin.dashboard.insights.selectCourse": "Seleccionar curso",
+	"admin.dashboard.insights.selectLocationType": "Seleccionar tipo de ubicación",
+	"admin.dashboard.insights.selectCountry": "Seleccionar país",
+	"enrollment.form.enterYourEmail": "Ingrese su correo electrónico"
 	
 }
 

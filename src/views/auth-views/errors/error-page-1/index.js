@@ -20,7 +20,7 @@ const ErrorOne = () => {
 							<h1 className="font-weight-bold mb-4 display-4">Page not found</h1>
 							<p className="font-size-md mb-4">We've noticed you lost your way, no worries, we will help you to found the correct path.</p>
 							<Link to='/app'>
-								<Button type="primary" icon={<ArrowLeftOutlined />}>Go back</Button>
+								<Button type="primary" size="large" icon={<ArrowLeftOutlined />}>Go back</Button>
 							</Link>
 						</Col>
 						<Col xs={24} sm={24} md={{ span: 14, offset: 2 }}>

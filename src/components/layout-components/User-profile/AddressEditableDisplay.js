@@ -1,4 +1,5 @@
 import React from 'react'
+import { useIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import {onIsToEditShippingAddressChange}  from '../../../redux/actions/Lrn';
@@ -14,6 +15,7 @@ const setLocale = (isLocaleOn, localeKey) =>{
 
 const AddressEditableDisplay = props => {
 	const [form] = Form.useForm();
+	const intl = useIntl();
 	const { onIsToEditShippingAddressChange, userAddresses, shippingTabKey } = props;	
 	const selectedAddress = userAddresses?.find(a => a.AddressTypeId?.toLowerCase() === shippingTabKey);
 
@@ -75,7 +77,7 @@ const AddressEditableDisplay = props => {
 		<div>
 			<Row gutter={16}>
 				<Col xs={24} sm={24} md={17}>
-					<Card bordered={false}>
+					<Card variant="borderless">
 						<Form
 							layout="vertical"
 							form={form}
@@ -86,27 +88,27 @@ const AddressEditableDisplay = props => {
 						>
 						<div>Street address 1:</div>
 						<Form.Item name="address1" rules={rules.address1}>
-							<Input placeholder="Address #1" />
+							<Input placeholder={intl.formatMessage({ id: "profile.address.address1" })} />
 						</Form.Item>
 						<div>Street address 2 (optional):</div>
 						<Form.Item name="address2">								
-							<Input placeholder="Address #2 (optional)" />
+							<Input placeholder={intl.formatMessage({ id: "profile.address.address2Optional" })} />
 						</Form.Item>
 						<div>City:</div>
 						<Form.Item name="city" rules={rules.city}>								
-							<Input placeholder="City" />
+							<Input placeholder={intl.formatMessage({ id: "profile.address.city" })} />
 						</Form.Item>
 						<div>State:</div>
 						<Form.Item name="state" rules={rules.state}>
-							<Input placeholder="State" />
+							<Input placeholder={intl.formatMessage({ id: "profile.address.state" })} />
 						</Form.Item>
 						<div>Zip-Code:</div>
 						<Form.Item name="zip" rules={rules.zip}>								
-							<Input placeholder="Zip code" />
+							<Input placeholder={intl.formatMessage({ id: "profile.address.zipCode" })} />
 						</Form.Item>
 						<div className="mb-3">
 						<Button className="mr-2" onClick={() => discardChanges()}>Discard</Button>
-						<Button type="primary" onClick={() => onFinish()} htmlType="submit" >
+						<Button type="primary" size="large" onClick={() => onFinish()} htmlType="submit" >
 							Update
 						</Button>
 					</div>

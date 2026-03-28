@@ -1,4 +1,4 @@
-import videoClassesData from '../assets/data/chapter-class-data.json';
+// import videoClassesData from '../assets/data/chapter-class-data.json';
 import CentralCourseThemeService from 'services/CentralCourseThemeService';
 import GoogleService from './GoogleService';
 

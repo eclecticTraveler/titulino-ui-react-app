@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Dropdown, Badge, Avatar, List, Button } from 'antd';
+import { Dropdown, Badge, Avatar, List, Button } from 'antd';
 import { 
   MailOutlined, 
   BellOutlined, 
@@ -89,9 +89,9 @@ export const NavNotification = () => {
   return (
     <Dropdown 
       placement="bottomRight"
-      overlay={notificationList}
-      onVisibleChange={handleVisibleChange}
-      visible={visible}
+      popupRender={() => notificationList}
+      onOpenChange={handleVisibleChange}
+      open={visible}
       trigger={['click']}
     >
       <div className="nav-icon-container">

@@ -2,15 +2,12 @@ import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { RouteElement } from "utils/routerCompat";
 import { connect } from "react-redux";
-import { bindActionCreators } from 'redux';
 import Loading from '../../components/shared-components/Loading';
 import { APP_PREFIX_PATH, DEFAULT_LANDING_COURSE } from '../../configs/AppConfig';
-import { onCurrentRouteInfo } from '../../redux/actions/Lrn';
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPolicy";
 import { retry } from '../../helpers/index';
-import { env } from 'configs/EnvironmentConfig';
 
 // Lazy-loaded route components (hoisted to module scope for stable references)
 const SharedCourseLevel = lazy(() => retry(() => import(`../shared-views/course-level`)));

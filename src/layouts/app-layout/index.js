@@ -15,7 +15,6 @@ import {
 } from "antd";
 
 import {onCurrentRouteInfo} from '../../redux/actions/Lrn';
-import mainNavigationConfig from "../../configs/MainNavigationConfig";
 
 import { 
   SIDE_NAV_WIDTH, 

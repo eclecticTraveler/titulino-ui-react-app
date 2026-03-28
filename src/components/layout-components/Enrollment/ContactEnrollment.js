@@ -1,22 +1,24 @@
-import React, { useState, useEffect, useRef  } from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onRequestingGeographicalDivision } from "redux/actions/Lrn";
-import { Form, Input, Radio, Select, DatePicker, Checkbox, Button, Card, Divider, Row, Col, Space  } from "antd";
+import { Form, Input, Radio, Select, DatePicker, Card, Space  } from "antd";
 import Flag from "react-world-flags"; // Correct import for flags
-import moment from "moment";
+import dayjs from "dayjs";
+import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 const { Option } = Select;
 
 export const ContactEnrollment = (props) => {
   const { countries, selfLanguageLevel, onRequestingGeographicalDivision, selectedEmail, selectedYearOfBirth, selectedDateOfBirth,
-     onEmailChange, onFormSubmit, form, setResetChildStates, enrollmentStyle, submittingLoading, selectedCoursesToEnroll, availableCourses } = props;
+     onEmailChange, form, setResetChildStates, enrollmentStyle, submittingLoading, selectedCoursesToEnroll, availableCourses } = props;
   const [selectedCountryOfResidence, setSelectedCountryOfResidence] = useState(null);
   const [selectedBirthCountry, setSelectedBirthCountry] = useState(null);
   const [divisions, setDivisions] = useState([]);
   const [birthDivisions, setBirthDivisions] = useState([]);
   const locale = true;
+  const intl = useIntl();
     console.log("----->selectedDateOfBirth", selectedDateOfBirth)
     console.log("selectedCoursesToEnroll", selectedCoursesToEnroll);
   const getLanguageName = (id) => {
@@ -63,6 +65,7 @@ export const ContactEnrollment = (props) => {
     };
     fetchDivisions();
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [selectedCountryOfResidence]);
 
   // Fetch divisions for country of birth
@@ -75,29 +78,24 @@ export const ContactEnrollment = (props) => {
       };
       fetchBirthDivisions();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedBirthCountry]);
 
 
   useEffect(() => {
     form.setFieldsValue({ emailAddress: selectedEmail });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEmail]);
   
 
   const filterOption = (input, option) => {
-    const children = option.children; // Get children from the option
-    // Check if children is a string or an array
-    const label = typeof children === "string" ? children : children[1]; // Get the country name
+    const label = option.label || '';
     return label.toLowerCase().includes(input.toLowerCase());
-  };
-
-  const onFinish = (values) => {
-    console.log("Child form values:", values);
-    onFormSubmit(values); // Pass the values back to the parent for further processing
   };
 
   return (
     <div className="container customerName" >
-      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} loading={submittingLoading} bordered={true}>
+      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.contactEmail")} loading={submittingLoading} variant="outlined">
         <Form.Item
           name="emailAddress"
           rules={[
@@ -106,7 +104,7 @@ export const ContactEnrollment = (props) => {
           ]}
         >
           <Input
-            placeholder="Enter your contact email"
+            placeholder={intl.formatMessage({ id: "enrollment.form.enterContactEmail" })}
             value={selectedEmail} // Use the processed value from the parent
             onChange={(e) => onEmailChange(e.target.value)} // Delegate to the parent handler
           />
@@ -140,7 +138,7 @@ export const ContactEnrollment = (props) => {
                   : setLocale(locale, "enrollment.form.languageLevelForCourse")
               }
               loading={submittingLoading}
-              bordered
+              variant="outlined"
             >
               <Form.Item
                 name={fieldName}
@@ -167,15 +165,15 @@ export const ContactEnrollment = (props) => {
       </>
 
 
-      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.personalInfo")} loading={submittingLoading} bordered={true}>
+      <Card  style={enrollmentStyle} title={setLocale(locale, "enrollment.form.personalInfo")} loading={submittingLoading} variant="outlined">
           <Form.Item name="lastNames" label={setLocale(locale, "enrollment.form.lastNames")} 
           rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.enterLastNames") }]}>
-            <Input placeholder="Enter your last names" />
+            <Input placeholder={intl.formatMessage({ id: "enrollment.form.enterLastNames" })} />
           </Form.Item>
 
           <Form.Item name="names" label={setLocale(locale, "enrollment.form.names")} 
           rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.enterFirstMiddleName") }]}>
-            <Input placeholder="Enter your first and/or middle name" />
+            <Input placeholder={intl.formatMessage({ id: "enrollment.form.enterFirstMiddleName" })} />
           </Form.Item>
 
         <Form.Item name="dateOfBirth" label={setLocale(locale, "enrollment.form.dateOfBirth")}
@@ -183,12 +181,12 @@ export const ContactEnrollment = (props) => {
         >
           <DatePicker
             style={{ width: "100%" }}
-            disabledDate={(current) => current && current > moment().endOf("day")}
+            disabledDate={(current) => current && current > dayjs().endOf("day")}
             defaultPickerValue={
               selectedDateOfBirth 
-                ? moment(selectedDateOfBirth, "YYYY-MM-DD")
+                ? dayjs(selectedDateOfBirth, "YYYY-MM-DD")
                 : selectedYearOfBirth
-                ? moment(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")
+                ? dayjs(`${selectedYearOfBirth}-01-01`, "YYYY-MM-DD")
                 : undefined // Opens on selected date or year from parent component by default
             }
           />
@@ -204,22 +202,20 @@ export const ContactEnrollment = (props) => {
       </Card>
 
 
-      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.geography")} loading={submittingLoading} bordered={true}>
+      <Card style={enrollmentStyle} title={setLocale(locale, "enrollment.form.geography")} loading={submittingLoading} variant="outlined">
          <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
          rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}>
           <Select
-            showSearch
-            placeholder="Select your country of residence"
-            optionFilterProp="children"
+            showSearch={{ optionFilterProp: "label", filterOption: filterOption }}
+            placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
             onChange={(value) => {
               setSelectedCountryOfResidence(value); // Update selected country
               setDivisions([]); // Reset divisions for residence
               form.setFieldsValue({ countryDivisionOfResidence: null }); // Clear form division value
             }}
-            filterOption={filterOption}
           >
             {countries?.map((country) => (
-              <Option key={country.CountryId} value={country.CountryId}>
+              <Option key={country.CountryId} value={country.CountryId} label={`${country?.NativeCountryName} | ${country?.CountryName}`}>
                 <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
                 {`${country?.NativeCountryName} | ${country?.CountryName}`}
               </Option>
@@ -231,12 +227,11 @@ export const ContactEnrollment = (props) => {
         <Form.Item name="countryDivisionOfResidence" label={setLocale(locale, "enrollment.form.stateOrRegion")} 
         rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegion") }]}>
             <Select
-            showSearch
-            placeholder="Select a state/region where you currently live"
-            optionFilterProp="children"
+            showSearch={{ optionFilterProp: "label" }}
+            placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegion" })}
             >
             {divisions?.map((division) => (
-                <Option key={division?.CountryDivisionId} value={division?.CountryDivisionId}>
+                <Option key={division?.CountryDivisionId} value={division?.CountryDivisionId} label={division?.CountryDivisionName}>
                   <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
                 {division?.CountryDivisionName}
                 </Option>
@@ -248,18 +243,16 @@ export const ContactEnrollment = (props) => {
         <Form.Item name="countryOfBirth" label={setLocale(locale, "enrollment.form.countryOfNationalityOfBirth")} 
         rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfBirth") }]}>
           <Select
-            showSearch
-            placeholder="Select country of nationality of birth"
-            optionFilterProp="children"
+            showSearch={{ optionFilterProp: "label", filterOption: filterOption }}
+            placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
             onChange={(value) => {
               setSelectedBirthCountry(value); // Update selected country
               setBirthDivisions([]); // Reset divisions for birth country
               form.setFieldsValue({ countryDivisionOfBirth: null }); // Clear form division value
             }}
-            filterOption={filterOption}
           >
             {countries?.map((country) => (
-              <Option key={country.CountryId} value={country.CountryId}>
+              <Option key={country.CountryId} value={country.CountryId} label={`${country?.NativeCountryName} | ${country?.CountryName}`}>
                 <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
                 {`${country?.NativeCountryName} | ${country?.CountryName}`}
               </Option>
@@ -271,12 +264,11 @@ export const ContactEnrollment = (props) => {
         <Form.Item name="countryDivisionOfBirth" label={setLocale(locale, "enrollment.form.stateOrRegionOfBirth")} 
         rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegionOfBirth") }]}>
             <Select
-            showSearch
-            placeholder="Select state/region of nationality of birth"
-            optionFilterProp="children"            
+            showSearch={{ optionFilterProp: "label" }}
+            placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegionOfBirth" })}
             >
             {birthDivisions?.map((division) => (
-                <Option key={division.CountryDivisionId} value={division.CountryDivisionId}>
+                <Option key={division.CountryDivisionId} value={division.CountryDivisionId} label={division.CountryDivisionName}>
                   <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
                 {division.CountryDivisionName}
                 </Option>

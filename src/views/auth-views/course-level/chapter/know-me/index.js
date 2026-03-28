@@ -2,10 +2,6 @@ import React, {Component} from 'react'
 import {connect} from 'react-redux';
 import {getUserNativeLanguage}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
-import { env } from 'configs/EnvironmentConfig';
-import Loading from 'components/shared-components/Loading';
-import InternalIFrame from 'components/layout-components/InternalIFrame';
-import UnderConstruccion from 'components/layout-components/UnderConstruccion';
 import KnowMeV1 from 'components/layout-components/KnowMeV1';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import utils from 'utils';

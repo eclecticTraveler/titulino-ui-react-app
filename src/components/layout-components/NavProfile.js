@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { Menu, Dropdown, Avatar, Drawer } from "antd";
+import { Menu, Avatar, Dropdown } from "antd";
 import { connect } from 'react-redux'
 import { 
-  EditOutlined, 
   SettingOutlined, 
-  ShopOutlined, 
-  QuestionCircleOutlined, 
   LogoutOutlined,
-  CloudUploadOutlined,
   SwapOutlined,
   LoginOutlined,
   GlobalOutlined,
@@ -17,12 +13,11 @@ import {
 import Icon from '../../components/util-components/Icon';
 import { signOut } from 'redux/actions/Auth';
 import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from 'configs/AppConfig';
-import { Link } from "react-router-dom";
 import IntlMessage from "../../components/util-components/IntlMessage";
 import ProfileNavPanelConfig from './ProfileNavPanelConfig';
-import { DIR_RTL } from 'constants/ThemeConstant';
-import NavSearchWrapper from './NavSearchWrapper';
 import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
+import NavSearchWrapper from './NavSearchWrapper';
+import { Link } from 'react-router-dom';
 import { env } from "configs/EnvironmentConfig";
 import { getWasUserConfigSetFlag, onUserSelectingCourse } from 'redux/actions/Lrn';
 
@@ -84,7 +79,7 @@ const configureMenuItems = (user, token) => {
 }
 
 export const NavProfile = (props) => {  
-  const { course, direction, mode, isMobile, getWasUserConfigSetFlag, onUserSelectingCourse, token, signOut, user } = props;
+  const { direction, mode, isMobile, getWasUserConfigSetFlag, onUserSelectingCourse, token, signOut, user } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
  
   const showDrawer = () => {
@@ -135,72 +130,88 @@ export const NavProfile = (props) => {
           </div>
         </div>
         <div className="nav-profile-body">
-        <Menu>
-          {menuItems.map((el, i) => (
-            <Menu.Item key={i}>
+        <Menu items={[
+          ...menuItems.map((el, i) => ({
+            key: i,
+            label: (
               <Link id={el.id} to={`${el?.isAuth ? AUTH_PREFIX_PATH : APP_PREFIX_PATH}/${el.path}`}>
                 <Icon className="mr-3 profile-accomdation" type={el.icon} />
                 <span className="font-weight-normal">{el.title}</span>
               </Link>
-            </Menu.Item>
-          ))}
+            ),
+          })),
 
-          {env.IS_SWITCH_COURSE_ON && 
-              <Menu.Item key={menuItems?.length + 2} onClick={resetBaseCourseLanguage}>
+          ...(env.IS_SWITCH_COURSE_ON ? [{
+            key: menuItems?.length + 2,
+            onClick: resetBaseCourseLanguage,
+            label: (
               <span>
                 <SwapOutlined className="mr-3 profile-accomdation" />
                 <span className="font-weight-normal"> {setLocale(locale, "profile.switch.course")}</span>
               </span>
-            </Menu.Item>
-          }
+            ),
+          }] : []),
 
-          <Menu.SubMenu
-            key="language"
-            title={
+          {
+            key: 'language',
+            label: (
               <span>
                 <GlobalOutlined className="mr-3 profile-accommodation profile-submenu-accomodation" />
                 <span className="font-weight-normal">{setLocale(locale, "settings.menu.sub.title.2.language")}</span>
               </span>
-            }
-          >
-            <ProfileNavLanguagePanelConfig />
-          </Menu.SubMenu>
-          { token && (
-          <Menu.Item key={menuItems?.length + 3} onClick={showDrawer}>
-            <span>
-              <SettingOutlined className="mr-3 profile-accomdation" />
-              <span className="font-weight-normal"> {setLocale(locale, "settings.menu.main.title")}</span>
-            </span>
-          </Menu.Item>
-          )}
+            ),
+            children: [
+              {
+                key: 'language-panel',
+                label: <ProfileNavLanguagePanelConfig />,
+              }
+            ],
+          },
 
-          {/* Conditional rendering for Login and Logout */}
-          {env.IS_SSO_ON && !token ? (
-          <>
-            <Menu.Divider />
-            <Menu.Item key="login" className="menu-highlight">
-              <Link to={`${APP_PREFIX_PATH}/login`}>
-                <LoginOutlined className="mr-3 profile-accomdation" />
-                <span className="font-weight-bold">{setLocale(locale, "sidenav.login")}</span>
-              </Link>
-            </Menu.Item>
-          </>
-        ) : env.IS_SSO_ON && token ? (
-          <>
-            <Menu.Divider />
-            <Menu.Item key="logout" className="menu-highlight" onClick={handleSigningOut}>
-              <LogoutOutlined className="mr-3 profile-accomdation" />
-              <span className="font-weight-bold">{setLocale(locale, "profile.sign.out")}</span>
-            </Menu.Item>
-          </>
-        ) : null}
-        </Menu>
+          ...(token ? [{
+            key: menuItems?.length + 3,
+            onClick: showDrawer,
+            label: (
+              <span>
+                <SettingOutlined className="mr-3 profile-accomdation" />
+                <span className="font-weight-normal"> {setLocale(locale, "settings.menu.main.title")}</span>
+              </span>
+            ),
+          }] : []),
+
+          ...(env.IS_SSO_ON && !token ? [
+            { type: 'divider' },
+            {
+              key: 'login',
+              className: 'menu-highlight',
+              label: (
+                <Link to={`${APP_PREFIX_PATH}/login`}>
+                  <LoginOutlined className="mr-3 profile-accomdation" />
+                  <span className="font-weight-bold">{setLocale(locale, "sidenav.login")}</span>
+                </Link>
+              ),
+            }
+          ] : env.IS_SSO_ON && token ? [
+            { type: 'divider' },
+            {
+              key: 'logout',
+              className: 'menu-highlight',
+              onClick: handleSigningOut,
+              label: (
+                <span>
+                  <LogoutOutlined className="mr-3 profile-accomdation" />
+                  <span className="font-weight-bold">{setLocale(locale, "profile.sign.out")}</span>
+                </span>
+              ),
+            }
+          ] : []),
+        ]} />
         </div>
       </div>
   );
   return (
     <>
-      <Dropdown placement="bottomRight" overlay={profileMenu} trigger={["click"]}>
+      <Dropdown placement="bottomRight" popupRender={() => profileMenu} trigger={["click"]}>
         <div className="avatar-menu d-flex align-items-center" mode="horizontal">
           <Avatar size={40} src={avatarImg} />
         </div>

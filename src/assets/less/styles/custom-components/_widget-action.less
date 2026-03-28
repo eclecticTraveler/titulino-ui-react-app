@@ -1,11 +1,15 @@
 .widget-action {
 	position: relative; 
 	z-index: 10; 
-
+	margin-bottom: 35px;
 	p {
 		color: #0E1F43; 
 		font-size: 16px; 
 		margin: 0 0 10px; 
+
+		& when (@theme = dark) {
+			color: @text-color;
+		}
 
 		img {
 			vertical-align: middle;
@@ -32,13 +36,14 @@
 		
 
 		&:hover {
-			background-color:#0E1F43;// #0E1F43 !important; 
-			border-color: #0E1F43; 
-			color: #fff; 
+			background-color: #0E1F43 !important;
+			border-color: #0E1F43 !important; 
+			color: #fff !important; 
 
 			& when (@theme = dark) {
-				color: #fafafa;
-				border-color: #fafafa; 
+				background-color: transparent !important;
+				color: #fafafa !important;
+				border-color: #fafafa !important; 
 			} 
 		}
 

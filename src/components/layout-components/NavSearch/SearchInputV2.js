@@ -12,6 +12,7 @@ import {
 } from '@ant-design/icons';
 import { Link } from "react-router-dom";
 import { AutoComplete, Input } from 'antd';
+import { useIntl } from 'react-intl';
 import IntlMessage from '../../util-components/IntlMessage';
 import { connect } from "react-redux";
 import { COURSE_COLOR_CONFIG } from 'configs/CourseThemeConfig';
@@ -21,6 +22,7 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 
 const SearchInputV2 = props => {
 	const { active, close, isMobile, mode, dynamicUpperMainNavigation, locale, onSearchSelection } = props
+	const intl = useIntl();
 	const [value, setValue] = useState('');
 	const [options, setOptions] = useState([])
 	const inputRef = useRef(null);
@@ -63,7 +65,7 @@ const SearchInputV2 = props => {
 	}
 
 
-	const getCategoryIcon = (category, level, icon) => {
+	const getCategoryIcon = (category, level, icon) => { // eslint-disable-line no-unused-vars
 		//  console.log("category", category);
 		//  console.log("level", level)
 		switch (category) {
@@ -172,18 +174,18 @@ const SearchInputV2 = props => {
 		<AutoComplete
 			ref={inputRef} 
 			className={`nav-search-input ${isMobile ? 'is-mobile' : ''} ${!isMobile ? 'search-input-big' : ''} ${mode === 'light' ? 'light' : ''}`}
-			dropdownClassName="nav-search-dropdown"
-			dropdownMatchSelectWidth={false} // Disable the default width matching behavior
-			dropdownStyle={{ maxHeight: 400 }} // Adjust the maximum height of the dropdown menu
+			classNames={{ popup: { root: "nav-search-dropdown" } }}
+			popupMatchSelectWidth={false} // Disable the default width matching behavior
+			styles={{ popup: { root: { maxHeight: 400 } } }}
 			options={options} // Pass in more options to increase the number of displayed results
 			onSelect={onSelect}
 			onSearch={onSearch}
 			value={value}
-			filterOption={(inputValue, option) => 
+			showSearch={{ filterOption: (inputValue, option) => 
 				option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-			}
+			}}
 		>
-			<Input className='search-input-override' placeholder="Search..."  prefix={<SearchOutlined className="mr-0 search-icon-override" />} />
+			<Input className='search-input-override' placeholder={intl.formatMessage({ id: "nav.search.placeholder" })}  prefix={<SearchOutlined className="mr-0 search-icon-override" />} />
 		</AutoComplete>
 	)
 }

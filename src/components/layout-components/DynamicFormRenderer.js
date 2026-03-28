@@ -1,13 +1,9 @@
 import React from "react";
-import { Form, Input, Checkbox, Card, Spin, Upload, message } from "antd";
-import IntlMessage from "components/util-components/IntlMessage";
+import { Form, Input, Checkbox, Card, Upload, message } from "antd";
 import ConsentModal from "components/layout-components/Enrollment/ConsentModal";
 import { PlusOutlined } from "@ant-design/icons";
 
 export default function DynamicFormRenderer({ questions, locale = false, loading = false }) {
-  const setLocale = (isLocaleOn, localeKey) => {
-    return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-  };
 
   return (
     <>
@@ -26,7 +22,7 @@ export default function DynamicFormRenderer({ questions, locale = false, loading
                   />
                 ) : null
               }
-              bordered
+              variant="outlined"
               style={{ maxWidth: 700, margin: "20px auto" }}
             >
               {q.description && <p>{q.description}</p>}
@@ -36,7 +32,7 @@ export default function DynamicFormRenderer({ questions, locale = false, loading
 
       if (q.type === "upload") {
         return (
-          <Card key={q.id} title={q?.title} bordered style={{ maxWidth: 700, margin: "20px auto" }}>
+          <Card key={q.id} title={q?.title} variant="outlined" style={{ maxWidth: 700, margin: "20px auto" }}>
             <Form.Item
               name={q.id}
               label={q.label}
@@ -83,7 +79,7 @@ export default function DynamicFormRenderer({ questions, locale = false, loading
 
         if (q.type === "textarea") {
           return (
-            <Card key={q.id} title={q?.title} bordered style={{ maxWidth: 700, margin: "20px auto" }}>
+            <Card key={q.id} title={q?.title} variant="outlined" style={{ maxWidth: 700, margin: "20px auto" }}>
               <Form.Item
                 name={q.id}
                 label={q.label}
@@ -100,7 +96,7 @@ export default function DynamicFormRenderer({ questions, locale = false, loading
           <Card
             key={q.id}
             title={q?.title}
-            bordered
+            variant="outlined"
             style={{ maxWidth: 700, margin: "20px auto" }}
           >
             <Form.Item

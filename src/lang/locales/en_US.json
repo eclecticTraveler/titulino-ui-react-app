@@ -316,6 +316,14 @@
 	"admin.dashboard.insights.overview.newVsReturning": "New vs Returning Enrollee",
 	"admin.dashboard.insights.overview.languageProficiency": "Language Proficiency Distribution",
 	"admin.dashboard.insights.overview.enrolleeType": "Enrollee Category Type",
+	"admin.dashboard.insights.progress.profile": "Profile",
+	"admin.dashboard.insights.progress.level": "Level",
+	"admin.dashboard.insights.progress.id": "Id",
+	"admin.dashboard.insights.progress.fullName": "Full Name",
+	"admin.dashboard.insights.progress.studentProgress": "Student Progress",
+	"admin.dashboard.insights.progress.participation": "Participation",
+	"admin.dashboard.insights.progress.golden": "Golden",
+	"admin.dashboard.insights.progress.country": "Country",
 	"admin.progressEditable.emails":"Emails",
 	"admin.progressEditable.saveProgress":"Save Progress",
 	"userprogress.enrollment.invitationMessage":"Proceed to enroll in course",
@@ -370,7 +378,21 @@
 	"shop.succesPurchase.headerMessageContent":"I wanted to express my gratitute for your support and making this Community project a sustainable.\n Hope one day I can dedicate to it fully with your support.\n",
 	"shop.succesPurchase.headerMessageContentGold":"Please access to this exclusive WhatsApp group to which you can get your exclusive benefits!!",
 	"shop.succesPurchase.letsExplore":"Let's explore 🏠",
-	"group.modal.enrollmentCompleted":"Titulino Gold Experience"
+	"group.modal.enrollmentCompleted":"Titulino Gold Experience",
+
+	"profile.address.address1": "Address #1",
+	"profile.address.address2Optional": "Address #2 (optional)",
+	"profile.address.city": "City",
+	"profile.address.state": "State",
+	"profile.address.zipCode": "Zip code",
+	"profile.contact.firstName": "Contact First Name",
+	"profile.contact.primaryLanguage": "Contact Primary Language",
+	"nav.search.placeholder": "Search...",
+	"forgot.password.emailAddress": "Email Address",
+	"admin.dashboard.insights.selectCourse": "Select Course",
+	"admin.dashboard.insights.selectLocationType": "Select Location Type",
+	"admin.dashboard.insights.selectCountry": "Select Country",
+	"enrollment.form.enterYourEmail": "Enter your email"
 
 
 

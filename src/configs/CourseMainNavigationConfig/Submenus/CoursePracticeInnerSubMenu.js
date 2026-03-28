@@ -9,17 +9,9 @@ import {
 	faBookReader,
 	faKeyboard,
 	faClone,
-	faFileLines,
 	faDice,
 	faUserClock,
-	faPencilAlt,
-	faChalkboard,
-	faArrowUp,
-	faFilePdf,
-	faRoad,
-	faChartSimple,
-	faMicrophone,
-	faPersonWalkingArrowRight
+	faChalkboard
    } from '@fortawesome/free-solid-svg-icons';
    import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
 

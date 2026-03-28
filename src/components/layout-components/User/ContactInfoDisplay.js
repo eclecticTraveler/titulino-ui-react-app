@@ -6,14 +6,10 @@ import { withRouter } from "utils/routerCompat";
 import { 
     ContactsOutlined,
     PhoneOutlined, 
-    MailOutlined, 
-    UsergroupAddOutlined, 
-    QuestionCircleOutlined, 
-    LogoutOutlined,
-    CloudUploadOutlined,
-    SwapOutlined
+    MailOutlined,
+    UsergroupAddOutlined,
   } from '@ant-design/icons';
-import { Input, Row, Col, Card, Form, Button } from 'antd';
+import { Row, Col, Card } from 'antd';
 
 const ContactInfoDisplay = props => {
 	const { selectedCorrectionRecord } = props;	
@@ -24,7 +20,7 @@ const ContactInfoDisplay = props => {
         <div>
             <Row gutter={16}>
                 <Col xs={24} sm={24} md={17}>
-                <Card bordered={false}>
+                <Card variant="borderless">
                     <h2><ContactsOutlined />{` ${selectedCorrectionRecord?.fullCorrectionObj?.ContactTerm?.ContactRelationId} Info:`}</h2>
                     <div>First Name*</div>
                     <h4>{selectedCorrectionRecord?.firstName}</h4>

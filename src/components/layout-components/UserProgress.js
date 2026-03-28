@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
+  App,
   Card,
   Checkbox,
   Select,
-  Button,
   Row,
   Col,
-  Input,
-  message,
   Badge,
-  notification 
 } from 'antd';
 import {
   FacebookOutlined,
@@ -26,6 +23,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
    setSelectedLessons, emailId, setIsSmallConfettiVisible, setSelectedLessonsForSubmission, contactId, userProficiency }) => {
     const [selectedLessons, internalSetSelectedLessons] = useState({});
     const [userProgressLessonsToUpsert, internalSetUserProgressLessonsToUpsert] = useState({});
+    const { message } = App.useApp();
     const locale = true;
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -112,6 +110,7 @@ export const UserProgress = ({ progressData, courseCodeId, categories, setHandle
       setSelectedLessons(selectedLessons); // Update parent's selectedLessons
       setHandleUserProgressSubmit(() => handleSubmit); // Provide handleSubmit function to the parent (Function delegate)
       setSelectedLessonsForSubmission(userProgressLessonsToUpsert)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedLessons, userProgressLessonsToUpsert]);
 
   // Handle checkbox change for class selection
@@ -359,7 +358,7 @@ const combinedCategories = categories
                                   />
                                 </div>
                               }
-                              bordered
+                              variant="outlined"
                               extra={
                                 <Checkbox
                                   onClick={(e) => {
@@ -475,6 +474,7 @@ const combinedCategories = categories
                                     <>
                                     <div style={{color:'red'}}>{setLocale(locale, "resources.userProgress.selectOptions")}:</div>
                                     <Select
+                                      size="large"
                                       placeholder={setLocale(locale, "resources.userProgress.participationType")}
                                       onChange={(value) =>
                                         handleParticipationTypeChange(

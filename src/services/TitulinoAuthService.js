@@ -58,6 +58,127 @@ export const getCourseProgress = async (courseCodeId, token, whoCalledMe) => {
   }
 };
 
+export const getCourseProgressDemographicOverview = async (courseCodeId, locationType, countryId, token, whoCalledMe) => {
+  if (!token || !courseCodeId || !locationType || !countryId) {
+    console.warn(`Missing params in getCourseProgressDemographicOverview: from ${whoCalledMe}`);
+    return false;
+  }
+
+  const progressOverviewUrl = `${SupabaseConfig.baseApiUrl}/GetAdminDashboardCourseProgressDemographicOverview`;
+
+  const payload = JSON.stringify({
+    "p_locationtype": locationType,
+    "p_countrynameorid": countryId,
+    "p_coursecodeid": courseCodeId
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: getHeaders(token),
+    body: payload,
+    redirect: "follow",
+  };
+
+  try {
+    const response = await fetch(progressOverviewUrl, requestOptions);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (env.ENVIROMENT !== "prod") {
+        console.warn(`API responded with status ${response.status} in getCourseProgressDemographicOverview: from ${whoCalledMe}`);
+        console.warn(`Response body: ${errorText}`);
+      }
+      return false;
+    }
+
+    const apiResult = await response.json();
+    return apiResult ?? false;
+
+  } catch (error) {
+    console.error(`Exception in getCourseProgressDemographicOverview: from ${whoCalledMe}`, error);
+    return false;
+  }
+};
+
+export const getCourseProgressCountryCount = async (courseCodeId, token, whoCalledMe) => {
+  if (!token || !courseCodeId) {
+    console.warn(`Missing params in getCourseProgressCountryCount: from ${whoCalledMe}`);
+    return _results;
+  }
+
+  const countryCountUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryCountWithRecordedCourseProgressByCourseCodeId`;
+
+  const payload = JSON.stringify({ "p_coursecodeid": courseCodeId });
+
+  const requestOptions = {
+    method: "POST",
+    headers: getHeaders(token),
+    body: payload,
+    redirect: "follow",
+  };
+
+  try {
+    const response = await fetch(countryCountUrl, requestOptions);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (env.ENVIROMENT !== "prod") {
+        console.warn(`API responded with status ${response.status} in getCourseProgressCountryCount: from ${whoCalledMe}`);
+        console.warn(`Response body: ${errorText}`);
+      }
+      return _results;
+    }
+
+    const apiResult = await response.json();
+    return apiResult ?? _results;
+
+  } catch (error) {
+    console.error(`Exception in getCourseProgressCountryCount: from ${whoCalledMe}`, error);
+    return _results;
+  }
+};
+
+export const getCourseProgressCountryDivisionCount = async (courseCodeId, countryId, token, whoCalledMe) => {
+  if (!token || !courseCodeId || !countryId) {
+    console.warn(`Missing params in getCourseProgressCountryDivisionCount: from ${whoCalledMe}`);
+    return _results;
+  }
+
+  const countryDivisionUrl = `${SupabaseConfig.baseApiUrl}/GetEnrolleeCountryDivisionWithRecordedCourseProgressCount`;
+
+  const payload = JSON.stringify({
+    "p_coursecodeid": courseCodeId,
+    "p_countrynameorid": countryId
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: getHeaders(token),
+    body: payload,
+    redirect: "follow",
+  };
+
+  try {
+    const response = await fetch(countryDivisionUrl, requestOptions);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (env.ENVIROMENT !== "prod") {
+        console.warn(`API responded with status ${response.status} in getCourseProgressCountryDivisionCount: from ${whoCalledMe}`);
+        console.warn(`Response body: ${errorText}`);
+      }
+      return _results;
+    }
+
+    const apiResult = await response.json();
+    return apiResult ?? _results;
+
+  } catch (error) {
+    console.error(`Exception in getCourseProgressCountryDivisionCount: from ${whoCalledMe}`, error);
+    return _results;
+  }
+};
+
 export const upsertCourseProgress = async (progressRecords, token, whoCalledMe = "UnknownCaller") => {
   if (!token || !Array.isArray(progressRecords) || progressRecords.length === 0) {
     console.warn(`[${whoCalledMe}] Missing token or progressRecords is empty or invalid`);
@@ -151,6 +272,9 @@ export const upsertUserKnowMeSubmission = async (submission_records, token, whoC
 
 const TitulinoAuthService = {
   getCourseProgress,
+  getCourseProgressDemographicOverview,
+  getCourseProgressCountryCount,
+  getCourseProgressCountryDivisionCount,
   upsertCourseProgress,
   upsertUserKnowMeSubmission
 };

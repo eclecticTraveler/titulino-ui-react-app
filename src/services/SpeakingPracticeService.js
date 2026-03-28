@@ -1,5 +1,5 @@
 import speakingChapterData from '../assets/data/speaking-practice-data.json';
-import GoogleService from './GoogleService';
+// import GoogleService from './GoogleService';
 
 const loadSpeakingData = async() => {
   const rawData = speakingChapterData;
@@ -15,7 +15,7 @@ const loadRequestedSpeakingChapterUrl = async(levelTheme, chapterNo, nativeLangu
   const rawSpeakingData = await loadSpeakingData();
   const filteredSpeakingData = await loadRequestedSpeakingModule(rawSpeakingData, levelTheme, course, nativeLanguage);
   const speakingChapter = filteredSpeakingData?.chapters.find(ch => ch.chapter === parseInt(chapterNo, 10)) || filteredSpeakingData?.chapters[filteredSpeakingData?.chapters.length - 1];
-  return speakingChapter ?? null;;
+  return speakingChapter ?? null;
 }
 
 export const getSpeakingChapterModule = async(levelTheme, chapterNo, nativeLanguage, course) => {

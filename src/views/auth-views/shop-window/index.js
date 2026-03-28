@@ -20,7 +20,6 @@ import { useHistory } from 'utils/routerCompat';
 import goldTier from 'assets/lotties/goldTier.json';
 
 const { useBreakpoint } = Grid;
-const { TabPane } = Tabs;
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const SHOPPING_PARAMETERS_STORED_KEY = "postQueryParams";
 
@@ -53,7 +52,7 @@ const ShopWindow = (props) => {
           // ✅ Extract both values
           const courseCodeId = urlParams.get("courseCodeId");
           const tierId = urlParams.get("tierId");
-          const sessionId = urlParams.get("session_id");
+          // const sessionId = urlParams.get("session_id");
           setActiveCourseCode(courseCodeId);
           setSuccesfulCourseCodeOfPurchasedItem(courseCodeId);
           setSuccesfulPurchasedTierAccess(tierId);          
@@ -75,6 +74,7 @@ const ShopWindow = (props) => {
           resetState();          
           history.push("/");   
         }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [user?.emailId, purchasedCourseCode, purchasedTierAccess, isToProceedToSyncPurchasedTiers]);
 
 
@@ -118,6 +118,7 @@ const ShopWindow = (props) => {
     if (nativeLanguage?.localizationId && course && user?.emailId) {
       onGettingProductsAvailableForPurchase(nativeLanguage.localizationId, course, user?.emailId);      
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nativeLanguage, course, user?.emailId]);
 
   // Find the currently active course data from productCatalog
@@ -233,7 +234,7 @@ const ShopWindow = (props) => {
     <Card
       hoverable
       title={tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}
-      bordered
+      variant="outlined"
       onMouseEnter={() => !isMobile && setHoveredTier(tierKey)}
       onMouseLeave={() => !isMobile && setHoveredTier(null)}
     >
@@ -317,7 +318,7 @@ const ShopWindow = (props) => {
 
       <Card
         cover={<img alt="Shopping" src={coverUrl} style={{ height: 100, objectFit: "cover" }} />}
-        bordered
+        variant="outlined"
       >
         <h1>{setLocale(locale, "shop.feature.compareOurPackages")}</h1>
         <p>{setLocale(locale, "shop.disclaimer")}</p>
@@ -328,13 +329,13 @@ const ShopWindow = (props) => {
         onChange={(key) => setActiveCourseCode(key)}
         style={{ marginTop: 16 }}
         centered
-      >
-        {productCatalog?.map(({ course_code_id, course_name }) => (
-          <TabPane tab={course_name} key={course_code_id} />
-        ))}
-      </Tabs>
+        items={productCatalog?.map(({ course_code_id, course_name }) => ({
+          key: course_code_id,
+          label: course_name,
+        }))}
+      />
 
-      <Card bordered style={{ marginTop: 16 }}>
+      <Card variant="outlined" style={{ marginTop: 16 }}>
         <Row gutter={[16, 16]} style={{ marginTop: 30 }}>
           {["free", "silver", "gold"].map((tierKey) => {
 			      const tierInfo = activeCourse.tiers?.[tierKey];
@@ -429,7 +430,7 @@ const ShopWindow = (props) => {
         placement="bottom"
         closable={false}
         onClose={onCloseDrawer}
-        visible={open}
+        open={open}
         key="bottom"
       >
         {!isMobile ? (

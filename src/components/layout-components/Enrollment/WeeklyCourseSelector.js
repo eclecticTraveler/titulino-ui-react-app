@@ -2,15 +2,14 @@ import React, { useState, useMemo  } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onSelectingEnrollmentCourses } from "redux/actions/Lrn";
-import { Form, Input, Radio, Select, Checkbox, Button, Card, Divider, Row, Col, Space, message  } from "antd";
+import { Button, Card, Row, Col, message  } from "antd";
 import { CheckCircleOutlined, MinusCircleOutlined } from "@ant-design/icons";
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 
-const { Option } = Select;
 
 // Sample course data (use your own array here)
-const courseData = [
+const courseData = [ // eslint-disable-line no-unused-vars
   {
     CourseCodeId: "SUPERMARKET_SEP_2024_COURSE_01",
     CourseDetails: [{
@@ -214,7 +213,7 @@ const WeeklyCourseSelector = (props) => {
       <Row gutter={[24, 24]}>
         <Col span={24}>
           <Card
-            bordered
+            variant="outlined"
             cover={
               <img
                 alt="Course Selection Banner"
@@ -236,9 +235,9 @@ const WeeklyCourseSelector = (props) => {
             
             <Card
               title={setLocale(locale, `days.${day.toLowerCase()}`)}
-              bordered
+              variant="outlined"
               style={{ minHeight: 100 }}
-              bodyStyle={{ padding: 12 }}
+              styles={{ body: { padding: 12 } }}
               cover={
                 <img
                   alt={day}
@@ -325,7 +324,7 @@ const WeeklyCourseSelector = (props) => {
         ))}
         <Col span={24}>
           <Card
-            bordered
+            variant="outlined"
           >
           <Button type="primary" size="large" block onClick={handleSaveSelection} disabled={selectedCourses?.length === 0}>
             {setLocale(locale, "enrollment.continue")}

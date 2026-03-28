@@ -26,8 +26,6 @@ import { faSchool,
 	faGlassCheers,
 	faBullseye,
    } from '@fortawesome/free-solid-svg-icons';
-   import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
-
 
 export const getCourseSubNavigationMidBasic = (lang) => {			
 	const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-2/${getLocalizedConfig(lang)?.chapter}`;

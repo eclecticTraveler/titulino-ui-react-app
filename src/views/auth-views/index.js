@@ -6,9 +6,7 @@ import { AUTH_PREFIX_PATH, APP_PREFIX_PATH, DEFAULT_LANDING_COURSE } from '../..
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 import { connect } from "react-redux";
-import { bindActionCreators } from 'redux';
 import { retry } from '../../helpers/index';
-import Login from '../auth-views/authentication/login';
 
 // Lazy-loaded route components (hoisted to module scope for stable references)
 const Analytics = lazy(() => import(`./user/analytics`));
@@ -30,7 +28,7 @@ const ErrorPage1 = lazy(() => import(`./errors/error-page-1`));
 const ErrorPage2 = lazy(() => import(`./errors/error-page-2`));
 
 export const AuthViews = (props) => {
-  const { course, token, user } = props;
+  const { course, token } = props;
   const cfg = getLocalizedConfig(course);
   return (
     <Suspense fallback={<Loading cover="page"/>}>

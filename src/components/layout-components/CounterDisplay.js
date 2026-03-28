@@ -19,7 +19,7 @@ class CounterDisplay extends Component {
 		const title = this.props.localizedTitle || "unavailable";
 		return (
 			<div>	
-				<Card bordered={true} title={setLocale(locale, title)}>
+				<Card variant="outlined" title={setLocale(locale, title)}>
 					<div className='student-count-card'>
 						{count}	
 					</div>

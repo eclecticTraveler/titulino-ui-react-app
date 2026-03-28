@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import IntlMessage from '../util-components/IntlMessage';
 import Countdown from 'react-countdown';
 

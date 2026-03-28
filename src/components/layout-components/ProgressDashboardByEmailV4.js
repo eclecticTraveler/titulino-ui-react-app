@@ -2,12 +2,11 @@ import React, { useState, useEffect } from "react";
 import { onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs, DatePicker } from 'antd';
+import { App, Card, Button, Form, Row, Col, Tabs } from 'antd';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
 import UserProgress from './UserProgress'
-import moment from "moment";
 import { withRouter } from "utils/routerCompat";
 import Confetti from 'react-confetti';
 import useWindowSize from 'react-use/lib/useWindowSize';
@@ -19,20 +18,19 @@ import ConfettiExplosion from 'react-confetti-explosion';
 
 export const ProgressDashboardByEmailV4 = (props) => {
   const { userRegisteredProgressByCourse, user,
-     nativeLanguage, currentCourseCodeId, courseConfiguration, onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse,
-     studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, selectedCourse, courseTheme, hasUserInteractedWithModal } = props;
+     currentCourseCodeId, courseConfiguration, onFetchingUserAuthenticatedProgressForCourse, onSubmittingUserAuthenticatedProgressForCourse,
+     studentPercentagesForCourse, studentCategoriesCompletedForCourse, courseTheme } = props;
 
-  const [form] = Form.useForm();
+  const [form] = Form.useForm(); // eslint-disable-line no-unused-vars
+  const { message } = App.useApp();
   const [selectedLessonsForSubmission, setSelectedLessonsForSubmission] = useState({});
   const [selectedLessons, setSelectedLessons] = useState({});
   const [handleUserProgressSubmit, setHandleUserProgressSubmit] = useState(null); // To hold the child's submit function
   const [activeKey, setActiveKey] = useState('1');
   const [loading, setLoading] = useState(false);
-  const [isEmailValid, setIsEmailValid] = useState(true);
+  const [isEmailValid] = useState(true);
   const [isMassiveConfettiVisible, setIsMassiveConfettiVisible] = useState(false);
   const [isSmallConfettiVisible, setIsSmallConfettiVisible] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const { TabPane } = Tabs;
   const { width, height } = useWindowSize();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
@@ -53,6 +51,7 @@ export const ProgressDashboardByEmailV4 = (props) => {
       handleSearch();
     }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCourseCodeId, user?.emailId, user?.yearOfBirth ]);
 
   // Submit progress and refetch data
@@ -65,6 +64,7 @@ useEffect(() => {
       onFetchingUserAuthenticatedProgressForCourse(currentCourseCodeId, user?.emailId);
     });
   }
+// eslint-disable-next-line react-hooks/exhaustive-deps
 }, [selectedLessonsForSubmission]);
 
 // Handle progress updates and UI effects
@@ -119,28 +119,40 @@ useEffect(() => {
   }
 
   const ProgressDashboardByEmailStyle = {
-    height: 600
+    minHeight: 620
   }
+
+  const requirementsTitleStyle = {
+    marginTop: 8,
+    marginBottom: 8,
+  };
+
+  const requirementsListStyle = {
+    paddingInlineStart: 22,
+    marginBottom: 0,
+    lineHeight: 1.6,
+    wordBreak: 'break-word',
+  };
 
   const renderGeneralView = () => (
     <>
       <Row gutter={16}>
         <Col xs={24} sm={24} lg={12}>		
         {/* LiquidCirclePercent - Participation Certificate */}    
-        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
+        <Card title={setLocale(locale, "resources.myprogress.participationcert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
           <LiquidCirclePercent percent={studentPercentagesForCourse?.participationCertificatePercentage} />
-          <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
-          <ul>
+          <h5 style={requirementsTitleStyle}>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
+          <ul style={requirementsListStyle}>
           <li>{setLocale(locale, "resources.myprogress.generalGatherings")}: {studentCategoriesCompletedForCourse?.category1Total ?? 0}/8</li>
         </ul> 
         </Card>
       </Col>
       <Col xs={24} sm={24} lg={12}>
         {/* LiquidStarPercent - Golden Certificate */}
-        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} bordered>
-          <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />
-          <h5>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
-          <ul>
+        <Card title={setLocale(locale, "resources.myprogress.goldencert")} style={ProgressDashboardByEmailStyle}  loading={loading} variant="outlined">
+          <LiquidStarPercent percent={studentPercentagesForCourse?.goldenCertificatePercentage} />          
+          <h5 style={requirementsTitleStyle}>{setLocale(locale, "resources.myprogress.requirementsTitle")}</h5>
+          <ul style={requirementsListStyle}>
             <li>{setLocale(locale, "resources.myprogress.generalGatherings")}: {studentCategoriesCompletedForCourse?.category1Total ?? 0}/8</li>
             <li>{setLocale(locale, "resources.myprogress.watchedGrammarClasses")}: {studentCategoriesCompletedForCourse?.category2Total ?? 0}/8</li>
             <li>{setLocale(locale, "resources.myprogress.finalExam")}: {studentCategoriesCompletedForCourse?.category4Total ?? 0}/1:</li>
@@ -186,6 +198,7 @@ useEffect(() => {
           <Col xs={24} sm={24} lg={8}>
             <Button
               type="primary"
+              size="large"
               onClick={() => {
                 if (handleUserProgressSubmit) {
                   handleUserProgressSubmit(); // Trigger the child's submit function
@@ -257,7 +270,7 @@ useEffect(() => {
           style={{ height: 100, objectFit: 'cover' }}
         />
               }
-    bordered loading={loading}>
+    variant="outlined" loading={loading}>
     {userRegisteredProgressByCourse && (
       <>
         <h1>{capitalizeFirstLetter(courseTheme)}: {renderMessageResults()}</h1>
@@ -266,32 +279,30 @@ useEffect(() => {
       <h4>{renderDashboardTitle()}</h4>
      </Card>
      {renderUpserUserProgressBottom()}
-      <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}>
-      <TabPane 
-        tab={
-          <span>
-            <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
-            {setLocale(locale, "resources.myprogress.generalView")}
-          </span>
-        } 
-        key="1"
-      >
-        {/* Render your general view content */}
-        {renderGeneralView()}
-      </TabPane>
-      <TabPane 
-        tab={
-          <span>
-            <IconAdapter icon={faRoad} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} /> 
-            {setLocale(locale, "resources.myprogress.progress&Tracking")}
-          </span>
-        } 
-        key="2"
-      >
-        {/* Render your progress tracking content */}
-        {renderProgressTracking()}
-      </TabPane>
-    </Tabs>
+      <Tabs defaultActiveKey="1" type="card" onChange={handleTabChange} activeKey={activeKey}
+        items={[
+          {
+            key: "1",
+            label: (
+              <span>
+                <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />        
+                {setLocale(locale, "resources.myprogress.generalView")}
+              </span>
+            ),
+            children: renderGeneralView(),
+          },
+          {
+            key: "2",
+            label: (
+              <span>
+                <IconAdapter icon={faRoad} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} /> 
+                {setLocale(locale, "resources.myprogress.progress&Tracking")}
+              </span>
+            ),
+            children: renderProgressTracking(),
+          },
+        ]}
+      />
     {renderUpserUserProgressBottom()}
     </div>
   );

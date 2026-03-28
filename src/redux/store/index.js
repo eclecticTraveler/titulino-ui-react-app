@@ -17,7 +17,7 @@ const customMiddlewares = [
 const store = configureStore({
   reducer: reducers,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ thunk: false, serializableCheck: false }).concat(customMiddlewares),
+    getDefaultMiddleware({ thunk: false, serializableCheck: false, immutableCheck: false }).concat(customMiddlewares),
   devTools: process.env.REACT_APP_ENV !== 'production',
 });
 

@@ -14,7 +14,6 @@ import { bindActionCreators } from "redux";
 // import ColumnBar from 'components/layout-components/Graphs/ColumnGraph';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 // import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
-const { TabPane } = Tabs;
 
 const InsightsLandingDashboard = (props) => {
   const { allCourses, onRenderingAdminInsightsDashboard, locationTypes, onRenderingLocationTypeSelectionsToDashboard, demographicDashboardData,

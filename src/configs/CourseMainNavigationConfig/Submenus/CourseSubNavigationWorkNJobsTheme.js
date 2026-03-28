@@ -1,13 +1,12 @@
 import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
-import { getCoursePracticeInnerSubMenuV2, getCoursePracticeResourcesInnerSubMenu, getCoursePracticeInnerSubMenuV2Light } from './CoursePracticeInnerSubMenu';
+import { getCoursePracticeInnerSubMenuV2 } from './CoursePracticeInnerSubMenu';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
 	faCarrot,
 	faPepperHot,
 	faAppleAlt,
 	faLemon,
-	faBookReader,
 	faBacon,
 	faFish,
 	faBoxArchive,
@@ -15,11 +14,7 @@ import {
 	faMoneyBill,
 	faBreadSlice,
 	faHotdog,
-	faBoxes,
-	faTv,
    } from '@fortawesome/free-solid-svg-icons';
-   
-   import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
 
 export const CourseSubNavigationWorkNJobsTheme = (lang) => {
 	const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-work-n-jobs/${getLocalizedConfig(lang)?.chapter}`;

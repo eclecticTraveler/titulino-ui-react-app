@@ -8,8 +8,6 @@ import {
 	faChildren,
    } from '@fortawesome/free-solid-svg-icons';
    
-   import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
-
   
 export const getCourseSubNavigationHighBasic = (lang) => {
 	const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-3/${getLocalizedConfig(lang)?.chapter}`;	

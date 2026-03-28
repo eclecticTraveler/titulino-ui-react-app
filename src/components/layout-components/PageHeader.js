@@ -1,5 +1,4 @@
 import React from 'react'
-import AppBreadcrumb from '../../components/layout-components/AppBreadcrumb';
 
 export const PageHeader = ({ title, display }) => {
 	// TODO: Un comment when business decides to place breadcrumbs back again
