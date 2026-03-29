@@ -80,8 +80,8 @@ const EmailYearSearchForm = (props) => {
 
   const formatSubmissionData = (values, props, matchedEnrolleeInfo) => { // eslint-disable-line no-unused-vars
   const {
-    nativeLanguage,
-    selectedCourse,
+    baseLanguage,
+    selectedContentLanguage,
     availableCourses,
     countries
   } = props;
@@ -139,11 +139,11 @@ const EmailYearSearchForm = (props) => {
     })),
     languageProficiencies: [
       {
-        languageId: nativeLanguage?.localizationId || 'es', // TODO: For now
+        languageId: baseLanguage?.localeCode || 'es', // TODO: For now
         languageLevelAbbreviation: "na", // Default for native language
       },
       {
-        languageId: selectedCourse?.localizationId || 'en',
+        languageId: selectedContentLanguage?.localeCode || 'en',
         languageLevelAbbreviation: languageLevelAbbreviation || "ba", // Form-provided or default
       },
     ]
@@ -315,8 +315,8 @@ function mapDispatchToProps(dispatch) {
 
 const mapStateToProps = ({ grant, lrn }) => {
   const { user } = grant;
-  const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage } = lrn;
-  return { user, availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage };
+  const { availableCourses, selfLanguageLevel, countries, selectedContentLanguage, baseLanguage } = lrn;
+  return { user, availableCourses, selfLanguageLevel, countries, selectedContentLanguage, baseLanguage };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(EmailYearSearchForm);

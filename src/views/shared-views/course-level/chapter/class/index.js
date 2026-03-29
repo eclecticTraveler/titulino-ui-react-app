@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getUserNativeLanguage, getVideoClassUrl}  from 'redux/actions/Lrn';
+import {getUserBaseLanguage, getVideoClassUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import InternalIFrame from '../../../../../components/layout-components/InternalIFrame';
 import UnderConstruccion from '../../../../../components/layout-components/UnderConstruccion';
@@ -11,7 +11,7 @@ class VideoClass extends Component {
     loadUrl = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
         console.log("VideoClass pathInfo: ", this.props.location, pathInfo);
-        this.props.getVideoClassUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
+        this.props.getVideoClassUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.baseLanguage?.localeCode, this.props.contentLanguage );
     }
     
     componentDidMount() {                
@@ -44,15 +44,15 @@ class VideoClass extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getUserNativeLanguage: getUserNativeLanguage,
+        getUserBaseLanguage: getUserBaseLanguage,
         getVideoClassUrl: getVideoClassUrl
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { nativeLanguage, videoClass } = lrn;
-    const { locale, direction, course } =  theme;
-	return { locale, direction, course, nativeLanguage, videoClass }
+	const { baseLanguage, videoClass } = lrn;
+    const { locale, direction, contentLanguage } =  theme;
+	return { locale, direction, contentLanguage, baseLanguage, videoClass }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(VideoClass);

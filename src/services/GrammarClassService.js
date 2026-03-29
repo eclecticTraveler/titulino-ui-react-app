@@ -2,6 +2,9 @@
 import CentralCourseThemeService from 'services/CentralCourseThemeService';
 import GoogleService from './GoogleService';
 
+// Map 2-letter ISO 639-1 to legacy 3-letter codes used in old bucket data
+const toLegacyCourseCode = (code) => ({ en: 'eng', es: 'spa', pt: 'por' }[code] || code);
+
 const loadGrammarClassData = async () => {
   const rawData = await GoogleService.getGrammarClassData("loadGrammarClassData");
   return rawData;
@@ -15,17 +18,18 @@ const getGrammarCategory = async (proficiencyOrderId) => {
 const loadRequestedGrammarUrl = async (
   levelNo,
   chapterNo,
-  nativeLanguage,
-  course,
+  baseLanguageCode,
+  contentLanguageCode,
   userProficiencyOrder
 ) => {
   const rawClassData = await loadGrammarClassData();
 
-  const courseLevelMatch = rawClassData?.find(c =>
-    c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) &&
-    c.course === course &&
-    c.nativeLanguage === nativeLanguage
-  );
+  // Adapter: support both old remote format (nativeLanguage/course) and new format (baseLanguages/contentLanguageCode)
+  const courseLevelMatch = rawClassData?.find(c => {
+    const langMatch = c.baseLanguages ? c.baseLanguages.includes(baseLanguageCode) : c.nativeLanguage === baseLanguageCode;
+    const courseMatch = c.contentLanguageCode ? c.contentLanguageCode === contentLanguageCode : c.course === toLegacyCourseCode(contentLanguageCode);
+    return c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && courseMatch && langMatch;
+  });
 
   if (!courseLevelMatch || !courseLevelMatch.chapters?.length) {
     return "";
@@ -43,16 +47,17 @@ const loadRequestedGrammarUrl = async (
 const getRequestedGrammarUrlsByChapter = async (
   levelNo,
   chapterNo,
-  nativeLanguage,
-  course
+  baseLanguageCode,
+  contentLanguageCode
 ) => {
   const rawClassData = await loadGrammarClassData();
 
-  const courseLevelMatch = rawClassData?.find(c =>
-    c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) &&
-    c.course === course &&
-    c.nativeLanguage === nativeLanguage
-  );
+  // Adapter: support both old remote format (nativeLanguage/course) and new format (baseLanguages/contentLanguageCode)
+  const courseLevelMatch = rawClassData?.find(c => {
+    const langMatch = c.baseLanguages ? c.baseLanguages.includes(baseLanguageCode) : c.nativeLanguage === baseLanguageCode;
+    const courseMatch = c.contentLanguageCode ? c.contentLanguageCode === contentLanguageCode : c.course === toLegacyCourseCode(contentLanguageCode);
+    return c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && courseMatch && langMatch;
+  });
 
   if (!courseLevelMatch || !courseLevelMatch.chapters?.length) {
     return "";
@@ -68,21 +73,21 @@ const getRequestedGrammarUrlsByChapter = async (
 export const getGrammarClassUrl = async (
   levelNo,
   chapterNo,
-  nativeLanguage,
-  course,
+  baseLanguageCode,
+  contentLanguageCode,
   userProficiencyOrder
 ) => {
-  const url = await loadRequestedGrammarUrl(levelNo, chapterNo, nativeLanguage, course, userProficiencyOrder);
+  const url = await loadRequestedGrammarUrl(levelNo, chapterNo, baseLanguageCode, contentLanguageCode, userProficiencyOrder);
   return url ?? "";
 };
 
 export const getGrammarClassUrlsByChapter = async (
   levelNo,
   chapterNo,
-  nativeLanguage,
-  course
+  baseLanguageCode,
+  contentLanguageCode
 ) => {
-  const url = await getRequestedGrammarUrlsByChapter(levelNo, chapterNo, nativeLanguage, course);
+  const url = await getRequestedGrammarUrlsByChapter(levelNo, chapterNo, baseLanguageCode, contentLanguageCode);
   return url ?? "";
 };
 

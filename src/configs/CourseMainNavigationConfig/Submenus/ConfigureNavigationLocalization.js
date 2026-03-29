@@ -26,9 +26,9 @@ export const getLocalizedConfig = (lang) => {
 	}
 
 	switch (lang) {
-		case "eng":      
+		case "en":      
 			return localization;
-		case "por":
+		case "pt":
 			localization.chapter = "capitulo";
 			localization.class = "classe";
 			localization.listening = "compreensão";
@@ -52,7 +52,7 @@ export const getLocalizedConfig = (lang) => {
 			localization.grammarClass = "aula-de-gramática";
 			localization.knowMe = "me-conheça";
 			return localization;
-		case "spa":
+		case "es":
 			localization.chapter = "capitulo";
 			localization.class = "clase";
 			localization.listening = "comprensión";

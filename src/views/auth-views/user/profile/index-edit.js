@@ -2,11 +2,11 @@ import React, {Component} from 'react'
 import { bindActionCreators } from 'redux';
 import {connect} from 'react-redux';
 import { ImageSvg } from '../../../../assets/svg/icon';
-import {getAllLanguageCourses, setUserCourseConfiguration, setUserNativeLanguage}  from '../../../../redux/actions/Lrn';
+import {getAllLanguageOptions, setUserLanguageConfiguration, setUserBaseLanguage}  from '../../../../redux/actions/Lrn';
 import PageHeaderAlt from '../../../../components/layout-components/PageHeaderAlt'
 import IconFallback from "../../../../components/util-components/IconFallback";
 import { withRouter } from "utils/routerCompat";
-import { onLocaleChange, onCourseChange } from '../../../../redux/actions/Theme'
+import { onLocaleChange, onContentLanguageChange } from '../../../../redux/actions/Theme'
 import Flex from '../../../../components/shared-components/Flex'
 import IntlMessage from "../../../../components/util-components/IntlMessage";
 import Accordion from 'react-bootstrap/Accordion';
@@ -255,17 +255,17 @@ class Profile extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-		setUserCourseConfiguration: setUserCourseConfiguration,
-		getAllLanguageCourses: getAllLanguageCourses,
-		onCourseChange: onCourseChange,
-		setUserNativeLanguage: setUserNativeLanguage,
+		setUserLanguageConfiguration: setUserLanguageConfiguration,
+		getAllLanguageOptions: getAllLanguageOptions,
+		onContentLanguageChange: onContentLanguageChange,
+		setUserBaseLanguage: setUserBaseLanguage,
 		onLocaleChange: onLocaleChange
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn}) => {
-	const {languageCourses, nativeLanguage} = lrn;
-	return {languageCourses, nativeLanguage} 
+	const {languageOptions, baseLanguage} = lrn;
+	return {languageOptions, baseLanguage} 
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Profile));

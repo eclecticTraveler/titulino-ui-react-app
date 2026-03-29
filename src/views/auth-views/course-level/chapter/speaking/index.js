@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getUserNativeLanguage, getSpeakingPracticeModule}  from 'redux/actions/Lrn';
+import {getUserBaseLanguage, getSpeakingPracticeModule}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import Loading from 'components/shared-components/Loading';
 import SpeechPractice from "components/layout-components/SpeechPractice";
@@ -11,7 +11,7 @@ class SpeakingSection extends Component {
 
     loadUrl = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
-        this.props.getSpeakingPracticeModule(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
+        this.props.getSpeakingPracticeModule(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.baseLanguage?.localeCode, this.props.contentLanguage );
     }
     
     componentDidMount() {                
@@ -47,15 +47,15 @@ class SpeakingSection extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getUserNativeLanguage: getUserNativeLanguage,
+        getUserBaseLanguage: getUserBaseLanguage,
         getSpeakingPracticeModule: getSpeakingPracticeModule
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { nativeLanguage, speakingChapterModule, gcBucketUri } = lrn;
-    const { locale, direction, course } =  theme;
-	return { locale, direction, course, nativeLanguage, speakingChapterModule, gcBucketUri }
+	const { baseLanguage, speakingChapterModule, gcBucketUri } = lrn;
+    const { locale, direction, contentLanguage } =  theme;
+	return { locale, direction, contentLanguage, baseLanguage, speakingChapterModule, gcBucketUri }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SpeakingSection);

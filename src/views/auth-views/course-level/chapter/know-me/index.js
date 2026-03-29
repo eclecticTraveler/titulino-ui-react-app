@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getUserNativeLanguage}  from 'redux/actions/Lrn';
+import {getUserBaseLanguage}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import KnowMeV1 from 'components/layout-components/KnowMeV1';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
@@ -10,7 +10,7 @@ class KnowMe extends Component {
 
     loadUrl = () => {
         // const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
-        // this.props.getKnowMeQuestions(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
+        // this.props.getKnowMeQuestions(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.baseLanguage?.localeCode, this.props.contentLanguage );
     }
     
     componentDidMount() {                
@@ -56,16 +56,16 @@ class KnowMe extends Component {
 
 function mapDispatchToProps(dispatch){
   return bindActionCreators({
-        getUserNativeLanguage: getUserNativeLanguage,
+        getUserBaseLanguage: getUserBaseLanguage,
   }, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme, grant, auth}) => {
-  const { nativeLanguage, videoClass } = lrn;
-  const { locale, direction, course } =  theme;
+  const { baseLanguage, videoClass } = lrn;
+  const { locale, direction, contentLanguage } =  theme;
   const { user } = grant;
   const { token } = auth; 
-  return { locale, direction, course, nativeLanguage, videoClass, token, user }
+  return { locale, direction, contentLanguage, baseLanguage, videoClass, token, user }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(KnowMe);

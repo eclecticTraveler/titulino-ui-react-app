@@ -24,13 +24,13 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const SHOPPING_PARAMETERS_STORED_KEY = "postQueryParams";
 
 const ShopWindow = (props) => {
-  const { user, nativeLanguage, course, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase, token, onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut } = props;
+  const { user, baseLanguage, contentLanguage, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase, token, onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut } = props;
   const [hoveredTier, setHoveredTier] = useState(null);
   const screens = utils.getBreakPoint(useBreakpoint());
   const isMobile = !screens.includes("md");
   const history = useHistory();
   const locale = true;	
-  // Track active tab/course_code_id, default first in catalog
+  // Track active tab/courseCodeId, default first in catalog
   const [activeCourseCode, setActiveCourseCode] = useState("");
   const [purchasedCourseCode, setSuccesfulCourseCodeOfPurchasedItem] = useState("");
   const [purchasedTierAccess, setSuccesfulPurchasedTierAccess] = useState("");
@@ -109,20 +109,20 @@ const ShopWindow = (props) => {
 
 	useEffect(() => {
 	if (productCatalog?.length) {
-		setActiveCourseCode(productCatalog[0].course_code_id); // first sorted course
+		setActiveCourseCode(productCatalog[0].courseCodeId); // first sorted course
 	}
 	}, [productCatalog]);
 
   useEffect(() => {
-    // You may want to reload products on nativeLanguage or course change
-    if (nativeLanguage?.localizationId && course && user?.emailId) {
-      onGettingProductsAvailableForPurchase(nativeLanguage.localizationId, course, user?.emailId);      
+    // You may want to reload products on baseLanguage or course change
+    if (baseLanguage?.localeCode && contentLanguage && user?.emailId) {
+      onGettingProductsAvailableForPurchase(baseLanguage?.localeCode, contentLanguage, user?.emailId);      
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nativeLanguage, course, user?.emailId]);
+  }, [baseLanguage, contentLanguage, user?.emailId]);
 
   // Find the currently active course data from productCatalog
-  const activeCourse = productCatalog?.find((c) => c.course_code_id === activeCourseCode) || { features: [] };
+  const activeCourse = productCatalog?.find((c) => c.courseCodeId === activeCourseCode) || { features: [] };
 
   const setLocale = (isLocaleOn, localeKey) =>
     isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -329,9 +329,9 @@ const ShopWindow = (props) => {
         onChange={(key) => setActiveCourseCode(key)}
         style={{ marginTop: 16 }}
         centered
-        items={productCatalog?.map(({ course_code_id, course_name }) => ({
-          key: course_code_id,
-          label: course_name,
+        items={productCatalog?.map(({ courseCodeId, courseName }) => ({
+          key: courseCodeId,
+          label: courseName,
         }))}
       />
 
@@ -340,9 +340,9 @@ const ShopWindow = (props) => {
           {["free", "silver", "gold"].map((tierKey) => {
 			      const tierInfo = activeCourse.tiers?.[tierKey];
             const isDisabled = !tierInfo?.isEnabledForPurchase;
-            const imageUrl = tierInfo?.image_url || "";
+            const imageUrl = tierInfo?.imageUrl || "";
             const isPurchased = tierInfo?.isPurchased ?? false;
-            const priceId = tierInfo?.price_id || null;
+            const priceId = tierInfo?.priceId || null;
             const buttonText =
             tierKey === purchasedTier
               ? setLocale(locale, "shop.feature.current") // purchased tier
@@ -367,8 +367,8 @@ const ShopWindow = (props) => {
                 : tierKey === "free"
                 ? "⭐ Current"
                 : tierKey === "silver"
-                ? `⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`
-                : `⭐⭐⭐ Special Offer $${tierInfo?.price_usd ?? ""} USD 💵`;           
+                ? `⭐⭐ Special Offer $${tierInfo?.priceUsd ?? ""} USD 💵`
+                : `⭐⭐⭐ Special Offer $${tierInfo?.priceUsd ?? ""} USD 💵`;           
 
                 const badgeColor =
                 tierKey === purchasedTier
@@ -424,8 +424,8 @@ const ShopWindow = (props) => {
           drawerTier === "free"
             ? "⭐ Current"
             : drawerTier === "silver"
-            ? `Silver Package $${activeCourse.tiers?.[drawerTier]?.price_usd ?? ""} USD ⭐⭐`
-            : `Gold Package $${activeCourse.tiers?.[drawerTier]?.price_usd ?? ""} USD ⭐⭐⭐`
+            ? `Silver Package $${activeCourse.tiers?.[drawerTier]?.priceUsd ?? ""} USD ⭐⭐`
+            : `Gold Package $${activeCourse.tiers?.[drawerTier]?.priceUsd ?? ""} USD ⭐⭐⭐`
         }
         placement="bottom"
         closable={false}
@@ -449,7 +449,7 @@ const ShopWindow = (props) => {
               {/* Circular image under button */}
               {drawerTier && (
                 <img
-                  src={activeCourse.tiers?.[drawerTier]?.image_url || ""}
+                  src={activeCourse.tiers?.[drawerTier]?.imageUrl || ""}
                   alt={drawerTier}
                   style={{
                     width: 200,
@@ -485,7 +485,7 @@ const ShopWindow = (props) => {
             {drawerTier && (
               <img
                 className="drawerImage"
-                src={activeCourse.tiers?.[drawerTier]?.image_url || ""}
+                src={activeCourse.tiers?.[drawerTier]?.imageUrl || ""}
                 alt={drawerTier}
                 style={{
                   width: 200,
@@ -523,10 +523,10 @@ function mapDispatchToProps(dispatch) {
 const mapStateToProps = ({ grant, shop, lrn, theme, auth }) => {
   const { user } = grant;
   const { productCatalog } = shop;
-  const { nativeLanguage } = lrn;
-  const { course } = theme;
+  const { baseLanguage } = lrn;
+  const { contentLanguage } = theme;
   const { token } = auth;
-  return { user, productCatalog, nativeLanguage, course, token };
+  return { user, productCatalog, baseLanguage, contentLanguage, token };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ShopWindow);

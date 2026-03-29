@@ -316,10 +316,10 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ lrn, theme, grant }) => {
-  const { course } =  theme;
+  const { contentLanguage } =  theme;
   const { user } = grant;
-  const { userRegisteredProgressByCourse, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, hasUserInteractedWithModal } = lrn;
-  return { userRegisteredProgressByCourse, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, hasUserInteractedWithModal, user };
+  const { userRegisteredProgressByCourse, baseLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, currentCourseCodeId, courseConfiguration, selectedContentLanguage, courseTheme, hasUserInteractedWithModal } = lrn;
+  return { userRegisteredProgressByCourse, baseLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, contentLanguage, currentCourseCodeId, courseConfiguration, selectedContentLanguage, courseTheme, hasUserInteractedWithModal, user };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProgressDashboardByEmailV4));

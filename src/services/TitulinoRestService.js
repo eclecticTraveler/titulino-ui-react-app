@@ -25,11 +25,24 @@ const loadCourseProgressStructure = async() => {
   return Array.isArray(result) ? result : [];
 }
 
-const loadRequestedCourseStructure = async(nativeLanguage, course, courseCodeId) => {  
+const loadRequestedCourseStructure = async(baseLanguageCode, contentLanguageCode, courseCodeId) => {  
   const rawCourseStructureData = await loadCourseProgressStructure();  
-  const rawCourseData = rawCourseStructureData?.find(c => (c.courseId === courseCodeId && c.course === course && c.nativeLanguage === nativeLanguage));
-  const rawRequestedModule = rawCourseData; //rawCourseData?.chapters.find(ch => ch.chapter === parseInt(chapterNo, 10));
-  return rawRequestedModule;
+  const rawCourseData = rawCourseStructureData?.find(c => {
+    const langMatch = c.baseLanguages ? c.baseLanguages.includes(baseLanguageCode) : c.nativeLanguage === baseLanguageCode;
+    const courseMatch = c.contentLanguageCode ? c.contentLanguageCode === contentLanguageCode : c.course === contentLanguageCode;
+    return c.courseId === courseCodeId && courseMatch && langMatch;
+  });
+  return rawCourseData;
+}
+
+const loadCourseStructureByTheme = async(baseLanguageCode, contentLanguageCode, courseTheme) => {  
+  const rawCourseStructureData = await loadCourseProgressStructure();  
+  return rawCourseStructureData?.find(c => {
+    const themeMatch = c.courseGeneralTheme === courseTheme;
+    const langMatch = c.baseLanguages ? c.baseLanguages.includes(baseLanguageCode) : c.nativeLanguage === baseLanguageCode;
+    const courseMatch = c.contentLanguageCode ? c.contentLanguageCode === contentLanguageCode : c.course === contentLanguageCode;
+    return themeMatch && courseMatch && langMatch;
+  });
 }
 
 const getRequestedCourseStructureByCourseCodeId = async(courseCodeId) => {  
@@ -346,8 +359,13 @@ export const getQuickEnrolleeCountryDivisionInfo = async (email, year, whoCalled
   return _results;
 };
   
-export const getCourseProgressStructure = async(nativeLanguage, course, courseCodeId) => {
-  const structure = await loadRequestedCourseStructure(nativeLanguage, course, courseCodeId);
+export const getCourseProgressStructure = async(baseLanguageCode, contentLanguageCode, courseCodeId) => {
+  const structure = await loadRequestedCourseStructure(baseLanguageCode, contentLanguageCode, courseCodeId);
+  return structure ?? [];
+}
+
+export const getCourseContentByTheme = async(baseLanguageCode, contentLanguageCode, courseTheme) => {
+  const structure = await loadCourseStructureByTheme(baseLanguageCode, contentLanguageCode, courseTheme);
   return structure ?? [];
 }
 
@@ -721,6 +739,7 @@ const TitulinoRestService = {
   getCountryDivisionByCountryId,
   getQuickEnrolleeCountryDivisionInfo,
   getCourseProgressStructure,
+  getCourseContentByTheme,
   getCourseProgressByEmailAndCourseCodeId,
   upsertUnauthenticatedUserCourseProgress,
   isUserEmailRegisteredForGivenCourse,

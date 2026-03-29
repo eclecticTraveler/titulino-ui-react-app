@@ -14,8 +14,8 @@ import IconAdapter from "components/util-components/IconAdapter";
 const VideoClasses = ({
   videoClassUrls,
   ongettingUserVideoClassArrayUrls,
-  nativeLanguage,
-  course,
+  baseLanguage,
+  contentLanguage,
   userProficiencyOrder,
   user
 }) => {
@@ -31,14 +31,14 @@ const VideoClasses = ({
       ongettingUserVideoClassArrayUrls(
         pathInfo?.levelNo,
         pathInfo?.chapterNo,
-        nativeLanguage?.localizationId,
-        course,
+        baseLanguage?.localeCode,
+        contentLanguage,
         user?.emailId
       );
     }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location?.pathname, nativeLanguage?.localizationId, course, user?.emailId]);
+  }, [location?.pathname, baseLanguage?.localeCode, contentLanguage, user?.emailId]);
 
   if (!videoClassUrls || videoClassUrls.length === 0) {
     return <UnderConstruccion />;
@@ -77,10 +77,10 @@ const VideoClasses = ({
 };
 
 const mapStateToProps = ({ lrn, theme, grant }) => {
-  const { videoClassUrls, nativeLanguage, userProficiencyOrder } = lrn;
-  const { course } = theme;
+  const { videoClassUrls, baseLanguage, userProficiencyOrder } = lrn;
+  const { contentLanguage } = theme;
   const { user } = grant;
-  return { videoClassUrls, nativeLanguage, userProficiencyOrder, course, user };
+  return { videoClassUrls, baseLanguage, userProficiencyOrder, contentLanguage, user };
 };
 
 export default connect(mapStateToProps, { ongettingUserVideoClassArrayUrls })(VideoClasses);

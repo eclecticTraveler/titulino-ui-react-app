@@ -13,7 +13,7 @@ export const THEME_CONFIG = {
 	navCollapsed: false,
 	sideNavTheme: SIDE_NAV_LIGHT,
 	locale: 'en',
-	course: '',	
+	contentLanguage: '',	
 	navType: NAV_TYPE_SIDE,
 	topNavColor: '#4A5C78',//'#3e82f7'
 	headerNavColor: '',

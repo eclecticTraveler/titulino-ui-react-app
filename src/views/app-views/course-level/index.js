@@ -17,7 +17,7 @@ class CourseLevel extends Component {
     loadPublicCourseLandingData = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
         const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname); 
-        this.props.geteBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course );
+        this.props.geteBookUrl(pathInfo?.levelNo, this.props.baseLanguage?.localeCode, this.props.contentLanguage );
         this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme)
 
     }
@@ -64,11 +64,11 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn, theme, grant, auth}) => {
-	const { nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse } = lrn;
-    const { locale, direction, course } =  theme;
+	const { baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse } = lrn;
+    const { locale, direction, contentLanguage } =  theme;
     const { user } = grant;
     const { token } = auth; 
-	return { locale, direction, course, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse }
+	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);

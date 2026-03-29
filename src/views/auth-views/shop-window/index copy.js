@@ -12,7 +12,7 @@ import utils from 'utils';
 const { useBreakpoint } = Grid;
 
 export const ShopWindow = (props) => {
-	const { nativeLanguage, course, user, token, onProcessingPurchaseOfProduct } = props;
+	const { baseLanguage, contentLanguage, user, token, onProcessingPurchaseOfProduct } = props;
 	const [hoveredTier, setHoveredTier] = useState(null);
 	const screens = utils.getBreakPoint(useBreakpoint());
 	const isMobile = !screens.includes('md');  
@@ -214,11 +214,11 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ lrn, theme, grant, auth }) => {
-  const { nativeLanguage } = lrn;
-  const { course } = theme;
+  const { baseLanguage } = lrn;
+  const { contentLanguage } = theme;
   const { user } = grant;
   const { token } = auth;
-  return { nativeLanguage, course, user, token };
+  return { baseLanguage, contentLanguage, user, token };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ShopWindow);

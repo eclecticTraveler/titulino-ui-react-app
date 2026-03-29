@@ -7,7 +7,7 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 const PortugueseCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) => [
 	{
 		key: 'level-1-por',
-		path: `${APP_PREFIX_PATH}/por/nivel-1`,
+		path: `${APP_PREFIX_PATH}/pt/nivel-1`,
 		title: 'main.upper.nav.level.1',
 		sideTitle: 'Iniciante Basico',
 		icon: COURSE_ICON_CONFIG.default,
@@ -21,12 +21,12 @@ const PortugueseCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) =
 		isFree: true,
 		course: "Português",
 		submenu: [
-			...getCourseSubNavigationLowBasic("por")
+			...getCourseSubNavigationLowBasic("pt")
 		]
 	},
 	{
 		key: 'level-2-por',
-		path: `${APP_PREFIX_PATH}/por/nivel-2`,
+		path: `${APP_PREFIX_PATH}/pt/nivel-2`,
 		title: 'main.upper.nav.level.2',
 		sideTitle: 'Iniciante Inter',
 		icon: COURSE_ICON_CONFIG.default,
@@ -40,12 +40,12 @@ const PortugueseCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) =
 		isFree: true,
 		course: "Português",
 		submenu: [
-			...getCourseSubNavigationMidBasic("por")
+			...getCourseSubNavigationMidBasic("pt")
 		]
 	},
 	{
 		key: 'level-3-por',
-		path: `${APP_PREFIX_PATH}/por/nivel-3`,
+		path: `${APP_PREFIX_PATH}/pt/nivel-3`,
 		title: 'main.upper.nav.level.3',
 		sideTitle: 'Iniciante Superior',
 		icon: COURSE_ICON_CONFIG.default,

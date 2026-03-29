@@ -10,7 +10,7 @@ class FiveMinLesson extends Component {
     componentDidMount() {
 		
 		const pathInfo = utils.getCourseInfoFromUrl(utils.getPathInCurrentUrl());
-		this.props.onLoadingFiveMinLesson(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course, false);
+		this.props.onLoadingFiveMinLesson(pathInfo?.levelNo, this.props.baseLanguage?.localeCode, this.props.contentLanguage, false);
         
 	}
 
@@ -42,9 +42,9 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { nativeLanguage, fiveMinuteLesson } = lrn;
-    const { locale, direction, course } =  theme;
-	return { locale, direction, course, nativeLanguage, fiveMinuteLesson }
+	const { baseLanguage, fiveMinuteLesson } = lrn;
+    const { locale, direction, contentLanguage } =  theme;
+	return { locale, direction, contentLanguage, baseLanguage, fiveMinuteLesson }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(FiveMinLesson);

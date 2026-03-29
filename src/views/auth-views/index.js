@@ -28,21 +28,21 @@ const ErrorPage1 = lazy(() => import(`./errors/error-page-1`));
 const ErrorPage2 = lazy(() => import(`./errors/error-page-2`));
 
 export const AuthViews = (props) => {
-  const { course, token } = props;
-  const cfg = getLocalizedConfig(course);
+  const { contentLanguage, token } = props;
+  const cfg = getLocalizedConfig(contentLanguage);
   return (
     <Suspense fallback={<Loading cover="page"/>}>
       <Routes>
         <Route path={`insight`} element={<RouteElement component={Analytics} />} />
-        <Route path={`${course}/:${cfg?.level}`} element={<RouteElement component={SharedCourseLevel} />} />
-        <Route path={`${course}/:${cfg?.level}/${cfg?.resources}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelResources} />} />
-        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.book}`} element={<RouteElement component={SharedCourseLevelBook} />} />
-        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.knowMe}`} element={<RouteElement component={AuthKnowMe} />} />
-        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.class}`} element={<RouteElement component={SharedCourseLevelClass} />} />
-        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.grammarClass}`} element={<RouteElement component={AuthGrammarClass} />} />
-        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.speaking}`} element={<RouteElement component={AuthSpeaking} />} />
-        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.quizletpdf}`} element={<RouteElement component={AuthPdfRender} />} />
-        <Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelPractice} />} />
+        <Route path={`${contentLanguage}/:${cfg?.level}`} element={<RouteElement component={SharedCourseLevel} />} />
+        <Route path={`${contentLanguage}/:${cfg?.level}/${cfg?.resources}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelResources} />} />
+        <Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.book}`} element={<RouteElement component={SharedCourseLevelBook} />} />
+        <Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.knowMe}`} element={<RouteElement component={AuthKnowMe} />} />
+        <Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.class}`} element={<RouteElement component={SharedCourseLevelClass} />} />
+        <Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.grammarClass}`} element={<RouteElement component={AuthGrammarClass} />} />
+        <Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.speaking}`} element={<RouteElement component={AuthSpeaking} />} />
+        <Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.quizletpdf}`} element={<RouteElement component={AuthPdfRender} />} />
+        <Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelPractice} />} />
         <Route path={`terms-conditions`} element={<TermsConditionsCancelSubscription />} />
         <Route path={`shopping`} element={<RouteElement component={ShopWindow} />} />
         {/* <Route path={`profile/edit-profile`} element={<RouteElement component={...} />} /> */}
@@ -55,7 +55,7 @@ export const AuthViews = (props) => {
         <Route path={`error-2`} element={<RouteElement component={ErrorPage2} />} />
         {/* Authenticated users go to landing course on root /lrn-auth */}
         { token ? 
-          <Route path="" element={<Navigate to={`${AUTH_PREFIX_PATH}/${course}/${cfg?.level}-${DEFAULT_LANDING_COURSE}`} replace />} />
+          <Route path="" element={<Navigate to={`${AUTH_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${DEFAULT_LANDING_COURSE}`} replace />} />
           :
           // Unauthenticated go to /lrn
           <Route path="" element={<Navigate to={`${APP_PREFIX_PATH}`} replace />} />
@@ -70,10 +70,10 @@ export const AuthViews = (props) => {
 }
 
 const mapStateToProps = ({ theme, auth, grant }) => {
-	const { course } =  theme;
+	const { contentLanguage } =  theme;
   const { token } = auth;
   const { user } = grant;
-	return { course, token, user }
+	return { contentLanguage, token, user }
 };
 
 export default React.memo(connect(mapStateToProps)(AuthViews));

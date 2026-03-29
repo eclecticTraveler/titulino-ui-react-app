@@ -2,13 +2,13 @@ import { getEnglishCourseMainNavigationConfig } from '../configs/CourseMainNavig
 import PortugueseCourseMainNavigationConfig from '../configs/CourseMainNavigationConfig/Portuguese/PortugueseCourseMainNavigationConfig';
 import SpanishCourseMainNavigationConfig from '../configs/CourseMainNavigationConfig/Spanish/SpanishCourseMainNavigationConfig';
 
-export const loadMenu = async (lang, isAuthenticated = false, coursesByTheme  = {}) => {
-  switch (lang) {
-    case "eng":
+export const loadMenu = async (contentLanguageCode, isAuthenticated = false, coursesByTheme  = {}) => {
+  switch (contentLanguageCode) {
+    case "en":
       return getEnglishCourseMainNavigationConfig(isAuthenticated, coursesByTheme);
-    case "por":
+    case "pt":
       return PortugueseCourseMainNavigationConfig(isAuthenticated, coursesByTheme);
-    case "spa":
+    case "es":
       return SpanishCourseMainNavigationConfig(isAuthenticated);
     default:
       return getEnglishCourseMainNavigationConfig(isAuthenticated, coursesByTheme);

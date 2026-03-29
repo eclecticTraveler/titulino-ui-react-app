@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import {getUserNativeLanguage, getPdfPathUrl}  from 'redux/actions/Lrn';
+import {getUserBaseLanguage, getPdfPathUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import Loading from '../../../../../components/shared-components/Loading';
 import InternalIFrame from '../../../../../components/layout-components/InternalIFrame';
@@ -11,7 +11,7 @@ class PdfRender extends Component {
 
     loadLocalPathUrl = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
-        this.props.getPdfPathUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course);
+        this.props.getPdfPathUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.baseLanguage?.localeCode, this.props.contentLanguage);
     }
     
     componentDidMount() {                
@@ -47,15 +47,15 @@ class PdfRender extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getUserNativeLanguage: getUserNativeLanguage,
+        getUserBaseLanguage: getUserBaseLanguage,
         getPdfPathUrl: getPdfPathUrl
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const {  nativeLanguage, pdfPathUrl } = lrn;
-    const { locale, direction, course } =  theme;
-	return { locale, direction, course, nativeLanguage, pdfPathUrl }
+	const {  baseLanguage, pdfPathUrl } = lrn;
+    const { locale, direction, contentLanguage } =  theme;
+	return { locale, direction, contentLanguage, baseLanguage, pdfPathUrl }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(PdfRender);

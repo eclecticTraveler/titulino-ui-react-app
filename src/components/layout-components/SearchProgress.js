@@ -7,10 +7,10 @@ import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 
 export const SearchProgress = (props) => {
-  const { onSearchingForProgressByEmailId, registeredProgressByEmailId, nativeLanguage } = props;
+  const { onSearchingForProgressByEmailId, registeredProgressByEmailId, baseLanguage } = props;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  console.log("nativeLanguage", nativeLanguage)
+  console.log("baseLanguage", baseLanguage)
   const intl = useIntl();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) =>{		
@@ -98,8 +98,8 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ lrn }) => {
-  const { registeredProgressByEmailId, nativeLanguage } = lrn;
-  return { registeredProgressByEmailId, nativeLanguage };
+  const { registeredProgressByEmailId, baseLanguage } = lrn;
+  return { registeredProgressByEmailId, baseLanguage };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SearchProgress);

@@ -13,7 +13,7 @@ import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/
 
 export const ProgressDashboardByEmail = (props) => {
   const { onSearchingForProgressByEmailId, registeredProgressByEmailId, onRenderingCourseRegistration,
-     studentPercentagesForCourse, studentCategoriesCompletedForCourse, course } = props;
+     studentPercentagesForCourse, studentCategoriesCompletedForCourse, contentLanguage } = props;
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   
@@ -147,7 +147,7 @@ export const ProgressDashboardByEmail = (props) => {
             {renderMessageResults()}
             <Divider />
             <h4>{setLocale(locale, "resources.myprogress.recordProgress")}</h4>
-              <Button type="primary" size="large" onClick={() => props.history.push(getLocalizedConfig(course).progress)}>
+              <Button type="primary" size="large" onClick={() => props.history.push(getLocalizedConfig(contentLanguage).progress)}>
               {setLocale(locale, "resources.myprogress.here")}
               </Button>
             </Card>
@@ -194,9 +194,9 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ lrn, theme }) => {
-  const { course } =  theme;
-  const { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse } = lrn;
-  return { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course };
+  const { contentLanguage } =  theme;
+  const { registeredProgressByEmailId, baseLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse } = lrn;
+  return { registeredProgressByEmailId, baseLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, contentLanguage };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProgressDashboardByEmail));

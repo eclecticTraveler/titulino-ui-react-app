@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { connect } from 'react-redux';
-import { getUserNativeLanguage, onLoadingUserResourcesByCourseTheme  } from 'redux/actions/Lrn';
+import { getUserBaseLanguage, onLoadingUserResourcesByCourseTheme  } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import Loading from 'components/shared-components/Loading';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
@@ -14,13 +14,13 @@ import Countdown from 'react-countdown';
 import { env } from 'configs/EnvironmentConfig';
 
 const ExternalFormSection = (props) => {
-    const { location, nativeLanguage, course, onLoadingUserResourcesByCourseTheme, currentCourseCodeId } = props;
+    const { location, baseLanguage, contentLanguage, onLoadingUserResourcesByCourseTheme, currentCourseCodeId } = props;
     const [countdownComplete, setCountdownComplete] = useState(false);
 
     const loadResources = useCallback(() => {        
         const pathInfo = utils.getThemeCourseInfoFromUrl(location?.pathname); 
-        onLoadingUserResourcesByCourseTheme(pathInfo?.courseTheme, nativeLanguage?.localizationId, course)
-    }, [location, nativeLanguage, course, currentCourseCodeId]);
+        onLoadingUserResourcesByCourseTheme(pathInfo?.courseTheme, baseLanguage?.localeCode, contentLanguage)
+    }, [location, baseLanguage, contentLanguage, currentCourseCodeId]);
 
     const getNextThursday = () => {
         const now = new Date();
@@ -100,14 +100,14 @@ const ExternalFormSection = (props) => {
 };
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({    
-    getUserNativeLanguage,
+    getUserBaseLanguage,
     onLoadingUserResourcesByCourseTheme
 }, dispatch);
 
 const mapStateToProps = ({ lrn, theme }) => {
-    const { nativeLanguage, currentCourseCodeId } = lrn;
-    const { locale, direction, course } = theme;
-    return { locale, direction, course, nativeLanguage, currentCourseCodeId };
+    const { baseLanguage, currentCourseCodeId } = lrn;
+    const { locale, direction, contentLanguage } = theme;
+    return { locale, direction, contentLanguage, baseLanguage, currentCourseCodeId };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ExternalFormSection);

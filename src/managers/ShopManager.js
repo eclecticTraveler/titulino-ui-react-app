@@ -38,19 +38,19 @@ const getPurchaseSessionUrlId = async(product, emailId) => {
   return sessionUrl ?? null;
 } 
 
-const getProductsForPurchase = async(nativeLanguage, course, emailId) => { 
+const getProductsForPurchase = async(baseLanguage, contentLanguage, emailId) => { 
   const localStorageKey = `UserProfile_${emailId}`;  
   const user = await LocalStorageService.getCachedObject(localStorageKey); // eslint-disable-line no-unused-vars
-  const catalog = await ShoppingCatalogService.getProductCatalog(nativeLanguage, course);
+  const catalog = await ShoppingCatalogService.getProductCatalog(baseLanguage, contentLanguage);
   const auditedCatalog = await ShopPurchaseExperience.setUserCoursePurchasesInAvailableCatalog(user?.userCourses, catalog);  
   return auditedCatalog;
 } 
 
-const getProductsPurchasedByUser = async(nativeLanguage, course, emailId) => {  
+const getProductsPurchasedByUser = async(baseLanguage, contentLanguage, emailId) => {  
   const localStorageKey = `UserProfile_${emailId}`;  
   const user = await LocalStorageService.getCachedObject(localStorageKey); // eslint-disable-line no-unused-vars
   // const purchases = await TitulinoNetService.getUserPurchasedProducts(user?.innerToken, user?.contactInternalId);
-  const catalog = await ShoppingCatalogService.getProductCatalog(nativeLanguage, course); // eslint-disable-line no-unused-vars
+  const catalog = await ShoppingCatalogService.getProductCatalog(baseLanguage, contentLanguage); // eslint-disable-line no-unused-vars
 
   return [];
   

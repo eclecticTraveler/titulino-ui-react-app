@@ -1,6 +1,6 @@
 export const setUserCoursePurchasesInAvailableCatalog = async (userCourses = {}, catalog = []) => {
   const modCatalog = catalog?.map(courseItem => {
-    const userCourse = userCourses?.[courseItem.course_code_id];
+    const userCourse = userCourses?.[courseItem.courseCodeId];
 
     // Clone tiers to avoid mutating original
     const updatedTiers = Object.entries(courseItem.tiers || {}).reduce((acc, [tierName, tierData]) => {

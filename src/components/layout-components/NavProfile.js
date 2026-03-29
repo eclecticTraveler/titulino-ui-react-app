@@ -19,7 +19,7 @@ import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
 import NavSearchWrapper from './NavSearchWrapper';
 import { Link } from 'react-router-dom';
 import { env } from "configs/EnvironmentConfig";
-import { getWasUserConfigSetFlag, onUserSelectingCourse } from 'redux/actions/Lrn';
+import { getIsLanguageConfiguredFlag, onUserSelectingContentLanguage } from 'redux/actions/Lrn';
 
 const locale = true;
 const setLocale = (isLocaleOn, localeKey) =>{		
@@ -79,7 +79,7 @@ const configureMenuItems = (user, token) => {
 }
 
 export const NavProfile = (props) => {  
-  const { direction, mode, isMobile, getWasUserConfigSetFlag, onUserSelectingCourse, token, signOut, user } = props;
+  const { direction, mode, isMobile, getIsLanguageConfiguredFlag, onUserSelectingContentLanguage, token, signOut, user } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
  
   const showDrawer = () => {
@@ -93,8 +93,8 @@ export const NavProfile = (props) => {
   const resetBaseCourseLanguage = () => {
     // TODO THIS NEEDS TO BE CLEANED UP AND DONE BETTER WHEN NEW COURSES ARE AVAILABLE
     // BUT LETS WORRY WHEN IT COMES TO MORE COURSES, THIS IS DEBT
-    getWasUserConfigSetFlag("reset");
-    onUserSelectingCourse(null);
+    getIsLanguageConfiguredFlag("reset");
+    onUserSelectingContentLanguage(null);
   }
 
   const handleSigningOut = () => {
@@ -141,7 +141,7 @@ export const NavProfile = (props) => {
             ),
           })),
 
-          ...(env.IS_SWITCH_COURSE_ON ? [{
+          ...(env.IS_LANGUAGE_PICKER_ENABLED ? [{
             key: menuItems?.length + 2,
             onClick: resetBaseCourseLanguage,
             label: (
@@ -235,10 +235,10 @@ export const NavProfile = (props) => {
 }
 
 const mapStateToProps = ({ theme, auth, grant }) => {
-	const { course } =  theme;
+	const { contentLanguage } =  theme;
   const { token } = auth;
   const { user } = grant;
-	return { course, token, user }
+	return { contentLanguage, token, user }
 };
 
-export default connect(mapStateToProps, {signOut, getWasUserConfigSetFlag, onUserSelectingCourse})(NavProfile)
+export default connect(mapStateToProps, {signOut, getIsLanguageConfiguredFlag, onUserSelectingContentLanguage})(NavProfile)

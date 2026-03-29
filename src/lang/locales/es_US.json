@@ -1,7 +1,7 @@
 {
-	"select.course.go.back": "Regresar",
-	"select.course.modal.title": "Seleccione el curso del idioma que le gustaría tomar",
-	"select.course.modal.subtitle": "Seleccione la bandera abajo",
+	"select.course.go.back": "Cambiar idioma",
+	"select.course.modal.title": "¿Qué idioma le gustaría aprender?",
+	"select.course.modal.subtitle": "Toque una bandera abajo para comenzar",
 	"select.course.footer.question":"¿Necesita mas ayuda?",
 	"select.course.footer.find.us":"o encuéntranos en",
 	"profile.help.center":"Centro de ayuda",
