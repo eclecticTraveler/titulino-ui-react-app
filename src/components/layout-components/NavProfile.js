@@ -20,6 +20,7 @@ import NavSearchWrapper from './NavSearchWrapper';
 import { Link } from 'react-router-dom';
 import { env } from "configs/EnvironmentConfig";
 import { getIsLanguageConfiguredFlag, onUserSelectingContentLanguage } from 'redux/actions/Lrn';
+import Flag from 'react-world-flags';
 
 const locale = true;
 const setLocale = (isLocaleOn, localeKey) =>{		
@@ -79,7 +80,18 @@ const configureMenuItems = (user, token) => {
 }
 
 export const NavProfile = (props) => {  
-  const { direction, mode, isMobile, getIsLanguageConfiguredFlag, onUserSelectingContentLanguage, token, signOut, user } = props;
+  const {
+    direction,
+    mode,
+    isMobile,
+    getIsLanguageConfiguredFlag,
+    onUserSelectingContentLanguage,
+    token,
+    signOut,
+    user,
+    baseLanguage,
+    selectedContentLanguage
+  } = props;
   const [visible, setVisible] = useState(false); // Use useState for managing drawer visibility
  
   const showDrawer = () => {
@@ -105,6 +117,9 @@ export const NavProfile = (props) => {
   const authenticatedProfileImg = "/img/avatars/tempProfile-2.png";
   const unauthenticatedprofileImgDefault = "/img/avatars/tempProfile.jpg";
   const avatarImg = token ? (token?.user_metadata?.avatar_url ?? token?.user_metadata?.picture ?? authenticatedProfileImg) :  unauthenticatedprofileImgDefault;
+  const baseLanguageFlagCode = baseLanguage?.flagCodeName;
+  const learningLanguageFlagCode = selectedContentLanguage?.contentLanguageFlagCode;
+  const shouldRenderLanguageFlags = baseLanguageFlagCode && learningLanguageFlagCode;
   const profileMenu = (
       <div className="nav-profile nav-dropdown">
         <div className="nav-profile-header">
@@ -125,6 +140,26 @@ export const NavProfile = (props) => {
               <h5 className="mb-0">
                 Student ID: {(user?.contactId) }
               </h5>
+            )}
+            {shouldRenderLanguageFlags && (
+              <div className="nav-profile-language-context">
+                <span className="nav-profile-language-label">
+                  {setLocale(locale, "profile.current.learning.languages")}
+                </span>
+                <div
+                  aria-label={`${baseLanguage?.baseLanguageName} to ${selectedContentLanguage?.contentLanguageName}`}
+                  className="nav-profile-language-pair"
+                  title={`${baseLanguage?.baseLanguageName} to ${selectedContentLanguage?.contentLanguageName}`}
+                >
+                  <div className="nav-profile-language-flag">
+                    <Flag code={baseLanguageFlagCode} />
+                  </div>
+                  <span className="nav-profile-language-arrow">{'➜'}</span>
+                  <div className="nav-profile-language-flag">
+                    <Flag code={learningLanguageFlagCode} />
+                  </div>
+                </div>
+              </div>
             )}
             </div>
           </div>
@@ -234,11 +269,12 @@ export const NavProfile = (props) => {
   );
 }
 
-const mapStateToProps = ({ theme, auth, grant }) => {
+const mapStateToProps = ({ theme, auth, grant, lrn }) => {
 	const { contentLanguage } =  theme;
   const { token } = auth;
   const { user } = grant;
-	return { contentLanguage, token, user }
+  const { baseLanguage, selectedContentLanguage } = lrn;
+	return { contentLanguage, token, user, baseLanguage, selectedContentLanguage }
 };
 
 export default connect(mapStateToProps, {signOut, getIsLanguageConfiguredFlag, onUserSelectingContentLanguage})(NavProfile)

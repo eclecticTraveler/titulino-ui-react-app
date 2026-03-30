@@ -29,8 +29,8 @@ const questionContainer = {
 //   "5vh"  = start 5% of viewport height below final position
 //   "5vh"  = hold at that position while user reads (times[1] = 0.6 means hold for 60% of duration)
 //   "0vh"  = slide up to final resting position
-// delay: 1.3s = wait for stagger fade-in of individual questions to finish before sliding
-// duration: 0.8s = total slide animation time (the hold + move phases)
+// delay: 0.8s = wait for stagger fade-in of individual questions to finish before sliding
+// duration: 1.0s = total slide animation time (the hold + move phases)
 // ease: cubic-bezier for a smooth, gentle deceleration
 const questionSlideStep1 = {
 	hidden: { opacity: 0 },
@@ -38,7 +38,7 @@ const questionSlideStep1 = {
 		opacity: 1,
 		y: ["5vh", "5vh", "0vh"],
 		transition: {
-			y: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.6, 1], delay: 1.3 },
+			y: { duration: 1.0, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.6, 1], delay: 0.8 },
 			opacity: { duration: 0.01 }
 		}
 	}
@@ -52,7 +52,7 @@ const questionSlideStep2 = {
 		opacity: 1,
 		y: ["10vh", "12vh", "0vh"],
 		transition: {
-			y: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.6, 1], delay: 1.3 },
+			y: { duration: 1.0, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.6, 1], delay: 0.8 },
 			opacity: { duration: 0.01 }
 		}
 	}
