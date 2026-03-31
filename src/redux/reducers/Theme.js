@@ -8,7 +8,7 @@ import {
   TOGGLE_MOBILE_NAV,
   SWITCH_THEME,
   DIRECTION_CHANGE,
-  CHANGE_COURSE,
+  CHANGE_CONTENT_LANGUAGE,
   RETRIEVE_THEME,
   SEARCH_SELECTION
 } from '../constants/Theme';
@@ -34,10 +34,10 @@ const theme = (state = initTheme, action) => {
       navCollapsed: action.isCollapse,
       locale: action.locale
     }
-    case CHANGE_COURSE:
+    case CHANGE_CONTENT_LANGUAGE:
       return {
         ...state,
-        course: action.course
+        contentLanguage: action.contentLanguage
       }
     case TOGGLE_COLLAPSED_NAV:
       return {

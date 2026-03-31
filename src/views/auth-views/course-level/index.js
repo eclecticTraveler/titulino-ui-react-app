@@ -17,9 +17,9 @@ class AuthCourseLevel extends Component {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
         const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname); 
 
-        this.props.geteBookUrl(pathInfo?.levelNo, this.props.nativeLanguage?.localizationId, this.props.course );
+        this.props.geteBookUrl(pathInfo?.levelNo, this.props.baseLanguage?.localeCode, this.props.contentLanguage );
         this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme);
-        this.props.onLoadingUserResourcesByCourseTheme(pathTheme?.courseTheme, this.props.nativeLanguage?.localizationId, this.props.course);
+        this.props.onLoadingUserResourcesByCourseTheme(pathTheme?.courseTheme, this.props.baseLanguage?.localeCode, this.props.contentLanguage);
         // check if there is a user object saved and valid and fetch it
         if(this.props.token?.email){            
             this.props.onLoadingAuthenticatedLandingPage(this.props.token?.email);
@@ -126,11 +126,11 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn, theme, grant, auth}) => {
-	const { nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse } = lrn;
-    const { locale, direction, course } =  theme;
+	const { baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse } = lrn;
+    const { locale, direction, contentLanguage } =  theme;
     const { user } = grant;
     const { token } = auth; 
-	return { locale, direction, course, nativeLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse }
+	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AuthCourseLevel);

@@ -1,6 +1,6 @@
 import React, {Component, Suspense} from 'react'
 import {connect} from 'react-redux';
-import {getUserNativeLanguage}  from '../../../redux/actions/Lrn';
+import {getUserBaseLanguage}  from '../../../redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import InternalIFrame from '../../../components/layout-components/InternalIFrame';
 import { env } from '../../../configs/EnvironmentConfig';
@@ -39,14 +39,14 @@ class ChapterCourseLevel extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getUserNativeLanguage: getUserNativeLanguage
+        getUserBaseLanguage: getUserBaseLanguage
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { nativeLanguage } = lrn;
-    const { locale, direction, course } =  theme;
-	return { locale, direction, course, nativeLanguage }
+	const { baseLanguage } = lrn;
+    const { locale, direction, contentLanguage } =  theme;
+	return { locale, direction, contentLanguage, baseLanguage }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChapterCourseLevel);

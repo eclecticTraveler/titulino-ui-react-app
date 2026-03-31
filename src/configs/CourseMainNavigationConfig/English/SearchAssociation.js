@@ -1,6 +1,6 @@
 // ['class', '1', '1', 'course', 'learning', 'vegetables', 'produce', 'groceries', 'class intro', 'lesson basics']
 const localizedKeywords = {
-	eng: {
+	en: {
 		themeKeywords: {
 		  class: ['lecture', 'classroom', 'learning'],
 		  1: ['vegetables', 'produce', 'groceries'],

@@ -2,8 +2,8 @@
   {
     "courseId": "SUPERMARKET_SEP_2024_COURSE_01",
     "courseGeneralTheme": "supermarket",
-    "nativeLanguage": "es",
-    "course": "eng",
+    "baseLanguages": ["es"],
+    "contentLanguageCode": "en",
     "categories": [
       {
         "categoryId": 1,
@@ -26,7 +26,7 @@
             "links": {
               "facebook": "https://www.facebook.com/share/v/15FHoFJUaF/",
               "youtube": "https://youtu.be/UfV8z6-HA58",
-              "internal": "https://titulino.com/lrn/eng/level-supermarket/chapter-1/class"
+              "internal": "https://titulino.com/lrn/en/level-supermarket/chapter-1/class"
             }
           },
           {
@@ -39,7 +39,7 @@
             "links": {
               "facebook": "https://www.facebook.com/share/v/15RUuVurdn/",
               "youtube": "https://youtu.be/qmUqebxzaZQ",
-              "internal": "https://titulino.com/lrn/eng/level-supermarket/chapter-2/class"
+              "internal": "https://titulino.com/lrn/en/level-supermarket/chapter-2/class"
             }
           },
           {
@@ -52,7 +52,7 @@
             "links": {
               "facebook": "https://www.facebook.com/share/v/129u59T1T2k/",
               "youtube": "https://youtu.be/Na48A5B2_IY",
-              "internal": "https://titulino.com/lrn/eng/level-supermarket/chapter-3/class"
+              "internal": "https://titulino.com/lrn/en/level-supermarket/chapter-3/class"
             }
           },
           {
@@ -65,7 +65,7 @@
             "links": {
               "facebook": "https://www.facebook.com/share/v/1VPs1xsSdy/",
               "youtube": "https://youtu.be/68Bi7PenMJU",
-              "internal": "https://titulino.com/lrn/eng/level-supermarket/chapter-4/class"
+              "internal": "https://titulino.com/lrn/en/level-supermarket/chapter-4/class"
             }
           },
           {
@@ -78,7 +78,7 @@
             "links": {
               "facebook": "https://www.facebook.com/share/v/15GW6Bk72G/",
               "youtube": "https://youtu.be/PFWuws5mzmY",
-              "internal": "https://titulino.com/lrn/eng/level-supermarket/chapter-5/class"
+              "internal": "https://titulino.com/lrn/en/level-supermarket/chapter-5/class"
             }
           },
           {
@@ -91,7 +91,7 @@
             "links": {
               "facebook": "https://www.facebook.com/share/v/1DizQPWeab/",
               "youtube": "https://youtu.be/PyoUoua65MY",
-              "internal": "https://titulino.com/lrn/eng/level-supermarket/chapter-6/class"
+              "internal": "https://titulino.com/lrn/en/level-supermarket/chapter-6/class"
             }
           },
           {
@@ -104,7 +104,7 @@
             "links": {
               "facebook": "https://www.facebook.com/share/v/1UCoq8nDwc/",
               "youtube": "https://youtu.be/xa9jtftPc0k",
-              "internal": "https://titulino.com/lrn/eng/level-supermarket/chapter-7/class"
+              "internal": "https://titulino.com/lrn/en/level-supermarket/chapter-7/class"
             }
           },
           {
@@ -117,7 +117,7 @@
             "links": {
               "facebook": "https://www.facebook.com/share/v/1YSYFusiYX/",
               "youtube": "https://youtu.be/suGg4GQkEVY",
-              "internal": "https://titulino.com/lrn/eng/level-supermarket/chapter-8/class"
+              "internal": "https://titulino.com/lrn/en/level-supermarket/chapter-8/class"
             }
           }
         ]
@@ -358,7 +358,7 @@
             "imageUrl": "https://images.unsplash.com/photo-1534644107580-3a4dbd494a95?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "availableDate": "01/01/2024",
             "links": {
-              "internal": "https://titulino.com/lrn/eng/level-supermarket/resources/test"
+              "internal": "https://titulino.com/lrn/en/level-supermarket/resources/test"
             }
           }
         ]
@@ -368,8 +368,8 @@
   {
     "courseId": "HOUSEHOLD_ITEMS_PART_1_JAN_2025_COURSE_01",
     "courseGeneralTheme": "household",
-    "nativeLanguage": "es",
-    "course": "eng",
+    "baseLanguages": ["es"],
+    "contentLanguageCode": "en",
     "categories": [
       {
         "categoryId": 1,
@@ -383,19 +383,6 @@
         ],
         "lessons": [
           {
-            "classNumber": 0,
-            "title": "Overview",
-            "description": "Overview of the course and its tools.",
-            "isToDisplay": true,
-            "availableDate": "01/11/2025",
-            "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "links": {
-              "facebook": "https://fb.watch/w-TyzdXgu7/",
-              "youtube": "https://youtu.be/GMDWc83Qmrc",
-              "internal": "https://titulino.com/lrn/eng/level-household"
-            }
-          },
-          {
             "classNumber": 1,
             "title": "Houses Part 1",
             "description": "Phonics and 15 Terms. Live and recorded sessions avilable.",
@@ -403,9 +390,9 @@
             "availableDate": "01/20/2025",
             "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null,
-              "internal": null
+              "facebook": "https://fb.watch/xeXW9_78NH/",
+              "youtube": "https://youtu.be/s9sfiN58AXg",
+              "internal": "https://titulino.com/lrn/en/level-household/chapter-1/class"
             }
           },
           {
@@ -416,9 +403,9 @@
             "availableDate": "01/27/2025",
             "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null,
-              "internal": null
+              "facebook": "https://fb.watch/xoQ09eSrbl/",
+              "youtube": "https://youtu.be/GW-iEdFN9c0",
+              "internal": "https://titulino.com/lrn/en/level-household/chapter-2/class"
             }
           },
           {
@@ -426,12 +413,12 @@
             "title": "Living Room Part 1",
             "description": "Phonics and 15 Terms. Live and recorded sessions avilable.",
             "isToDisplay": true,
-            "availableDate": "02/03/2025",
+            "availableDate": "02/02/2025",
             "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null,
-              "internal": null
+              "facebook": "https://fb.watch/xys1v13yOI/",
+              "youtube": "https://youtu.be/UZ5U7_6yhqk",
+              "internal": "https://titulino.com/lrn/en/level-household/chapter-3/class"
             }
           },
           {
@@ -442,9 +429,9 @@
             "availableDate": "02/10/2025",
             "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null,
-              "internal": null
+              "facebook": "https://fb.watch/xHfQ-ePVnB/",
+              "youtube": "https://youtu.be/VTpja1z0d-s",
+              "internal": "https://titulino.com/lrn/en/level-household/chapter-4/class"
             }
           },
           {
@@ -455,9 +442,9 @@
             "availableDate": "02/17/2025",
             "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null,
-              "internal": null
+              "facebook": "https://fb.watch/xZE43klUdG/",
+              "youtube": "https://youtu.be/ZzdXYyQylxw",
+              "internal": "https://titulino.com/lrn/en/level-household/chapter-5/class"
             }
           },
           {
@@ -465,12 +452,12 @@
             "title": "Dining Room Part 2",
             "description": "Phonics and 14 Terms. Live and recorded sessions avilable.",
             "isToDisplay": true,
-            "availableDate": "02/24/2025",
+            "availableDate": "03/02/2025",
             "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null,
-              "internal": null
+              "facebook": "https://fb.watch/xZE43klUdG/",
+              "youtube": "https://youtu.be/ZzdXYyQylxw",
+              "internal": "https://titulino.com/lrn/en/level-household/chapter-6/class"
             }
           },
           {
@@ -478,12 +465,12 @@
             "title": "Kitchen Room Part 1",
             "description": "Phonics and 15 Terms. Live and recorded sessions avilable.",
             "isToDisplay": true,
-            "availableDate": "03/03/2025",
+            "availableDate": "03/10/2025",
             "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null,
-              "internal": null
+              "facebook": "https://www.facebook.com/share/v/161qiBVC6e/",
+              "youtube": "https://youtu.be/lPbGmpAeprA",
+              "internal": "https://titulino.com/lrn/en/level-household/chapter-7/class"
             }
           },
           {
@@ -491,12 +478,12 @@
             "title": "Kitchen Room Part 2",
             "description": "Phonics and 19 Terms. Live and recorded sessions avilable.",
             "isToDisplay": true,
-            "availableDate": "03/10/2025",
+            "availableDate": "03/17/2025",
             "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null,
-              "internal": null
+              "facebook": "https://fb.watch/yuKI7-vhYo/",
+              "youtube": "https://youtu.be/50MPSE88htg",
+              "internal": "https://titulino.com/lrn/en/level-household/chapter-7/class"
             }
           }
         ]
@@ -517,11 +504,11 @@
             "title": "Grammar (Basic)",
             "description": "Say and Ask who owns things using Posessive's",
             "isToDisplay": true,
-            "availableDate": "01/21/2025",
+            "availableDate": "01/20/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://www.facebook.com/share/v/1Cqf88qzBd/",
+              "youtube": "https://youtu.be/Pccnns3OyqM"
             }
           },        
           {
@@ -529,11 +516,11 @@
             "title": "Grammar (Basic)",
             "description": "Ask for advice using and, or & but",
             "isToDisplay": true,
-            "availableDate": "01/28/2025",
+            "availableDate": "01/27/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://www.facebook.com/share/v/1FcJQxx2oG/",
+              "youtube": "https://youtu.be/9N4Uav80lPI"
             }
           },
           {
@@ -541,11 +528,11 @@
             "title": "Grammar (Basic)",
             "description": "Describe finding things using \"There is\" and \"There are\" phrases",
             "isToDisplay": true,
-            "availableDate": "02/04/2025",
+            "availableDate": "02/03/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://www.facebook.com/share/v/16dc9LSXYk/",
+              "youtube": "https://youtu.be/gHUPy-0BvfY"
             }
           },
           {
@@ -556,8 +543,8 @@
             "availableDate": "02/11/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://www.facebook.com/share/v/16grP8vGeg/",
+              "youtube": "https://youtu.be/QdEkQS-SnF0"
             }
           },
           {
@@ -568,8 +555,8 @@
             "availableDate": "02/18/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://www.facebook.com/share/v/1AZNz2f8V6/",
+              "youtube": "https://youtu.be/wtYMQ5o8_qo"
             }
           },
           {
@@ -577,11 +564,11 @@
             "title": "Grammar (Basic)",
             "description": "Basic ways to describe places",
             "isToDisplay": true,
-            "availableDate": "02/25/2025",
+            "availableDate": "03/04/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://www.facebook.com/share/v/1WhvCm8VA1/",
+              "youtube": "https://youtu.be/jiK_5VLOasw"
             }
           },
           {
@@ -589,11 +576,11 @@
             "title": "Grammar (Basic)",
             "description": "Regular Verbs",
             "isToDisplay": true,
-            "availableDate": "03/04/2024",
+            "availableDate": "03/09/2024",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://www.facebook.com/share/v/1AuDHRS24y/",
+              "youtube": "https://youtu.be/p20zzA03DA0"
             }
           },
           {
@@ -601,11 +588,11 @@
             "title": "Grammar (Basic)",
             "description": "Talk about what you have",
             "isToDisplay": true,
-            "availableDate": "03/11/2024",
+            "availableDate": "03/18/2024",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://www.facebook.com/share/v/1DcdtC6XVf/",
+              "youtube": "https://youtu.be/kXlIFy0D978"
             }
           }
         ]
@@ -626,7 +613,7 @@
             "title": "Grammar (Advanced)",
             "description": "Phrasal Verbs in Household context Part 1",
             "isToDisplay": true,
-            "availableDate": "01/21/2025",
+            "availableDate": "01/20/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
               "facebook": "https://fb.watch/w_xXCzE9id/",
@@ -638,10 +625,10 @@
             "title": "Grammar (Advanced)",
             "description": "Present Perfect Part 1",
             "isToDisplay": true,
-            "availableDate": "01/28/2025",
+            "availableDate": "01/27/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": "https://www.facebook.com/watch/?v=618010594052846",
+              "facebook": "https://www.facebook.com/share/v/1FUz48juv1/",
               "youtube": "https://youtu.be/OqBpY02bxQ0"
             }
           },
@@ -650,10 +637,10 @@
             "title": "Grammar (Advanced)",
             "description": "Present Perfect Part 2",
             "isToDisplay": true,
-            "availableDate": "02/04/2025",
+            "availableDate": "02/03/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": "https://www.facebook.com/watch/?v=3861562967393509",
+              "facebook": "https://www.facebook.com/share/v/16fG59cMku/",
               "youtube": "https://youtu.be/iMFZ3-xt0aM"
             }
           },
@@ -665,7 +652,7 @@
             "availableDate": "02/11/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": "https://fb.watch/w-TB40rXs3/",
+              "facebook": "https://www.facebook.com/share/v/1Emd1qqSVg/",
               "youtube": "https://youtu.be/fCpwsxR1RVI"
             }
           },
@@ -677,8 +664,8 @@
             "availableDate": "02/18/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://www.facebook.com/share/v/1FXYn9rHVZ/",
+              "youtube":  "https://youtu.be/VJEVD6x-sT0"
             }
           },
           {
@@ -686,11 +673,11 @@
             "title": "Grammar (Advanced)",
             "description": "Have you? Did you? Do you? Use questions to show interest",
             "isToDisplay": true,
-            "availableDate": "02/25/2025",
+            "availableDate": "03/04/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://fb.watch/xCjCcvvwC9/",
+              "youtube": "https://youtu.be/gtHb0bip8l0"
             }
           },
           {
@@ -698,11 +685,11 @@
             "title": "Grammar (Advanced)",
             "description": "Irregular Verbs",
             "isToDisplay": true,
-            "availableDate": "03/04/2025",
+            "availableDate": "03/11/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://fb.watch/y5EayH4OAw/",
+              "youtube": "https://youtu.be/p20zzA03DA0"
             }
           },
           {
@@ -710,11 +697,11 @@
             "title": "Grammar (Advanced)",
             "description": "Phrases in the past",
             "isToDisplay": true,
-            "availableDate": "03/11/2025",
+            "availableDate": "03/18/2025",
             "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             "links": {
-              "facebook": null,
-              "youtube": null
+              "facebook": "https://www.facebook.com/share/v/1BbrqC5x6m/",
+              "youtube": "https://youtu.be/6-cbIAp3kwo"
             }
           }
         ]
@@ -731,11 +718,377 @@
         "lessons": [
           {
             "classNumber": 0,
-            "title": "150 Terms",
-            "description": "Final Exam with all 150 terms.",
+            "title": "120 Terms",
+            "description": "Final Exam with all 120 terms.",
             "isToDisplay": true,
             "imageUrl": "https://images.unsplash.com/photo-1534644107580-3a4dbd494a95?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            "availableDate": "03/10/2025",
+            "availableDate": "03/18/2025",
+            "links": {
+              "internal": "https://titulino.com/lrn/en/level-household/resources/test"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "courseId": "WORK_AND_JOBS_JULY_2025_COURSE_01",
+    "courseGeneralTheme": "work-n-jobs",
+    "baseLanguages": ["es"],
+    "contentLanguageCode": "en",
+    "categories": [
+      {
+        "categoryId": 1,
+        "name": "General Gatherings",
+        "categoryLocalizationKey":"nav.generalGatherings",        
+        "isToDisplay": true,
+        "imageUrl": "https://images.unsplash.com/photo-1652648265326-73317a42c43d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "participationIds": [
+          { "participationTypeId": 1, "localizationKey": "nav.live" },
+          { "participationTypeId": 2, "localizationKey": "nav.recorded" }
+        ],
+        "lessons": [
+          {
+            "classNumber": 1,
+            "title": "Construction",
+            "description": "Phonics and 15 Terms. Live and recorded sessions avilable.",
+            "isToDisplay": true,
+            "availableDate": "09/22/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/1ACzP8A5Ef/",
+              "youtube": "https://youtu.be/U1CJaznXq5Q",
+              "internal": "https://titulino.com/lrn-auth/eng/level-work-n-jobs/chapter-1/class"
+            }
+          },
+          {
+            "classNumber": 2,
+            "title": "Office Part 1",
+            "description": "Phonics and 18 Terms. Live and recorded sessions avilable.",
+            "isToDisplay": true,
+            "availableDate": "09/29/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/19zteCqCA6/",
+              "youtube": "https://youtu.be/dRSKHJBB9yk",
+              "internal": "https://titulino.com/lrn-auth/eng/level-work-n-jobs/chapter-2/class"
+            }
+          },
+          {
+            "classNumber": 3,
+            "title": "School Part 1",
+            "description": "Phonics and 15 Terms. Live and recorded sessions avilable.",
+            "isToDisplay": true,
+            "availableDate": "10/06/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/reel/1073127851565003",
+              "youtube": "https://youtu.be/UrdiNGtGmhE",
+              "internal": "https://titulino.com/lrn-auth/eng/level-work-n-jobs/chapter-3/class"
+            }
+          },
+          {
+            "classNumber": 4,
+            "title": "Farming Part 1",
+            "description": "Phonics and 14 Terms. Live and recorded sessions avilable.",
+            "isToDisplay": true,
+            "availableDate": "10/13/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/19xvQqyZng/",
+              "youtube": "https://youtu.be/6sChWWFQKDU",
+              "internal": "https://titulino.com/lrn-auth/eng/level-work-n-jobs/chapter-4/class"
+            }
+          },
+          {
+            "classNumber": 5,
+            "title": "Hotel Jobs Part 1",
+            "description": "Phonics and 15 Terms. Live and recorded sessions avilable.",
+            "isToDisplay": true,
+            "availableDate": "10/20/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/1CsSaAFvHy/",
+              "youtube": "https://youtu.be/G_EyFTJnpSQ",
+              "internal": "https://titulino.com/lrn-auth/eng/level-work-n-jobs/chapter-5/class"
+            }
+          },
+          {
+            "classNumber": 6,
+            "title": "Warehouse Part 1",
+            "description": "Phonics and 15 Terms. Live and recorded sessions avilable.",
+            "isToDisplay": true,
+            "availableDate": "10/27/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/Da0NkuRMM6/",
+              "youtube": "https://youtu.be/74LObM0B9Kk",
+              "internal": "https://titulino.com/lrn-auth/eng/level-work-n-jobs/chapter-6/class"
+            }
+          },
+          {
+            "classNumber": 7,
+            "title": "Restaurant Part 1",
+            "description": "Phonics and 15 Terms. Live and recorded sessions avilable.",
+            "isToDisplay": true,
+            "availableDate": "11/03/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/DjFhqD5O9f/",
+              "youtube": "https://youtu.be/QJWw8VtDAuo",
+              "internal": "https://titulino.com/lrn-auth/eng/level-work-n-jobs/chapter-7/class"
+            }
+          },
+          {
+            "classNumber": 8,
+            "title": "Hospital Part 1",
+            "description": "Phonics and 19 Terms. Live and recorded sessions avilable.",
+            "isToDisplay": true,
+            "availableDate": "11/10/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1473649085228-583485e6e4d7?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/DsMaj-OBL_/",
+              "youtube": "https://youtu.be/BWO7AneSjD4",
+              "internal": "https://titulino.com/lrn-auth/eng/level-work-n-jobs/chapter-8/class"
+            }
+          }
+        ]
+      },
+      {
+        "categoryId": 2,
+        "level": 1,
+        "name": "Basic Grammar",
+        "categoryLocalizationKey": "grammarKey",
+        "isToDisplay": true,
+        "imageUrl": "https://images.unsplash.com/photo-1680449786212-de3b835dc467?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "participationIds": [
+          { "participationTypeId": 2, "localizationKey": "nav.recorded" }
+        ],
+        "lessons": [       
+          {
+            "classNumber": 1,
+            "title": "Grammar (Basic)",
+            "description": "There is and There are",
+            "isToDisplay": true,
+            "availableDate": "09/30/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/1CKCTWbdyC/",
+              "youtube": "https://youtu.be/N3ZbukkxAjo"
+            }
+          },
+          {
+            "classNumber": 2,
+            "title": "Grammar (Basic)",
+            "description": "Superlatives",
+            "isToDisplay": true,
+            "availableDate": "10/07/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/175jpVxEbQ/",
+              "youtube": "https://youtu.be/7jjqRcaVspc"
+            }
+          },
+          {
+            "classNumber": 3,
+            "title": "Grammar (Basic)",
+            "description": "Simple Past Tense",
+            "isToDisplay": true,
+            "availableDate": "10/14/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/1JHrUEkZhK/",
+              "youtube": "https://youtu.be/M-Lj6_OL_Js"
+            }
+          },
+          {
+            "classNumber": 4,
+            "title": "Grammar (Basic)",
+            "description": "Present Continuous Questions",
+            "isToDisplay": true,
+            "availableDate": "10/21/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/1Aeavp1142/",
+              "youtube": "https://youtu.be/x6b59WCkyaE"
+            }
+          },
+          {
+            "classNumber": 5,
+            "title": "Grammar (Basic)",
+            "description": "May & May not",
+            "isToDisplay": true,
+            "availableDate": "10/28/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/D9-0eyFvUk/",
+              "youtube": "https://youtu.be/4piR68OB_KI"
+            }
+          },
+          {
+            "classNumber": 6,
+            "title": "Grammar (Basic)",
+            "description": "Might & Might not",
+            "isToDisplay": true,
+            "availableDate": "11/04/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/DlL4S5vBnD/",
+              "youtube": "https://youtu.be/eEivLf1sjF8"
+            }
+          },
+          {
+            "classNumber": 7,
+            "title": "Grammar (Basic)",
+            "description": "Rather & Rather not",
+            "isToDisplay": true,
+            "availableDate": "11/11/2024",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/Ds_jgB1D6d/",
+              "youtube": "https://youtu.be/DUbVPEqhZuo"
+            }
+          },
+          {
+            "classNumber": 8,
+            "title": "Grammar (Basic)",
+            "description": "Tag questions",
+            "isToDisplay": true,
+            "availableDate": "11/18/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/DBFHpzLde2/",
+              "youtube": "https://youtu.be/Phtt1lTIeeE"
+            }
+          }
+        ]
+      },
+      {
+        "categoryId": 2,
+        "level": 2,
+        "name": "Advanced Grammar",
+        "categoryLocalizationKey": "grammarKey",
+        "isToDisplay": true,
+        "imageUrl": "https://images.unsplash.com/photo-1484415063229-3d6335668531?q=80&w=2114&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "participationIds": [
+          { "participationTypeId": 2, "localizationKey": "nav.recorded" }
+        ],
+        "lessons": [
+          {
+            "classNumber": 1,
+            "title": "Grammar (Advanced)",
+            "description": "Zero Conditional",
+            "isToDisplay": true,
+            "availableDate": "09/30/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/1MjAj5jpCs/",
+              "youtube": "https://youtu.be/4oBXhB7oeyo"
+            }
+          },        
+          {
+            "classNumber": 2,
+            "title": "Grammar (Advanced)",
+            "description": "First Conditional",
+            "isToDisplay": true,
+            "availableDate": "10/07/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/1BRhN8Le4R/",
+              "youtube": "https://youtu.be/tWKTcfGI_ZM"
+            }
+          },
+          {
+            "classNumber": 3,
+            "title": "Grammar (Advanced)",
+            "description": "Second Conditional",
+            "isToDisplay": true,
+            "availableDate": "10/14/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/1BFwRnJpYN/",
+              "youtube": "https://youtu.be/d3PXTXroEOs"
+            }
+          },
+          {
+            "classNumber": 4,
+            "title": "Grammar (Advanced)",
+            "description": "Third Conditional",
+            "isToDisplay": true,
+            "availableDate": "10/21/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://www.facebook.com/share/v/178YqMxJ57/",
+              "youtube": "https://youtu.be/zj0FYKJ9frQ"
+            }
+          },
+          {
+            "classNumber": 5,
+            "title": "Grammar (Advanced)",
+            "description": "Mixed Conditionals",
+            "isToDisplay": true,
+            "availableDate": "10/28/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/D9_1SrHen9/",
+              "youtube": "https://youtu.be/2d1peoT2_CE"
+            }
+          },
+          {
+            "classNumber": 6,
+            "title": "Grammar (Advanced)",
+            "description": "Relative Clauses",
+            "isToDisplay": true,
+            "availableDate": "11/04/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/DjxRf5Elku/",
+              "youtube": "https://youtu.be/j4KbYXyYX9A"
+            }
+          },
+          {
+            "classNumber": 7,
+            "title": "Grammar (Advanced)",
+            "description": "Modals of Speculation",
+            "isToDisplay": true,
+            "availableDate": "11/11/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/DsZ_XVxzsN/",
+              "youtube": "https://youtu.be/2TzFEVOqU3g"
+            }
+          },
+          {
+            "classNumber": 8,
+            "title": "Grammar (Advanced)",
+            "description": "Modals of Recommendation",
+            "isToDisplay": true,
+            "availableDate": "11/18/2025",
+            "imageUrl": "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "links": {
+              "facebook": "https://fb.watch/DBzK53c5pu/",
+              "youtube": "https://youtu.be/W_rbOQrT2_4"
+            }
+          }
+        ]
+      },
+      {
+        "categoryId": 4,
+        "name": "Examination",
+        "categoryLocalizationKey": "examinationKey",
+        "isToDisplay": true,
+        "imageUrl": "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        "participationIds": [
+          { "participationTypeId": 3, "localizationKey": "nav.notApplicable" }
+        ],
+        "lessons": [
+          {
+            "classNumber": 0,
+            "title": "120 Terms",
+            "description": "Final Exam with all 120 terms.",
+            "isToDisplay": true,
+            "imageUrl": "https://images.unsplash.com/photo-1534644107580-3a4dbd494a95?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            "availableDate": "12/02/2025",
             "links": {
               "internal": null
             }

@@ -102,7 +102,7 @@ const categories = [
 ];
 
 const EnrolleeCourseProgressTrackingByEmail = (props) => {
-  const { onRequestingCourseProgressStructure, nativeLanguage, course, location } = props;
+  const { onRequestingCourseProgressStructure, baseLanguage, contentLanguage, location } = props;
   const [selectedClasses, setSelectedClasses] = useState({});
   const [email, setEmail] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(true);
@@ -118,7 +118,7 @@ const EnrolleeCourseProgressTrackingByEmail = (props) => {
 
   useEffect(() => {
     const pathInfo = utils.getThemeCourseInfoFromUrl(location?.pathname); 
-    console.log("EFFECT",nativeLanguage?.localizationId, course, pathInfo?.courseTheme);
+    console.log("EFFECT",baseLanguage?.localeCode, contentLanguage, pathInfo?.courseTheme);
     onRequestingCourseProgressStructure();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -480,9 +480,9 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ lrn, theme }) => {
-  const { course } =  theme;
-  const { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse } = lrn;
-  return { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course };
+  const { contentLanguage } =  theme;
+  const { registeredProgressByEmailId, baseLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse } = lrn;
+  return { registeredProgressByEmailId, baseLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, contentLanguage };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(EnrolleeCourseProgressTrackingByEmail));

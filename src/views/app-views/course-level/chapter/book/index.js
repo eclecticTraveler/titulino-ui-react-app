@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {connect} from 'react-redux';
-import { getUserNativeLanguage, getBookChapterUrl}  from 'redux/actions/Lrn';
+import { getUserBaseLanguage, getBookChapterUrl}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import Loading from 'components/shared-components/Loading';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
@@ -11,7 +11,7 @@ class BookSection extends Component {
 
     loadUrl = () => {
         const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
-        this.props.getBookChapterUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.nativeLanguage?.localizationId, this.props.course );
+        this.props.getBookChapterUrl(pathInfo?.levelNo, pathInfo?.chapterNo, this.props.baseLanguage?.localeCode, this.props.contentLanguage );
     }
     
     componentDidMount() {                
@@ -47,15 +47,15 @@ class BookSection extends Component {
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-        getUserNativeLanguage: getUserNativeLanguage,
+        getUserBaseLanguage: getUserBaseLanguage,
         getBookChapterUrl: getBookChapterUrl
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { nativeLanguage, bookChapterUrl } = lrn;
-    const { locale, direction, course } =  theme;
-	return { locale, direction, course, nativeLanguage, bookChapterUrl }
+	const { baseLanguage, bookChapterUrl } = lrn;
+    const { locale, direction, contentLanguage } =  theme;
+	return { locale, direction, contentLanguage, baseLanguage, bookChapterUrl }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(BookSection);

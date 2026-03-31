@@ -1,14 +1,14 @@
 import { 
   GET_SELECTED_LEVEL_FROM_UPPER_NAV_ON_CLICK,
-  GET_ALL_LANGUAGE_COURSES,
-  SET_USER_COURSE_CONFIGURATION,
-  GET_WAS_USER_CONFIG_SET_FLAG,
+  GET_ALL_LANGUAGE_OPTIONS,
+  SET_USER_LANGUAGE_CONFIGURATION,
+  GET_IS_LANGUAGE_CONFIGURED_FLAG,
   GET_UPPER_NAV_BASED_ON_USER_CONFIG,
-  SET_USER_SELECTED_COURSE,
+  SET_USER_SELECTED_CONTENT_LANGUAGE,
   GET_SELECTED_COURSE_FROM_UPPER_NAV_ON_LOAD,
-  SET_USER_NATIVE_LANGUAGE,
-  GET_USER_SELECTED_COURSE,
-  GET_USER_NATIVE_LANGUAGE,
+  SET_USER_BASE_LANGUAGE,
+  GET_USER_SELECTED_CONTENT_LANGUAGE,
+  GET_USER_BASE_LANGUAGE,
   CURRENT_ROUTE_INFO,
   GET_QUIZLET_URL,
   GET_VIDEO_CLASS_URL,
@@ -46,7 +46,7 @@ import {
   ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
   ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
   ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
-  ON_USER_SELECTING_COURSE,
+  ON_USER_SELECTING_CONTENT_LANGUAGE,
   ON_UPSERTING_KNOW_ME_BY_CHAPTER
 } from "../constants/Lrn";
 
@@ -60,10 +60,10 @@ const initState = {
 
 const lrn = (state = initState, action) => {
   switch (action.type) {
-    case ON_USER_SELECTING_COURSE:
+    case ON_USER_SELECTING_CONTENT_LANGUAGE:
       return {
         ...state,
-        selectedCourse: action.selectedCourse
+        selectedContentLanguage: action.selectedContentLanguage
       }
     case ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE:
       return {
@@ -268,16 +268,16 @@ const lrn = (state = initState, action) => {
         currentRoute: action.route
 
       }
-    case GET_USER_SELECTED_COURSE:      
+    case GET_USER_SELECTED_CONTENT_LANGUAGE:      
       return {
         ...state,
-        selectedCourse: action.selectedCourse
+        selectedContentLanguage: action.selectedContentLanguage
       }
-    case SET_USER_NATIVE_LANGUAGE:
-    case GET_USER_NATIVE_LANGUAGE:
+    case SET_USER_BASE_LANGUAGE:
+    case GET_USER_BASE_LANGUAGE:
       return {
         ...state,
-        nativeLanguage: action.nativeLanguage
+        baseLanguage: action.baseLanguage
       }
     case GET_SELECTED_COURSE_FROM_UPPER_NAV_ON_LOAD:
       return {
@@ -285,23 +285,23 @@ const lrn = (state = initState, action) => {
       dynamicUpperMainNavigation: action.updatedNavigation || state.lrn.dynamicUpperMainNavigation,
       selectedCourseOnLoad: action.courseOnLoad,
       }
-    case SET_USER_SELECTED_COURSE:
+    case SET_USER_SELECTED_CONTENT_LANGUAGE:
       return {
         ...state
       }
-    case SET_USER_COURSE_CONFIGURATION:
+    case SET_USER_LANGUAGE_CONFIGURATION:
       return {
         ...state
       }
-    case GET_ALL_LANGUAGE_COURSES:
+    case GET_ALL_LANGUAGE_OPTIONS:
       return {
         ...state,
-        languageCourses: action.languageCourses
+        languageOptions: action.languageOptions
       };
-    case GET_WAS_USER_CONFIG_SET_FLAG:
+    case GET_IS_LANGUAGE_CONFIGURED_FLAG:
       return {
         ...state,
-        wasUserConfigSet: action.wasUserConfigSet
+        isLanguageConfigured: action.isLanguageConfigured
       }
     case GET_UPPER_NAV_BASED_ON_USER_CONFIG:
       return {

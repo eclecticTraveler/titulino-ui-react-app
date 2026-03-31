@@ -51,9 +51,9 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn, theme}) => {
-	const { nativeLanguage, landingObjectPictureOfTheDay } = lrn;
-    const { locale, direction, course } =  theme;
-	return { locale, direction, course, nativeLanguage, landingObjectPictureOfTheDay }
+	const { baseLanguage, landingObjectPictureOfTheDay } = lrn;
+    const { locale, direction, contentLanguage } =  theme;
+	return { locale, direction, contentLanguage, baseLanguage, landingObjectPictureOfTheDay }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Welcome);

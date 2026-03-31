@@ -65,17 +65,17 @@ const getUserUpperNavigationConfig = async (isAuthenticated, emailId) => {
   const user = await LocalStorageService.getCachedObject(localStorageKey);
 
   const isUserAuthenticated = !!isAuthenticated;
-  const selectedLanguageForCourse =  await LocalStorageService.getUserSelectedCourse();
+  const selectedLanguageForCourse =  await LocalStorageService.getSelectedContentLanguage();
   
   const mappedCourseNames = LrnConfiguration.mapUserCoursesByTheme(user?.userCourses);  
-  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.courseAbbreviation, isUserAuthenticated, mappedCourseNames );
+  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.contentLanguageCode, isUserAuthenticated, mappedCourseNames );
   return upperMainNavigation;
 }
 
-const getGrammarClasses = async(levelNo, chapterNo, nativeLanguage, course, emailId) => {
+const getGrammarClasses = async(levelNo, chapterNo, baseLanguage, contentLanguage, emailId) => {
     const localStorageKey = `UserProfile_${emailId}`;  
     const user = await LocalStorageService.getCachedObject(localStorageKey);
-    const urls = await GrammarClassService.getGrammarClassUrlsByChapter(levelNo, chapterNo, nativeLanguage, course);
+    const urls = await GrammarClassService.getGrammarClassUrlsByChapter(levelNo, chapterNo, baseLanguage, contentLanguage);
     const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelNo);
     const level = utils.getuserLanguageProficiencyOrderIdForCourse(user?.userCourses, courseCodeId);
     const proficiencyLevel = await GrammarClassService.getGrammarCategory(level);
@@ -86,10 +86,11 @@ const getGrammarClasses = async(levelNo, chapterNo, nativeLanguage, course, emai
     };
 }
 
-const getCourseProgress = async(courseTheme, nativeLanguage, course) => {  
-  // Get courseId in Factory
+const getCourseProgress = async(courseTheme, baseLanguage, contentLanguage) => {  
+  // Content lookup by theme (no courseCodeId needed for UI content)
+  const courseConfiguration = await TitulinoRestService.getCourseContentByTheme(baseLanguage, contentLanguage, courseTheme);
+  // Derive courseCodeId for DB/enrollment operations
   const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme);
-  const courseConfiguration = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId);
 
     return {
       courseCodeId,
@@ -122,7 +123,7 @@ const getUserCoursesForEnrollment = async(emailId) => {
     };
 }
 
-const getUserBookBaseUrl = async(levelTheme, nativeLanguage, course, emailId) => {  
+const getUserBookBaseUrl = async(levelTheme, baseLanguage, contentLanguage, emailId) => {  
   const localStorageKey = `UserProfile_${emailId}`;  
 
   const user = await LocalStorageService.getCachedObject(localStorageKey);
@@ -131,12 +132,12 @@ const getUserBookBaseUrl = async(levelTheme, nativeLanguage, course, emailId) =>
 
   const tier = utils.getCourseTierFromUserCourses(user?.userCourses, courseCodeId);
 
-  const url = await BookChapterService.getBookTierBaseUrl(levelTheme, nativeLanguage, course, tier ?? "Free");  
+  const url = await BookChapterService.getBookTierBaseUrl(levelTheme, baseLanguage, contentLanguage, tier ?? "Free");  
 
   return url;
 } 
 
-const getUserEBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course, emailId) => {  
+const getUserEBookChapterUrl = async(levelTheme, chapterNo, baseLanguage, contentLanguage, emailId) => {  
   const localStorageKey = `UserProfile_${emailId}`;  
 
   const user = await LocalStorageService.getCachedObject(localStorageKey);
@@ -145,7 +146,7 @@ const getUserEBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, cour
 
   const tier = utils.getCourseTierFromUserCourses(user?.userCourses, courseCodeId);
   
-  const url = await BookChapterService.getBookTierChapterUrl(levelTheme, chapterNo, nativeLanguage, course, tier);
+  const url = await BookChapterService.getBookTierChapterUrl(levelTheme, chapterNo, baseLanguage, contentLanguage, tier);
 
   return url;
 } 

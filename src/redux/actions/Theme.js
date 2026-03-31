@@ -8,7 +8,7 @@ import {
   TOGGLE_MOBILE_NAV,
   SWITCH_THEME,
   DIRECTION_CHANGE,
-  CHANGE_COURSE,
+  CHANGE_CONTENT_LANGUAGE,
   RETRIEVE_THEME,
   SEARCH_SELECTION
 } from '../constants/Theme';
@@ -38,10 +38,10 @@ export function onLocaleChange(locale) {
   };
 }
 
-export function onCourseChange(course) {
+export function onContentLanguageChange(contentLanguage) {
   return {
-    type: CHANGE_COURSE,
-    course
+    type: CHANGE_CONTENT_LANGUAGE,
+    contentLanguage
   };
 }
 

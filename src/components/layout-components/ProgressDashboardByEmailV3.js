@@ -25,7 +25,7 @@ import ConfettiExplosion from 'react-confetti-explosion';
 export const ProgressDashboardByEmailV3 = (props) => {
   const { registeredProgressByEmailId,
      currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId, isUserEmailRegisteredForCourse, onModalInteraction,
-     studentPercentagesForCourse, studentCategoriesCompletedForCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, selectedCourse, hasUserInteractedWithModal } = props;
+     studentPercentagesForCourse, studentCategoriesCompletedForCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, selectedContentLanguage, hasUserInteractedWithModal } = props;
 
   const [form] = Form.useForm();
   const [selectedLessonsForSubmission, setSelectedLessonsForSubmission] = useState({});
@@ -115,7 +115,7 @@ export const ProgressDashboardByEmailV3 = (props) => {
     if(currentCourseCodeId && userYearOfBirth > 0){
       setLoading(true);
       setEmail(sanitizedEmail);
-      onVerifyingProgressByEmailIdAndCourseCodeId(userYearOfBirth, sanitizedEmail, currentCourseCodeId, selectedCourse?.localizationId);
+      onVerifyingProgressByEmailIdAndCourseCodeId(userYearOfBirth, sanitizedEmail, currentCourseCodeId, selectedContentLanguage?.localeCode);
     }
 
   };
@@ -143,7 +143,7 @@ useEffect(() => {
         userYearOfBirth,
         email,
         currentCourseCodeId,
-        selectedCourse?.localizationId
+        selectedContentLanguage?.localeCode
       );
     });
   }
@@ -496,9 +496,9 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ lrn, theme }) => {
-  const { course } =  theme;
-  const { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, isUserEmailRegisteredForCourse, hasUserInteractedWithModal } = lrn;
-  return { registeredProgressByEmailId, nativeLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, course, currentCourseCodeId, courseConfiguration, selectedCourse, courseTheme, isUserEmailRegisteredForCourse, hasUserInteractedWithModal };
+  const { contentLanguage } =  theme;
+  const { registeredProgressByEmailId, baseLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, currentCourseCodeId, courseConfiguration, selectedContentLanguage, courseTheme, isUserEmailRegisteredForCourse, hasUserInteractedWithModal } = lrn;
+  return { registeredProgressByEmailId, baseLanguage, studentPercentagesForCourse, studentCategoriesCompletedForCourse, contentLanguage, currentCourseCodeId, courseConfiguration, selectedContentLanguage, courseTheme, isUserEmailRegisteredForCourse, hasUserInteractedWithModal };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProgressDashboardByEmailV3));

@@ -17,7 +17,7 @@ import { useHistory } from 'utils/routerCompat';
 const { Option } = Select;
 
 export const QuickToFullEnrollment = (props) => {
-  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, nativeLanguage, passedEmail, passedDateOfBirth, passedSubmitBtnEnabled,
+  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, baseLanguage, passedEmail, passedDateOfBirth, passedSubmitBtnEnabled,
          onSubmittingEnrollee, selfLanguageLevel, countries, isToDoFullEnrollment, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
   const [isEmailVisible, setEmailVisible] = useState(false);
@@ -202,7 +202,7 @@ useEffect(() => {
   const formatSubmissionData = (
     values,
     {
-      nativeLanguage,
+      baseLanguage,
       enrolledCourses,
       countries
     },
@@ -266,7 +266,7 @@ useEffect(() => {
     
     const languageProficiencies = [
       {
-        languageId: nativeLanguage?.localizationId || 'na',
+        languageId: baseLanguage?.localeCode || 'na',
         languageLevelAbbreviation: 'na',
       },
       ...Array.from(distinctLanguageTargets).map(languageId => {
@@ -321,7 +321,7 @@ useEffect(() => {
       const formattedDatatoSubmit = formatSubmissionData(
         values,
         {
-          nativeLanguage,
+          baseLanguage,
           enrolledCourses, // full course objects
           countries
         },
@@ -850,9 +850,9 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ lrn, grant }) => {
-  const { availableCourses, selfLanguageLevel, countries, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll } = lrn;
+  const { availableCourses, selfLanguageLevel, countries, baseLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll } = lrn;
   const { isToDoFullEnrollment } = grant;
-  return { availableCourses, selfLanguageLevel, countries, nativeLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll, isToDoFullEnrollment };
+  return { availableCourses, selfLanguageLevel, countries, baseLanguage, wasSubmittingEnrolleeSucessful, selectedCoursesToEnroll, isToDoFullEnrollment };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(QuickToFullEnrollment);

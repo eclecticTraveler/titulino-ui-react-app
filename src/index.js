@@ -2,8 +2,12 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
+import { migrateLocalStorageIfNeeded } from './services/LocalStorageService';
 // import HttpService from './services/HttpService';
 import * as serviceWorker from './serviceWorker';
+
+// Clear stale localStorage keys from previous naming convention
+migrateLocalStorageIfNeeded();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);

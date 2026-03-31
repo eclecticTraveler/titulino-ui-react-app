@@ -18,16 +18,16 @@ const loadStartRandomLandingPicturesData = async() => {
 }
 
 
-const loadFiveMinuteRandomLessonModule = async(levelNo, nativeLanguage, course) => {  
+const loadFiveMinuteRandomLessonModule = async(levelNo, baseLanguageCode, contentLanguageCode) => {  
   const allModules = await loadFiveMinuteClassData();
-  const specificModuleByCriteria = allModules?.find(c => (c.level === parseInt(levelNo, 10) && c.course === course && c.nativeLanguage === nativeLanguage));
+  const specificModuleByCriteria = allModules?.find(c => (c.level === parseInt(levelNo, 10) && c.contentLanguageCode === contentLanguageCode && c.baseLanguages?.includes(baseLanguageCode)));
   const randomRequestedModule = specificModuleByCriteria?.lessons[Math.floor(Math.random()*specificModuleByCriteria?.lessons?.length)];
   return randomRequestedModule;
 }
 
-const loadRandomFullLessonModule = async(levelNo, nativeLanguage, course) => {  
+const loadRandomFullLessonModule = async(levelNo, baseLanguageCode, contentLanguageCode) => {  
   const allModules = await loadStartRandomFullLessonData();
-  const specificModuleByCriteria = allModules?.find(c => (c.level === parseInt(levelNo, 10) && c.course === course && c.nativeLanguage === nativeLanguage));
+  const specificModuleByCriteria = allModules?.find(c => (c.level === parseInt(levelNo, 10) && c.contentLanguageCode === contentLanguageCode && c.baseLanguages?.includes(baseLanguageCode)));
   const randomRequestedModule = specificModuleByCriteria?.lessons[Math.floor(Math.random()*specificModuleByCriteria?.lessons?.length)];
   return randomRequestedModule;
 }
@@ -47,12 +47,12 @@ export const getLandingPicture = async() => {
   return await loadRandomLandingPictureObjects();
 }
 
-export const getFiveMinuteRandomLesson = async(levelNo, nativeLanguage, course) => {
-  return await loadFiveMinuteRandomLessonModule(levelNo, nativeLanguage, course);
+export const getFiveMinuteRandomLesson = async(levelNo, baseLanguageCode, contentLanguageCode) => {
+  return await loadFiveMinuteRandomLessonModule(levelNo, baseLanguageCode, contentLanguageCode);
 }
 
-export const getRandomFullLesson = async(levelNo, nativeLanguage, course) => {
-  return await loadRandomFullLessonModule(levelNo, nativeLanguage, course);
+export const getRandomFullLesson = async(levelNo, baseLanguageCode, contentLanguageCode) => {
+  return await loadRandomFullLessonModule(levelNo, baseLanguageCode, contentLanguageCode);
 }
 
 const LandingWidgetsService = {

@@ -6,9 +6,9 @@ const loadQuizletData = async() => {
   return quizletData;
 }
 
-const loadRequestedModule = async(levelNo, nativeLanguage, course) => {
+const loadRequestedModule = async(levelNo, baseLanguageCode, contentLanguageCode) => {
   const rawQuizletData = await loadQuizletData();
-  const rawRequestedModule = rawQuizletData?.folders.find(q => (q.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && q.nativeLanguage === nativeLanguage && q.course === course ));
+  const rawRequestedModule = rawQuizletData?.folders.find(q => (q.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && q.baseLanguages?.includes(baseLanguageCode) && q.contentLanguageCode === contentLanguageCode ));
   return rawRequestedModule;
 }
 
@@ -47,8 +47,8 @@ const getQuizletKeyWord = async(keyword) => {
   }
 }
 
-export const getEmbeddableUrl = async(modality, chapterNo, levelNo, nativeLanguage, course) => {
-  const rawRequestedModule = await loadRequestedModule(levelNo, nativeLanguage, course);
+export const getEmbeddableUrl = async(modality, chapterNo, levelNo, baseLanguageCode, contentLanguageCode) => {
+  const rawRequestedModule = await loadRequestedModule(levelNo, baseLanguageCode, contentLanguageCode);
   const chapter = await loadChapter(rawRequestedModule, chapterNo);
   const mod = await getQuizletKeyWord(modality);
   const embeddableUrl = (chapter?.id && rawRequestedModule) ? `https://quizlet.com/${chapter?.id}/${mod}/embed?${quizletPracticeData?.generalId}` : ""; 

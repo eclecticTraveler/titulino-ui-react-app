@@ -7,49 +7,49 @@ const loadBookData = async() => {
   return rawData;
 }
 
-const loadRequestedBook = async (rawBookData, levelTheme, course, nativeLanguage, tier = "Free") => {
+const loadRequestedBook = async (rawBookData, levelTheme, contentLanguageCode, baseLanguageCode, tier = "Free") => {
   // TODO HANDLE FOR PORTUGUESE SPEAKING SINCE THEIR DATA IS NOT PRESENT
   return rawBookData?.books?.find(c => 
     c.theme === levelTheme &&
-    c.course === course &&
-    c.nativeLanguage === nativeLanguage &&
+    c.contentLanguageCode === contentLanguageCode &&
+    c.baseLanguages?.includes(baseLanguageCode) &&
     (tier == null || c.tier === tier)
   );
 };
 
 
-const loadRequestedBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course, tier) => {  
+const loadRequestedBookChapterUrl = async(levelTheme, chapterNo, baseLanguageCode, contentLanguageCode, tier) => {  
   const rawBookData = await loadBookData();
-  const filteredBookData = await loadRequestedBook(rawBookData, levelTheme, course, nativeLanguage, tier);
+  const filteredBookData = await loadRequestedBook(rawBookData, levelTheme, contentLanguageCode, baseLanguageCode, tier);
   const ebookChapter = filteredBookData?.chapters.find(ch => ch.chapter === parseInt(chapterNo, 10)) || filteredBookData?.chapters[filteredBookData?.chapters.length - 1];
   const embeddableUrl = filteredBookData?.id ? `https://heyzine.com/flip-book/${filteredBookData?.id}.html#page/${ebookChapter?.page}` : null; 
   return embeddableUrl;
 }
 
-const loadRequestedBookUrl = async(levelTheme, nativeLanguage, course, tier) => {  
+const loadRequestedBookUrl = async(levelTheme, baseLanguageCode, contentLanguageCode, tier) => {  
   const rawBookData = await loadBookData();
-  const filteredBookData = await loadRequestedBook(rawBookData, levelTheme, course, nativeLanguage, tier);
+  const filteredBookData = await loadRequestedBook(rawBookData, levelTheme, contentLanguageCode, baseLanguageCode, tier);
   const embeddableUrl = filteredBookData?.id ? `https://heyzine.com/flip-book/${filteredBookData?.id}.html` : null; 
   return embeddableUrl;
 }
 
-export const getBookChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course) => {
-    const url = await loadRequestedBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course, null);
+export const getBookChapterUrl = async(levelTheme, chapterNo, baseLanguageCode, contentLanguageCode) => {
+    const url = await loadRequestedBookChapterUrl(levelTheme, chapterNo, baseLanguageCode, contentLanguageCode, null);
     return url ?? "";
 }
 
-export const getBookTierChapterUrl = async(levelTheme, chapterNo, nativeLanguage, course, tier) => {
-  const url = await loadRequestedBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course, tier);
+export const getBookTierChapterUrl = async(levelTheme, chapterNo, baseLanguageCode, contentLanguageCode, tier) => {
+  const url = await loadRequestedBookChapterUrl(levelTheme, chapterNo, baseLanguageCode, contentLanguageCode, tier);
   return url ?? "";
 }
 
-export const getBookBaseUrl = async(levelTheme, nativeLanguage, course) => {
-  const url = await loadRequestedBookUrl(levelTheme, nativeLanguage, course);
+export const getBookBaseUrl = async(levelTheme, baseLanguageCode, contentLanguageCode) => {
+  const url = await loadRequestedBookUrl(levelTheme, baseLanguageCode, contentLanguageCode);
   return url ?? "";
 }
 
-export const getBookTierBaseUrl = async(levelTheme, nativeLanguage, course, tier) => {
-  const url = await loadRequestedBookUrl(levelTheme, nativeLanguage, course, tier);
+export const getBookTierBaseUrl = async(levelTheme, baseLanguageCode, contentLanguageCode, tier) => {
+  const url = await loadRequestedBookUrl(levelTheme, baseLanguageCode, contentLanguageCode, tier);
   return url ?? "";
 }
 

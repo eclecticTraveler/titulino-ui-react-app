@@ -2,6 +2,30 @@ import CryptoJS from "crypto-js";
 import { env } from 'configs/EnvironmentConfig';
 const SECRET_KEY = process.env.REACT_APP_STORAGE_KEY;
 
+const STORAGE_SCHEMA_VERSION = '2';
+
+/**
+ * Run once per client after deploy. Clears stale keys from the
+ * old naming convention so the app boots cleanly.
+ */
+export const migrateLocalStorageIfNeeded = () => {
+  const current = localStorage.getItem('storageSchemaVersion');
+  if (current === STORAGE_SCHEMA_VERSION) return;
+
+  const staleKeys = [
+    'UserNativeLanguage',
+    'SelectedCourse',
+    'UserCourseConfiguration',
+    'selectedLocale',
+    'selectedTheme',
+    'selectedSubnavigationPosition',
+    'selectedNavigationCollapse'
+  ];
+  staleKeys.forEach(k => localStorage.removeItem(k));
+
+  localStorage.setItem('storageSchemaVersion', STORAGE_SCHEMA_VERSION);
+};
+
 export const storeEncryptedObject = (key, value) => {
   const encrypted = CryptoJS.AES.encrypt(JSON.stringify(value), SECRET_KEY).toString();
   localStorage.setItem(key, encrypted);
@@ -43,6 +67,9 @@ const setLocalStorageObject = async(objectToStore, localStorageKey) => {
 
 const getLocalStorageObject = async(localStorageKey) => {
   const retrievedObjected = localStorage.getItem(localStorageKey);
+  if (retrievedObjected === null || retrievedObjected === undefined || retrievedObjected === 'undefined') {
+    return null;
+  }
   const transformedObj = JSON.parse(retrievedObjected);
   return transformedObj
 }
@@ -146,27 +173,37 @@ export const setChapterClassData = async(chapterClassData, key, ttl) => {
   setLocalStorageObjectWithExpiry(chapterClassData, key, ttl);
 }
 
-export const getUserSelectedNativeLanguage = async() => {
-  const transformedObj = await getLocalStorageObject("UserNativeLanguage");
-  return transformedObj
+export const getUserBaseLanguage = async() => {
+  // Backward-compat: try new key first, fall back to old key
+  let obj = await getLocalStorageObject("UserBaseLanguage");
+  if (!obj) {
+    obj = await getLocalStorageObject("UserNativeLanguage");
+    if (obj) setLocalStorageObject(obj, "UserBaseLanguage"); // migrate
+  }
+  return obj;
 }
 
-export const setUserSelectedNativeLanguage = async(nativeLanguage) => {
-  setLocalStorageObject(nativeLanguage, "UserNativeLanguage");
+export const setUserBaseLanguage = async(baseLanguage) => {
+  setLocalStorageObject(baseLanguage, "UserBaseLanguage");
 }
 
-export const getUserSelectedCourse = async() => {
-  const transformedObj = await getLocalStorageObject("SelectedCourse");
-  return transformedObj
+export const getSelectedContentLanguage = async() => {
+  // Backward-compat: try new key first, fall back to old key
+  let obj = await getLocalStorageObject("SelectedContentLanguage");
+  if (!obj) {
+    obj = await getLocalStorageObject("SelectedCourse");
+    if (obj) setLocalStorageObject(obj, "SelectedContentLanguage"); // migrate
+  }
+  return obj;
 }
 
-export const setUserSelectedCourse = async(courseToLearn) => {
-  setLocalStorageObject(courseToLearn, "SelectedCourse");
+export const setSelectedContentLanguage = async(contentLanguage) => {
+  setLocalStorageObject(contentLanguage, "SelectedContentLanguage");
 }
 
-export const setUserConfiguration = async(nativeLanguage, courseToLearn) => {
-  setLocalStorageObject(nativeLanguage, "UserNativeLanguage");
-  setLocalStorageObject(courseToLearn, "SelectedCourse");
+export const setUserLanguageConfiguration = async(baseLanguage, contentLanguage) => {
+  setLocalStorageObject(baseLanguage, "UserBaseLanguage");
+  setLocalStorageObject(contentLanguage, "SelectedContentLanguage");
 }
 
 export const processLandingPicture = async(pictureObj, isToRetrieveByNewDate) => {
@@ -225,11 +262,11 @@ export const setCachedObject = (key, value, ttlInMinutes) => {
 const LocalStorageService = {
   getCachedObject,
   setCachedObject,
-  setUserConfiguration,
-  getUserSelectedNativeLanguage,
-  getUserSelectedCourse,
-  setUserSelectedCourse,
-  setUserSelectedNativeLanguage,
+  setUserLanguageConfiguration,
+  getUserBaseLanguage,
+  getSelectedContentLanguage,
+  setSelectedContentLanguage,
+  setUserBaseLanguage,
   processLandingPicture,
   setCurrentThemeConfiguration,
   getCurrentThemeConfiguration,

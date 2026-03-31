@@ -18,7 +18,7 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 	{
 		key: 'level-1-eng-inactive',
 		nameToCourseCodeKey:"english-connect-1",
-		path: `${APP_PREFIX_PATH}/eng/level-1`,
+		path: `${APP_PREFIX_PATH}/en/level-1`,
 		title: 'main.upper.nav.level.1',
 		sideTitle: 'Lower Beginner',
 		icon: COURSE_ICON_CONFIG.default,
@@ -33,13 +33,13 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 		course: "English",
 		topSubmenu: [],
 		submenu: [
-			...getCourseSubNavigationLowBasic("eng")
+			...getCourseSubNavigationLowBasic("en")
 		]
 	},
 	{
 		key: 'level-2-eng-inactive',
 		nameToCourseCodeKey:"english-connect-2",
-		path: `${APP_PREFIX_PATH}/eng/level-2`,
+		path: `${APP_PREFIX_PATH}/en/level-2`,
 		title: 'main.upper.nav.level.2',
 		sideTitle: 'Mid Beginner',
 		icon: COURSE_ICON_CONFIG.default,
@@ -54,13 +54,13 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 		course: "English",
 		topSubmenu: [],
 		submenu: [
-			...getCourseSubNavigationMidBasic("eng")
+			...getCourseSubNavigationMidBasic("en")
 		]
 	},
 	{
 		key: 'level-work-and-jobs-part-eng',
 		nameToCourseCodeKey:"work-n-jobs",
-		path: `${APP_PREFIX_PATH}/eng/level-work-n-jobs`,
+		path: `${APP_PREFIX_PATH}/en/level-work-n-jobs`,
 		title: 'main.upper.nav.theme.level.workNjobs',
 		sideTitle: 'Work & Jobs',
 		icon: COURSE_ICON_CONFIG.default,
@@ -80,15 +80,15 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 		topSubmenu: [],
 		submenu: [
 			...(isAuthenticated 
-				? AuthCourseSubNavigationWorkNJobsTheme("eng", coursesByTheme['work-n-jobs']) 
-				: CourseSubNavigationWorkNJobsTheme("eng")
+				? AuthCourseSubNavigationWorkNJobsTheme("en", coursesByTheme['work-n-jobs']) 
+				: CourseSubNavigationWorkNJobsTheme("en")
 			  )
 		]
 	},
 	{
 		key: 'level-household-part-eng',
 		nameToCourseCodeKey:"household",
-		path: `${APP_PREFIX_PATH}/eng/level-household`,
+		path: `${APP_PREFIX_PATH}/en/level-household`,
 		title: 'main.upper.nav.theme.level.household',
 		sideTitle: 'Household',
 		icon: COURSE_ICON_CONFIG.default,
@@ -104,15 +104,15 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 		topSubmenu: [],
 		submenu: [
 			...(isAuthenticated 
-				? AuthCourseSubNavigationHouseholdTheme("eng") 
-				: CourseSubNavigationHouseholdTheme("eng")
+				? AuthCourseSubNavigationHouseholdTheme("en") 
+				: CourseSubNavigationHouseholdTheme("en")
 			)
 		]
 	},
 	{
 		key: 'level-supermarket-eng',
 		nameToCourseCodeKey:"supermarket",
-		path: `${APP_PREFIX_PATH}/eng/level-supermarket`,
+		path: `${APP_PREFIX_PATH}/en/level-supermarket`,
 		title: 'main.upper.nav.theme.level.supermarket',
 		sideTitle: 'Supermarket',
 		icon: COURSE_ICON_CONFIG.default,
@@ -128,14 +128,14 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 		topSubmenu: [],
 		submenu: [
 			...(isAuthenticated 
-				? AuthCourseSubNavigationSupermarketTheme("eng") 
-				: CourseSubNavigationSupermarketTheme("eng")
+				? AuthCourseSubNavigationSupermarketTheme("en") 
+				: CourseSubNavigationSupermarketTheme("en")
 			)
 		]
 	},
 	{
 		key: 'level-connect-eng-general',
-		path: `${APP_PREFIX_PATH}/eng/level-general`,
+		path: `${APP_PREFIX_PATH}/en/level-general`,
 		title: 'main.upper.nav.theme.level.ec',
 		sideTitle: 'Connect',
 		icon: COURSE_ICON_CONFIG.default,
@@ -149,7 +149,7 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 		isFree: false,
 		course: "English",
 		topSubmenu:[
-			...getTopSubmenuForEnglishConnect("eng")
+			...getTopSubmenuForEnglishConnect("en")
 		],
 		submenu: []
 	},

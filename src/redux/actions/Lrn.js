@@ -20,15 +20,15 @@ import TitulinoManager from "managers/LrnManager";
 
 import { 
   GET_SELECTED_LEVEL_FROM_UPPER_NAV_ON_CLICK,
-  GET_ALL_LANGUAGE_COURSES,
-  SET_USER_COURSE_CONFIGURATION,
-  GET_WAS_USER_CONFIG_SET_FLAG,
+  GET_ALL_LANGUAGE_OPTIONS,
+  SET_USER_LANGUAGE_CONFIGURATION,
+  GET_IS_LANGUAGE_CONFIGURED_FLAG,
   GET_UPPER_NAV_BASED_ON_USER_CONFIG,
-  SET_USER_SELECTED_COURSE,
+  SET_USER_SELECTED_CONTENT_LANGUAGE,
   GET_SELECTED_COURSE_FROM_UPPER_NAV_ON_LOAD,
-  SET_USER_NATIVE_LANGUAGE,
-  GET_USER_SELECTED_COURSE,
-  GET_USER_NATIVE_LANGUAGE,
+  SET_USER_BASE_LANGUAGE,
+  GET_USER_SELECTED_CONTENT_LANGUAGE,
+  GET_USER_BASE_LANGUAGE,
   CURRENT_ROUTE_INFO,
   GET_QUIZLET_URL,
   GET_VIDEO_CLASS_URL,
@@ -66,7 +66,7 @@ import {
   ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
   ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
   ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
-  ON_USER_SELECTING_COURSE,
+  ON_USER_SELECTING_CONTENT_LANGUAGE,
   ON_UPSERTING_KNOW_ME_BY_CHAPTER
 } from "../constants/Lrn";
 import LrnManager from "managers/LrnManager";
@@ -126,32 +126,32 @@ export const onLoadingLandingPicture = async (isToRetrieveByNewDate) => {
   }
 }
 
-export const getAllLanguageCourses = async () => {
-  const languageCourses = courses; 
+export const getAllLanguageOptions = async () => {
+  const languageOptions = courses; 
   return {
-    type: GET_ALL_LANGUAGE_COURSES,
-    languageCourses: languageCourses
+    type: GET_ALL_LANGUAGE_OPTIONS,
+    languageOptions: languageOptions
   }
 }
 
-export const getVideoClassUrl = async (levelNo, chapterNo, nativeLanguage, course) => {
-const url = await VideoClassService.getVideoClassUrl(levelNo, chapterNo, nativeLanguage, course);
+export const getVideoClassUrl = async (levelNo, chapterNo, baseLanguageCode, contentLanguageCode) => {
+const url = await VideoClassService.getVideoClassUrl(levelNo, chapterNo, baseLanguageCode, contentLanguageCode);
   return {
     type: GET_VIDEO_CLASS_URL,
     videoClass: url
   }
 }
 
-export const ongettingVideoClassArrayUrls = async (levelNo, chapterNo, nativeLanguage, course) => {
-  const urls = await GrammarClassService.getGrammarClassUrlsByChapter(levelNo, chapterNo, nativeLanguage, course);
+export const ongettingVideoClassArrayUrls = async (levelNo, chapterNo, baseLanguageCode, contentLanguageCode) => {
+  const urls = await GrammarClassService.getGrammarClassUrlsByChapter(levelNo, chapterNo, baseLanguageCode, contentLanguageCode);
     return {
       type: ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
       videoClassUrls: urls
     }
   }
 
-export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, course) => {
-  const url = await BookChapterService.getBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course);
+export const getBookChapterUrl = async (levelTheme, chapterNo, baseLanguageCode, contentLanguageCode) => {
+  const url = await BookChapterService.getBookChapterUrl(levelTheme, chapterNo, baseLanguageCode, contentLanguageCode);
     return {
       type: GET_BOOK_CHAPTER_URL,
       bookChapterUrl: url
@@ -159,9 +159,9 @@ export const getBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, c
   }
 
 
-export const getSpeakingPracticeModule = async (levelTheme, chapterNo, nativeLanguage, course) => {
+export const getSpeakingPracticeModule = async (levelTheme, chapterNo, baseLanguageCode, contentLanguageCode) => {
   const uri = await GoogleService.getGCUriForImages("getSpeakingPracticeModule", levelTheme); 
-  const module = await SpeakingPracticeService.getSpeakingChapterModule(levelTheme, chapterNo, nativeLanguage, course);
+  const module = await SpeakingPracticeService.getSpeakingChapterModule(levelTheme, chapterNo, baseLanguageCode, contentLanguageCode);
     return {
       type: GET_LISTENING_PRACTICE_MODULE,
       speakingChapterModule: module,
@@ -170,16 +170,16 @@ export const getSpeakingPracticeModule = async (levelTheme, chapterNo, nativeLan
   }  
 
 
-export const geteBookUrl = async (levelTheme, nativeLanguage, course) => {
-  const url = await BookChapterService.getBookBaseUrl(levelTheme, nativeLanguage, course);
+export const geteBookUrl = async (levelTheme, baseLanguageCode, contentLanguageCode) => {
+  const url = await BookChapterService.getBookBaseUrl(levelTheme, baseLanguageCode, contentLanguageCode);
     return {
       type: ON_LOADING_EBOOK_URL,
       ebookUrl: url
     }
   }
 
-export const getPdfPathUrl = async (levelTheme, chapterNo, nativeLanguage, course) => {
-  const url = await PdfFileService.getPdfPathUrl(levelTheme, chapterNo, nativeLanguage, course);
+export const getPdfPathUrl = async (levelTheme, chapterNo, baseLanguageCode, contentLanguageCode) => {
+  const url = await PdfFileService.getPdfPathUrl(levelTheme, chapterNo, baseLanguageCode, contentLanguageCode);
     return {
       type: GET_PDF_PATH_URL,
       pdfPathUrl: url
@@ -296,8 +296,8 @@ export const onResetSubmittingEnrollee = async (resetValue) => {
   }
 }
 
-export const onRequestingCourseProgressStructure = async (nativeLanguage, course, courseCodeId ) => {
-  const courseStructure = await TitulinoRestService.getCourseProgressStructure(nativeLanguage, course, courseCodeId); // eslint-disable-line no-unused-vars
+export const onRequestingCourseProgressStructure = async (baseLanguage, contentLanguage, courseCodeId ) => {
+  const courseStructure = await TitulinoRestService.getCourseProgressStructure(baseLanguage, contentLanguage, courseCodeId); // eslint-disable-line no-unused-vars
     return {
       type: ON_REQUESTING_COURSE_PROGRESS_STRUCTURE,
     }
@@ -432,87 +432,87 @@ export const onResetingProgressByEmailIdAndCourseCodeId = async () => {
   }
 }
 
-export const onLoadingFiveMinLesson = async (levelNo, nativeLanguage, course, isToRetrieveByNewDate) => {
-  const fiveMinuteLesson = await LandingWidgetsService.getFiveMinuteRandomLesson(levelNo, nativeLanguage, course);
+export const onLoadingFiveMinLesson = async (levelNo, baseLanguageCode, contentLanguageCode, isToRetrieveByNewDate) => {
+  const fiveMinuteLesson = await LandingWidgetsService.getFiveMinuteRandomLesson(levelNo, baseLanguageCode, contentLanguageCode);
     return {
       type: ON_LOADING_FIVE_MIN_LESSON,
       fiveMinuteLesson: fiveMinuteLesson
     }
   }
 
-export const getQuizletUrl = async (modality, chapterNo, levelNo, nativeLanguage, course) => {
-  const url = await QuizletService.getEmbeddableUrl(modality, chapterNo, levelNo, nativeLanguage, course);
+export const getQuizletUrl = async (modality, chapterNo, levelNo, baseLanguageCode, contentLanguageCode) => {
+  const url = await QuizletService.getEmbeddableUrl(modality, chapterNo, levelNo, baseLanguageCode, contentLanguageCode);
   return {
     type: GET_QUIZLET_URL,
     quizletUrl: url
   }
 }
 
-export const getUserSelectedCourse = async () => {
-  const selectedCourse = await LocalStorageService.getUserSelectedCourse();
+export const getSelectedContentLanguage = async () => {
+  const selectedContentLanguage = await LocalStorageService.getSelectedContentLanguage();
   return {
-    type: GET_USER_SELECTED_COURSE,
-    selectedCourse: selectedCourse
+    type: GET_USER_SELECTED_CONTENT_LANGUAGE,
+    selectedContentLanguage: selectedContentLanguage
   }
 }
 
-export const setUserSelectedCourse = async (courseSelected) => {
-  LocalStorageService.setUserSelectedCourse(courseSelected);
+export const setSelectedContentLanguage = async (contentLanguageSelected) => {
+  LocalStorageService.setSelectedContentLanguage(contentLanguageSelected);
   return {
-    type: SET_USER_SELECTED_COURSE
+    type: SET_USER_SELECTED_CONTENT_LANGUAGE
   }
 }
 
-export const onUserSelectingCourse = async (courseSelected) => { 
-  // Save selected course
-  await LocalStorageService.setUserSelectedCourse(courseSelected);
+export const onUserSelectingContentLanguage = async (contentLanguageSelected) => { 
+  // Save selected content language
+  await LocalStorageService.setSelectedContentLanguage(contentLanguageSelected);
 
-  // Retrieve course after setting it
-  const selectedCourse = await LocalStorageService.getUserSelectedCourse();
+  // Retrieve after setting it
+  const selectedContentLanguage = await LocalStorageService.getSelectedContentLanguage();
  
   return {
-    type: ON_USER_SELECTING_COURSE,
-    selectedCourse: selectedCourse
+    type: ON_USER_SELECTING_CONTENT_LANGUAGE,
+    selectedContentLanguage: selectedContentLanguage
   };
 };
 
-export const getUserNativeLanguage = async () => {
-  const nativeLanguage = await LocalStorageService.getUserSelectedNativeLanguage();
+export const getUserBaseLanguage = async () => {
+  const baseLanguage = await LocalStorageService.getUserBaseLanguage();
   return {
-    type: GET_USER_NATIVE_LANGUAGE,
-    nativeLanguage: nativeLanguage
+    type: GET_USER_BASE_LANGUAGE,
+    baseLanguage: baseLanguage
   }
 }
 
-export const setUserNativeLanguage = async (lang) => {	
-  LocalStorageService.setUserSelectedNativeLanguage(lang);  
+export const setUserBaseLanguage = async (lang) => {	
+  LocalStorageService.setUserBaseLanguage(lang);  
   return {
-    type: SET_USER_NATIVE_LANGUAGE,
-    nativeLanguage: lang
+    type: SET_USER_BASE_LANGUAGE,
+    baseLanguage: lang
   }
 }
 
-export const setUserCourseConfiguration = async (nativeLanguage, courseToLearn) => {
-  LocalStorageService.setUserConfiguration(nativeLanguage, courseToLearn);
+export const setUserLanguageConfiguration = async (baseLanguage, contentLanguage) => {
+  LocalStorageService.setUserLanguageConfiguration(baseLanguage, contentLanguage);
 
   return {
-    type: SET_USER_COURSE_CONFIGURATION
+    type: SET_USER_LANGUAGE_CONFIGURATION
   }
 }
 
-export const getWasUserConfigSetFlag = async (keyword) => {     
-  const nativeLanguage = await LocalStorageService.getUserSelectedNativeLanguage();
-  const selectedCourse =  await LocalStorageService.getUserSelectedCourse();
-  const wasUserConfigSet = (selectedCourse && nativeLanguage) ? true : false;
+export const getIsLanguageConfiguredFlag = async (keyword) => {     
+  const baseLanguage = await LocalStorageService.getUserBaseLanguage();
+  const selectedContentLanguage = await LocalStorageService.getSelectedContentLanguage();
+  const isLanguageConfigured = (selectedContentLanguage && baseLanguage) ? true : false;
   if(keyword === "reset"){
     return {
-      type: GET_WAS_USER_CONFIG_SET_FLAG,
-      wasUserConfigSet: undefined
+      type: GET_IS_LANGUAGE_CONFIGURED_FLAG,
+      isLanguageConfigured: undefined
     }
   }else{
     return {
-      type: GET_WAS_USER_CONFIG_SET_FLAG,
-      wasUserConfigSet: wasUserConfigSet
+      type: GET_IS_LANGUAGE_CONFIGURED_FLAG,
+      isLanguageConfigured: isLanguageConfigured
     }
   }
 }
@@ -618,8 +618,8 @@ export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) 
   }
 }
 
-export const ongettingUserVideoClassArrayUrls = async (levelNo, chapterNo, nativeLanguage, course, emailId) => {
-  const { urls, proficiencyLevel } = await LrnManager.getGrammarClasses(levelNo, chapterNo, nativeLanguage, course, emailId);
+export const ongettingUserVideoClassArrayUrls = async (levelNo, chapterNo, baseLanguageCode, contentLanguageCode, emailId) => {
+  const { urls, proficiencyLevel } = await LrnManager.getGrammarClasses(levelNo, chapterNo, baseLanguageCode, contentLanguageCode, emailId);
   return {
     type: ON_LOADING_VIDEO_CLASS_ARRAY_URLS,
     videoClassUrls: urls,
@@ -628,8 +628,8 @@ export const ongettingUserVideoClassArrayUrls = async (levelNo, chapterNo, nativ
 }
 
 
-export const onLoadingUserResourcesByCourseTheme = async (courseTheme, nativeLanguage, course) => {
- const { courseCodeId, courseConfiguration } = await LrnManager.getCourseProgress(courseTheme, nativeLanguage, course)
+export const onLoadingUserResourcesByCourseTheme = async (courseTheme, baseLanguageCode, contentLanguageCode) => {
+ const { courseCodeId, courseConfiguration } = await LrnManager.getCourseProgress(courseTheme, baseLanguageCode, contentLanguageCode)
   return {
     type: ON_LOADING_USER_RESOURCES_BY_COURSE_THEME,
     currentCourseCodeId: courseCodeId,
@@ -650,16 +650,16 @@ export const onRenderingUserCoursesAvailableForRegistration = async (emailId) =>
   }
 
 
-  export const getUserEBookUrl = async (levelTheme, nativeLanguage, course, emailId) => {   
-    const url = await LrnManager.getUserBookBaseUrl(levelTheme, nativeLanguage, course, emailId);
+  export const getUserEBookUrl = async (levelTheme, baseLanguageCode, contentLanguageCode, emailId) => {   
+    const url = await LrnManager.getUserBookBaseUrl(levelTheme, baseLanguageCode, contentLanguageCode, emailId);
       return {
         type: ON_LOADING_EBOOK_URL,
         ebookUrl: url
       }
   }
 
-  export const getUserEBookChapterUrl = async (levelTheme, chapterNo, nativeLanguage, course, emailId) => {        
-    const url = await LrnManager.getUserEBookChapterUrl(levelTheme, chapterNo, nativeLanguage, course, emailId);
+  export const getUserEBookChapterUrl = async (levelTheme, chapterNo, baseLanguageCode, contentLanguageCode, emailId) => {        
+    const url = await LrnManager.getUserEBookChapterUrl(levelTheme, chapterNo, baseLanguageCode, contentLanguageCode, emailId);
       return {
         type: GET_BOOK_CHAPTER_URL,
         bookChapterUrl: url

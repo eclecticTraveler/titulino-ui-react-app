@@ -2,8 +2,8 @@
     "speaking": [
       {
         "theme":"supermarket",
-        "nativeLanguage": "es",
-        "course": "eng",
+        "baseLanguages": ["es"],
+        "contentLanguageCode": "en",
         "chapters" : [
           {
             "chapter": 1,
@@ -1504,8 +1504,8 @@
       },
       {
         "theme":"household",
-        "nativeLanguage": "es",
-        "course": "eng",
+        "baseLanguages": ["es"],
+        "contentLanguageCode": "en",
         "chapters" : [
           {
             "chapter": 1,
@@ -2814,8 +2814,8 @@
       },
       {
         "theme":"work-n-jobs",
-        "nativeLanguage": "es",
-        "course": "eng",
+        "baseLanguages": ["es"],
+        "contentLanguageCode": "en",
         "chapters" : [
           {
             "chapter": 1,

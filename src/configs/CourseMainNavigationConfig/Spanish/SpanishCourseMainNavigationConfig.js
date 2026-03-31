@@ -7,7 +7,7 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 const SpanishCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) => [
 	{
 		key: 'level-1-spa',
-		path: `${APP_PREFIX_PATH}/spa/nivel-1`,
+		path: `${APP_PREFIX_PATH}/es/nivel-1`,
 		title: 'main.upper.nav.level.1',
 		sideTitle: 'Iniciante Simple',
 		icon: COURSE_ICON_CONFIG.default,
@@ -21,12 +21,12 @@ const SpanishCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) => [
 		isFree: true,
 		course: "Español",
 		submenu: [
-			...getCourseSubNavigationLowBasic("spa")
+			...getCourseSubNavigationLowBasic("es")
 		]
 	},
 	{
 		key: 'level-2-spa',
-		path: `${APP_PREFIX_PATH}/spa/nivel-2`,
+		path: `${APP_PREFIX_PATH}/es/nivel-2`,
 		title: 'main.upper.nav.level.2',
 		sideTitle: 'Iniciante Medio',
 		icon: COURSE_ICON_CONFIG.default,
@@ -40,12 +40,12 @@ const SpanishCourseMainNavigationConfig = (isAuthenticated, coursesByTheme) => [
 		isFree: true,
 		course: "Español",
 		submenu: [
-			...getCourseSubNavigationMidBasic("spa")
+			...getCourseSubNavigationMidBasic("es")
 		]
 	},
 	{
 		key: 'level-3-spa',
-		path: `${APP_PREFIX_PATH}/spa/nivel-3`,
+		path: `${APP_PREFIX_PATH}/es/nivel-3`,
 		title: 'main.upper.nav.level.3',
 		sideTitle: 'Iniciante Completo',
 		icon: COURSE_ICON_CONFIG.default,

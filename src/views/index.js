@@ -10,8 +10,8 @@ import { withRouter } from "utils/routerCompat";
 import AuthLayout from '../layouts/auth-layout';
 import AppLayout from "../layouts/app-layout";
 import CourseSelection from './app-views/course-selection';
-import { getWasUserConfigSetFlag, getUserSelectedCourse, getUserNativeLanguage } from '../redux/actions/Lrn';
-import { onLocaleChange, onCourseChange, onLoadingUserSelectedTheme } from '../redux/actions/Theme'
+import { getIsLanguageConfiguredFlag, getSelectedContentLanguage, getUserBaseLanguage } from '../redux/actions/Lrn';
+import { onLocaleChange, onContentLanguageChange, onLoadingUserSelectedTheme } from '../redux/actions/Theme'
 import { useThemeSwitcher } from "react-css-theme-switcher";
 import { bindActionCreators } from 'redux';
 import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
@@ -47,8 +47,8 @@ function RouteInterceptor({ children, isAuthenticated }) {
 }
 
 export const Views = (props) => { 
-    const { locale, direction, course, selectedCourse, getUserNativeLanguage, onLocaleChange, nativeLanguage, location, token, user, authenticated, onAuthenticatingWithSSO, isAuthResolved, onResolvingAuthenticationWhenRefreshing,
-        wasUserConfigSet, getWasUserConfigSetFlag, getUserSelectedCourse, onCourseChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage } = props;
+    const { locale, direction, contentLanguage, selectedContentLanguage, getUserBaseLanguage, onLocaleChange, baseLanguage, location, token, user, authenticated, onAuthenticatingWithSSO, isAuthResolved, onResolvingAuthenticationWhenRefreshing,
+        isLanguageConfigured, getIsLanguageConfiguredFlag, getSelectedContentLanguage, onContentLanguageChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
 
@@ -98,27 +98,27 @@ export const Views = (props) => {
     // Effect to load user selected theme and locale
     useEffect(() => {
         onLoadingUserSelectedTheme();        
-        if((!wasUserConfigSet) || wasUserConfigSet === false){                 
-            getWasUserConfigSetFlag();            
+        if((!isLanguageConfigured) || isLanguageConfigured === false){                 
+            getIsLanguageConfiguredFlag();            
         }
  
         if (currentTheme) {
             switcher({ theme: themes[currentTheme] });
         }
         
-        if (wasUserConfigSet && !course) {
-            getUserNativeLanguage();
-            if (nativeLanguage) {
-                onLocaleChange(nativeLanguage?.localizationId);
+        if (isLanguageConfigured && !contentLanguage) {
+            getUserBaseLanguage();
+            if (baseLanguage) {
+                onLocaleChange(baseLanguage?.localeCode);
             }
             
-            getUserSelectedCourse();
-            if (selectedCourse) {
-                onCourseChange(selectedCourse?.courseAbbreviation);
+            getSelectedContentLanguage();
+            if (selectedContentLanguage) {
+                onContentLanguageChange(selectedContentLanguage?.contentLanguageCode);
             }
         }
 
-    }, [getWasUserConfigSetFlag, wasUserConfigSet, course, currentTheme, nativeLanguage, selectedCourse, onLoadingUserSelectedTheme, switcher, themes, getUserNativeLanguage, onLocaleChange, getUserSelectedCourse, onCourseChange]);          
+    }, [getIsLanguageConfiguredFlag, isLanguageConfigured, contentLanguage, currentTheme, baseLanguage, selectedContentLanguage, onLoadingUserSelectedTheme, switcher, themes, getUserBaseLanguage, onLocaleChange, getSelectedContentLanguage, onContentLanguageChange]);          
 
     const antdTheme = useMemo(() => {
         const baseToken = {
@@ -155,7 +155,7 @@ export const Views = (props) => {
         };
     }, [currentTheme]);
 
-    if(!wasUserConfigSet){
+    if(!isLanguageConfigured){
         return (
             <IntlProvider locale={currentAppLocale.locale} messages={currentAppLocale.messages}>
                 <ConfigProvider locale={currentAppLocale.antd} direction={direction} theme={antdTheme}>
@@ -192,10 +192,10 @@ export const Views = (props) => {
 
 function mapDispatchToProps(dispatch) {
     return bindActionCreators({
-        getWasUserConfigSetFlag,
-        getUserSelectedCourse,
-        onCourseChange,
-        getUserNativeLanguage,
+        getIsLanguageConfiguredFlag,
+        getSelectedContentLanguage,
+        onContentLanguageChange,
+        getUserBaseLanguage,
         onLocaleChange,
         onLoadingUserSelectedTheme,
         onAuthenticatingWithSSO,
@@ -207,11 +207,11 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ theme, lrn, auth, grant }) => {
-    const { wasUserConfigSet, selectedCourse, nativeLanguage } = lrn;
-    const { locale, direction, course, currentTheme, subNavPosition } = theme;
+    const { isLanguageConfigured, selectedContentLanguage, baseLanguage } = lrn;
+    const { locale, direction, contentLanguage, currentTheme, subNavPosition } = theme;
     const { token, isAuthResolved } = auth;
     const { user } = grant;
-    return { locale, direction, course, selectedCourse, nativeLanguage, currentTheme, subNavPosition, token, user, isAuthResolved, wasUserConfigSet };
+    return { locale, direction, contentLanguage, selectedContentLanguage, baseLanguage, currentTheme, subNavPosition, token, user, isAuthResolved, isLanguageConfigured };
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Views));

@@ -11,7 +11,7 @@ export const getTopSubmenuForEnglishConnect = (lang) => {
 		{
 			key: 'ec-level-1-eng',
 			nameToCourseCodeKey:"english-connect-1",
-			path: `${APP_PREFIX_PATH}/eng/level-1`,
+			path: `${APP_PREFIX_PATH}/en/level-1`,
 			title: 'main.upper.nav.level.1',
 			sideTitle: 'Lower Beginner',
 			icon: COURSE_ICON_CONFIG.lowerBeginner,
@@ -26,13 +26,13 @@ export const getTopSubmenuForEnglishConnect = (lang) => {
 			course: "English",
 			topSubmenu:[],
 			submenu: [
-				...getCourseSubNavigationLowBasic("eng")
+				...getCourseSubNavigationLowBasic("en")
 			]
 		},
 		{
 			key: 'ec-level-2-eng',
 			nameToCourseCodeKey:"english-connect-2",
-			path: `${APP_PREFIX_PATH}/eng/level-2`,
+			path: `${APP_PREFIX_PATH}/en/level-2`,
 			title: 'main.upper.nav.level.2',
 			sideTitle: 'Mid Beginner',
 			icon: COURSE_ICON_CONFIG.midBeginner,
@@ -47,13 +47,13 @@ export const getTopSubmenuForEnglishConnect = (lang) => {
 			course: "English",
 			topSubmenu:[],
 			submenu: [
-				...getCourseSubNavigationMidBasic("eng")
+				...getCourseSubNavigationMidBasic("en")
 			]
 		},
 		{
 			key: 'ec-level-3-eng',
 			nameToCourseCodeKey:"english-connect-3",
-			path: `${APP_PREFIX_PATH}/eng/level-3`,
+			path: `${APP_PREFIX_PATH}/en/level-3`,
 			title: 'main.upper.nav.level.3',
 			sideTitle: 'Upper Beginner',
 			icon: COURSE_ICON_CONFIG.upperBeginner,
@@ -68,7 +68,7 @@ export const getTopSubmenuForEnglishConnect = (lang) => {
 			course: "English",
 			topSubmenu:[],
 			submenu: [
-				...getCourseSubNavigationHighBasic("eng")
+				...getCourseSubNavigationHighBasic("en")
 			]
 		}
 	]

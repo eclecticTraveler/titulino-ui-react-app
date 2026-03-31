@@ -23,23 +23,23 @@ const LoginView = lazy(() => import(`./user/login`));
 const LogoutView = lazy(() => import(`./user/logout`));
 
 export const AppViews = (props) => {
-	const { course } = props;
+	const { contentLanguage } = props;
 
-	if (!course) {
+	if (!contentLanguage) {
 		return <Loading cover="content" />;
 	  }
 
-	const cfg = getLocalizedConfig(course);
+	const cfg = getLocalizedConfig(contentLanguage);
 
 	return (
 		<>
 	<Suspense fallback={<Loading cover="content"/>}>
 		<Routes>
-			<Route path={`${course}/:${cfg?.level}`} element={<RouteElement component={SharedCourseLevel} />} />
-			<Route path={`${course}/:${cfg?.level}/${cfg?.resources}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelResources} />} />
-			<Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.book}`} element={<RouteElement component={SharedCourseLevelBook} />} />
-			<Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.class}`} element={<RouteElement component={SharedCourseLevelClass} />} />
-			<Route path={`${course}/:${cfg?.level}/:${cfg?.chapter}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelPractice} />} />
+			<Route path={`${contentLanguage}/:${cfg?.level}`} element={<RouteElement component={SharedCourseLevel} />} />
+			<Route path={`${contentLanguage}/:${cfg?.level}/${cfg?.resources}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelResources} />} />
+			<Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.book}`} element={<RouteElement component={SharedCourseLevelBook} />} />
+			<Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/${cfg?.class}`} element={<RouteElement component={SharedCourseLevelClass} />} />
+			<Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelPractice} />} />
 			<Route path={`terms-conditions`} element={<TermsConditionsCancelSubscription />} />
 			<Route path={`private-policy`} element={<PrivacyPolicy />} />
 			<Route path={`enroll`} element={<RouteElement component={Enrollment} />} />
@@ -48,7 +48,7 @@ export const AppViews = (props) => {
 			<Route path={`session-retrieval`} element={<RouteElement component={SessionRetrieval} />} />
 			<Route path={`login`} element={<RouteElement component={LoginView} />} />
 			<Route path={`logout`} element={<RouteElement component={LogoutView} />} />
-			<Route path="" element={<Navigate to={`${APP_PREFIX_PATH}/${course}/${cfg?.level}-${DEFAULT_LANDING_COURSE}`} replace />} />
+			<Route path="" element={<Navigate to={`${APP_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${DEFAULT_LANDING_COURSE}`} replace />} />
 		</Routes>
 	</Suspense>
 	</>
@@ -62,8 +62,8 @@ export const AppViews = (props) => {
 // }
 
 const mapStateToProps = ({ theme }) => {
-	const { course } =  theme;
-	return { course }
+	const { contentLanguage } =  theme;
+	return { contentLanguage }
 };
 
 export default React.memo(connect(mapStateToProps)(AppViews));

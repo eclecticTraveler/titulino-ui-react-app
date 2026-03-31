@@ -16,7 +16,7 @@ import EnrollmentModal from "./EnrollmentModal";
 const { Option } = Select;
 
 export const UserEnrollmentForm = (props) => {
-  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedCourse, nativeLanguage,
+  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, selectedContentLanguage, baseLanguage,
          onSubmittingEnrollee, selfLanguageLevel, wasSubmittingEnrolleeSucessful, countries, isToDoFullEnrollment } = props;
   const [form] = Form.useForm();
   const [isEmailVisible, setEmailVisible] = useState(false);
@@ -194,8 +194,8 @@ useEffect(() => {
 
   const formatSubmissionData = (values, props, isQuickEnrollment, matchedEnrolleeInfo) => {
     const {
-      nativeLanguage,
-      selectedCourse,
+      baseLanguage,
+      selectedContentLanguage,
       availableCourses,
       countries
     } = props;
@@ -265,11 +265,11 @@ useEffect(() => {
       })),
       languageProficiencies: [
         {
-          languageId: nativeLanguage?.localizationId || 'es', // TODO: For now
+          languageId: baseLanguage?.localeCode || 'es', // TODO: For now
           languageLevelAbbreviation: "na", // Default for native language
         },
         {
-          languageId: selectedCourse?.localizationId || 'en',
+          languageId: selectedContentLanguage?.localeCode || 'en',
           languageLevelAbbreviation: languageLevelAbbreviation || "ba", // Form-provided or default
         },
       ]
@@ -286,8 +286,8 @@ useEffect(() => {
       // Trigger validation for the form during submit
       await form.validateFields(); // Ensure all fields are valid before proceeding
       const formattedDatatoSubmit = formatSubmissionData(values, {
-        nativeLanguage,
-        selectedCourse,
+        baseLanguage,
+        selectedContentLanguage,
         availableCourses,
         countries
       }, !isToProceedToFullEnrollment, returningEnrolleeCountryDivisionInfo);
@@ -476,9 +476,9 @@ function mapDispatchToProps(dispatch) {
 }
 
 const mapStateToProps = ({ lrn, grant }) => {
-  const { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful } = lrn;
+  const { availableCourses, selfLanguageLevel, countries, selectedContentLanguage, baseLanguage, wasSubmittingEnrolleeSucessful } = lrn;
   const { isToDoFullEnrollment } = grant;
-  return { availableCourses, selfLanguageLevel, countries, selectedCourse, nativeLanguage, wasSubmittingEnrolleeSucessful, isToDoFullEnrollment };
+  return { availableCourses, selfLanguageLevel, countries, selectedContentLanguage, baseLanguage, wasSubmittingEnrolleeSucessful, isToDoFullEnrollment };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(UserEnrollmentForm);
