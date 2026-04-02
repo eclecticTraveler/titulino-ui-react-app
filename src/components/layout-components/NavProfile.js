@@ -8,7 +8,8 @@ import {
   LoginOutlined,
   GlobalOutlined,
   UsergroupAddOutlined,
-  RadarChartOutlined
+  RadarChartOutlined,
+  ToolOutlined
 } from '@ant-design/icons';
 import Icon from '../../components/util-components/Icon';
 import { signOut } from 'redux/actions/Auth';
@@ -28,42 +29,54 @@ const setLocale = (isLocaleOn, localeKey) =>{
 }
 
 const configureMenuItems = (user, token) => {
-
+// console.log("user", user);
   const menuLinks = [];
 
-  if(user?.hasEverBeenFacilitator && token){
-    menuLinks.push(
-      {
-        title: setLocale(locale,"profile.adminInsights"),
-        icon: RadarChartOutlined ,
-        path: "insight",
-        isAuth: true
-      }
-            
-      // },
-      // {
-      // title: setLocale(locale, ""),
-      // icon: EditOutlined ,
-      // path: ""
-      // },      
-      // {
-      //   title: setLocale(locale, ""),
-      // icon: SettingOutlined,
-      // path: ""
-      // },
-      // {
-      //   title: setLocale(locale, "profile.switch.course"),
-      //   icon: SwapOutlined,
-      //   path: "switch-course"
-      // },
-      // {
-      // title: setLocale(locale,"profile.edit.profile"),
-      // icon: EditOutlined ,
-      // path: "edit-profile"
-      // },
-  );
+  if(token){
+    if(user?.hasEverBeenFacilitator){
+      menuLinks.push(
+        {
+          title: setLocale(locale,"profile.globalAdminTools"),
+          icon: ToolOutlined ,
+          path: "global-admin",
+          isAuth: true
+        });
+    }
 
+    if(user?.hasEverBeenFacilitator){
+        menuLinks.push(
+          {
+            title: setLocale(locale,"profile.adminInsights"),
+            icon: RadarChartOutlined ,
+            path: "insight",
+            isAuth: true
+          }
+                
+          // },
+          // {
+          // title: setLocale(locale, ""),
+          // icon: EditOutlined ,
+          // path: ""
+          // },      
+          // {
+          //   title: setLocale(locale, ""),
+          // icon: SettingOutlined,
+          // path: ""
+          // },
+          // {
+          //   title: setLocale(locale, "profile.switch.course"),
+          //   icon: SwapOutlined,
+          //   path: "switch-course"
+          // },
+          // {
+          // title: setLocale(locale,"profile.edit.profile"),
+          // icon: EditOutlined ,
+          // path: "edit-profile"
+          // },
+      );
+    }
   }
+
   
     if(env.IS_ENROLLMENT_FEAT_ON){
     menuLinks.push(
