@@ -1,5 +1,3 @@
-
-import courses from "../../assets/data/lang-courses.data.json"; 
 import LocalStorageService from "../../services/LocalStorageService";
 import QuizletService from "../../services/QuizletService";
 import VideoClassService from "../../services/VideoClassService";
@@ -127,7 +125,7 @@ export const onLoadingLandingPicture = async (isToRetrieveByNewDate) => {
 }
 
 export const getAllLanguageOptions = async () => {
-  const languageOptions = courses; 
+  const languageOptions = await LrnManager.getAllLanguageOptions();
   return {
     type: GET_ALL_LANGUAGE_OPTIONS,
     languageOptions: languageOptions

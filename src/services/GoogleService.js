@@ -186,6 +186,29 @@ export const getCourseShoppingCatalogData = async (whoCalledMe) => {
 
 };
 
+export const getLanguageCoursesData = async (whoCalledMe) => {
+  if (whoCalledMe) {
+
+    const requestOptions = {
+      method: "GET"
+    };
+
+    const languageCoursesDataUrl = `${gcbucketBaseUrl}/${gcBucketName}/lang-courses.data.json`;
+
+    try {
+      const response = await fetch(languageCoursesDataUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _results;
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getLanguageCoursesData: from ${whoCalledMe}`);
+      console.error(error);
+      return _results;
+    }
+  }
+
+  return _results;
+};
+
 
 export const getGeoMapResource = async (countryId, whoCalledMe) => {
   if (!whoCalledMe) return _results;
@@ -241,7 +264,8 @@ const GoogleService = {
   getCourseProgressData,
   getGeoMapResource,
   getGrammarClassData,
-  getCourseShoppingCatalogData
+  getCourseShoppingCatalogData,
+  getLanguageCoursesData
 };
 
 export default GoogleService;

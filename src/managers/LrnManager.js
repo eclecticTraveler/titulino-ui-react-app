@@ -8,6 +8,9 @@ import TitulinoRestService from "services/TitulinoRestService";
 import StudentProgress from "lob/StudentProgress";
 import LrnConfiguration from "lob/LrnConfiguration";
 import utils from 'utils';
+import GoogleService from "services/GoogleService";
+import localLanguageCourses from "assets/data/lang-courses.data.json";
+import { env } from "configs/EnvironmentConfig";
 
 const getUserCourseProgress = async(courseCodeId, emailId) => {
   let courseFilteredProgress = [];
@@ -70,6 +73,19 @@ const getUserUpperNavigationConfig = async (isAuthenticated, emailId) => {
   const mappedCourseNames = LrnConfiguration.mapUserCoursesByTheme(user?.userCourses);  
   const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.contentLanguageCode, isUserAuthenticated, mappedCourseNames );
   return upperMainNavigation;
+}
+
+const getAllLanguageOptions = async () => {
+  const localLanguageOptions = Array.isArray(localLanguageCourses) ? localLanguageCourses : [];
+
+  if (env.IS_TO_USE_LOCAL_LANG_COURSES_DATA) {
+    return localLanguageOptions;
+  }
+
+  const remoteLanguageOptions = await GoogleService.getLanguageCoursesData("getAllLanguageOptions");
+  return Array.isArray(remoteLanguageOptions) && remoteLanguageOptions.length > 0
+    ? remoteLanguageOptions
+    : localLanguageOptions;
 }
 
 const getGrammarClasses = async(levelNo, chapterNo, baseLanguage, contentLanguage, emailId) => {
@@ -279,6 +295,7 @@ const LrnManager = {
   upsertUserCourseProgress,
   getCourseToken,
   getUserUpperNavigationConfig,
+  getAllLanguageOptions,
   getGrammarClasses,
   getCourseProgress,
   getUserCoursesForEnrollment,
