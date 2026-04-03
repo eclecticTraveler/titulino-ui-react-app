@@ -61,7 +61,7 @@ const configureMenuItems = (user, token) => {
       // icon: EditOutlined ,
       // path: "edit-profile"
       // },
-  );
+    );
 
   }
   

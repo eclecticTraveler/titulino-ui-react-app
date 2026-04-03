@@ -19,7 +19,7 @@ const prod = {
   ...commonConfig,
   IS_SSO_ON: true,
   IS_SHOPPING_UX_ON: true,
-  IS_LANGUAGE_PICKER_ENABLED:false,
+  IS_LANGUAGE_PICKER_ENABLED:true,
   IS_TO_DISPLAY_PROGRESS_DASHBOARD: true,
   ENVIROMENT: 'prod'
 };
