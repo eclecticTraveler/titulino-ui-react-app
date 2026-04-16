@@ -33,7 +33,7 @@ const configureMenuItems = (user, token) => {
   const menuLinks = [];
 
   if(token){
-    if(user?.hasEverBeenFacilitator){
+    if(user?.isGlobalAccessUser){
       menuLinks.push(
         {
           title: setLocale(locale,"profile.globalAdminTools"),
