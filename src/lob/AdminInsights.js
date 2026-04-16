@@ -286,6 +286,10 @@ const proficiencyMaps = {
 export const handleEnrolleeListConvertor = async (data, locationType) => {
 
   if (!data) return { tableData: [], columns: [] };
+  if (!Array.isArray(data)) {
+    console.warn("handleEnrolleeListConvertor expected an array", { locationType, data });
+    return { tableData: [], columns: [] };
+  }
 
   const results = [];
   const filters = {
@@ -414,7 +418,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
       
   };
 
-  await data?.forEach(processData);
+  await Promise.all(data.map(processData));
 
   const columns = [
       {

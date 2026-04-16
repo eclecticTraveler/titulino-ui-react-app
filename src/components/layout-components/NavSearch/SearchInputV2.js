@@ -94,29 +94,31 @@ const SearchInputV2 = props => {
 	}
 	
 	const searchResult = (searchText) => {
-		console.log("searchText", searchText)
+		const query = searchText?.trim().toLowerCase() || '';
 		return optionList
 		  ?.filter(item => {
 			const keywords = item?.keywords || [];
 			const combined = [item?.title, item?.path, ...keywords];
-			const result = combined?.some(text => 
-				typeof text === 'string' && text.trim().toLowerCase().includes(searchText?.trim().toLowerCase())
-			  );
-			return result;
+			return combined.some(text => 
+				typeof text === 'string' && text.trim().toLowerCase().includes(query)
+			);
 		  })
 		  ?.map((item, index) => {
 			const keywords = item?.keywords || [];
-			// console.log("Keywords Array:", keywords);
-	  
 			const category = keywords?.[0] || "uncategorized";
 			const level = keywords?.[1] || "general";
-			const module = keywords?.[2] || "base";
 	  
-			console.log("Category:->>>", category, level, module);
 			const localizedTitle = setLocale(locale, item.title);
+			// Build a searchable blob so the onSearch filter can match against keywords + title + path
+			const searchText = [item?.title, item?.path, ...keywords]
+			  .filter(t => typeof t === 'string')
+			  .join(' ')
+			  .toLowerCase();
+
 			return {
 			  value: item?.path,
 			  key: `${item?.path}-${index}`,
+			  searchText,
 			  label: (
 				<Link to={item?.path}>
 				  <div className="search-list-item">
@@ -124,7 +126,7 @@ const SearchInputV2 = props => {
 					  {getItemIcon(category, level, item?.icon) || <BulbOutlined />}
 					</div>
 					<div>
-					  <div className="font-weight-semibold">{localizedTitle} { `Level:${level}`}</div>
+					  <div className="font-weight-semibold">{localizedTitle}</div>
 					  <div className="font-size-s text-muted">{item.path}</div>
 					</div>
 				  </div>
@@ -148,18 +150,17 @@ const SearchInputV2 = props => {
 
 	  const onSearch = searchText => {
 		setValue(searchText);
-		const searching = !searchText
-		  ? []
-		  : searchResult(searchText)?.filter(option =>
-			  searchText
-				?.toLowerCase()
-				?.split(/[\s-]+/) // Split the search text by spaces or hyphens
-				?.every(word =>
-				  option?.value?.toLowerCase()?.includes(word)
-				)
-			);
-	  
-		setOptions(searching);
+		if (!searchText) {
+		  setOptions([]);
+		  return;
+		}
+		const results = searchResult(searchText);
+		// Filter: every word in the query must appear somewhere in the searchable text
+		const words = searchText.toLowerCase().split(/[\s-]+/).filter(Boolean);
+		const filtered = results?.filter(option =>
+		  words.every(word => option.searchText?.includes(word))
+		) || [];
+		setOptions(filtered);
 	  };  
 	
 	const autofocus = () => {
@@ -177,13 +178,11 @@ const SearchInputV2 = props => {
 			classNames={{ popup: { root: "nav-search-dropdown" } }}
 			popupMatchSelectWidth={false} // Disable the default width matching behavior
 			styles={{ popup: { root: { maxHeight: 400 } } }}
-			options={options} // Pass in more options to increase the number of displayed results
+			options={options}
 			onSelect={onSelect}
 			onSearch={onSearch}
 			value={value}
-			showSearch={{ filterOption: (inputValue, option) => 
-				option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-			}}
+			filterOption={false}
 		>
 			<Input className='search-input-override' placeholder={intl.formatMessage({ id: "nav.search.placeholder" })}  prefix={<SearchOutlined className="mr-0 search-icon-override" />} />
 		</AutoComplete>

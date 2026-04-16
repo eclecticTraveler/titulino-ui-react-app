@@ -17,7 +17,7 @@ import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from 'configs/AppConfig';
 import IntlMessage from "../../components/util-components/IntlMessage";
 import ProfileNavPanelConfig from './ProfileNavPanelConfig';
 import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
-import NavSearchWrapper from './NavSearchWrapper';
+
 import { Link } from 'react-router-dom';
 import { env } from "configs/EnvironmentConfig";
 import { getIsLanguageConfiguredFlag, onUserSelectingContentLanguage } from 'redux/actions/Lrn';
@@ -272,11 +272,7 @@ export const NavProfile = (props) => {
         direction={direction}
       />
       
-      {token && (
-        <>
-          {!isMobile && <NavSearchWrapper isMobile={false} mode={mode}/>}
-        </>
-      )}
+
 
     </>
   );
