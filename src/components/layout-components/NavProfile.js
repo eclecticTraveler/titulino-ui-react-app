@@ -8,7 +8,8 @@ import {
   LoginOutlined,
   GlobalOutlined,
   UsergroupAddOutlined,
-  RadarChartOutlined
+  RadarChartOutlined,
+  ToolOutlined
 } from '@ant-design/icons';
 import Icon from '../../components/util-components/Icon';
 import { signOut } from 'redux/actions/Auth';
@@ -16,7 +17,7 @@ import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from 'configs/AppConfig';
 import IntlMessage from "../../components/util-components/IntlMessage";
 import ProfileNavPanelConfig from './ProfileNavPanelConfig';
 import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
-import NavSearchWrapper from './NavSearchWrapper';
+
 import { Link } from 'react-router-dom';
 import { env } from "configs/EnvironmentConfig";
 import { getIsLanguageConfiguredFlag, onUserSelectingContentLanguage } from 'redux/actions/Lrn';
@@ -28,42 +29,54 @@ const setLocale = (isLocaleOn, localeKey) =>{
 }
 
 const configureMenuItems = (user, token) => {
-
+// console.log("user", user);
   const menuLinks = [];
 
-  if(user?.hasEverBeenFacilitator && token){
-    menuLinks.push(
-      {
-        title: setLocale(locale,"profile.adminInsights"),
-        icon: RadarChartOutlined ,
-        path: "insight",
-        isAuth: true
-      }
-            
-      // },
-      // {
-      // title: setLocale(locale, ""),
-      // icon: EditOutlined ,
-      // path: ""
-      // },      
-      // {
-      //   title: setLocale(locale, ""),
-      // icon: SettingOutlined,
-      // path: ""
-      // },
-      // {
-      //   title: setLocale(locale, "profile.switch.course"),
-      //   icon: SwapOutlined,
-      //   path: "switch-course"
-      // },
-      // {
-      // title: setLocale(locale,"profile.edit.profile"),
-      // icon: EditOutlined ,
-      // path: "edit-profile"
-      // },
-  );
+  if(token){
+    if(user?.isGlobalAccessUser){
+      menuLinks.push(
+        {
+          title: setLocale(locale,"profile.globalAdminTools"),
+          icon: ToolOutlined ,
+          path: "global-admin",
+          isAuth: true
+        });
+    }
 
+    if(user?.hasEverBeenFacilitator){
+        menuLinks.push(
+          {
+            title: setLocale(locale,"profile.adminInsights"),
+            icon: RadarChartOutlined ,
+            path: "insight",
+            isAuth: true
+          }
+                
+          // },
+          // {
+          // title: setLocale(locale, ""),
+          // icon: EditOutlined ,
+          // path: ""
+          // },      
+          // {
+          //   title: setLocale(locale, ""),
+          // icon: SettingOutlined,
+          // path: ""
+          // },
+          // {
+          //   title: setLocale(locale, "profile.switch.course"),
+          //   icon: SwapOutlined,
+          //   path: "switch-course"
+          // },
+          // {
+          // title: setLocale(locale,"profile.edit.profile"),
+          // icon: EditOutlined ,
+          // path: "edit-profile"
+          // },
+      );
+    }
   }
+
   
     if(env.IS_ENROLLMENT_FEAT_ON){
     menuLinks.push(
@@ -259,11 +272,7 @@ export const NavProfile = (props) => {
         direction={direction}
       />
       
-      {token && (
-        <>
-          {!isMobile && <NavSearchWrapper isMobile={false} mode={mode}/>}
-        </>
-      )}
+
 
     </>
   );

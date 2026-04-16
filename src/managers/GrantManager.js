@@ -68,6 +68,7 @@ const getUserProfile = async (emailId, dobOrYob) => {
         communicationName: userProfile?.communicationName ?? null,
         expirationDate: userProfile?.expirationDate ?? null,
         hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
+        isGlobalAccessUser: userProfile?.isGlobalAccessUser ?? false,
         innerToken: userProfile?.token,
         emailId: emailId,
         yearOfBirth: userProfile?.yearOfBirth,

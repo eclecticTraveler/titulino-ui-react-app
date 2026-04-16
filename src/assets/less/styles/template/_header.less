@@ -375,16 +375,63 @@
 		}
 	}
 
+	.desktop-search-toggle {
+		.anticon {
+			transition: transform 0.2s ease;
+			color: #fff;
+		}
+
+		&:hover .anticon {
+			transform: scale(1.15);
+		}
+	}
+
 	.nav-search {
 		height: initial; 
-		padding: 0; 
-		position: relative; 
-		top: 0; 
-		width: 425px; 
-		background: none; 
+		padding: 6px 16px; 
+		position: absolute;
+		top: -70px;
+		left: 0;
+		right: 0;
+		width: 100%; 
+		background: #140F2D;
+		z-index: 99;
+		opacity: 0;
+		visibility: hidden;
+		transition: top 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+		&.nav-search-active {
+			top: 100%;
+			opacity: 1;
+			visibility: visible;
+		}
 
 		.nav-close {
-			display: none; 
+			display: flex;
+			align-items: center;
+			margin-left: 12px;
+			cursor: pointer;
+			
+			.anticon {
+				font-size: 18px;
+				color: #fff;
+				padding: 8px;
+				border-radius: 50%;
+				transition: background-color 0.2s ease;
+
+				&:hover {
+					background-color: rgba(255, 255, 255, 0.15);
+				}
+			}
+		}
+
+		.nav-search-input {
+			max-width: 500px;
+			flex: 1;
 		}
 
 		.ant-input-affix-wrapper {
@@ -456,9 +503,18 @@
 				opacity: 0; 
 				visibility: hidden; 
 				transition: opacity .4s, visibility .4s; 
+				background: #E2E2E6;
 
 				.ant-input-affix-wrapper {
 					border-radius: 0;
+				}
+
+				.nav-close .anticon {
+					color: #0E1F43;
+
+					&:hover {
+						background-color: rgba(0, 0, 0, 0.1);
+					}
 				}
 			}
 		}

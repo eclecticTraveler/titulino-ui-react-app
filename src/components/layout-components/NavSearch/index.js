@@ -11,8 +11,8 @@ export const NavSearch = (props) => {
 	const mode = utils.getColorContrast(headerNavColor)
 
 	return (
-		<div className={`nav-search ${active ? 'nav-search-active' : ''} ${mode}`} style={{backgroundColor: headerNavColor}}>
-			<div className="d-flex align-items-center w-100">
+		<div className={`nav-search ${active ? 'nav-search-active' : ''} ${mode}`}>
+			<div className="d-flex align-items-center w-100 justify-content-center">
 				<SearchInput close={close} active={active}/>
 			</div>
 			<div className="nav-close" onClick={close}>

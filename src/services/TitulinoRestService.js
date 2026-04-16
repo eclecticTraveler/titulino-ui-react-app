@@ -691,7 +691,20 @@ export const getEnrolleeGeneralListByCourseCodeId = async (courseCodeId, whoCall
     try {
       const response = await fetch(enrolleeListUrl, requestOptions);
       const apiResult = await response.json();
-      return apiResult ?? _results;      
+
+      if (!response.ok) {
+        console.log(`Unexpected response in getEnrolleeGeneralListByCourseCodeId: from ${whoCalledMe}`);
+        console.error(apiResult);
+        return _results;
+      }
+
+      if (!Array.isArray(apiResult)) {
+        console.log(`Unexpected payload shape in getEnrolleeGeneralListByCourseCodeId: from ${whoCalledMe}`);
+        console.error(apiResult);
+        return _results;
+      }
+
+      return apiResult;
     } catch (error) {
       console.log(`Error Retrieving API payload in getEnrolleeGeneralListByCourseCodeId: from ${whoCalledMe}`);
       console.error(error);
@@ -699,6 +712,8 @@ export const getEnrolleeGeneralListByCourseCodeId = async (courseCodeId, whoCall
     }
 
   }
+
+  return _results;
 }
 
 export const getEnrolleeCountrylListByCourseCodeId = async (courseCodeId, countryId, whoCalledMe) => {

@@ -10,7 +10,8 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import Toggle from 'react-toggle';
 import "react-toggle/style.css";
 import { toggleCollapsedNav, onMobileNavToggle } from '../../redux/actions/Theme';
-import { NAV_TYPE_TOP, SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from '../../constants/ThemeConstant';;
+import { NAV_TYPE_TOP, SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from '../../constants/ThemeConstant';
+import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
 
 
 const { Header } = Layout;
@@ -19,13 +20,16 @@ export const HeaderNav = props => {
 	const { navCollapsed, mobileNav, navType, toggleCollapsedNav, onMobileNavToggle, isMobile, 
 		    direction } = props;
 	const [searchActive, setSearchActive] = useState(false)
-	const [searchVisible, setSearchVisible] = useState(false)
 
 	const isToogleToBeDisplayedToUser =  false;
 	const defaultToogleFlagValue =  false;
 
 	const onSearchClose = () => {
 		setSearchActive(false)
+	}
+
+	const onSearchToggle = () => {
+		setSearchActive(prev => !prev)
 	}
 
 	const onToggle = () => {
@@ -66,12 +70,24 @@ export const HeaderNav = props => {
 				<MenuContentTop localization={true} />				
 				
 				<div className="nav-right menu-right-padding">
-					{/* TODO: TITULINO PROFILE NAVIGATION */}
-					{/* titulino fix the nav notification Menu Item issue to ellipsis */}
-					{/* <NavNotification /> */}
+					{!isMobile && !searchActive && (
+						<span 
+							className="nav-icon desktop-search-toggle" 
+							onClick={onSearchToggle} 
+							style={{ cursor: 'pointer', marginRight: 16, fontSize: 18, display: 'inline-flex', alignItems: 'center' }}
+						>
+							<SearchOutlined />
+						</span>
+					)}
 					<NavProfile direction={direction} isMobile={isMobile} mode={mode}/>
          		 </div>
-			</div>			
+
+			</div>
+
+			{/* Desktop search overlay — always mounted, animated via CSS class */}
+			{!isMobile && (
+				<NavSearch active={searchActive} close={onSearchClose}/>
+			)}			
 			
 			{
 			(isToogleToBeDisplayedToUser) &&
@@ -93,7 +109,7 @@ export const HeaderNav = props => {
 
 			{/* Mobile view*/}
 			{ isMobile && 
-				<div className={`app-header-wrapper-alt ${searchVisible ? "active" : ""}`}>
+				<div className={`app-header-wrapper-alt ${searchActive ? "active" : ""}`}>
 				<button className="btn-burger" onClick={() => {onToggle()}}>
 					<span></span>
 					
@@ -102,9 +118,11 @@ export const HeaderNav = props => {
 					<span></span>
 				</button>
 
-				<button className="btn-search" onClick={() => setSearchVisible(!searchVisible)}>					
-					<IconAdapter icon={"/img/others/ico-search.png"} iconType={ICON_LIBRARY_TYPE_CONFIG.hostedSvg} />
-				</button>
+				{!searchActive && (
+					<button className="btn-search" onClick={onSearchToggle}>
+						<IconAdapter icon={"/img/others/ico-search.png"} iconType={ICON_LIBRARY_TYPE_CONFIG.hostedSvg} />
+					</button>
+				)}
 
 				<NavSearch active={searchActive} close={onSearchClose}/>
 			</div>
