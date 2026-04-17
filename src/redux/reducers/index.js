@@ -5,6 +5,7 @@ import Lrn from './Lrn';
 import Analytics from './Analytics';
 import Grant from './Grant';
 import Shop from './Shop';
+import AdminTools from './AdminTools';
 
 const reducers = combineReducers({
     theme: Theme,
@@ -12,7 +13,8 @@ const reducers = combineReducers({
     lrn: Lrn,
     analytics: Analytics,
     grant: Grant,
-    shop: Shop
+    shop: Shop,
+    adminTools: AdminTools
 });
 
 export default reducers;

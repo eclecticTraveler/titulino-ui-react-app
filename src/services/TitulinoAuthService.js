@@ -270,13 +270,134 @@ export const upsertUserKnowMeSubmission = async (submission_records, token, whoC
 };
 
 
+// ── Admin Tools: Contact & Role Management ──
+
+export const getAllEnrollees = async (token, whoCalledMe = 'getAllEnrollees') => {
+  if (!token) {
+    console.warn(`[${whoCalledMe}] Missing token`);
+    return _results;
+  }
+  const url = `${SupabaseConfig.baseApiUrl}/GetAllEnrollees`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({}),
+    redirect: 'follow',
+  };
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') console.warn(`[${whoCalledMe}] status ${response.status}`);
+      return _results;
+    }
+    const apiResult = await response.json();
+    console.log("getAllEnrollees", apiResult);
+    return Array.isArray(apiResult) ? apiResult : _results;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return _results;
+  }
+};
+
+export const getUserRoles = async (token, whoCalledMe = 'getUserRoles') => {
+  if (!token) {
+    console.warn(`[${whoCalledMe}] Missing token`);
+    return _results;
+  }
+  const url = `${SupabaseConfig.baseApiUrl}/GetUserRoles`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({}),
+    redirect: 'follow',
+  };
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return _results;
+    const apiResult = await response.json();
+    return Array.isArray(apiResult) ? apiResult : _results;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return _results;
+  }
+};
+
+export const assignRoleToCourse = async (contactInternalId, courseCodeId, roleId, emailId, token, whoCalledMe = 'assignRoleToCourse') => {
+  if (!token || !contactInternalId || !courseCodeId || !roleId) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+  const url = `${SupabaseConfig.baseApiUrl}/AssignRoleToCourse`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({ p_contact_internal_id: contactInternalId, p_course_code_id: courseCodeId, p_role_id: roleId, p_email: emailId }),
+    redirect: 'follow',
+  };
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    return (await response.json()) ?? false;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
+export const assignGlobalRole = async (contactInternalId, roleId, token, whoCalledMe = 'assignGlobalRole') => {
+  if (!token || !contactInternalId || !roleId) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+  const url = `${SupabaseConfig.baseApiUrl}/AssignGlobalRole`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({ p_contact_internal_id: contactInternalId, p_role_id: roleId }),
+    redirect: 'follow',
+  };
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    return (await response.json()) ?? false;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
+export const upsertCourse = async (courseData, token, whoCalledMe = 'upsertCourse') => {
+  if (!token || !courseData) return false;
+  const url = `${SupabaseConfig.baseApiUrl}/UpsertCourse`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({ course_data: courseData }),
+    redirect: 'follow',
+  };
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    return (await response.json()) ?? false;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
+
 const TitulinoAuthService = {
   getCourseProgress,
   getCourseProgressDemographicOverview,
   getCourseProgressCountryCount,
   getCourseProgressCountryDivisionCount,
   upsertCourseProgress,
-  upsertUserKnowMeSubmission
+  upsertUserKnowMeSubmission,
+  getAllEnrollees,
+  getUserRoles,
+  assignRoleToCourse,
+  assignGlobalRole,
+  upsertCourse
 };
 
 export default TitulinoAuthService;

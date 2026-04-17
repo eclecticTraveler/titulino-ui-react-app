@@ -1,436 +1,351 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { Row, Col, Card, Tabs, Input, message } from 'antd';
-import { useIntl } from 'react-intl';
+import { Row, Col, Card, Input, Select, Radio, Tag, Button, AutoComplete, message, Descriptions, Empty } from 'antd';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import IntlMessage from 'components/util-components/IntlMessage';
-import DropdownInsightSelection from './DropdownInsightSelection';
-import { faPersonPraying, faPieChart, faMapPin, faPersonHiking } from '@fortawesome/free-solid-svg-icons';
-import { SearchOutlined } from '@ant-design/icons';
-import IconAdapter from "components/util-components/IconAdapter";
-import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard, onSubmittingAdminEnrolleeProgress, onLoadingAllDashboardContents } from "redux/actions/Analytics";
-import CounterDisplay from 'components/layout-components/CounterDisplay';
-import DoubleCounterDisplay from 'components/layout-components/DoubleCounterDisplay';
-import BarGraph from 'components/layout-components/Graphs/BarGraph';
-import PieGraph from 'components/layout-components/Graphs/PieGraph';
-import ColumnBar from 'components/layout-components/Graphs/ColumnGraph';
-import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
-import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
-import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
+import {
+  onLoadingAdminToolsInit,
+  onAssigningRoleToCourse,
+  onAssigningGlobalRole,
+  onClearSelectedContact
+} from "redux/actions/AdminTools";
 
 const GlobalAdminToolsLandingDashboard = (props) => {
   const {
-    allCourses,
-    onRenderingAdminInsightsDashboard,
-    locationTypes,
-    onRenderingLocationTypeSelectionsToDashboard,
-    demographicDashboardData,
-    progressDemographicDashboardData,
-    onSubmittingAdminEnrolleeProgress,
-    selectedCourseCodeId,
-    selectedLocationType,
-    selectedCountryId,
-    overviewDashboardData,
-    overviewProgressDashboardData,
-    enrolleDashboardData,
-    enrolleesCourseProgressData,
     user,
-    onLoadingAllDashboardContents
+    allCourses,
+    allRoles,
+    allEnrollees,
+    onLoadingAdminToolsInit,
+    onAssigningRoleToCourse,
+    onAssigningGlobalRole,
+    onClearSelectedContact
   } = props;
 
-  const intl = useIntl();
-  const [activeOuterTabKey, setActiveOuterTabKey] = useState('general');
-  const [activeInnerTabs, setActiveInnerTabs] = useState({
-    general: 'general-overview',
-    progress: 'progress-overview'
-  });
-	const [loading, setLoading] = useState(false);
-	const [searchValue, setSearchValue] = useState('');
-  	const [filteredEnrolleeData, setFilteredEnrolleeData] = useState([]);
-	const [filteredProgressData, setFilteredProgressData] = useState([]);
+  const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
+  const [searchText, setSearchText] = useState('');
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [actionType, setActionType] = useState('enroll');
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [selectedEmail, setSelectedEmail] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-
-	const handleAdminProgressSubmit = async (formattedData) => {
-	try {
-		console.log("Submitting admin progress:", formattedData, selectedCourseCodeId);
-
-		// 1) submit (redux action)
-		await onSubmittingAdminEnrolleeProgress(
-		formattedData,
-		selectedCourseCodeId, // ✅ from redux analytics state
-		user?.emailId         // ✅ admin email for token/profile
-		);
-
-		message.success("Progress saved successfully!");
-
-		// 2) refresh dashboards (recommended: reload current selection)
-		if (selectedCourseCodeId && selectedLocationType && selectedCountryId && user?.emailId) {
-		await onLoadingAllDashboardContents(
-			selectedCourseCodeId,
-			selectedLocationType,
-			selectedCountryId,
-			user.emailId
-		);
-		} else {
-		// fallback (if you prefer)
-		onRenderingAdminInsightsDashboard();
-		}
-
-	} catch (error) {
-		console.error("Error submitting admin progress:", error);
-		message.error("Error saving progress.");
-	}
-	};
-
-	const handleEmailChange = (contactInternalId, email, progress) => {
-		setFilteredProgressData(prev => prev.map(row => {
-			if (row.contactInternalId === contactInternalId) {
-				return {
-					...row,
-					selectedEmail: email,
-					participationPercent: progress?.participationPercent ?? row.participationPercent,
-					goldenPercent: progress?.goldenPercent ?? row.goldenPercent
-				};
-			}
-			return row;
-		}));
-	};
-
-
-	const handleInnerTabChange = (outerKey, key) => {
-		setActiveInnerTabs((prev) => ({ ...prev, [outerKey]: key }));
-	};
-
-	const handleSearch = (event) => {
-		const value = event.target.value.toLowerCase();
-		setSearchValue(value);
-
-		if (enrolleDashboardData?.tableData) {
-			const filtered = enrolleDashboardData.tableData.filter((item) =>
-			Object.values(item)
-				.join(" ")
-				.toLowerCase()
-				.includes(value)
-			);
-
-			setFilteredEnrolleeData(filtered);
-		}
-
-		if (enrolleesCourseProgressData?.tableData) {
-			const filtered = enrolleesCourseProgressData.tableData.filter((item) =>
-			Object.values(item)
-				.join(" ")
-				.toLowerCase()
-				.includes(value)
-			);
-
-			setFilteredProgressData(filtered);
-		}
-	};
-	
-	useEffect(() => {
-		if (enrolleDashboardData?.tableData) {
-			setFilteredEnrolleeData(enrolleDashboardData.tableData);
-		}
-	}, [enrolleDashboardData]);
-
-	useEffect(() => {
-		if (enrolleesCourseProgressData?.tableData) {
-			setFilteredProgressData(enrolleesCourseProgressData.tableData);
-		}
-	}, [enrolleesCourseProgressData]);
-
-	useEffect(() => {
-		// Load data only if necessary
-		if (!allCourses || !locationTypes) {
-		  if (!allCourses) {
-			onRenderingAdminInsightsDashboard();
-		  }
-		  if (!locationTypes) {
-			onRenderingLocationTypeSelectionsToDashboard();
-		  }
-		}
-	  // eslint-disable-next-line react-hooks/exhaustive-deps
-	  }, [allCourses, locationTypes]);
-	  
-	  
-
-  const converUrl = 'https://images.unsplash.com/photo-1593153041370-5ebf6b82886a?q=80&w=1461&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
-  const titleOfCard = 'adminTools';
   const locale = true;
+  const setLocale = (isLocaleOn, localeKey) =>
+    isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
 
-  const renderOverviewGrid = (data) => (
-	<>
-		<Row gutter={16}>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.totalEnrollees"} count={data?.totalEnrollees}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.totalMalesVsFemales"} graphData={data?.genderCount} passedValue={"count"} passedType={"sex"}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<PieGraph localizedTitle={"admin.dashboard.insights.overview.genderPercentages"} graphData={data?.genderPercentages} passedValue={"percentage"} passedType={"sex"}/>
-			</Col>
+  const emailId = user?.emailId || null;
 
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={data?.averageGeneralAge} />
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.avgMaleVsFemaleAge"} firstCount={data?.averageMaleAge} secondCount={data?.averageFemaleAge} />
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.agesGroups"} graphData={data?.agesPercentages} passedValue={"count"} passedType={"label"}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.newVsReturning"} firstCount={data?.totalNewEnrollees} secondCount={data?.totalReturningEnrollees}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={data?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<ColumnBar localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={data?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={data?.enrolleeProficiencyGroups} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
-			</Col>
-		</Row>
-	</>
-	);
+  useEffect(() => {
+    if (emailId) {
+      onLoadingAdminToolsInit(emailId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emailId]);
 
-	const renderGeneralOverview = () => renderOverviewGrid(overviewDashboardData);
+  useEffect(() => {
+    if (selectedContact?.Emails?.length > 0) {
+      setSelectedEmail(selectedContact.Emails[0].EmailId);
+    }
+  }, [selectedContact]);
 
-	const renderProgressOverview = () => {
-    const progressOverviewData = overviewProgressDashboardData ?? overviewDashboardData;
-    return renderOverviewGrid(progressOverviewData);
+  /* ── Client-side search over pre-loaded enrollees ── */
+  const filteredEnrollees = useMemo(() => {
+    if (!searchText || searchText.length < 2 || !allEnrollees?.length) return [];
+    const lower = searchText.toLowerCase();
+    return allEnrollees.filter(e =>
+      (e.FullName || '').toLowerCase().includes(lower) ||
+      (e.Names || '').toLowerCase().includes(lower) ||
+      (e.LastNames || '').toLowerCase().includes(lower) ||
+      (e.Emails || []).some(em => (em.EmailId || '').toLowerCase().includes(lower))
+    ).slice(0, 20);
+  }, [searchText, allEnrollees]);
+
+  if (user?.emailId && !user?.yearOfBirth) {
+    return (
+      <div id="unathenticated-landing-page-margin">
+        <EmailYearSearchForm />
+      </div>
+    );
+  }
+
+  const searchOptions = filteredEnrollees.map(e => ({
+    key: e.ContactInternalId,
+    value: `${e.FullName || `${e.Names} ${e.LastNames}`} — ${e.Emails?.[0]?.EmailId || ''}`,
+    label: (
+      <div>
+        <strong>{e.FullName || `${e.Names} ${e.LastNames}`}</strong>
+        <br />
+        <small style={{ color: '#888' }}>{(e.Emails || []).map(em => em.EmailId).join(', ')}</small>
+      </div>
+    ),
+  }));
+
+  const handleSearchChange = (value) => setSearchText(value);
+
+  const handleContactSelect = (value, option) => {
+    const found = (allEnrollees || []).find(e => e.ContactInternalId === option.key);
+    setSelectedContact(found || null);
   };
 
-  const renderEnrolleeListTab = () => (
-    <Row gutter={16}>
-      <Col span={24}>
-        <Input
-          placeholder={intl.formatMessage({ id: "admin.dashboard.insights.search.placeholder" })}
-          value={searchValue}
-          onChange={handleSearch}
-          prefix={<SearchOutlined />}
-          style={{ marginBottom: 16 }}
-        />
-      </Col>
-      <Col xs={24} sm={24} md={24} lg={24}>
-        {filteredEnrolleeData.length > 0 ? (
-          <AbstractTable
-            tableData={filteredEnrolleeData}
-            tableColumns={enrolleDashboardData?.columns}
-            tableExpandables={enrolleDashboardData?.expandable}
-            isAllowedToEditTableData={false}
-            isToRenderActionButton={false}
-          />
-        ) : (
-          <p>{setLocale(locale, "admin.dashboard.insights.progress.noMatchingRecords")}</p>
-        )}
-      </Col>
-    </Row>
-  );
+  const handleClearContact = () => {
+    onClearSelectedContact();
+    setSelectedContact(null);
+    setSearchText('');
+    setSelectedCourse(null);
+    setSelectedRole(null);
+    setSelectedEmail(null);
+  };
 
-  const renderProgressListTab = () => (
-    <Row gutter={16}>
-      <Col span={24}>
-        <Input
-          placeholder={intl.formatMessage({ id: "admin.dashboard.insights.search.placeholder" })}
-          value={searchValue}
-          onChange={handleSearch}
-          prefix={<SearchOutlined />}
-          style={{ marginBottom: 16 }}
-        />
-      </Col>
+  const handleSubmit = async () => {
+    if (!selectedContact) {
+      message.warning('Please select a contact first.');
+      return;
+    }
 
-      <Col xs={24} sm={24} md={24} lg={24}>
-        {(() => {
-          const progressTableData = enrolleesCourseProgressData?.tableData;
-
-          const progressExpandableWithDelegate =
-            enrolleesCourseProgressData?.expandable
-              ? {
-                  ...enrolleesCourseProgressData.expandable,
-                  expandedRowRender: (record) =>
-                    enrolleesCourseProgressData.expandable.expandedRowRender(
-                      record,
-                      handleAdminProgressSubmit,
-                      handleEmailChange
-                    )
-                }
-              : undefined;
-
-          if (!progressTableData) {
-            return <p>{setLocale(locale, "admin.dashboard.insights.progress.loadingData")}</p>;
-          }
-
-          if (progressTableData.length === 0) {
-            return <p>{setLocale(locale, "admin.dashboard.insights.progress.noRecordsForSelection")}</p>;
-          }
-
-          if (filteredProgressData.length === 0) {
-            return <p>{setLocale(locale, "admin.dashboard.insights.progress.noMatchingRecords")}</p>;
-          }
-
-          return (
-            <AbstractTable
-              tableData={filteredProgressData}
-              tableColumns={enrolleesCourseProgressData?.columns}
-              tableExpandables={progressExpandableWithDelegate}
-              isAllowedToEditTableData={false}
-              isToRenderActionButton={false}
-            />
-          );
-        })()}
-      </Col>
-    </Row>
-  );
-
-  const renderDemographicTab = (data) => (
-    <Row gutter={16}>
-      <Col xs={24} sm={24} md={24} lg={24}>
-        {data && (
-          <EnrolleeByRegionWidget
-            enrolleeRegionData={
-              selectedLocationType?.toLowerCase() === "birth"
-                ? data?.transformedArrays?.transformedBirthArray
-                : data?.transformedArrays?.transformedResidencyArray
-            }
-            mapSource={data?.mapJson}
-            mapType={data?.mapType}
-          />
-        )}
-      </Col>
-    </Row>
-  );
-
-	const setLocale = (isLocaleOn, localeKey) => {
-		return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-	};
-
-	if(user?.emailId && !user?.yearOfBirth){
-		return (
-			<div id="unathenticated-landing-page-margin">
-				<EmailYearSearchForm/>
-			</div>
-		)
-	}
-
-  const renderInnerTabsByOuter = (outerKey) => {
-    const innerTabsByOuter = {
-      general: [
-        {
-          key: 'general-overview',
-          tab: (
-            <span>
-              <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
-              {setLocale(locale, "resources.myprogress.generalView")}
-            </span>
-          ),
-          content: renderGeneralOverview()
-        },
-        {
-          key: 'general-enrollee-list',
-          tab: (
-            <span>
-              <IconAdapter icon={faPersonPraying} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
-              {setLocale(locale, "admin.dashboard.insights.enrolleeList")}
-            </span>
-          ),
-          content: renderEnrolleeListTab()
-        },
-        {
-          key: 'general-demographics',
-          tab: (
-            <span>
-              <IconAdapter icon={faMapPin} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
-              {setLocale(locale, "admin.dashboard.insights.demographics")}
-            </span>
-          ),
-          content: renderDemographicTab(demographicDashboardData)
+    setSubmitting(true);
+    try {
+      if (actionType === 'enroll') {
+        if (!selectedCourse || !selectedRole) {
+          message.warning('Please select a course and a role.');
+          setSubmitting(false);
+          return;
         }
-      ],
-      progress: [
-        {
-          key: 'progress-overview',
-          tab: (
-            <span>
-              <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
-              {setLocale(locale, "admin.dashboard.insights.enrolleeProgress")}
-            </span>
-          ),
-          content: renderProgressOverview()
-        },
-        {
-          key: 'progress-enrollee-list',
-          tab: (
-            <span>
-              <IconAdapter icon={faPersonHiking} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
-              {setLocale(locale, "admin.dashboard.insights.enrolleeProgress")}
-            </span>
-          ),
-          content: renderProgressListTab()
-        },
-        {
-          key: 'progress-demographics',
-          tab: (
-            <span>
-              <IconAdapter icon={faMapPin} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
-              {setLocale(locale, "admin.dashboard.insights.demographics")}
-            </span>
-          ),
-          content: renderDemographicTab(progressDemographicDashboardData ?? demographicDashboardData)
+        await onAssigningRoleToCourse(
+          selectedContact.ContactInternalId,
+          selectedCourse,
+          selectedRole,
+          selectedEmail,
+          emailId
+        );
+        message.success('Role assigned to course successfully.');
+      } else {
+        if (!selectedRole) {
+          message.warning('Please select a role.');
+          setSubmitting(false);
+          return;
         }
-      ]
-    };
+        await onAssigningGlobalRole(
+          selectedContact.ContactInternalId,
+          selectedRole,
+          emailId
+        );
+        message.success('Global role assigned successfully.');
+      }
+    } catch (error) {
+      console.error('Error assigning role:', error);
+      message.error('Error assigning role.');
+    }
+    setSubmitting(false);
+  };
 
-    const tabsForOuter = innerTabsByOuter[outerKey] ?? [];
+  const courseSelectOptions = (allCourses || []).map(c => ({
+    key: c.value,
+    value: c.value,
+    label: c.name || c.value
+  }));
+
+  const roleSelectOptions = (allRoles || []).map(r => ({
+    key: r.UserRoleId,
+    value: r.UserRoleId,
+    label: r.UserRoleId
+  }));
+
+  const renderContactSummary = () => {
+    if (!selectedContact) return null;
+
+    const emails = (selectedContact.Emails || []).map(e => e.EmailId);
+    const roles = selectedContact.UserCourseRoles || [];
+    const courses = selectedContact.CoursesHistory || [];
+
     return (
-      <Tabs
-        activeKey={activeInnerTabs[outerKey]}
-        onChange={(key) => handleInnerTabChange(outerKey, key)}
-        items={tabsForOuter.map((tabConfig) => ({
-          key: tabConfig.key,
-          label: tabConfig.tab,
-          children: tabConfig.content,
-        }))}
-      />
+      <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
+        <Descriptions column={{ xs: 1, sm: 2, md: 3 }} size="small" bordered>
+          <Descriptions.Item label="Name">
+            {selectedContact.FullName || `${selectedContact.Names} ${selectedContact.LastNames}`}
+          </Descriptions.Item>
+          <Descriptions.Item label="Contact ID">
+            {selectedContact.ContactExternalId || '—'}
+          </Descriptions.Item>
+          <Descriptions.Item label="Email">
+            {emails.length > 1 ? (
+              <Select
+                value={selectedEmail}
+                onChange={setSelectedEmail}
+                style={{ minWidth: 200 }}
+                size="small"
+                options={emails.map(e => ({ value: e, label: e }))}
+              />
+            ) : (
+              <span>{emails[0] || '—'}</span>
+            )}
+          </Descriptions.Item>
+        </Descriptions>
+
+        <div style={{ marginTop: 12 }}>
+          <strong>Roles: </strong>
+          {roles.length > 0
+            ? roles.map((r, i) => (
+                <Tag color="blue" key={i}>
+                  {r.UserRoleId}{r.CourseCodeId ? ` (${r.CourseCodeId})` : ''}
+                </Tag>
+              ))
+            : <span style={{ color: '#999' }}>None</span>
+          }
+        </div>
+
+        <div style={{ marginTop: 8 }}>
+          <strong>Courses: </strong>
+          {courses.length > 0
+            ? courses.map((c, i) => (
+                <Tag color="green" key={i}>
+                  {c.CourseDetails?.course || c.CourseCodeId}
+                </Tag>
+              ))
+            : <span style={{ color: '#999' }}>None</span>
+          }
+        </div>
+
+        <Button type="link" danger onClick={handleClearContact} style={{ padding: 0, marginTop: 8 }}>
+          Clear selection
+        </Button>
+      </Card>
     );
   };
 
+  const renderAccessManagement = () => (
+    <>
+      {/* Step 1: Search Contact */}
+      <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
+        <h4 style={{ marginBottom: 12 }}>
+          <UserOutlined style={{ marginRight: 8 }} />
+          Search Contact
+        </h4>
+        <AutoComplete
+          style={{ width: '100%' }}
+          options={searchOptions}
+          value={searchText}
+          onSearch={handleSearchChange}
+          onChange={handleSearchChange}
+          onSelect={handleContactSelect}
+          placeholder="Search by name or email..."
+          filterOption={false}
+        >
+          <Input prefix={<SearchOutlined />} size="large" />
+        </AutoComplete>
+      </Card>
+
+      {/* Step 2: Contact Summary */}
+      {renderContactSummary()}
+
+      {/* Step 3: Action Form */}
+      {selectedContact && (
+        <Card variant="outlined" size="small">
+          <h4 style={{ marginBottom: 12 }}>
+            <SafetyCertificateOutlined style={{ marginRight: 8 }} />
+            Assign Access
+          </h4>
+
+          <Radio.Group
+            value={actionType}
+            onChange={(e) => { setActionType(e.target.value); setSelectedRole(null); setSelectedCourse(null); }}
+            style={{ marginBottom: 16 }}
+          >
+            <Radio.Button value="enroll">Enroll to Course</Radio.Button>
+            <Radio.Button value="global">Assign Global Role</Radio.Button>
+          </Radio.Group>
+
+          <Row gutter={16}>
+            {actionType === 'enroll' && (
+              <Col xs={24} sm={12} md={8}>
+                <div style={{ marginBottom: 8 }}><strong>Course</strong></div>
+                <Select
+                  showSearch
+                  placeholder="Select course"
+                  value={selectedCourse}
+                  onChange={setSelectedCourse}
+                  style={{ width: '100%' }}
+                  options={courseSelectOptions}
+                  filterOption={(input, option) =>
+                    (option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
+                  }
+                />
+              </Col>
+            )}
+            <Col xs={24} sm={12} md={8}>
+              <div style={{ marginBottom: 8 }}><strong>Role</strong></div>
+              <Select
+                showSearch
+                placeholder="Select role"
+                value={selectedRole}
+                onChange={setSelectedRole}
+                style={{ width: '100%' }}
+                options={roleSelectOptions}
+                filterOption={(input, option) =>
+                  (option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
+                }
+              />
+            </Col>
+            {actionType === 'enroll' && (
+              <Col xs={24} sm={12} md={8}>
+                <div style={{ marginBottom: 8 }}><strong>Email</strong></div>
+                {(selectedContact.Emails || []).length > 1 ? (
+                  <Select
+                    value={selectedEmail}
+                    onChange={setSelectedEmail}
+                    style={{ width: '100%' }}
+                    options={(selectedContact.Emails || []).map(e => ({ value: e.EmailId, label: e.EmailId }))}
+                  />
+                ) : (
+                  <Input value={selectedEmail || ''} readOnly />
+                )}
+              </Col>
+            )}
+          </Row>
+
+          <Button
+            type="primary"
+            onClick={handleSubmit}
+            loading={submitting}
+            style={{ marginTop: 16 }}
+            disabled={!selectedRole || (actionType === 'enroll' && !selectedCourse)}
+          >
+            {actionType === 'enroll' ? 'Assign to Course' : 'Assign Global Role'}
+          </Button>
+        </Card>
+      )}
+
+      {!selectedContact && !searchText && (
+        <Empty description="Search for a contact to get started" style={{ marginTop: 40 }} />
+      )}
+    </>
+  );
+
+  const renderCourseManagement = () => (
+    <Card variant="outlined" size="small">
+      <h4 style={{ marginBottom: 12 }}>
+        <BookOutlined style={{ marginRight: 8 }} />
+        Course Management
+      </h4>
+      <Empty description="Course management coming soon — Create, edit, and archive courses" />
+    </Card>
+  );
+
+  const coverUrl = 'https://images.unsplash.com/photo-1593153041370-5ebf6b82886a?q=80&w=1461&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+
   const outerTabsConfig = [
-    {
-      key: 'general',
-      tab: (
-        <span>
-          <IconAdapter icon={faPieChart} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
-          {setLocale(locale, "admin.dashboard.insights.outer.general")}
-        </span>
-      )
-    },
-    {
-      key: 'progress',
-      tab: (
-        <span>
-          <IconAdapter icon={faPersonHiking} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
-          {setLocale(locale, "admin.dashboard.insights.outer.progress")}
-        </span>
-      )
-    }
+    { key: 'access', tab: <span><UserOutlined /> Access Management</span> },
+    { key: 'courses', tab: <span><BookOutlined /> Course Management</span> }
   ];
 
   return (
     <div className="container customerName">
       <Card
         variant="outlined"
-        cover={
-          <img
-            alt={titleOfCard}
-            src={converUrl}
-            style={{ height: 100, objectFit: 'cover' }}
-          />
-        }
+        cover={<img alt="adminTools" src={coverUrl} style={{ height: 100, objectFit: 'cover' }} />}
       >
         <h1 style={{ marginBottom: '10px', textAlign: 'left' }}>
           {setLocale(locale, 'profile.globalAdminTools')}
@@ -439,63 +354,30 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
       <Card
         variant="outlined"
-        title={setLocale(locale, 'admin.dashboard.selections')}
-      >
-        <DropdownInsightSelection setLoading={setLoading}/>
-      </Card>
-      <Card
-        loading={loading}
-        variant="outlined"
         tabList={outerTabsConfig}
         activeTabKey={activeOuterTabKey}
         onTabChange={setActiveOuterTabKey}
       >
-        {renderInnerTabsByOuter(activeOuterTabKey)}
+        {activeOuterTabKey === 'access' && renderAccessManagement()}
+        {activeOuterTabKey === 'courses' && renderCourseManagement()}
       </Card>
     </div>
   );
 };
 
-
 function mapDispatchToProps(dispatch) {
-	return bindActionCreators({
-		onRenderingAdminInsightsDashboard: onRenderingAdminInsightsDashboard,
-		onRenderingLocationTypeSelectionsToDashboard: onRenderingLocationTypeSelectionsToDashboard,
-		onSubmittingAdminEnrolleeProgress: onSubmittingAdminEnrolleeProgress,
-		onLoadingAllDashboardContents: onLoadingAllDashboardContents
-	}, dispatch);
+  return bindActionCreators({
+    onLoadingAdminToolsInit,
+    onAssigningRoleToCourse,
+    onAssigningGlobalRole,
+    onClearSelectedContact
+  }, dispatch);
 }
 
-
-const mapStateToProps = ({ analytics, grant }) => {
+const mapStateToProps = ({ adminTools, grant }) => {
   const { user } = grant;
-  const {
-    allCourses,
-    locationTypes,
-    selectedCourseCodeId,
-    selectedLocationType,
-    selectedCountryId,
-    overviewDashboardData,
-    overviewProgressDashboardData,
-    demographicDashboardData,
-    progressDemographicDashboardData,
-    enrolleDashboardData,
-    enrolleesCourseProgressData
-  } = analytics;
-  return {
-    allCourses,
-    locationTypes,
-    selectedCourseCodeId,
-    selectedLocationType,
-    selectedCountryId,
-    overviewDashboardData,
-    overviewProgressDashboardData,
-    enrolleDashboardData,
-    demographicDashboardData,
-    progressDemographicDashboardData,
-    enrolleesCourseProgressData,
-    user
-  };
+  const { allCourses, allRoles, allEnrollees } = adminTools;
+  return { user, allCourses, allRoles, allEnrollees };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(GlobalAdminToolsLandingDashboard);
