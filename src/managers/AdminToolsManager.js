@@ -20,7 +20,7 @@ export const initAdminTools = async (emailId) => {
     TitulinoAuthService.getAllEnrollees(token, 'AdminToolsManager')
   ]);
   const allCourses = await AdminInsights.courseSelectionConverter(rawCourses);
-  return { allCourses, allRoles, allEnrollees };
+  return { allCourses, allRoles, allEnrollees, allRawCourses: rawCourses };
 };
 
 export const assignRoleToCourse = async (contactInternalId, courseCodeId, roleId, contactEmailId, adminEmailId) => {
