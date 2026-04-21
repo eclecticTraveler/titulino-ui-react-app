@@ -7,7 +7,8 @@ import {
   ON_LOADING_ALL_DASHBOARD_CONTENTS,
   ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD,
   ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS,
-  ON_LOADING_FACILITADOR_DASHBOARD_CONTENTS
+  ON_LOADING_FACILITADOR_DASHBOARD_CONTENTS,
+  ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS
 } from '../constants/Analytics';
 
 export function onTestingDefault(defaultValue) {
@@ -93,6 +94,24 @@ export const onSubmittingAdminEnrolleeProgress = async (progressRecords, courseC
   }
 };
 
+export const onLoadingFacilitadorDrillDownDemographics = async (courseCodeId, countryId, emailId) => {
+  try {
+    const drillDownData = await TitulinoManager.getFacilitadorDrillDownDemographics(courseCodeId, countryId, emailId);
+    return {
+      type: ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS,
+      drillDownMapJson: drillDownData?.mapJson,
+      drillDownDemographicData: drillDownData?.mergedDivisions
+    };
+  } catch (error) {
+    console.error('Error loading facilitador drilldown demographics:', error);
+    return {
+      type: ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS,
+      drillDownMapJson: null,
+      drillDownDemographicData: null
+    };
+  }
+};
+
 export const onLoadingFacilitadorDashboardContents = async (courseCodeId, emailId) => {
   try {
     const [
@@ -101,14 +120,14 @@ export const onLoadingFacilitadorDashboardContents = async (courseCodeId, emailI
       demographicDashboardData,
       progressDemographicDashboardData,
       enrolleDashboardData,
-      enrolleesCourseProgressData
+      facilitadorEnrolleeData
     ] = await Promise.all([
       TitulinoManager.getOverviewInfoAdminDashboard(courseCodeId, 'all', 'All'),
       TitulinoManager.getCourseProgressOverviewInfoAdminDashboard(courseCodeId, 'all', 'All', emailId),
       TitulinoManager.getDemographicInfoAdminDashboard(courseCodeId, 'all', 'All'),
       TitulinoManager.getCourseProgressDemographicInfoAdminDashboard(courseCodeId, 'all', 'All', emailId),
       TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, 'all', 'All'),
-      TitulinoManager.getEnrolleesCourseProgressAdminDashboard(courseCodeId, 'all', 'All', emailId)
+      TitulinoManager.getFacilitadorEnrolleesCourseProgressDashboard(courseCodeId, emailId)
     ]);
 
     return {
@@ -119,7 +138,7 @@ export const onLoadingFacilitadorDashboardContents = async (courseCodeId, emailI
       demographicDashboardData,
       progressDemographicDashboardData,
       enrolleDashboardData,
-      enrolleesCourseProgressData
+      facilitadorEnrolleeData
     };
   } catch (error) {
     console.error('Error loading facilitador dashboard data:', error);

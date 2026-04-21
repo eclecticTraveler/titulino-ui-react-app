@@ -11,7 +11,7 @@ import utils from 'utils';
 import Loading from 'components/shared-components/Loading';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import { env } from 'configs/EnvironmentConfig';
-import FacilitadorsLandingDashboard from 'components/admin-components/Insights/FacilitadorsLandingDashboard';
+import FacilitatorsLandingDashboard from 'components/admin-components/Insights/FacilitatorsLandingDashboard';
 
 class CourseLevel extends Component {
 
@@ -89,7 +89,7 @@ class CourseLevel extends Component {
                         if (this.props.facilitadorCourseCodeId) {
                             return (
                                 <div id="unathenticated-landing-page-margin">
-                                    <FacilitadorsLandingDashboard
+                                    <FacilitatorsLandingDashboard
                                         courseCodeId={this.props.facilitadorCourseCodeId}
                                         showMyProgressTab={true}
                                     />

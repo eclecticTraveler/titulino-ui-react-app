@@ -6,7 +6,8 @@ import {
   ON_LOADING_ALL_DASHBOARD_CONTENTS,
   ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD,
   ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS,
-  ON_LOADING_FACILITADOR_DASHBOARD_CONTENTS
+  ON_LOADING_FACILITADOR_DASHBOARD_CONTENTS,
+  ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS
 } from '../constants/Analytics';
 
 const initState = {
@@ -31,7 +32,13 @@ const analytics = (state = initState, action) => {
         demographicDashboardData: action.demographicDashboardData,
         progressDemographicDashboardData: action.progressDemographicDashboardData,
         enrolleDashboardData: action.enrolleDashboardData,
-        enrolleesCourseProgressData: action.enrolleesCourseProgressData
+        facilitadorEnrolleeData: action.facilitadorEnrolleeData
+      }
+    case ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS:
+      return {
+        ...state,
+        drillDownMapJson: action.drillDownMapJson,
+        drillDownDemographicData: action.drillDownDemographicData
       }
     case ON_LOADING_ALL_DASHBOARD_CONTENTS:
       return {
