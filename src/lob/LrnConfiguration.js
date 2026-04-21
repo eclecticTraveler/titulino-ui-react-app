@@ -27,6 +27,36 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme, registry) => {
   return codes?.[0] ?? 'NOT_FOUND';
 };
 
+/**
+ * Given the userCourses object and an array of courseCodeIds for a theme,
+ * find which courseCodeId the user is a facilitator/facilitador for.
+ * @param {Object} userCourses - keyed by courseCodeId
+ * @param {string[]} courseCodeIds - from the theme registry
+ * @returns {string|null}
+ */
+export const getFacilitadorCourseCodeIdForTheme = (userCourses, courseCodeIds) => {
+  if (!userCourses || typeof userCourses !== 'object') {
+    console.log('[LrnConfiguration] getFacilitadorCourseCodeIdForTheme: userCourses is falsy or not an object');
+    return null;
+  }
+  if (!Array.isArray(courseCodeIds) || courseCodeIds.length === 0) {
+    console.log('[LrnConfiguration] getFacilitadorCourseCodeIdForTheme: courseCodeIds is not a valid array');
+    return null;
+  }
+
+  for (const courseCodeId of courseCodeIds) {
+    const course = userCourses[courseCodeId];
+    const role = course?.userRoleIdForTheCourse;
+    const isFacilitator = typeof role === 'string' && role.toLowerCase().includes('facilitat');
+    console.log('[LrnConfiguration] checking:', { courseCodeId, role, isFacilitator });
+    if (isFacilitator) {
+      return courseCodeId;
+    }
+  }
+
+  return null;
+};
+
 export const buildSingleFullKnowMeProgressWithCourseCodeId = async (
   knowMeProgressInput,
   courseCodeId,
@@ -139,6 +169,7 @@ export const buildStudentKnowMeFileName = async (file, contactId, emailId, class
 const LrnConfiguration = {
   mapUserCoursesByTheme,
   getCourseCodeIdByCourseTheme,
+  getFacilitadorCourseCodeIdForTheme,
   buildSingleFullKnowMeProgressWithCourseCodeId,
   buildStudentKnowMeFileName,
   buildMultipleFullKnowMeProgressWithCourseCodeId

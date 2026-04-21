@@ -309,6 +309,15 @@ export const buildStudentKnowMeFileName = async (file, contactId, emailId, class
 };
 
 
+const resolveFacilitadorCourseCodeId = async (courseTheme, emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const userCourses = user?.userCourses;
+  const registry = await getCourseThemeRegistry();
+  const themeCourseCodeIds = registry[courseTheme?.toLowerCase()] || [];
+  const facilitadorCourseCodeId = LrnConfiguration.getFacilitadorCourseCodeIdForTheme(userCourses, themeCourseCodeIds);
+  return facilitadorCourseCodeId;
+};
 
 const LrnManager = {
   getUserCourseProgress,
@@ -324,7 +333,8 @@ const LrnManager = {
   getUserEBookChapterUrl,
   upsertUserKnowMeProgress,
   upsertKnowMeProfilePicture,
-  buildStudentKnowMeFileName
+  buildStudentKnowMeFileName,
+  resolveFacilitadorCourseCodeId
 };
 
 export default LrnManager;

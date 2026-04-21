@@ -433,7 +433,7 @@ const InsightsLandingDashboard = (props) => {
         }
       >
         <h1 style={{ marginBottom: '10px', textAlign: 'left' }}>
-          Enrollee Insights
+          {setLocale(locale, 'admin.dashboard.insights.title')}
         </h1>
       </Card>
 

@@ -845,6 +845,226 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
   };
 };
 
+/**
+ * Combined table for Facilitador dashboard.
+ * Merges enrollee list data with progress data into a single table.
+ * Columns: Level, Id, Full Name, Gender, Residency (Country + Region), Emails, Progress bars.
+ * Expandable: same AdminProgressEditable as the progress list.
+ */
+export const handleFacilitadorEnrolleeListConvertor = async (enrolleeData, progressMap, courseProgressConfigJson, courseCodeId) => {
+
+  if (!enrolleeData) return { tableData: [], columns: [], expandable: null };
+
+  const results = [];
+  const filters = {
+    proficiencyFilter: new Set(),
+    enrolleeIdFilter: new Set(),
+    sexFilter: new Set(),
+    countryOfResidencyFilter: new Set(),
+    regionOfResidencyFilter: new Set()
+  };
+  const trackers = {
+    proficiencyTracker: new Set(),
+    enrolleeIdTracker: new Set(),
+    sexTracker: new Set(),
+    countryOfResidencyTracker: new Set(),
+    regionOfResidencyTracker: new Set()
+  };
+
+  await Promise.all(
+    enrolleeData.map(async (item, index) => {
+      const contactId = item.ContactInternalId;
+      const userProgressRows = progressMap?.[contactId] ?? [];
+
+      const emails = item?.Emails?.filter(e => e.IsEmailParseValid).map(e => e.EmailId) || [];
+
+      // Calculate progress per email
+      const emailProgressMap = {};
+      for (const email of emails) {
+        const emailRows = userProgressRows.filter(r => r.EmailId === email);
+        const emailResult = await StudentProgress.calculateUserCourseProgressPercentageForCertificates(emailRows);
+        emailProgressMap[email] = {
+          participationPercent: Number((Number(emailResult?.participationCertificatePercentage ?? 0) * 100).toFixed(1)),
+          goldenPercent: Number((Number(emailResult?.goldenCertificatePercentage ?? 0) * 100).toFixed(1))
+        };
+      }
+
+      let bestEmail = emails[0] || null;
+      let bestCombined = -1;
+      for (const [email, progress] of Object.entries(emailProgressMap)) {
+        const combined = progress.participationPercent + progress.goldenPercent;
+        if (combined > bestCombined) { bestCombined = combined; bestEmail = email; }
+      }
+      const defaultProgress = emailProgressMap[bestEmail] ?? { participationPercent: 0, goldenPercent: 0 };
+
+      const countryOfResidency = item?.Location?.ResidencyLocation?.CountryOfResidency || null;
+      const regionOfResidency = item?.Location?.ResidencyLocation?.CountryDivisionResidencyName || null;
+      const courseAbbreviation = getLatestProficiencyForCourse(item, courseCodeId);
+
+      results.push({
+        key: index,
+        enrolleeId: item?.ContactExternalId,
+        contactInternalId: contactId,
+        fullName: `${item.LastNames}, ${item.Names}`,
+        sex: item?.Sex,
+        countryOfResidency,
+        regionOfResidency,
+        emails,
+        participationPercent: defaultProgress.participationPercent,
+        goldenPercent: defaultProgress.goldenPercent,
+        rawProgress: userProgressRows,
+        selectedEmail: bestEmail,
+        emailProgressMap,
+        contactProficiency: courseAbbreviation
+      });
+
+      // Populate filters
+      const filterFields = [
+        { field: courseAbbreviation, filter: 'proficiency' },
+        { field: item?.ContactExternalId, filter: 'enrolleeId' },
+        { field: item?.Sex, filter: 'sex' },
+        { field: countryOfResidency, filter: 'countryOfResidency' },
+        { field: regionOfResidency, filter: 'regionOfResidency' }
+      ];
+
+      filterFields.forEach(({ field, filter }) => {
+        const trackerKey = `${filter}Tracker`;
+        if (field && !trackers[trackerKey].has(field)) {
+          let valueToAdd;
+          if (filter === 'proficiency') {
+            const [color, label] = proficiencyMaps[field] || ['black', 'Unknown'];
+            valueToAdd = { key: field, text: <Tag color={color}>{label}</Tag>, value: field };
+          } else if (filter === 'countryOfResidency') {
+            valueToAdd = { key: field, text: <><Flag code={field} style={{ width: 30, marginRight: 5 }} />{field}</>, value: field };
+          } else if (filter === 'sex') {
+            valueToAdd = {
+              key: field,
+              text: <Tag color={field === 'M' ? 'geekblue' : 'pink'}>{field === 'M' ? 'Male' : 'Female'}</Tag>,
+              value: field
+            };
+          } else {
+            valueToAdd = { key: field, text: field, value: field };
+          }
+          filters[`${filter}Filter`].add(valueToAdd);
+          trackers[trackerKey].add(field);
+        }
+      });
+    })
+  );
+
+  const columns = [
+    {
+      title: <IntlMessage id="admin.dashboard.insights.progress.profile" />,
+      children: [
+        {
+          title: <IntlMessage id="admin.dashboard.insights.progress.level" />,
+          dataIndex: 'contactProficiency',
+          width: '8%',
+          filters: Array.from(filters.proficiencyFilter || []),
+          onFilter: (value, record) => record.contactProficiency?.indexOf(value) === 0,
+          sorter: (a, b) => (a.contactProficiency || '').localeCompare(b.contactProficiency || ''),
+          render: (val) => {
+            const [color, label] = proficiencyMaps[val] || ['black', 'Unknown'];
+            return <Tag color={color}>{label}</Tag>;
+          }
+        },
+        {
+          title: <IntlMessage id="admin.dashboard.insights.progress.id" />,
+          dataIndex: 'enrolleeId',
+          width: '8%',
+          filters: Array.from(filters.enrolleeIdFilter || []),
+          onFilter: (value, record) => record.enrolleeId === value,
+          sorter: (a, b) => a.enrolleeId - b.enrolleeId
+        },
+        {
+          title: <IntlMessage id="admin.dashboard.insights.progress.fullName" />,
+          dataIndex: 'fullName',
+          width: '15%'
+        },
+        {
+          title: <IntlMessage id="facilitador.dashboard.gender" />,
+          dataIndex: 'sex',
+          width: '8%',
+          filters: Array.from(filters.sexFilter || []),
+          onFilter: (value, record) => record.sex === value,
+          render: (sex) => <Tag color={sex === 'M' ? 'geekblue' : 'pink'}>{sex === 'M' ? 'Male' : 'Female'}</Tag>
+        }
+      ]
+    },
+    {
+      title: <IntlMessage id="admin.dashboard.dropdown.selection.residency" />,
+      children: [
+        {
+          title: <IntlMessage id="admin.dashboard.insights.progress.country" />,
+          dataIndex: 'countryOfResidency',
+          align: 'center',
+          width: '8%',
+          filters: Array.from(filters.countryOfResidencyFilter || []),
+          onFilter: (value, record) => record.countryOfResidency === value,
+          render: (code) => code ? <Flag code={code} style={{ width: 35 }} /> : '-'
+        },
+        {
+          title: <IntlMessage id="facilitador.dashboard.region" />,
+          dataIndex: 'regionOfResidency',
+          width: '10%',
+          filters: Array.from(filters.regionOfResidencyFilter || []),
+          onFilter: (value, record) => record.regionOfResidency === value
+        }
+      ]
+    },
+    {
+      title: <IntlMessage id="facilitador.dashboard.emails" />,
+      dataIndex: 'emails',
+      width: '12%',
+      render: (emails) => (emails || []).map((e, i) => <Tag key={i} color="geekblue" style={{ marginBottom: 2 }}>{e}</Tag>)
+    },
+    {
+      title: <IntlMessage id="admin.dashboard.insights.progress.studentProgress" />,
+      children: [
+        {
+          title: <IntlMessage id="admin.dashboard.insights.progress.participation" />,
+          dataIndex: 'participationPercent',
+          width: '12%',
+          sorter: (a, b) => a.participationPercent - b.participationPercent,
+          defaultSortOrder: 'descend',
+          render: (value) => <Progress percent={value} strokeColor="#1677ff" />
+        },
+        {
+          title: <IntlMessage id="admin.dashboard.insights.progress.golden" />,
+          dataIndex: 'goldenPercent',
+          width: '12%',
+          sorter: (a, b) => a.goldenPercent - b.goldenPercent,
+          render: (value) => <Progress percent={value} strokeColor="gold" />
+        }
+      ]
+    }
+  ];
+
+  const expandable = {
+    expandedRowRender: (record, injectedSubmit, injectedEmailChange) => {
+      const courseConfig = courseProgressConfigJson;
+      return (
+        <AdminProgressEditable
+          categories={courseConfig?.categories}
+          progressData={record.rawProgress}
+          contactId={record.contactInternalId}
+          emails={record.emails}
+          defaultEmail={record.selectedEmail}
+          emailProgressMap={record.emailProgressMap}
+          courseCodeId={courseConfig?.courseId}
+          userProficiency={record.contactProficiency}
+          onSubmit={injectedSubmit}
+          onEmailChange={(email) =>
+            injectedEmailChange?.(record.contactInternalId, email, record.emailProgressMap?.[email])
+          }
+        />
+      );
+    }
+  };
+
+  return { tableData: results, columns, expandable };
+};
+
 const AdminInsights = {
   courseSelectionConverter,
   locationTypeConverter,
@@ -853,7 +1073,8 @@ const AdminInsights = {
   transformEnrolleeGeneralDemographicData,
   transformEnrolleeDivisionDemographicData,
   handleEnrolleeListConvertor,
-  handleEnrolleeProgressListConvertor
+  handleEnrolleeProgressListConvertor,
+  handleFacilitadorEnrolleeListConvertor
 };
 
 export default AdminInsights;

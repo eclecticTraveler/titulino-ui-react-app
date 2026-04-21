@@ -375,6 +375,43 @@ class Utils {
 	  }
 
 	/**
+	 * Retrieves the user role for a specific course from the userCourses object.
+	 * @param {Object} userCourses
+	 * @param {string} courseCodeId
+	 * @returns {string|null} e.g. "titulino_facilitador", "titulino_user", etc.
+	 */
+	static getUserRoleForCourse(userCourses, courseCodeId) {
+		if (!userCourses || typeof userCourses !== "object") {
+		  return null;
+		}
+		const course = userCourses[courseCodeId];
+		return course?.userRoleIdForTheCourse || null;
+	}
+
+	/**
+	 * Checks if the user is a facilitador for a specific course.
+	 * @param {Object} userCourses
+	 * @param {string} courseCodeId
+	 * @returns {boolean}
+	 */
+	static isFacilitadorForCourse(userCourses, courseCodeId) {
+		const role = Utils.getUserRoleForCourse(userCourses, courseCodeId);
+		return role?.toLowerCase()?.includes('facilitator') || false;
+	}
+
+	/**
+	 * Given an array of courseCodeIds (from theme registry), find which one
+	 * the user is a facilitador for. Returns the first match or null.
+	 * @param {Object} userCourses
+	 * @param {string[]} courseCodeIds
+	 * @returns {string|null} courseCodeId the user facilitates
+	 */
+	static getFacilitadorCourseCodeId(userCourses, courseCodeIds) {
+		if (!userCourses || !Array.isArray(courseCodeIds)) return null;
+		return courseCodeIds.find(id => Utils.isFacilitadorForCourse(userCourses, id)) || null;
+	}
+
+	/**
 	 * Get Breakpoint
 	 * @param {Object} screens - Grid.useBreakpoint() from antd
 	 * @return {Array} array of breakpoint size

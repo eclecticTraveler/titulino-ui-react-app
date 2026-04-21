@@ -65,7 +65,8 @@ import {
   ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
   ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
   ON_USER_SELECTING_CONTENT_LANGUAGE,
-  ON_UPSERTING_KNOW_ME_BY_CHAPTER
+  ON_UPSERTING_KNOW_ME_BY_CHAPTER,
+  ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE
 } from "../constants/Lrn";
 import LrnManager from "managers/LrnManager";
 
@@ -613,6 +614,14 @@ export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) 
   return {
     type: ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
     userIsEnrolledInCourse: !!userIsEnrolled
+  }
+}
+
+export const onResolvingFacilitadorForThemeCourse = async (courseTheme, emailId) => {
+  const facilitadorCourseCodeId = await TitulinoManager.resolveFacilitadorCourseCodeId(courseTheme, emailId);
+  return {
+    type: ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE,
+    facilitadorCourseCodeId: facilitadorCourseCodeId
   }
 }
 
