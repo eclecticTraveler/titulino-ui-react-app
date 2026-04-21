@@ -2,7 +2,7 @@ import CryptoJS from "crypto-js";
 import { env } from 'configs/EnvironmentConfig';
 const SECRET_KEY = process.env.REACT_APP_STORAGE_KEY;
 
-const STORAGE_SCHEMA_VERSION = '2';
+const STORAGE_SCHEMA_VERSION = '3';
 
 /**
  * Run once per client after deploy. Clears stale keys from the
