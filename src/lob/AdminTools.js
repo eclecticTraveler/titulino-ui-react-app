@@ -1,5 +1,25 @@
 const MONTH_ABBR = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
+const ID_PATTERN = /^(.+?)_(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)_\d{4}_COURSE_(\d+)$/i;
+
+/**
+ * Find the highest edition number (NN) across all existing IDs that share
+ * the same course-name slug, regardless of month/year.
+ * E.g. slug "SUPERMARKET" matches SUPERMARKET_SEP_2024_COURSE_01 → max = 1
+ */
+const getMaxEditionForSlug = (nameSlug, existingIds) => {
+  let max = 0;
+  const upper = nameSlug.toUpperCase();
+  for (const id of existingIds) {
+    const m = ID_PATTERN.exec((id || '').toUpperCase());
+    if (m && m[1] === upper) {
+      const n = parseInt(m[3], 10);
+      if (n > max) max = n;
+    }
+  }
+  return max;
+};
+
 /**
  * Convert a course name into UPPER_SNAKE_CASE.
  * E.g. "Household Items - Part 1" → "HOUSEHOLD_ITEMS_PART_1"
@@ -17,6 +37,10 @@ const toUpperSnake = (name) => {
  * Generate a unique CourseCodeId following the convention:
  *   <COURSE_NAME_UPPER_SNAKE>_<MMM>_<YYYY>_COURSE_<NN>
  *
+ * NN is a global edition counter per course-name slug — it increments across
+ * all months/years.  E.g. if SUPERMARKET_SEP_2024_COURSE_01 exists, the next
+ * Supermarket course (any date) becomes SUPERMARKET_JUL_2026_COURSE_02.
+ *
  * @param {string} courseName    – e.g. "Household Items - Part 1"
  * @param {Date|string} startDate – course start date
  * @param {string[]} existingIds  – list of all existing CourseCodeIds
@@ -33,7 +57,10 @@ export const generateCourseCodeId = (courseName, startDate, existingIds = []) =>
   const year = d.getFullYear();
   const prefix = `${nameSlug}_${month}_${year}_COURSE_`;
 
-  let seq = 1;
+  // Global edition: find highest NN for this slug across all dates, then +1
+  let seq = getMaxEditionForSlug(nameSlug, existingIds) + 1;
+
+  // Safety net: also skip if the exact full ID already exists
   const upperIds = existingIds.map(id => (id || '').toUpperCase());
   while (upperIds.includes(`${prefix}${String(seq).padStart(2, '0')}`)) {
     seq++;
