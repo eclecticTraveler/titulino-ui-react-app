@@ -1,30 +1,60 @@
-// Single source of truth: theme → all known courseCodeIds for that theme.
-// The first entry is the default/current offering used for DB API calls.
-const COURSE_THEME_REGISTRY = {
-  'supermarket':      ['SUPERMARKET_SEP_2024_COURSE_01', 'SUPERMARKET_SEP_2024_COURSE_02'],
-  'household':        ['HOUSEHOLD_ITEMS_PART_1_JAN_2025_COURSE_01'],
-  'work-n-jobs':      ['WORK_AND_JOBS_JULY_2025_COURSE_01', 'WORK_AND_JOBS_JULY_2025_COURSE_02'],
-  'english-connect':  ['ENGLISHCONNECT_01_JUN_2025_COURSE_02'],
-};
+import localCourseThemeRegistry from "assets/data/course-theme-registry.data.json";
 
-// Reverse lookup: courseCodeId → theme (built once at module load)
-const CODE_TO_THEME = Object.entries(COURSE_THEME_REGISTRY).reduce((acc, [theme, codes]) => {
-  codes.forEach(code => { acc[code] = theme; });
-  return acc;
-}, {});
+// Build reverse lookup: courseCodeId → theme
+export const buildCodeToTheme = (registry) =>
+  Object.entries(registry || {}).reduce((acc, [theme, codes]) => {
+    (codes || []).forEach(code => { acc[code] = theme; });
+    return acc;
+  }, {});
 
-export const mapUserCoursesByTheme = (userCourses = {}) => {
+// Module-level defaults built from the bundled JSON (keeps sync callers working)
+const DEFAULT_REGISTRY = localCourseThemeRegistry;
+const DEFAULT_CODE_TO_THEME = buildCodeToTheme(DEFAULT_REGISTRY);
+
+export const mapUserCoursesByTheme = (userCourses = {}, registry) => {
+  const codeToTheme = registry ? buildCodeToTheme(registry) : DEFAULT_CODE_TO_THEME;
   const map = {};
   Object.values(userCourses).forEach(course => {
-    const theme = CODE_TO_THEME[course.courseCodeId];
+    const theme = codeToTheme[course.courseCodeId];
     if (theme) map[theme] = course;
   });
   return map;
 };
 
-export const getCourseCodeIdByCourseTheme = async (courseTheme) => {
-  const codes = COURSE_THEME_REGISTRY[courseTheme?.toLowerCase()];
+export const getCourseCodeIdByCourseTheme = async (courseTheme, registry) => {
+  const reg = registry || DEFAULT_REGISTRY;
+  const codes = reg[courseTheme?.toLowerCase()];
   return codes?.[0] ?? 'NOT_FOUND';
+};
+
+/**
+ * Given the userCourses object and an array of courseCodeIds for a theme,
+ * find which courseCodeId the user is a facilitator/facilitador for.
+ * @param {Object} userCourses - keyed by courseCodeId
+ * @param {string[]} courseCodeIds - from the theme registry
+ * @returns {string|null}
+ */
+export const getFacilitadorCourseCodeIdForTheme = (userCourses, courseCodeIds) => {
+  if (!userCourses || typeof userCourses !== 'object') {
+    console.log('[LrnConfiguration] getFacilitadorCourseCodeIdForTheme: userCourses is falsy or not an object');
+    return null;
+  }
+  if (!Array.isArray(courseCodeIds) || courseCodeIds.length === 0) {
+    console.log('[LrnConfiguration] getFacilitadorCourseCodeIdForTheme: courseCodeIds is not a valid array');
+    return null;
+  }
+
+  for (const courseCodeId of courseCodeIds) {
+    const course = userCourses[courseCodeId];
+    const role = course?.userRoleIdForTheCourse;
+    const isFacilitator = typeof role === 'string' && role.toLowerCase().includes('facilitat');
+    console.log('[LrnConfiguration] checking:', { courseCodeId, role, isFacilitator });
+    if (isFacilitator) {
+      return courseCodeId;
+    }
+  }
+
+  return null;
 };
 
 export const buildSingleFullKnowMeProgressWithCourseCodeId = async (
@@ -139,6 +169,7 @@ export const buildStudentKnowMeFileName = async (file, contactId, emailId, class
 const LrnConfiguration = {
   mapUserCoursesByTheme,
   getCourseCodeIdByCourseTheme,
+  getFacilitadorCourseCodeIdForTheme,
   buildSingleFullKnowMeProgressWithCourseCodeId,
   buildStudentKnowMeFileName,
   buildMultipleFullKnowMeProgressWithCourseCodeId

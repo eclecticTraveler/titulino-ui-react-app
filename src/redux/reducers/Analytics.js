@@ -5,7 +5,9 @@ import {
   ON_GETTING_COUNTRIES_BY_LOCATION_TYPE,
   ON_LOADING_ALL_DASHBOARD_CONTENTS,
   ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD,
-  ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS
+  ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS,
+  ON_LOADING_FACILITADOR_DASHBOARD_CONTENTS,
+  ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS
 } from '../constants/Analytics';
 
 const initState = {
@@ -18,6 +20,25 @@ const analytics = (state = initState, action) => {
       return {
         ...state,
         submitProgressSuccess: action.submittedAdminEnrolleeProgress
+      }
+    case ON_LOADING_FACILITADOR_DASHBOARD_CONTENTS:
+      return {
+        ...state,
+        selectedCourseCodeId: action.selectedCourseCodeId,
+        selectedLocationType: 'all',
+        selectedCountryId: 'All',
+        overviewDashboardData: action.overviewDashboardData,
+        overviewProgressDashboardData: action.overviewProgressDashboardData,
+        demographicDashboardData: action.demographicDashboardData,
+        progressDemographicDashboardData: action.progressDemographicDashboardData,
+        enrolleDashboardData: action.enrolleDashboardData,
+        facilitadorEnrolleeData: action.facilitadorEnrolleeData
+      }
+    case ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS:
+      return {
+        ...state,
+        drillDownMapJson: action.drillDownMapJson,
+        drillDownDemographicData: action.drillDownDemographicData
       }
     case ON_LOADING_ALL_DASHBOARD_CONTENTS:
       return {

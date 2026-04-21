@@ -10,6 +10,7 @@ import LrnConfiguration from "lob/LrnConfiguration";
 import utils from 'utils';
 import GoogleService from "services/GoogleService";
 import localLanguageCourses from "assets/data/lang-courses.data.json";
+import localCourseThemeRegistry from "assets/data/course-theme-registry.data.json";
 import { env } from "configs/EnvironmentConfig";
 
 const getUserCourseProgress = async(courseCodeId, emailId) => {
@@ -70,7 +71,8 @@ const getUserUpperNavigationConfig = async (isAuthenticated, emailId) => {
   const isUserAuthenticated = !!isAuthenticated;
   const selectedLanguageForCourse =  await LocalStorageService.getSelectedContentLanguage();
   
-  const mappedCourseNames = LrnConfiguration.mapUserCoursesByTheme(user?.userCourses);  
+  const registry = await getCourseThemeRegistry();
+  const mappedCourseNames = LrnConfiguration.mapUserCoursesByTheme(user?.userCourses, registry);  
   const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.contentLanguageCode, isUserAuthenticated, mappedCourseNames );
   return upperMainNavigation;
 }
@@ -88,11 +90,25 @@ const getAllLanguageOptions = async () => {
     : localLanguageOptions;
 }
 
+const getCourseThemeRegistry = async () => {
+  const localRegistry = localCourseThemeRegistry && typeof localCourseThemeRegistry === 'object' ? localCourseThemeRegistry : {};
+
+  if (env.IS_TO_USE_LOCAL_COURSE_THEME_DATA) {
+    return localRegistry;
+  }
+
+  const remoteRegistry = await GoogleService.getCourseThemeRegistryData("getCourseThemeRegistry");
+  return remoteRegistry && typeof remoteRegistry === 'object' && Object.keys(remoteRegistry).length > 0
+    ? remoteRegistry
+    : localRegistry;
+}
+
 const getGrammarClasses = async(levelNo, chapterNo, baseLanguage, contentLanguage, emailId) => {
     const localStorageKey = `UserProfile_${emailId}`;  
     const user = await LocalStorageService.getCachedObject(localStorageKey);
     const urls = await GrammarClassService.getGrammarClassUrlsByChapter(levelNo, chapterNo, baseLanguage, contentLanguage);
-    const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelNo);
+    const registry = await getCourseThemeRegistry();
+    const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelNo, registry);
     const level = utils.getuserLanguageProficiencyOrderIdForCourse(user?.userCourses, courseCodeId);
     const proficiencyLevel = await GrammarClassService.getGrammarCategory(level);
 
@@ -106,7 +122,8 @@ const getCourseProgress = async(courseTheme, baseLanguage, contentLanguage) => {
   // Content lookup by theme (no courseCodeId needed for UI content)
   const courseConfiguration = await TitulinoRestService.getCourseContentByTheme(baseLanguage, contentLanguage, courseTheme);
   // Derive courseCodeId for DB/enrollment operations
-  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme);
+  const registry = await getCourseThemeRegistry();
+  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme, registry);
 
     return {
       courseCodeId,
@@ -144,7 +161,8 @@ const getUserBookBaseUrl = async(levelTheme, baseLanguage, contentLanguage, emai
 
   const user = await LocalStorageService.getCachedObject(localStorageKey);
 
-  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme);
+  const registry = await getCourseThemeRegistry();
+  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme, registry);
 
   const tier = utils.getCourseTierFromUserCourses(user?.userCourses, courseCodeId);
 
@@ -158,7 +176,8 @@ const getUserEBookChapterUrl = async(levelTheme, chapterNo, baseLanguage, conten
 
   const user = await LocalStorageService.getCachedObject(localStorageKey);
 
-  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme);
+  const registry = await getCourseThemeRegistry();
+  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme, registry);
 
   const tier = utils.getCourseTierFromUserCourses(user?.userCourses, courseCodeId);
   
@@ -204,7 +223,8 @@ export const upsertUserKnowMeProgress = async (
   }
 
   // 1. Resolve courseCodeId
-  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme);
+  const registry = await getCourseThemeRegistry();
+  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme, registry);
 
   // 2. Upload all files in filesMap (if any)
   const uploadedFileMap = {};
@@ -289,6 +309,15 @@ export const buildStudentKnowMeFileName = async (file, contactId, emailId, class
 };
 
 
+const resolveFacilitadorCourseCodeId = async (courseTheme, emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const userCourses = user?.userCourses;
+  const registry = await getCourseThemeRegistry();
+  const themeCourseCodeIds = registry[courseTheme?.toLowerCase()] || [];
+  const facilitadorCourseCodeId = LrnConfiguration.getFacilitadorCourseCodeIdForTheme(userCourses, themeCourseCodeIds);
+  return facilitadorCourseCodeId;
+};
 
 const LrnManager = {
   getUserCourseProgress,
@@ -296,6 +325,7 @@ const LrnManager = {
   getCourseToken,
   getUserUpperNavigationConfig,
   getAllLanguageOptions,
+  getCourseThemeRegistry,
   getGrammarClasses,
   getCourseProgress,
   getUserCoursesForEnrollment,
@@ -303,7 +333,8 @@ const LrnManager = {
   getUserEBookChapterUrl,
   upsertUserKnowMeProgress,
   upsertKnowMeProfilePicture,
-  buildStudentKnowMeFileName
+  buildStudentKnowMeFileName,
+  resolveFacilitadorCourseCodeId
 };
 
 export default LrnManager;

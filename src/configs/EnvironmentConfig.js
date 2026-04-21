@@ -3,6 +3,7 @@ const commonConfig = {
   IS_NEW_SEARCH_CONFIG_ON: true,
   IS_ENROLLMENT_FEAT_ON: true,
   IS_TO_USE_LOCAL_LANG_COURSES_DATA: false,
+  IS_TO_USE_LOCAL_COURSE_THEME_DATA: false,
   TITULINO_NET_API: process.env.REACT_APP_TITULINO_NET_API || '',
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
 };
@@ -32,6 +33,7 @@ const local = {
   IS_LANGUAGE_PICKER_ENABLED:true,
   IS_TO_DISPLAY_PROGRESS_DASHBOARD: true,
   IS_TO_USE_LOCAL_LANG_COURSES_DATA: true,
+  IS_TO_USE_LOCAL_COURSE_THEME_DATA: true,
   ENVIROMENT: 'local'
 };
 

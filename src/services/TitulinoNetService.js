@@ -370,6 +370,35 @@ export const upsertStudentKnowMeClassFiles = async (token, filesToSubmit, whoCal
 
 
 
+export const uploadCourseCoverImage = async (token, file, whoCalledMe) => {
+  if (!file || !token) return null;
+
+  const upsertUrl = `${titulinoNetEnrollmentApiUri}/course/cover/upload`;
+
+  const formData = new FormData();
+  formData.append("File", file);
+
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  };
+
+  try {
+    const response = await fetch(upsertUrl, requestOptions);
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+    }
+    const apiResult = await response.json();
+    return apiResult;
+  } catch (error) {
+    console.error(`Error in uploadCourseCoverImage (${whoCalledMe}):`, error);
+    return null;
+  }
+};
+
 const TitulinoNetService = {
   getRegistrationToken,
   upsertEnrollment,
@@ -379,7 +408,8 @@ const TitulinoNetService = {
   upsertStudentKnowMeProfileImage,
   getContactEnrolleeKnowMeProfileImage,
   upsertStudentKnowMeClassFiles,
-  getContactEnrolleesKnowMeProfileImages
+  getContactEnrolleesKnowMeProfileImages,
+  uploadCourseCoverImage
 };
 
 export default TitulinoNetService;

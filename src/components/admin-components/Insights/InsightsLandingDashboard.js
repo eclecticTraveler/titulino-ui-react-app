@@ -160,39 +160,39 @@ const InsightsLandingDashboard = (props) => {
   const titleOfEnrollment = 'insights';
   const locale = true;
 
-  const renderOverviewGrid = (data) => (
+  const renderOverviewGrid = (overviewData) => (
 	<>
 		<Row gutter={16}>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.totalEnrollees"} count={data?.totalEnrollees}/>
+			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.totalEnrollees"} count={overviewData?.totalEnrollees}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.totalMalesVsFemales"} graphData={data?.genderCount} passedValue={"count"} passedType={"sex"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.totalMalesVsFemales"} graphData={overviewData?.genderCount} passedValue={"count"} passedType={"sex"}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<PieGraph localizedTitle={"admin.dashboard.insights.overview.genderPercentages"} graphData={data?.genderPercentages} passedValue={"percentage"} passedType={"sex"}/>
+			<PieGraph localizedTitle={"admin.dashboard.insights.overview.genderPercentages"} graphData={overviewData?.genderPercentages} passedValue={"percentage"} passedType={"sex"}/>
 			</Col>
 
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={data?.averageGeneralAge} />
+			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={overviewData?.averageGeneralAge} />
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.avgMaleVsFemaleAge"} firstCount={data?.averageMaleAge} secondCount={data?.averageFemaleAge} />
+			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.avgMaleVsFemaleAge"} firstCount={overviewData?.averageMaleAge} secondCount={overviewData?.averageFemaleAge} />
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.agesGroups"} graphData={data?.agesPercentages} passedValue={"count"} passedType={"label"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.agesGroups"} graphData={overviewData?.agesPercentages} passedValue={"count"} passedType={"label"}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.newVsReturning"} firstCount={data?.totalNewEnrollees} secondCount={data?.totalReturningEnrollees}/>
+			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.newVsReturning"} firstCount={overviewData?.totalNewEnrollees} secondCount={overviewData?.totalReturningEnrollees}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={data?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={overviewData?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<ColumnBar localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={data?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""}/>
+			<ColumnBar localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={overviewData?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={data?.enrolleeProficiencyGroups} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
+			<BarGraph localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={overviewData?.enrolleeProficiencyGroups} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
 			</Col>
 		</Row>
 	</>
@@ -433,7 +433,7 @@ const InsightsLandingDashboard = (props) => {
         }
       >
         <h1 style={{ marginBottom: '10px', textAlign: 'left' }}>
-          Enrollee Insights
+          {setLocale(locale, 'admin.dashboard.insights.title')}
         </h1>
       </Card>
 

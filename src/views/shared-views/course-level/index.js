@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
-import { geteBookUrl, getUserEBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse }  from 'redux/actions/Lrn';
+import { geteBookUrl, getUserEBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse, onResolvingFacilitadorForThemeCourse }  from 'redux/actions/Lrn';
 import { onLoadingAuthenticatedLandingPage, onAuthenticatingWithSSO } from 'redux/actions/Grant';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
@@ -11,6 +11,7 @@ import utils from 'utils';
 import Loading from 'components/shared-components/Loading';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import { env } from 'configs/EnvironmentConfig';
+import FacilitatorsLandingDashboard from 'components/admin-components/Insights/FacilitatorsLandingDashboard';
 
 class CourseLevel extends Component {
 
@@ -31,6 +32,7 @@ class CourseLevel extends Component {
 
         if(this.props?.user?.emailId){
             this.props.onVerifyingIfUserIsEnrolledInCourse(pathTheme?.courseTheme, this.props.user?.emailId);
+            this.props.onResolvingFacilitadorForThemeCourse(pathTheme?.courseTheme, this.props.user?.emailId);
             this.props.getUserEBookUrl(pathInfo?.levelNo, this.props.baseLanguage?.localeCode, this.props.contentLanguage, this.props.user?.emailId);
         }
 
@@ -51,6 +53,7 @@ class CourseLevel extends Component {
         const tokenChanged = this.props.token !== prevProps.token;
         const pathChanged = this.props.location?.pathname !== prevProps?.location?.pathname;
         const isAuthenticated = !!this.props.token;
+        const userCoursesChanged = this.props.user?.userCourses !== prevProps.user?.userCourses;
 
         if (isAuthenticated && pathChanged) {
             // Logged in + navigating around
@@ -59,9 +62,18 @@ class CourseLevel extends Component {
             // Not logged in, either signed out or navigating
             this.loadPublicCourseLandingData();
         }
+
+        // Re-resolve facilitador when user profile arrives or path changes
+        if (userCoursesChanged || pathChanged) {
+            const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname);
+            if (this.props?.user?.emailId) {
+                this.props.onResolvingFacilitadorForThemeCourse(pathTheme?.courseTheme, this.props.user?.emailId);
+            }
+        }
       }
 
     render() {
+        console.log("this.props.facilitadorCourseCodeId", this.props.facilitadorCourseCodeId);
         if(this.props.token){
             if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
                 return (
@@ -74,6 +86,16 @@ class CourseLevel extends Component {
                 if (this.props.userIsEnrolledInCourse === true) {
 
                     if(env.IS_TO_DISPLAY_PROGRESS_DASHBOARD) {
+                        if (this.props.facilitadorCourseCodeId) {
+                            return (
+                                <div id="unathenticated-landing-page-margin">
+                                    <FacilitatorsLandingDashboard
+                                        courseCodeId={this.props.facilitadorCourseCodeId}
+                                        showMyProgressTab={true}
+                                    />
+                                </div>
+                            );
+                        }
                         return (
                             <div id="unathenticated-landing-page-margin">
                                 <ProgressDashboardByEmailV4 />
@@ -147,17 +169,18 @@ function mapDispatchToProps(dispatch){
         onLoadingAuthenticatedLandingPage: onLoadingAuthenticatedLandingPage,
         onAuthenticatingWithSSO: onAuthenticatingWithSSO,
         onVerifyingIfUserIsEnrolledInCourse: onVerifyingIfUserIsEnrolledInCourse,
+        onResolvingFacilitadorForThemeCourse: onResolvingFacilitadorForThemeCourse,
         getUserEBookUrl: getUserEBookUrl,
         geteBookUrl: geteBookUrl
 	}, dispatch)
 }
 
 const mapStateToProps = ({lrn, theme, grant, auth}) => {
-	const { baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse } = lrn;
+	const { baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse, facilitadorCourseCodeId } = lrn;
     const { locale, direction, contentLanguage } =  theme;
     const { user } = grant;
     const { token } = auth; 
-	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse }
+	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse, facilitadorCourseCodeId }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);

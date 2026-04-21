@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Checkbox, Select, Button, Divider, Row, Col, Card, Tag } from "antd";
+import { Checkbox, Select, Button, Divider, Row, Col, Card, Tag, Tooltip, message } from "antd";
+import { CopyOutlined } from '@ant-design/icons';
 import { useUserProgressLogic } from "hooks/useUserProgressLogic";
 import IntlMessage from "components/util-components/IntlMessage";
 
@@ -15,7 +16,8 @@ const AdminProgressEditable = ({
   courseCodeId,
   userProficiency,
   onSubmit,
-  onEmailChange
+  onEmailChange,
+  onCopyEmail
 }) => {
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
@@ -102,6 +104,14 @@ const AdminProgressEditable = ({
       title={
         <span>
           {setLocale(locale, "resources.myprogress.progressFor")} {selectedEmail ?? "-"}
+          {selectedEmail && onCopyEmail && (
+            <Tooltip title="Copy email">
+              <CopyOutlined
+                style={{ marginLeft: 8, cursor: 'pointer', color: '#1677ff' }}
+                onClick={() => { onCopyEmail(selectedEmail); message.success('Email copied!'); }}
+              />
+            </Tooltip>
+          )}
         </span>
       }
     >

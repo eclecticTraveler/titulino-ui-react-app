@@ -193,6 +193,39 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
     return AdminInsights.handleEnrolleeProgressListConvertor(extracted, locationType, progressMap, courseConfiguration, courseCodeId);
 };
 
+export const getFacilitadorEnrolleesCourseProgressDashboard = async (courseCodeId, emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
+
+  if (!token) {
+    console.warn("No token found for course");
+    return { tableData: [], columns: [] };
+  }
+
+  const progressRows =
+    await TitulinoAuthService.getCourseProgress(
+      courseCodeId,
+      token,
+      "getFacilitadorEnrolleesCourseProgressDashboard"
+    );
+
+  const enrolleeList = await TitulinoRestService.getEnrolleeGeneralListByCourseCodeId(
+    courseCodeId,
+    "getFacilitadorEnrolleesCourseProgressDashboard"
+  );
+
+  const progressMap = progressRows?.reduce((acc, row) => {
+    if (!acc[row.ContactInternalId]) acc[row.ContactInternalId] = [];
+    acc[row.ContactInternalId].push(row);
+    return acc;
+  }, {}) ?? {};
+
+  const courseConfiguration = await TitulinoRestService.getRequestedCourseStructureByCourseCodeId(courseCodeId);
+
+  return AdminInsights.handleFacilitadorEnrolleeListConvertor(enrolleeList, progressMap, courseConfiguration, courseCodeId);
+};
+
 const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {
   const localStorageKey = `UserProfile_${emailId}`;  
   const user = await LocalStorageService.getCachedObject(localStorageKey);
@@ -232,6 +265,30 @@ const upsertAdminEnrolleeCourseProgress = async (progressRecords, courseCodeId, 
   }
 }
 
+export const getFacilitadorDrillDownDemographics = async (courseCodeId, countryId, emailId) => {
+  const [generalDivisionData, progressDivisionData] = await Promise.all([
+    getDemographicInfoAdminDashboard(courseCodeId, countryId, countryId),
+    getCourseProgressDemographicInfoAdminDashboard(courseCodeId, countryId, countryId, emailId)
+  ]);
+
+  const mapJson = progressDivisionData?.mapJson || generalDivisionData?.mapJson;
+  const generalDivisions = generalDivisionData?.transformedArrays?.transformedResidencyArray || [];
+  const progressDivisions = progressDivisionData?.transformedArrays?.transformedResidencyArray || [];
+  const progressNames = new Set(progressDivisions.map(d => d.name));
+  const noProgressColor = '#B0BEC5';
+
+  const mergedDivisions = generalDivisions.map(entry => {
+    const hasProgress = progressNames.has(entry.name);
+    const progressEntry = progressDivisions.find(p => p.name === entry.name);
+    return {
+      ...entry,
+      color: hasProgress ? (progressEntry?.color || entry.color) : noProgressColor
+    };
+  });
+
+  return { mapJson, mergedDivisions };
+};
+
 const AnalyticsManager = {
   getAllCourses,
   getLocationTypesForInsights,
@@ -243,7 +300,9 @@ const AnalyticsManager = {
   getEnrolleeInfoAdminDashboard,
   getEnrolleeKnowMeProfilePictureForCourse,
   getEnrolleesCourseProgressAdminDashboard,
-  upsertAdminEnrolleeCourseProgress
+  getFacilitadorEnrolleesCourseProgressDashboard,
+  upsertAdminEnrolleeCourseProgress,
+  getFacilitadorDrillDownDemographics
 };
 
 export default AnalyticsManager;

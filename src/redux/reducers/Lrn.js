@@ -47,7 +47,8 @@ import {
   ON_FETCHING_USER_AUTHENTICATED_PROGRESS_FOR_COURSE,
   ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
   ON_USER_SELECTING_CONTENT_LANGUAGE,
-  ON_UPSERTING_KNOW_ME_BY_CHAPTER
+  ON_UPSERTING_KNOW_ME_BY_CHAPTER,
+  ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE
 } from "../constants/Lrn";
 
 const initState = {
@@ -69,6 +70,11 @@ const lrn = (state = initState, action) => {
       return {
         ...state,
         userIsEnrolledInCourse: action.userIsEnrolledInCourse
+      }
+    case ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE:
+      return {
+        ...state,
+        facilitadorCourseCodeId: action.facilitadorCourseCodeId
       }
     case ON_MODAL_INTERACTION:
       return {
