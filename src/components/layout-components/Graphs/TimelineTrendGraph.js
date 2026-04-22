@@ -68,6 +68,21 @@ const TimelineTrendGraph = (props) => {
   }
 
   const hasSeries = !!seriesField;
+  const tooltipBackgroundColor = isDark ? 'rgba(15, 23, 42, 0.96)' : '#ffffff';
+  const tooltipTextColor = isDark ? '#f8fafc' : '#1f2937';
+  const tooltipMutedColor = isDark ? '#cbd5e1' : '#666666';
+  const tooltipBorderColor = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.08)';
+  const tooltipBoxShadow = isDark ? '0 8px 20px rgba(0, 0, 0, 0.35)' : '0 8px 20px rgba(0, 0, 0, 0.12)';
+  const tooltipStyle = `
+    min-width: 180px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: ${tooltipBackgroundColor};
+    color: ${tooltipTextColor};
+    border: 1px solid ${tooltipBorderColor};
+    box-shadow: ${tooltipBoxShadow};
+    line-height: 1.45;
+  `;
 
   const config = {
     data: chartData,
@@ -114,16 +129,16 @@ const TimelineTrendGraph = (props) => {
 
           if (hasSeries) {
             return `
-              <div>
+              <div style="${tooltipStyle}">
                 <strong>${escapeHtml(title)}</strong><br/>
                 <span>${escapeHtml(courseTitle)}</span><br/>
-                ${courseCodeId ? `<span style="color:#888">${escapeHtml(courseCodeId)}</span><br/>` : ''}
+                ${courseCodeId ? `<span style="color:${tooltipMutedColor}">${escapeHtml(courseCodeId)}</span><br/>` : ''}
                 <span>${escapeHtml(item?.value)} activity records</span>
               </div>
             `;
           }
 
-          return `<div><strong>${escapeHtml(title)}</strong><br/>${escapeHtml(item?.name)}: ${escapeHtml(item?.value)}</div>`;
+          return `<div style="${tooltipStyle}"><strong>${escapeHtml(title)}</strong><br/>${escapeHtml(item?.name)}: ${escapeHtml(item?.value)}</div>`;
         },
       },
     },

@@ -7,11 +7,12 @@ const DoubleCounterDisplayV2 = ({ localizedTitle, firstCount, secondCount, first
   const countTwo = secondCount || 0;
   const title = localizedTitle || "unavailable";
   const percentage = countOne > 0 ? Math.min(Math.round((countTwo / countOne) * 100), 100) : 0;
+  const shouldStackCounts = Math.max(String(countOne).length, String(countTwo).length) >= 3;
 
   return (
     <div>
       <Card variant="outlined" title={<IntlMessage id={title} />}>
-        <div className="double-count-card-v2">
+        <div className={`double-count-card-v2${shouldStackCounts ? ' double-count-card-v2-stacked' : ''}`}>
           <div className="double-count-card-v2-stat">
             <div className="double-count-card-v2-number double-count-card-v2-first">{countOne}</div>
             <div className="double-count-card-v2-label"><IntlMessage id={firstLabelKey} /></div>

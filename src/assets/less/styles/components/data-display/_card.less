@@ -168,6 +168,27 @@
     }
 }
 
+.double-count-card-v2-stacked {
+    flex-direction: column;
+    gap: 18px;
+    padding-top: 16px;
+
+    .double-count-card-v2-stat {
+        width: 100%;
+    }
+
+    .double-count-card-v2-number {
+        font-size: clamp(64px, 10vw, 104px);
+    }
+
+    .double-count-card-v2-divider {
+        width: 72%;
+        height: 1px;
+        align-self: center;
+        margin: 0;
+    }
+}
+
 .double-count-card-v2-progress {
     display: flex;
     align-items: center;
@@ -253,7 +274,6 @@
     object-fit: cover;
     border-radius: 5px;
   }
-  
   @media (max-width: 480px) {
     .responsive-image {
         max-width: 100%; /* Prevents overflow */
@@ -264,4 +284,3 @@
         border-radius: 5px;
     }
   }
-  
