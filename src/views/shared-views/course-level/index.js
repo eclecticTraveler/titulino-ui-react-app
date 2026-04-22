@@ -75,6 +75,7 @@ class CourseLevel extends Component {
     render() {
         const isGlobalUser = this.props.user?.isGlobalAccessUser;
         const isFacilitatorOfCourse = !!this.props.facilitadorCourseCodeId;
+        console.log("isGlobalUser", isGlobalUser, "isFacilitatorOfCourse", isFacilitatorOfCourse);
         if(this.props.token){
             if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
                 return (
