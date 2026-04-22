@@ -74,8 +74,8 @@ class CourseLevel extends Component {
 
     render() {
         const isGlobalUser = this.props.user?.isGlobalAccessUser;
-        const isFacilitatorOfCourse = !!this.props.facilitadorCourseCodeId;
-        console.log("isGlobalUser", isGlobalUser, "isFacilitatorOfCourse", isFacilitatorOfCourse);
+        const facilitatorDashboardCourseCodeId = this.props.facilitadorCourseCodeId || (isGlobalUser ? this.props.currentCourseCodeId : null);
+        const isFacilitatorOfCourse = !!facilitatorDashboardCourseCodeId;
         if(this.props.token){
             if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
                 return (
@@ -88,11 +88,11 @@ class CourseLevel extends Component {
                 if (this.props.userIsEnrolledInCourse === true) {
 
                     if(env.IS_TO_DISPLAY_PROGRESS_DASHBOARD) {
-                        if (isFacilitatorOfCourse || isGlobalUser) {
+                        if (isFacilitatorOfCourse) {
                             return (
                                 <div id="unathenticated-landing-page-margin">
                                     <FacilitatorsLandingDashboard
-                                        courseCodeId={this.props.facilitadorCourseCodeId}
+                                        courseCodeId={facilitatorDashboardCourseCodeId}
                                         showMyProgressTab={true}
                                         ebookUrl={this.props.ebookUrl}
                                     />
@@ -179,11 +179,11 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn, theme, grant, auth}) => {
-	const { baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse, facilitadorCourseCodeId } = lrn;
+	const { baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse, facilitadorCourseCodeId, currentCourseCodeId } = lrn;
     const { locale, direction, contentLanguage } =  theme;
     const { user } = grant;
     const { token } = auth; 
-	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse, facilitadorCourseCodeId }
+	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse, facilitadorCourseCodeId, currentCourseCodeId }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);

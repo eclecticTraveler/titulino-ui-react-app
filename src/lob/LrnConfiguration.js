@@ -29,12 +29,15 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme, registry) => {
 
 /**
  * Given the userCourses object and an array of courseCodeIds for a theme,
- * find which courseCodeId the user is a facilitator/facilitador for.
+ * find which courseCodeId the user can administer for a theme.
+ * Global access users bypass the facilitator role-name check because the
+ * backend intentionally stamps their global role onto each course permission.
  * @param {Object} userCourses - keyed by courseCodeId
  * @param {string[]} courseCodeIds - from the theme registry
+ * @param {boolean} isGlobalAccessUser
  * @returns {string|null}
  */
-export const getFacilitadorCourseCodeIdForTheme = (userCourses, courseCodeIds) => {
+export const getFacilitadorCourseCodeIdForTheme = (userCourses, courseCodeIds, isGlobalAccessUser = false) => {
   if (!userCourses || typeof userCourses !== 'object') {
     console.log('[LrnConfiguration] getFacilitadorCourseCodeIdForTheme: userCourses is falsy or not an object');
     return null;
@@ -44,11 +47,14 @@ export const getFacilitadorCourseCodeIdForTheme = (userCourses, courseCodeIds) =
     return null;
   }
 
+  if (isGlobalAccessUser) {
+    return courseCodeIds.find(courseCodeId => userCourses[courseCodeId]) || null;
+  }
+
   for (const courseCodeId of courseCodeIds) {
     const course = userCourses[courseCodeId];
     const role = course?.userRoleIdForTheCourse;
     const isFacilitator = typeof role === 'string' && role.toLowerCase().includes('facilitat');
-    console.log('[LrnConfiguration] checking:', { courseCodeId, role, isFacilitator });
     if (isFacilitator) {
       return courseCodeId;
     }
