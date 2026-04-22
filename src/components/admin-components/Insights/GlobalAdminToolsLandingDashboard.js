@@ -506,6 +506,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             trendData={trendData}
             seriesField="course"
             hideCard
+            chartSpacingTop={12}
+            legendPosition="top-right"
             emptyDescriptionKey="admin.tools.progress.noActivity"
           />
         )}
