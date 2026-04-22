@@ -284,15 +284,16 @@ const proficiencyMaps = {
   'ad': ['green', 'Advanced']
 };
 
-export const handleEnrolleeListConvertor = async (data, locationType) => {
+export const handleEnrolleeListConvertor = async (data, locationType, courseCodeId) => {
 
-  if (!data) return { tableData: [], columns: [] };
+  if (!data) return { tableData: [], columns: [], enrollmentDates: [] };
   if (!Array.isArray(data)) {
     console.warn("handleEnrolleeListConvertor expected an array", { locationType, data });
-    return { tableData: [], columns: [] };
+    return { tableData: [], columns: [], enrollmentDates: [] };
   }
 
   const results = [];
+  const enrollmentDates = [];
   const filters = {
     langLevelFilter: new Set(),
     enrolleeIdFilter: new Set(),
@@ -350,6 +351,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
           ...(item?.CoursesHistory?.map(c => c.CourseCodeId) || []),
           ...(item?.UserCourseRoles?.map(c => c.CourseCodeId) || [])
         ].map(courseId => {
+
           const tierInfo = item?.ContactCourseTiers?.find(t => t.CourseCodeId === courseId);
           let tierTag;
           if (!tierInfo || !tierInfo.TierId) {
@@ -421,6 +423,14 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
   };
 
   await Promise.all(data.map(processData));
+
+  // Extract enrollment dates from UserCourseRoles
+  data.forEach((item) => {
+    const role = courseCodeId
+      ? item?.UserCourseRoles?.find(r => r.CourseCodeId === courseCodeId)
+      : item?.UserCourseRoles?.[0];
+    if (role?.CreatedAt) enrollmentDates.push(role.CreatedAt);
+  });
 
   const columns = [
       {
@@ -505,6 +515,7 @@ export const handleEnrolleeListConvertor = async (data, locationType) => {
   return {
     tableData: results,
     columns: columns,
+    enrollmentDates: enrollmentDates,
     expandable: {
       expandedRowRender: (record) => {
         // Remove duplicate courses

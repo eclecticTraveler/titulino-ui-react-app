@@ -5,7 +5,7 @@ import { Row, Col, Card, Tabs, Input, message } from 'antd';
 import { useIntl } from 'react-intl';
 import IntlMessage from 'components/util-components/IntlMessage';
 import DropdownInsightSelection from './DropdownInsightSelection';
-import { faPersonPraying, faPieChart, faMapPin, faPersonHiking } from '@fortawesome/free-solid-svg-icons';
+import { faPersonPraying, faPieChart, faMapPin, faPersonHiking, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard, onSubmittingAdminEnrolleeProgress, onLoadingAllDashboardContents } from "redux/actions/Analytics";
@@ -17,6 +17,7 @@ import ColumnBar from 'components/layout-components/Graphs/ColumnGraph';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
+import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 
 const InsightsLandingDashboard = (props) => {
@@ -349,6 +350,16 @@ const InsightsLandingDashboard = (props) => {
             </span>
           ),
           content: renderDemographicTab(demographicDashboardData)
+        },
+        {
+          key: 'general-trends',
+          tab: (
+            <span>
+              <IconAdapter icon={faChartLine} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+              {setLocale(locale, "admin.dashboard.insights.trends")}
+            </span>
+          ),
+          content: <TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.enrollmentOverTime" dates={enrolleDashboardData?.enrollmentDates} />
         }
       ],
       progress: [
@@ -381,6 +392,16 @@ const InsightsLandingDashboard = (props) => {
             </span>
           ),
           content: renderDemographicTab(progressDemographicDashboardData ?? demographicDashboardData)
+        },
+        {
+          key: 'progress-trends',
+          tab: (
+            <span>
+              <IconAdapter icon={faChartLine} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+              {setLocale(locale, "admin.dashboard.insights.trends")}
+            </span>
+          ),
+          content: <TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.progressOverTime" dates={enrolleesCourseProgressData?.progressDates} lineColor="#e35aff" />
         }
       ]
     };

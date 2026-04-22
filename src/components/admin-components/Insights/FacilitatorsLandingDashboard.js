@@ -4,18 +4,19 @@ import { bindActionCreators } from "redux";
 import { Row, Col, Card, Tabs, Input, Select, message } from 'antd';
 import { useIntl } from 'react-intl';
 import IntlMessage from 'components/util-components/IntlMessage';
-import { faPieChart, faMapPin, faPersonHiking, faListCheck } from '@fortawesome/free-solid-svg-icons';
+import { faPieChart, faMapPin, faPersonHiking, faListCheck, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { onLoadingFacilitadorDashboardContents, onSubmittingAdminEnrolleeProgress, onLoadingFacilitadorDrillDownDemographics } from "redux/actions/Analytics";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
-import DoubleCounterDisplay from 'components/layout-components/DoubleCounterDisplay';
+import DoubleCounterDisplayV2 from 'components/layout-components/DoubleCounterDisplayV2';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
 import PieGraph from 'components/layout-components/Graphs/PieGraph';
 import ColumnBar from 'components/layout-components/Graphs/ColumnGraph';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
+import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import Flag from 'react-world-flags';
@@ -56,6 +57,7 @@ const FacilitatorsLandingDashboard = (props) => {
   // Load dashboard data on mount
   useEffect(() => {
     if (courseCodeId && user?.emailId) {
+      console.log('[FacilitatorsLandingDashboard] Loading dashboard contents for:', { courseCodeId, emailId: user.emailId });
       setLoading(true);
       onLoadingFacilitadorDashboardContents(courseCodeId, user.emailId)
         ?.finally(() => setLoading(false));
@@ -65,6 +67,7 @@ const FacilitatorsLandingDashboard = (props) => {
 
   // Sync combined table when data changes
   useEffect(() => {
+    console.log('[FacilitatorsLandingDashboard] facilitadorEnrolleeData updated:', facilitadorEnrolleeData);
     if (facilitadorEnrolleeData?.tableData) {
       setFilteredData(facilitadorEnrolleeData.tableData);
     }
@@ -143,14 +146,17 @@ const FacilitatorsLandingDashboard = (props) => {
     }));
   };
 
-  if (user?.emailId && !user?.yearOfBirth) {
-    return (
-      <div id="unathenticated-landing-page-margin">
-        <EmailYearSearchForm />
-      </div>
-    );
-  }
+    if (user?.emailId && !user?.yearOfBirth) {
+      return (
+        <div id="unathenticated-landing-page-margin">
+          <EmailYearSearchForm />
+        </div>
+      );
+    }
 
+    // Log progressDates and full facilitadorEnrolleeData for debugging
+    console.log('[FacilitatorsLandingDashboard] facilitadorEnrolleeData:', facilitadorEnrolleeData);
+    console.log('[FacilitatorsLandingDashboard] facilitadorEnrolleeData.progressDates:', facilitadorEnrolleeData?.progressDates);
   // ─── Tab 1: General View ────────────────────────────────
   const renderOverview = () => {
     const generalData = overviewDashboardData;
@@ -158,10 +164,12 @@ const FacilitatorsLandingDashboard = (props) => {
     return (
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={24} md={24} lg={8}>
-          <DoubleCounterDisplay
+          <DoubleCounterDisplayV2
             localizedTitle={"facilitador.dashboard.enrolledVsProgressing"}
             firstCount={generalData?.totalEnrollees}
             secondCount={progressData?.totalEnrollees}
+            firstLabelKey={"facilitador.dashboard.totalEnrolled"}
+            secondLabelKey={"facilitador.dashboard.totalWithProgress"}
           />
         </Col>
         <Col xs={24} sm={24} md={24} lg={8}>
@@ -299,6 +307,16 @@ const FacilitatorsLandingDashboard = (props) => {
         </span>
       ),
       children: renderDemographics()
+    },
+    {
+      key: 'trends',
+      label: (
+        <span>
+          <IconAdapter icon={faChartLine} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+          {setLocale(locale, 'facilitador.dashboard.trends')}
+        </span>
+      ),
+      children: <TimelineTrendGraph localizedTitle="facilitador.dashboard.trends.progressOverTime" dates={facilitadorEnrolleeData?.progressDates} lineColor="#e35aff" />
     },
     ...(showMyProgressTab ? [{
       key: 'myProgress',

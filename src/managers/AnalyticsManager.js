@@ -136,7 +136,7 @@ export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, 
   else if (locationType?.toLowerCase() === "residency") extracted = enrolleeList?.Residency;
   else if (locationType?.toLowerCase() === "birth") extracted = enrolleeList?.Birth;
 
-  return await AdminInsights.handleEnrolleeListConvertor(extracted, locationType);
+  return await AdminInsights.handleEnrolleeListConvertor(extracted, locationType, courseCodeId);
 };
 
 export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
@@ -148,7 +148,7 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
     console.warn("No token found for course");
     return { tableData: [], columns: [] };
   }
-
+ console.log("BEFOREEE course progress rows:");
   const progressRows =
     await TitulinoAuthService.getCourseProgress(
       courseCodeId,
@@ -156,7 +156,7 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
       "getEnrolleesCourseProgressAdminDashboard"
     );
 
-    // console.log("Fetched course progress rows:", progressRows);
+    console.log("Fetched course progress rows:", progressRows);
 
       // 3️⃣ Fetch enrollee list EXACTLY like getEnrolleeInfoAdminDashboard does
   const isAll = locationType?.toLowerCase() === "all";
@@ -190,7 +190,9 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
     const courseConfiguration = await TitulinoRestService.getRequestedCourseStructureByCourseCodeId(courseCodeId);
 
     // 5️⃣ Build final table model    
-    return AdminInsights.handleEnrolleeProgressListConvertor(extracted, locationType, progressMap, courseConfiguration, courseCodeId);
+    const result = await AdminInsights.handleEnrolleeProgressListConvertor(extracted, locationType, progressMap, courseConfiguration, courseCodeId);
+    result.progressDates = progressRows?.map(r => r.CreatedAt).filter(Boolean) || [];
+    return result;
 };
 
 export const getFacilitadorEnrolleesCourseProgressDashboard = async (courseCodeId, emailId) => {
@@ -215,15 +217,32 @@ export const getFacilitadorEnrolleesCourseProgressDashboard = async (courseCodeI
     "getFacilitadorEnrolleesCourseProgressDashboard"
   );
 
+  // Debug: Log ContactInternalId samples from both sources
+  console.log('[Manager] enrolleeList ContactInternalId sample:', enrolleeList.slice(0,5).map(e => e.ContactInternalId));
+  console.log('[Manager] progressRows ContactInternalId sample:', progressRows.slice(0,5).map(r => r.ContactInternalId));
+  console.log('[Manager] progressRows length:', progressRows.length);
+
+  // Normalize IDs if needed (e.g., trim, lowercase)
+  const normalizeId = id => (typeof id === 'string' ? id.trim().toLowerCase() : id);
+
   const progressMap = progressRows?.reduce((acc, row) => {
-    if (!acc[row.ContactInternalId]) acc[row.ContactInternalId] = [];
-    acc[row.ContactInternalId].push(row);
+    const normId = normalizeId(row.ContactInternalId);
+    if (!acc[normId]) acc[normId] = [];
+    acc[normId].push(row);
     return acc;
   }, {}) ?? {};
 
+  // Also normalize enrollee ContactInternalId before passing to LOB
+  const normalizedEnrolleeList = enrolleeList.map(e => ({
+    ...e,
+    ContactInternalId: normalizeId(e.ContactInternalId)
+  }));
+
   const courseConfiguration = await TitulinoRestService.getRequestedCourseStructureByCourseCodeId(courseCodeId);
 
-  return AdminInsights.handleFacilitadorEnrolleeListConvertor(enrolleeList, progressMap, courseConfiguration, courseCodeId);
+  const result = await AdminInsights.handleFacilitadorEnrolleeListConvertor(normalizedEnrolleeList, progressMap, courseConfiguration, courseCodeId);
+  result.progressDates = progressRows?.map(r => r.CreatedAt).filter(Boolean) || [];
+  return result;
 };
 
 const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {
