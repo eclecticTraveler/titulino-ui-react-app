@@ -73,7 +73,8 @@ class CourseLevel extends Component {
       }
 
     render() {
-        console.log("this.props.facilitadorCourseCodeId", this.props.facilitadorCourseCodeId);
+        const isGlobalUser = this.props.user?.isGlobalAccessUser;
+        const isFacilitatorOfCourse = !!this.props.facilitadorCourseCodeId;
         if(this.props.token){
             if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
                 return (
@@ -86,12 +87,13 @@ class CourseLevel extends Component {
                 if (this.props.userIsEnrolledInCourse === true) {
 
                     if(env.IS_TO_DISPLAY_PROGRESS_DASHBOARD) {
-                        if (this.props.facilitadorCourseCodeId) {
+                        if (isFacilitatorOfCourse || isGlobalUser) {
                             return (
                                 <div id="unathenticated-landing-page-margin">
                                     <FacilitatorsLandingDashboard
                                         courseCodeId={this.props.facilitadorCourseCodeId}
                                         showMyProgressTab={true}
+                                        ebookUrl={this.props.ebookUrl}
                                     />
                                 </div>
                             );

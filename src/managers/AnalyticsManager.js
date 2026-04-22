@@ -217,11 +217,6 @@ export const getFacilitadorEnrolleesCourseProgressDashboard = async (courseCodeI
     "getFacilitadorEnrolleesCourseProgressDashboard"
   );
 
-  // Debug: Log ContactInternalId samples from both sources
-  console.log('[Manager] enrolleeList ContactInternalId sample:', enrolleeList.slice(0,5).map(e => e.ContactInternalId));
-  console.log('[Manager] progressRows ContactInternalId sample:', progressRows.slice(0,5).map(r => r.ContactInternalId));
-  console.log('[Manager] progressRows length:', progressRows.length);
-
   // Normalize IDs if needed (e.g., trim, lowercase)
   const normalizeId = id => (typeof id === 'string' ? id.trim().toLowerCase() : id);
 
