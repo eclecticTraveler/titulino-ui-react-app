@@ -2,11 +2,17 @@ import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoAuthService from "services/TitulinoAuthService";
 import LocalStorageService from "services/LocalStorageService";
 import AdminInsights from "lob/AdminInsights";
+import StudentProgress from "lob/StudentProgress";
+import utils from 'utils';
 
 const getTokenFromEmail = async (emailId) => {
   const user = await LocalStorageService.getCachedObject(`UserProfile_${emailId}`);
   return user?.innerToken || null;
 };
+
+const normalizeIdentifier = (value) => (
+  value == null ? '' : String(value).trim().toLowerCase()
+);
 
 export const initAdminTools = async (emailId) => {
   const token = await getTokenFromEmail(emailId);
@@ -41,11 +47,54 @@ export const upsertCourse = async (courseData, adminEmailId) => {
   return TitulinoAuthService.upsertCourse(courseData, token, 'AdminToolsManager');
 };
 
+export const getContactCourseProgressActivity = async (contactInternalId, courseIds = [], emailId, contactEmails = []) => {
+  const adminUser = await LocalStorageService.getCachedObject(`UserProfile_${emailId}`);
+  const uniqueCourseIds = Array.from(new Set((courseIds || []).filter(Boolean)));
+
+  if (!adminUser || !contactInternalId || uniqueCourseIds.length === 0) {
+    return { contactInternalId, courseIds: uniqueCourseIds, rows: [], progressActivityTrendData: [] };
+  }
+
+  const targetContactId = normalizeIdentifier(contactInternalId);
+  const targetEmails = new Set((contactEmails || []).map(normalizeIdentifier).filter(Boolean));
+
+  const rowsByCourse = await Promise.all(uniqueCourseIds.map(async (courseCodeId) => {
+    const token = utils.getCourseTokenFromUserCourses(adminUser?.userCourses, courseCodeId);
+    if (!token) return [];
+
+    const rows = await TitulinoAuthService.getCourseProgress(
+      courseCodeId,
+      token,
+      'getContactCourseProgressActivity'
+    );
+
+    return (rows || [])
+      .filter(row => (
+        normalizeIdentifier(row?.ContactInternalId) === targetContactId ||
+        targetEmails.has(normalizeIdentifier(row?.EmailId))
+      ))
+      .map(row => ({
+        ...row,
+        CourseCodeId: row?.CourseCodeId || courseCodeId
+      }));
+  }));
+
+  const rows = rowsByCourse.flat();
+
+  return {
+    contactInternalId,
+    courseIds: uniqueCourseIds,
+    rows,
+    progressActivityTrendData: StudentProgress.buildCourseProgressActivityTrendData(rows)
+  };
+};
+
 const AdminToolsManager = {
   initAdminTools,
   assignRoleToCourse,
   assignGlobalRole,
-  upsertCourse
+  upsertCourse,
+  getContactCourseProgressActivity
 };
 
 export default AdminToolsManager;

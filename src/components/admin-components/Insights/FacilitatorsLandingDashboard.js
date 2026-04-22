@@ -5,6 +5,7 @@ import { Row, Col, Card, Tabs, Input, Select, message } from 'antd';
 import { useIntl } from 'react-intl';
 import IntlMessage from 'components/util-components/IntlMessage';
 import { faPieChart, faMapPin, faPersonHiking, faListCheck, faChartLine } from '@fortawesome/free-solid-svg-icons';
+import { faBook } from '@fortawesome/free-solid-svg-icons';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import { onLoadingFacilitadorDashboardContents, onSubmittingAdminEnrolleeProgress, onLoadingFacilitadorDrillDownDemographics } from "redux/actions/Analytics";
@@ -19,6 +20,7 @@ import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
+import InternalIFrame from 'components/layout-components/InternalIFrame';
 import Flag from 'react-world-flags';
 
 const coverUrl = 'https://images.unsplash.com/photo-1561089489-f13d5e730d72?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
@@ -27,6 +29,7 @@ const FacilitatorsLandingDashboard = (props) => {
   const {
     courseCodeId,
     showMyProgressTab,
+    ebookUrl,
     onLoadingFacilitadorDashboardContents,
     onSubmittingAdminEnrolleeProgress,
     onLoadingFacilitadorDrillDownDemographics,
@@ -56,8 +59,7 @@ const FacilitatorsLandingDashboard = (props) => {
 
   // Load dashboard data on mount
   useEffect(() => {
-    if (courseCodeId && user?.emailId) {
-      console.log('[FacilitatorsLandingDashboard] Loading dashboard contents for:', { courseCodeId, emailId: user.emailId });
+    if (courseCodeId && user?.emailId) {      
       setLoading(true);
       onLoadingFacilitadorDashboardContents(courseCodeId, user.emailId)
         ?.finally(() => setLoading(false));
@@ -66,8 +68,7 @@ const FacilitatorsLandingDashboard = (props) => {
   }, [courseCodeId, user?.emailId]);
 
   // Sync combined table when data changes
-  useEffect(() => {
-    console.log('[FacilitatorsLandingDashboard] facilitadorEnrolleeData updated:', facilitadorEnrolleeData);
+  useEffect(() => {    
     if (facilitadorEnrolleeData?.tableData) {
       setFilteredData(facilitadorEnrolleeData.tableData);
     }
@@ -154,9 +155,6 @@ const FacilitatorsLandingDashboard = (props) => {
       );
     }
 
-    // Log progressDates and full facilitadorEnrolleeData for debugging
-    console.log('[FacilitatorsLandingDashboard] facilitadorEnrolleeData:', facilitadorEnrolleeData);
-    console.log('[FacilitatorsLandingDashboard] facilitadorEnrolleeData.progressDates:', facilitadorEnrolleeData?.progressDates);
   // ─── Tab 1: General View ────────────────────────────────
   const renderOverview = () => {
     const generalData = overviewDashboardData;
@@ -327,6 +325,17 @@ const FacilitatorsLandingDashboard = (props) => {
         </span>
       ),
       children: renderMyProgress()
+    }] : []),
+    // eBook tab (always last if ebookUrl is present)
+    ...(ebookUrl ? [{
+      key: 'ebook',
+      label: (
+        <span>
+          <IconAdapter icon={faBook} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+          {setLocale(locale, 'facilitador.dashboard.ebookTab')}
+        </span>
+      ),
+      children: (<div id="unathenticated-landing-page-margin"><InternalIFrame iFrameUrl={ebookUrl} className={"none"} /></div>)
     }] : [])
   ];
 

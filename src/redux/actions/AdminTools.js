@@ -4,7 +4,8 @@ import {
   ON_ASSIGNING_ROLE_TO_COURSE,
   ON_ASSIGNING_GLOBAL_ROLE,
   ON_CLEAR_SELECTED_CONTACT,
-  ON_UPSERTING_COURSE
+  ON_UPSERTING_COURSE,
+  ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY
 } from '../constants/AdminTools';
 
 export const onLoadingAdminToolsInit = async (emailId) => {
@@ -25,6 +26,16 @@ export const onAssigningGlobalRole = async (contactInternalId, roleId, adminEmai
 export const onUpsertingCourse = async (courseDataArray, adminEmailId) => {
   const result = await AdminToolsManager.upsertCourse(courseDataArray, adminEmailId);
   return { type: ON_UPSERTING_COURSE, upsertResult: result };
+};
+
+export const onLoadingContactCourseProgressActivity = async (contactInternalId, courseIds, emailId, contactEmails) => {
+  const contactCourseProgressActivity = await AdminToolsManager.getContactCourseProgressActivity(
+    contactInternalId,
+    courseIds,
+    emailId,
+    contactEmails
+  );
+  return { type: ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY, contactCourseProgressActivity };
 };
 
 export const onClearSelectedContact = () => {

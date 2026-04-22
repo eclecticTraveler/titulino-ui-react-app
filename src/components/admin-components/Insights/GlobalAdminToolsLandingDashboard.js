@@ -3,12 +3,13 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
 import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined } from '@ant-design/icons';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
 import IntlMessage from 'components/util-components/IntlMessage';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
+import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
 import { getGeoMapResource } from 'services/GoogleService';
 import { generateCourseCodeId, buildCourseUpsertPayload, prefillFromTemplate } from 'lob/AdminTools';
@@ -18,7 +19,8 @@ import {
   onAssigningRoleToCourse,
   onAssigningGlobalRole,
   onClearSelectedContact,
-  onUpsertingCourse
+  onUpsertingCourse,
+  onLoadingContactCourseProgressActivity
 } from "redux/actions/AdminTools";
 
 const GlobalAdminToolsLandingDashboard = (props) => {
@@ -32,7 +34,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onAssigningRoleToCourse,
     onAssigningGlobalRole,
     onClearSelectedContact,
-    onUpsertingCourse
+    onUpsertingCourse,
+    onLoadingContactCourseProgressActivity,
+    contactCourseProgressActivity
   } = props;
 
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
@@ -45,6 +49,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [submitting, setSubmitting] = useState(false);
   const [contactTabKey, setContactTabKey] = useState('summary');
   const [geoMaps, setGeoMaps] = useState({ birth: null, residency: null });
+  const [selectedProgressCourseId, setSelectedProgressCourseId] = useState('all');
+  const [contactProgressLoading, setContactProgressLoading] = useState(false);
 
   /* ── Course Management state ── */
   const [courseSearchText, setCourseSearchText] = useState('');
@@ -76,6 +82,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     }
     setContactTabKey('summary');
     setGeoMaps({ birth: null, residency: null });
+    setSelectedProgressCourseId('all');
+    setContactProgressLoading(false);
   }, [selectedContact]);
 
   useEffect(() => {
@@ -136,6 +144,102 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       (c.CourseCodeId || '').toLowerCase().includes(lower)
     ).slice(0, 20);
   }, [courseSearchText, allRawCourses, latestCourses]);
+
+  const selectedContactCourseIds = useMemo(() => {
+    if (!selectedContact) return [];
+
+    const courseIds = [
+      ...(selectedContact.CoursesHistory || []).map(c => c?.CourseCodeId),
+      ...(selectedContact.UserCourseRoles || []).map(r => r?.CourseCodeId)
+    ].filter(Boolean);
+
+    return Array.from(new Set(courseIds));
+  }, [selectedContact]);
+
+  const selectedContactCourseIdsKey = selectedContactCourseIds.join('|');
+
+  const selectedContactCourseLabels = useMemo(() => (
+    selectedContactCourseIds.reduce((labels, courseCodeId) => {
+      const rawCourse = (allRawCourses || []).find(c => c.CourseCodeId === courseCodeId);
+      const contactCourse = (selectedContact?.CoursesHistory || []).find(c => c.CourseCodeId === courseCodeId);
+      labels[courseCodeId] = rawCourse?.CourseDetails?.course || contactCourse?.CourseDetails?.course || courseCodeId;
+      return labels;
+    }, {})
+  ), [selectedContactCourseIds, allRawCourses, selectedContact]);
+
+  const progressCourseOptions = useMemo(() => {
+    const allLabel = intl.formatMessage({ id: 'admin.tools.progress.allCourses' });
+
+    return [
+      {
+        value: 'all',
+        searchText: allLabel,
+        label: (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Avatar size={32} icon={<BookOutlined />} style={{ flexShrink: 0, backgroundColor: '#3e82f7' }} />
+            <div>
+              <strong>{allLabel}</strong>
+              <br />
+              <small style={{ color: '#888' }}>{intl.formatMessage({ id: 'admin.tools.label.courses' })}</small>
+            </div>
+          </div>
+        )
+      },
+      ...selectedContactCourseIds.map(courseCodeId => {
+        const rawCourse = (allRawCourses || []).find(c => c.CourseCodeId === courseCodeId);
+        const contactCourse = (selectedContact?.CoursesHistory || []).find(c => c.CourseCodeId === courseCodeId);
+        const courseDetails = rawCourse?.CourseDetails || contactCourse?.CourseDetails || {};
+        const courseTitle = courseDetails?.course || selectedContactCourseLabels[courseCodeId] || courseCodeId;
+        const targetLanguageId = rawCourse?.TargetLanguageId || contactCourse?.TargetLanguageId;
+        const langInfo = langData.find(l => l.langId === targetLanguageId);
+
+        return {
+          value: courseCodeId,
+          searchText: `${courseTitle} ${courseCodeId}`,
+          label: (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Avatar size={32} src={courseDetails?.imageUrl} icon={<BookOutlined />} style={{ flexShrink: 0 }} />
+              {langInfo?.icon && <Flag code={langInfo.icon} style={{ width: 20, flexShrink: 0 }} />}
+              <div>
+                <strong>{courseTitle}</strong>
+                <br />
+                <small style={{ color: '#888' }}>{courseCodeId}</small>
+              </div>
+            </div>
+          )
+        };
+      })
+    ];
+  }, [intl, selectedContactCourseIds, selectedContactCourseLabels, allRawCourses, selectedContact]);
+
+  useEffect(() => {
+    if (
+      contactTabKey !== 'detailed' ||
+      !selectedContact?.ContactInternalId ||
+      selectedContactCourseIds.length === 0 ||
+      !emailId
+    ) {
+      return;
+    }
+
+    let isActive = true;
+    const contactEmails = (selectedContact.Emails || []).map(e => e?.EmailId).filter(Boolean);
+    setContactProgressLoading(true);
+
+    onLoadingContactCourseProgressActivity(
+      selectedContact.ContactInternalId,
+      selectedContactCourseIds,
+      emailId,
+      contactEmails
+    )?.finally(() => {
+      if (isActive) setContactProgressLoading(false);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactTabKey, selectedContact?.ContactInternalId, selectedContactCourseIdsKey, emailId]);
 
   const createCourseGeneratedId = useMemo(() => {
     if (!courseFormValues.course || !courseFormValues.StartDate) return '';
@@ -360,6 +464,55 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     return <Tabs items={langTabs} size="small" />;
   };
 
+  const renderContactProgressActivity = () => {
+    if (selectedContactCourseIds.length === 0) {
+      return <Empty description={setLocale(locale, 'admin.tools.label.none')} style={{ marginBottom: 16 }} />;
+    }
+
+    const currentActivity = String(contactCourseProgressActivity?.contactInternalId || '') === String(selectedContact?.ContactInternalId || '')
+      ? contactCourseProgressActivity
+      : null;
+    const progressActivityTrendData = currentActivity?.progressActivityTrendData || [];
+    const trendData = (selectedProgressCourseId === 'all'
+      ? progressActivityTrendData
+      : progressActivityTrendData.filter(item => item?.courseCodeId === selectedProgressCourseId)
+    ).map(item => ({
+      ...item,
+      course: selectedContactCourseLabels[item.courseCodeId] || item.courseCodeId
+    }));
+
+    return (
+      <div style={{ marginBottom: 16 }}>
+        <Row gutter={[12, 12]} justify="start" style={{ marginBottom: 12 }}>
+          <Col xs={24} sm={12} md={8} lg={7}>
+            <Select
+              value={selectedProgressCourseId}
+              onChange={setSelectedProgressCourseId}
+              style={{ width: '100%' }}
+              options={progressCourseOptions}
+              showSearch={{
+                filterOption: (input, option) =>
+                  (option?.searchText || '').toString().toLowerCase().includes(input.toLowerCase())
+              }}
+            />
+          </Col>
+        </Row>
+        {contactProgressLoading ? (
+          <p style={{ textAlign: 'center', color: '#999', padding: 40 }}>
+            {setLocale(locale, 'admin.tools.progress.loading')}
+          </p>
+        ) : (
+          <TimelineTrendGraph
+            trendData={trendData}
+            seriesField="course"
+            hideCard
+            emptyDescriptionKey="admin.tools.progress.noActivity"
+          />
+        )}
+      </div>
+    );
+  };
+
   const renderContactSummary = () => {
     if (!selectedContact) return null;
 
@@ -556,6 +709,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         {/* Language History */}
         <Divider orientation="left"><GlobalOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.languageHistory')}</Divider>
         {renderLanguageHistory(selectedContact.LanguageProficienciesHistory)}
+
+        {/* Course Progress Activity */}
+        <Divider orientation="left"><LineChartOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.courseProgressActivity')}</Divider>
+        {renderContactProgressActivity()}
       </>
     );
 
@@ -1209,14 +1366,15 @@ function mapDispatchToProps(dispatch) {
     onAssigningRoleToCourse,
     onAssigningGlobalRole,
     onClearSelectedContact,
-    onUpsertingCourse
+    onUpsertingCourse,
+    onLoadingContactCourseProgressActivity
   }, dispatch);
 }
 
 const mapStateToProps = ({ adminTools, grant }) => {
   const { user } = grant;
-  const { allCourses, allRoles, allEnrollees, allRawCourses } = adminTools;
-  return { user, allCourses, allRoles, allEnrollees, allRawCourses };
+  const { allCourses, allRoles, allEnrollees, allRawCourses, contactCourseProgressActivity } = adminTools;
+  return { user, allCourses, allRoles, allEnrollees, allRawCourses, contactCourseProgressActivity };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(GlobalAdminToolsLandingDashboard);

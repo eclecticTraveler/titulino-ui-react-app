@@ -5,12 +5,19 @@ import { connect } from 'react-redux';
 import IntlMessage from "components/util-components/IntlMessage";
 
 const TimelineTrendGraph = (props) => {
-  const { localizedTitle, dates, lineColor, currentTheme } = props;
+  const { localizedTitle, dates, lineColor, currentTheme, trendData, seriesField, hideCard, emptyDescriptionKey } = props;
   const isDark = currentTheme === 'dark';
   const axisLabelColor = isDark ? '#b4bed2' : '#000';
   const color = lineColor || '#3e82f7';
 
   const chartData = useMemo(() => {
+    if (Array.isArray(trendData) && trendData.length > 0) {
+      return trendData
+        .filter(item => item?.date && item?.count != null)
+        .map(item => ({ ...item, count: Number(item.count) || 0 }))
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    }
+
     if (!dates || dates.length === 0) return [];
 
     const counts = {};
@@ -22,28 +29,39 @@ const TimelineTrendGraph = (props) => {
     return Object.keys(counts)
       .sort()
       .map((day) => ({ date: day, count: counts[day] }));
-  }, [dates]);
+  }, [dates, trendData]);
+
+  const emptyContent = (
+    <p style={{ textAlign: 'center', color: '#999', padding: 40 }}>
+      <IntlMessage id={emptyDescriptionKey || "admin.dashboard.insights.trends.noData"} />
+    </p>
+  );
 
   if (chartData.length === 0) {
+    if (hideCard) return emptyContent;
+
     return (
       <div>
         <Card variant="outlined" title={<IntlMessage id={localizedTitle || 'unavailable'} />}>
-          <p style={{ textAlign: 'center', color: '#999', padding: 40 }}>
-            <IntlMessage id="admin.dashboard.insights.trends.noData" />
-          </p>
+          {emptyContent}
         </Card>
       </div>
     );
   }
 
+  const hasSeries = !!seriesField;
+
   const config = {
     data: chartData,
     xField: 'date',
     yField: 'count',
+    ...(hasSeries ? { colorField: seriesField } : {}),
     theme: isDark ? 'classicDark' : 'classic',
     smooth: true,
-    style: { stroke: color, lineWidth: 2 },
-    point: { shapeField: 'point', sizeField: 3, style: { fill: color } },
+    style: hasSeries ? { lineWidth: 2 } : { stroke: color, lineWidth: 2 },
+    point: hasSeries
+      ? { sizeField: 3 }
+      : { shapeField: 'point', sizeField: 3, style: { fill: color } },
     axis: {
       x: {
         title: false,
@@ -56,6 +74,11 @@ const TimelineTrendGraph = (props) => {
         labelFill: axisLabelColor,
       },
     },
+    ...(hasSeries ? {
+      legend: {
+        color: { itemLabelFill: axisLabelColor, position: 'top-left' },
+      },
+    } : {}),
     slider: {
       x: { labelFormatter: (d) => d },
       y: { labelFormatter: '~s' },
@@ -70,10 +93,16 @@ const TimelineTrendGraph = (props) => {
     },
   };
 
+  const chartContent = <Line {...config} />;
+
+  if (hideCard) {
+    return chartContent;
+  }
+
   return (
     <div>
       <Card variant="outlined" title={<IntlMessage id={localizedTitle || 'unavailable'} />}>
-        <Line {...config} />
+        {chartContent}
       </Card>
     </div>
   );
