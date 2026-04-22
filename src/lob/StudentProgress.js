@@ -122,6 +122,46 @@ export const getDerivedCategoriesFromCourseStructureData = async (selectedCourse
   return categories;
 };
 
+const getProgressActivityDate = (row) => (
+  row?.CreatedAt ||
+  row?.UpdatedAt ||
+  row?.CreationDate ||
+  row?.createdAt ||
+  row?.updatedAt ||
+  row?.created_at
+);
+
+const getProgressActivityDay = (value) => {
+  if (!value) return null;
+  if (typeof value === 'string') return value.substring(0, 10);
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().substring(0, 10);
+  return null;
+};
+
+export const buildCourseProgressActivityTrendData = (progressRows = []) => {
+  const counts = {};
+
+  (progressRows || []).forEach(row => {
+    const day = getProgressActivityDay(getProgressActivityDate(row));
+    const courseCodeId = row?.CourseCodeId || row?.courseCodeId;
+    if (!day || !courseCodeId) return;
+
+    const key = `${day}|${courseCodeId}`;
+    if (!counts[key]) {
+      counts[key] = {
+        date: day,
+        count: 0,
+        courseCodeId,
+        course: courseCodeId
+      };
+    }
+    counts[key].count += 1;
+  });
+
+  return Object.values(counts)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.courseCodeId.localeCompare(b.courseCodeId));
+};
+
 export const transformEnrolleeGeographycalResidencyData = async(data) => {
   // Define a color palette for unique colors
   const colorPalette = [
@@ -158,6 +198,7 @@ const StudentProgress = {
   calculateUserCourseProgressPercentageForCertificates,
   getUserCourseProgressCategories,
   getDerivedCategoriesFromCourseStructureData,
+  buildCourseProgressActivityTrendData,
   transformEnrolleeGeographycalResidencyData
 };
 
