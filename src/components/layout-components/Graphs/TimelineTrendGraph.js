@@ -4,8 +4,26 @@ import { Card } from 'antd';
 import { connect } from 'react-redux';
 import IntlMessage from "components/util-components/IntlMessage";
 
+const escapeHtml = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#039;');
+
 const TimelineTrendGraph = (props) => {
-  const { localizedTitle, dates, lineColor, currentTheme, trendData, seriesField, hideCard, emptyDescriptionKey } = props;
+  const {
+    localizedTitle,
+    dates,
+    lineColor,
+    currentTheme,
+    trendData,
+    seriesField,
+    hideCard,
+    emptyDescriptionKey,
+    legendPosition = 'top-right',
+    chartSpacingTop = 0
+  } = props;
   const isDark = currentTheme === 'dark';
   const axisLabelColor = isDark ? '#b4bed2' : '#000';
   const color = lineColor || '#3e82f7';
@@ -76,7 +94,7 @@ const TimelineTrendGraph = (props) => {
     },
     ...(hasSeries ? {
       legend: {
-        color: { itemLabelFill: axisLabelColor, position: 'top-left' },
+        color: { itemLabelFill: axisLabelColor, position: legendPosition },
       },
     } : {}),
     slider: {
@@ -87,7 +105,25 @@ const TimelineTrendGraph = (props) => {
       tooltip: {
         render: (e, { title, items }) => {
           const item = items?.[0];
-          return `<div><strong>${title}</strong><br/>${item?.name}: ${item?.value}</div>`;
+          const datum = item?.data || item?.datum || chartData.find(d =>
+            String(d?.date) === String(title) &&
+            (!seriesField || String(d?.[seriesField]) === String(item?.name))
+          );
+          const courseTitle = datum?.course || item?.name;
+          const courseCodeId = datum?.courseCodeId;
+
+          if (hasSeries) {
+            return `
+              <div>
+                <strong>${escapeHtml(title)}</strong><br/>
+                <span>${escapeHtml(courseTitle)}</span><br/>
+                ${courseCodeId ? `<span style="color:#888">${escapeHtml(courseCodeId)}</span><br/>` : ''}
+                <span>${escapeHtml(item?.value)} activity records</span>
+              </div>
+            `;
+          }
+
+          return `<div><strong>${escapeHtml(title)}</strong><br/>${escapeHtml(item?.name)}: ${escapeHtml(item?.value)}</div>`;
         },
       },
     },
@@ -96,7 +132,7 @@ const TimelineTrendGraph = (props) => {
   const chartContent = <Line {...config} />;
 
   if (hideCard) {
-    return chartContent;
+    return <div style={{ paddingTop: chartSpacingTop }}>{chartContent}</div>;
   }
 
   return (
