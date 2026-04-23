@@ -11,6 +11,13 @@ const escapeHtml = (value) => String(value ?? '')
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#039;');
 
+const getTooltipFields = (items = []) => (
+  (items || []).reduce((fields, item) => {
+    if (item?.name) fields[item.name] = item?.value;
+    return fields;
+  }, {})
+);
+
 const LoginFootprintBubbleScatterGraph = ({
   localizedTitle,
   scatterData = [],
@@ -26,6 +33,11 @@ const LoginFootprintBubbleScatterGraph = ({
   const tooltipBorderColor = isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.08)';
   const tooltipBoxShadow = isDark ? '0 8px 20px rgba(0, 0, 0, 0.35)' : '0 8px 20px rgba(0, 0, 0, 0.12)';
   const chartData = (scatterData || []).filter(item => Number(item?.count) > 0);
+  const chartDataByKey = chartData.reduce((groups, item) => {
+    const key = `${item?.date}|${item?.hour}|${item?.segment}`;
+    groups[key] = item;
+    return groups;
+  }, {});
 
   const emptyContent = (
     <Empty
@@ -99,21 +111,30 @@ const LoginFootprintBubbleScatterGraph = ({
       tooltip: {
         render: (e, { title, items }) => {
           const item = items?.[0];
-          const datum = item?.data || item?.datum || {};
-          const count = datum?.count ?? item?.value ?? 0;
-          const uniqueUsers = datum?.uniqueUsers ?? 0;
-          const hasKnownCountry = datum?.countryOfResidency && datum.countryOfResidency !== 'Unknown';
+          const tooltipFields = getTooltipFields(items);
+          const rawDatum = item?.data || item?.datum || {};
+          const resolvedDate = rawDatum?.date || tooltipFields?.date;
+          const resolvedHourValue = rawDatum?.hour ?? tooltipFields?.hour;
+          const resolvedHour = Number.isFinite(Number(resolvedHourValue)) ? Number(resolvedHourValue) : null;
+          const resolvedSegment = rawDatum?.segment || tooltipFields?.segment || title;
+          const chartDatum = chartDataByKey[`${resolvedDate}|${resolvedHour}|${resolvedSegment}`] || rawDatum;
+          const count = chartDatum?.count ?? (Number.isFinite(Number(tooltipFields?.count)) ? Number(tooltipFields.count) : 0);
+          const uniqueUsers = chartDatum?.uniqueUsers ?? 0;
+          const hasKnownCountry = chartDatum?.countryOfResidency && chartDatum.countryOfResidency !== 'Unknown';
+          const resolvedHourLabel = chartDatum?.hourLabel || (
+            resolvedHour !== null ? `${String(resolvedHour).padStart(2, '0')}:00 UTC` : 'Unknown time'
+          );
 
           return `
             <div style="${tooltipStyle}">
-              <strong>${escapeHtml(datum?.date || title)}</strong><br/>
-              <span>${escapeHtml(datum?.hourLabel || `${datum?.hour}:00 UTC`)}</span><br/>
-              <span>${escapeHtml(datum?.segment || item?.name || 'Logins')}</span><br/>
+              <strong>${escapeHtml(chartDatum?.segment || resolvedSegment || 'Logins')}</strong><br/>
+              <span>${escapeHtml(resolvedHourLabel)}</span><br/>
+              <span style="color:${tooltipMutedColor}">${escapeHtml(chartDatum?.date || resolvedDate || title || 'Unknown date')}</span><br/>
               <span>${escapeHtml(count)} logins</span><br/>
               ${uniqueUsers ? `<span style="color:${tooltipMutedColor}">${escapeHtml(uniqueUsers)} unique users</span><br/>` : ''}
-              ${datum?.gender ? `<span style="color:${tooltipMutedColor}">Gender: ${escapeHtml(datum.gender)}</span><br/>` : ''}
-              ${datum?.ageGroup && datum.ageGroup !== 'Unknown' ? `<span style="color:${tooltipMutedColor}">Age group: ${escapeHtml(datum.ageGroup)}</span><br/>` : ''}
-              ${hasKnownCountry ? `<span style="color:${tooltipMutedColor}">${escapeHtml(datum.countryOfResidency)}</span>` : ''}
+              ${chartDatum?.gender ? `<span style="color:${tooltipMutedColor}">Gender: ${escapeHtml(chartDatum.gender)}</span><br/>` : ''}
+              ${chartDatum?.ageGroup && chartDatum.ageGroup !== 'Unknown' ? `<span style="color:${tooltipMutedColor}">Age group: ${escapeHtml(chartDatum.ageGroup)}</span><br/>` : ''}
+              ${hasKnownCountry ? `<span style="color:${tooltipMutedColor}">${escapeHtml(chartDatum.countryOfResidency)}</span>` : ''}
             </div>
           `;
         },

@@ -469,6 +469,7 @@
 	"admin.tools.monitoring.title": "Login Monitoring",
 	"admin.tools.monitoring.loginHeatmap": "Login Heatmap",
 	"admin.tools.monitoring.loginBubbleScatter": "Login Bubble Scatter",
+	"admin.tools.monitoring.loginBreakdownTable": "Login Breakdown Table",
 	"admin.tools.monitoring.loading": "Loading login monitoring...",
 	"admin.tools.progress.allCourses": "All",
 	"admin.tools.progress.noActivity": "No progress activity found",

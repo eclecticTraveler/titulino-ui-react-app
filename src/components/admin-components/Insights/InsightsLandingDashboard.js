@@ -214,7 +214,7 @@ const InsightsLandingDashboard = (props) => {
 	const renderGeneralOverview = () => renderOverviewGrid(overviewDashboardData);
 
 	const renderGeneralTrends = () => (
-		<TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.enrollmentOverTime" dates={enrolleDashboardData?.enrollmentDates} />
+		<TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.enrollmentOverTime" dates={enrolleDashboardData?.enrollmentDates} enableGradientArea />
 	);
 
 	const renderProgressOverview = () => {
@@ -417,7 +417,7 @@ const InsightsLandingDashboard = (props) => {
               {setLocale(locale, "admin.dashboard.insights.trends")}
             </span>
           ),
-          content: <TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.progressOverTime" dates={enrolleesCourseProgressData?.progressDates} lineColor="#e35aff" />
+          content: <TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.progressOverTime" dates={enrolleesCourseProgressData?.progressDates} lineColor="#e35aff" enableGradientArea />
         }
       ]
     };
