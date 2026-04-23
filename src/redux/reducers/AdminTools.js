@@ -5,7 +5,8 @@ import {
   ON_CLEAR_SELECTED_CONTACT,
   ON_UPSERTING_COURSE,
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
-  ON_LOADING_CONTACT_LOGIN_FOOTPRINT
+  ON_LOADING_CONTACT_LOGIN_FOOTPRINT,
+  ON_LOADING_ALL_USER_LOGIN_FOOTPRINT
 } from '../constants/AdminTools';
 
 const initState = {};
@@ -24,6 +25,8 @@ const adminTools = (state = initState, action) => {
       return { ...state, contactCourseProgressActivity: action.contactCourseProgressActivity };
     case ON_LOADING_CONTACT_LOGIN_FOOTPRINT:
       return { ...state, contactLoginFootprint: action.contactLoginFootprint };
+    case ON_LOADING_ALL_USER_LOGIN_FOOTPRINT:
+      return { ...state, allUserLoginFootprint: action.allUserLoginFootprint };
     case ON_CLEAR_SELECTED_CONTACT:
       return { ...state, contactCourseProgressActivity: null, contactLoginFootprint: null };
     default:

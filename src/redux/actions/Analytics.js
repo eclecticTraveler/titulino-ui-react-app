@@ -52,16 +52,14 @@ export const onLoadingAllDashboardContents = async (courseCodeId, locationType, 
       demographicDashboardData,
       progressDemographicDashboardData,
       enrolleDashboardData,
-      enrolleesCourseProgressData,
-      allUserLoginFootprintData
+      enrolleesCourseProgressData
     ] = await Promise.all([
       TitulinoManager.getOverviewInfoAdminDashboard(courseCodeId, locationType, countryId),
       TitulinoManager.getCourseProgressOverviewInfoAdminDashboard(courseCodeId, locationType, countryId, emailId),
       TitulinoManager.getDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
       TitulinoManager.getCourseProgressDemographicInfoAdminDashboard(courseCodeId, locationType, countryId, emailId),
       TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, locationType, countryId),
-      TitulinoManager.getEnrolleesCourseProgressAdminDashboard(courseCodeId, locationType, countryId, emailId),
-      TitulinoManager.getAllUserLoginFootprintAdminDashboard(emailId)
+      TitulinoManager.getEnrolleesCourseProgressAdminDashboard(courseCodeId, locationType, countryId, emailId)
     ]);
 
     return {
@@ -74,8 +72,7 @@ export const onLoadingAllDashboardContents = async (courseCodeId, locationType, 
       demographicDashboardData,
       progressDemographicDashboardData,
       enrolleDashboardData,
-      enrolleesCourseProgressData,
-      allUserLoginFootprintData
+      enrolleesCourseProgressData
     };
   } catch (error) {
     console.error('Error loading admin dashboard data:', error);
