@@ -3,16 +3,19 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
 import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined } from '@ant-design/icons';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
 import IntlMessage from 'components/util-components/IntlMessage';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
+import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/LoginFootprintHeatmapGraph';
+import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
 import { getGeoMapResource } from 'services/GoogleService';
 import { generateCourseCodeId, buildCourseUpsertPayload, prefillFromTemplate } from 'lob/AdminTools';
+import { env } from 'configs/EnvironmentConfig';
 import dayjs from 'dayjs';
 import {
   onLoadingAdminToolsInit,
@@ -20,7 +23,8 @@ import {
   onAssigningGlobalRole,
   onClearSelectedContact,
   onUpsertingCourse,
-  onLoadingContactCourseProgressActivity
+  onLoadingContactCourseProgressActivity,
+  onLoadingContactLoginFootprint
 } from "redux/actions/AdminTools";
 
 const GlobalAdminToolsLandingDashboard = (props) => {
@@ -36,7 +40,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onClearSelectedContact,
     onUpsertingCourse,
     onLoadingContactCourseProgressActivity,
-    contactCourseProgressActivity
+    onLoadingContactLoginFootprint,
+    contactCourseProgressActivity,
+    contactLoginFootprint
   } = props;
 
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
@@ -51,6 +57,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [geoMaps, setGeoMaps] = useState({ birth: null, residency: null });
   const [selectedProgressCourseId, setSelectedProgressCourseId] = useState('all');
   const [contactProgressLoading, setContactProgressLoading] = useState(false);
+  const [contactLoginLoading, setContactLoginLoading] = useState(false);
 
   /* ── Course Management state ── */
   const [courseSearchText, setCourseSearchText] = useState('');
@@ -84,6 +91,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setGeoMaps({ birth: null, residency: null });
     setSelectedProgressCourseId('all');
     setContactProgressLoading(false);
+    setContactLoginLoading(false);
   }, [selectedContact]);
 
   useEffect(() => {
@@ -240,6 +248,31 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contactTabKey, selectedContact?.ContactInternalId, selectedContactCourseIdsKey, emailId]);
+
+  useEffect(() => {
+    if (
+      contactTabKey !== 'detailed' ||
+      !selectedContact?.ContactInternalId ||
+      !emailId
+    ) {
+      return;
+    }
+
+    let isActive = true;
+    setContactLoginLoading(true);
+
+    onLoadingContactLoginFootprint(
+      selectedContact.ContactInternalId,
+      emailId
+    )?.finally(() => {
+      if (isActive) setContactLoginLoading(false);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactTabKey, selectedContact?.ContactInternalId, emailId]);
 
   const createCourseGeneratedId = useMemo(() => {
     if (!courseFormValues.course || !courseFormValues.StartDate) return '';
@@ -515,6 +548,37 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const renderContactLoginFootprint = () => {
+    const currentFootprint = String(contactLoginFootprint?.contactInternalId || '') === String(selectedContact?.ContactInternalId || '')
+      ? contactLoginFootprint
+      : null;
+
+    if (contactLoginLoading) {
+      return (
+        <p style={{ textAlign: 'center', color: '#999', padding: 40 }}>
+          {setLocale(locale, 'admin.tools.loginFootprint.loading')}
+        </p>
+      );
+    }
+
+    const commonGraphProps = {
+      hideCard: true,
+      emptyDescriptionKey: 'admin.tools.loginFootprint.noActivity'
+    };
+
+    return env.IS_LOGIN_FOOTPRINT_INDIVIDUAL_HEATMAP_ON ? (
+      <LoginFootprintHeatmapGraph
+        heatmapData={currentFootprint?.heatmapData || []}
+        {...commonGraphProps}
+      />
+    ) : (
+      <LoginFootprintBubbleScatterGraph
+        scatterData={currentFootprint?.scatterData || []}
+        {...commonGraphProps}
+      />
+    );
+  };
+
   const renderContactSummary = () => {
     if (!selectedContact) return null;
 
@@ -715,6 +779,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         {/* Course Progress Activity */}
         <Divider orientation="left"><LineChartOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.courseProgressActivity')}</Divider>
         {renderContactProgressActivity()}
+
+        {/* Login Footprint */}
+        <Divider orientation="left"><LoginOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.loginFootprint')}</Divider>
+        {renderContactLoginFootprint()}
       </>
     );
 
@@ -1369,14 +1437,22 @@ function mapDispatchToProps(dispatch) {
     onAssigningGlobalRole,
     onClearSelectedContact,
     onUpsertingCourse,
-    onLoadingContactCourseProgressActivity
+    onLoadingContactCourseProgressActivity,
+    onLoadingContactLoginFootprint
   }, dispatch);
 }
 
 const mapStateToProps = ({ adminTools, grant }) => {
   const { user } = grant;
-  const { allCourses, allRoles, allEnrollees, allRawCourses, contactCourseProgressActivity } = adminTools;
-  return { user, allCourses, allRoles, allEnrollees, allRawCourses, contactCourseProgressActivity };
+  const {
+    allCourses,
+    allRoles,
+    allEnrollees,
+    allRawCourses,
+    contactCourseProgressActivity,
+    contactLoginFootprint
+  } = adminTools;
+  return { user, allCourses, allRoles, allEnrollees, allRawCourses, contactCourseProgressActivity, contactLoginFootprint };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(GlobalAdminToolsLandingDashboard);

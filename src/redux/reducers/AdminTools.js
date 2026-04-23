@@ -4,7 +4,8 @@ import {
   ON_ASSIGNING_GLOBAL_ROLE,
   ON_CLEAR_SELECTED_CONTACT,
   ON_UPSERTING_COURSE,
-  ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY
+  ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
+  ON_LOADING_CONTACT_LOGIN_FOOTPRINT
 } from '../constants/AdminTools';
 
 const initState = {};
@@ -21,8 +22,10 @@ const adminTools = (state = initState, action) => {
       return { ...state, lastCourseUpsertResult: action.upsertResult };
     case ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY:
       return { ...state, contactCourseProgressActivity: action.contactCourseProgressActivity };
+    case ON_LOADING_CONTACT_LOGIN_FOOTPRINT:
+      return { ...state, contactLoginFootprint: action.contactLoginFootprint };
     case ON_CLEAR_SELECTED_CONTACT:
-      return { ...state, contactCourseProgressActivity: null };
+      return { ...state, contactCourseProgressActivity: null, contactLoginFootprint: null };
     default:
       return state;
   }

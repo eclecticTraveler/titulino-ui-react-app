@@ -4,6 +4,7 @@ import TitulinoAuthService from "services/TitulinoAuthService";
 import GoogleService from "services/GoogleService";
 import LocalStorageService from "services/LocalStorageService";
 import AdminInsights from "lob/AdminInsights";
+import LoginFootprint from "lob/LoginFootprint";
 import utils from 'utils';
 
 // Use unified cache functions
@@ -195,6 +196,32 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
     return result;
 };
 
+export const getAllUserLoginFootprintAdminDashboard = async (emailId) => {
+  const localStorageKey = `UserProfile_${emailId}`;
+  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const token = user?.innerToken;
+
+  if (!token) {
+    console.warn("No token found in getAllUserLoginFootprintAdminDashboard");
+    return {
+      rows: [],
+      scatterData: [],
+      summary: LoginFootprint.buildLoginFootprintSummary([])
+    };
+  }
+
+  const rows = await TitulinoAuthService.getAllUserLoginFootprint(
+    token,
+    "getAllUserLoginFootprintAdminDashboard"
+  );
+
+  return {
+    rows,
+    scatterData: LoginFootprint.buildLoginFootprintScatterData(rows, { groupBy: 'profile', includeSegment: true }),
+    summary: LoginFootprint.buildLoginFootprintSummary(rows)
+  };
+};
+
 export const getFacilitadorEnrolleesCourseProgressDashboard = async (courseCodeId, emailId) => {
   const localStorageKey = `UserProfile_${emailId}`;
   const user = await LocalStorageService.getCachedObject(localStorageKey);
@@ -314,6 +341,7 @@ const AnalyticsManager = {
   getEnrolleeInfoAdminDashboard,
   getEnrolleeKnowMeProfilePictureForCourse,
   getEnrolleesCourseProgressAdminDashboard,
+  getAllUserLoginFootprintAdminDashboard,
   getFacilitadorEnrolleesCourseProgressDashboard,
   upsertAdminEnrolleeCourseProgress,
   getFacilitadorDrillDownDemographics

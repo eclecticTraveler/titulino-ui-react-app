@@ -1,38 +1,45 @@
-import React, {Component} from 'react'
+import React from 'react'
 import { Card } from 'antd';
 import IntlMessage from "components/util-components/IntlMessage";
 
-class DoubleCounterDisplay extends Component {
-    componentDidMount() {
-		      
-	}
+const getWholeDigitCount = (value) => {
+	const wholeValue = String(value ?? 0).split('.')[0];
+	return wholeValue.replace(/\D/g, '').length;
+};
 
-	componentDidUpdate() {
-	}
+const DoubleCounterDisplay = ({
+	localizedTitle,
+	firstCount,
+	secondCount,
+	firstLabelKey,
+	secondLabelKey
+}) => {
+	const countOne = firstCount ?? 0;
+	const countTwo = secondCount ?? 0;
+	const title = localizedTitle || "unavailable";
+	const shouldStackCounts = Math.max(getWholeDigitCount(countOne), getWholeDigitCount(countTwo)) >= 3;
 
-	render(){ 
-		const locale = true;
-		const setLocale = (isLocaleOn, localeKey) => {
-			return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-		};
-		const countOne = this.props.firstCount || 0;
-		const countTwo = this.props.secondCount || 0;
-		const title = this.props.localizedTitle || "unavailable";
-		return (
-			<div>	
-				<Card variant="outlined" title={setLocale(locale, title)}>
-					<div className='double-count-card'>
-						<span className='double-count-card-first'>{countOne} </span> | 
-						<span className='double-count-card-second'> {countTwo}</span>
+	return (
+		<div>
+			<Card variant="outlined" title={<IntlMessage id={title} />}>
+				<div className={`double-count-card-v2${shouldStackCounts ? ' double-count-card-v2-stacked' : ''}`}>
+					<div className="double-count-card-v2-stat">
+						<div className="double-count-card-v2-number double-count-card-v2-first">{countOne}</div>
+						{firstLabelKey && (
+							<div className="double-count-card-v2-label"><IntlMessage id={firstLabelKey} /></div>
+						)}
 					</div>
-				</Card>	
-			</div>
-		)
-    }
-}
-
-
-
+					<div className="double-count-card-v2-divider" />
+					<div className="double-count-card-v2-stat">
+						<div className="double-count-card-v2-number double-count-card-v2-second">{countTwo}</div>
+						{secondLabelKey && (
+							<div className="double-count-card-v2-label"><IntlMessage id={secondLabelKey} /></div>
+						)}
+					</div>
+				</div>
+			</Card>
+		</div>
+	);
+};
 
 export default DoubleCounterDisplay;
-

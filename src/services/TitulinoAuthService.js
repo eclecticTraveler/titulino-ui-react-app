@@ -291,7 +291,6 @@ export const getAllEnrollees = async (token, whoCalledMe = 'getAllEnrollees') =>
       return _results;
     }
     const apiResult = await response.json();
-    console.log("getAllEnrollees", apiResult);
     return Array.isArray(apiResult) ? apiResult : _results;
   } catch (error) {
     console.error(`[${whoCalledMe}] Exception:`, error);
@@ -385,6 +384,66 @@ export const upsertCourse = async (courseData, token, whoCalledMe = 'upsertCours
   }
 };
 
+export const getAllUserLoginFootprint = async (token, whoCalledMe = 'getAllUserLoginFootprint') => {
+  if (!token) {
+    console.warn(`[${whoCalledMe}] Missing token`);
+    return _results;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/GetAllUserLoginFootprint`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({}),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') console.warn(`[${whoCalledMe}] status ${response.status}`);
+      return _results;
+    }
+
+    const apiResult = await response.json();
+    console.log("getAllUserLoginFootprint apiResult", apiResult);
+    return Array.isArray(apiResult) ? apiResult : _results;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return _results;
+  }
+};
+
+export const getUserLoginFootprintByContact = async (contactInternalId, token, whoCalledMe = 'getUserLoginFootprintByContact') => {
+  if (!token || !contactInternalId) {
+    console.warn(`[${whoCalledMe}] Missing token or contactInternalId`);
+    return _results;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/GetUserLoginFootprintByContact`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({ p_contact_id: contactInternalId }),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') console.warn(`[${whoCalledMe}] status ${response.status}`);
+      return _results;
+    }
+    
+    const apiResult = await response.json();
+    console.log("getUserLoginFootprintByContact apiResult", apiResult);
+    return Array.isArray(apiResult) ? apiResult : _results;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return _results;
+  }
+};
+
 
 const TitulinoAuthService = {
   getCourseProgress,
@@ -397,7 +456,9 @@ const TitulinoAuthService = {
   getUserRoles,
   assignRoleToCourse,
   assignGlobalRole,
-  upsertCourse
+  upsertCourse,
+  getAllUserLoginFootprint,
+  getUserLoginFootprintByContact
 };
 
 export default TitulinoAuthService;

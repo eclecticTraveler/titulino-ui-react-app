@@ -18,6 +18,7 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
+import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 
 const InsightsLandingDashboard = (props) => {
@@ -36,6 +37,7 @@ const InsightsLandingDashboard = (props) => {
     overviewProgressDashboardData,
     enrolleDashboardData,
     enrolleesCourseProgressData,
+    allUserLoginFootprintData,
     user,
     onLoadingAllDashboardContents
   } = props;
@@ -178,13 +180,25 @@ const InsightsLandingDashboard = (props) => {
 			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={overviewData?.averageGeneralAge} />
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.avgMaleVsFemaleAge"} firstCount={overviewData?.averageMaleAge} secondCount={overviewData?.averageFemaleAge} />
+			<DoubleCounterDisplay
+				localizedTitle={"admin.dashboard.insights.overview.avgMaleVsFemaleAge"}
+				firstCount={overviewData?.averageMaleAge}
+				secondCount={overviewData?.averageFemaleAge}
+				firstLabelKey={"enrollment.form.male"}
+				secondLabelKey={"enrollment.form.female"}
+			/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
 			<BarGraph localizedTitle={"admin.dashboard.insights.overview.agesGroups"} graphData={overviewData?.agesPercentages} passedValue={"count"} passedType={"label"}/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay localizedTitle={"admin.dashboard.insights.overview.newVsReturning"} firstCount={overviewData?.totalNewEnrollees} secondCount={overviewData?.totalReturningEnrollees}/>
+			<DoubleCounterDisplay
+				localizedTitle={"admin.dashboard.insights.overview.newVsReturning"}
+				firstCount={overviewData?.totalNewEnrollees}
+				secondCount={overviewData?.totalReturningEnrollees}
+				firstLabelKey={"admin.dashboard.insights.overview.newEnrollees"}
+				secondLabelKey={"admin.dashboard.insights.overview.returningEnrollees"}
+			/>
 			</Col>
 			<Col xs={24} sm={24} md={24} lg={8}>
 			<BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={overviewData?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
@@ -200,6 +214,19 @@ const InsightsLandingDashboard = (props) => {
 	);
 
 	const renderGeneralOverview = () => renderOverviewGrid(overviewDashboardData);
+
+	const renderGeneralTrends = () => (
+		<>
+			<TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.enrollmentOverTime" dates={enrolleDashboardData?.enrollmentDates} />
+			<div style={{ marginTop: 16 }}>
+				<LoginFootprintBubbleScatterGraph
+					localizedTitle="admin.dashboard.insights.trends.loginFootprint"
+					scatterData={allUserLoginFootprintData?.scatterData || []}
+					emptyDescriptionKey="admin.dashboard.insights.trends.noLoginFootprint"
+				/>
+			</div>
+		</>
+	);
 
 	const renderProgressOverview = () => {
     const progressOverviewData = overviewProgressDashboardData ?? overviewDashboardData;
@@ -359,7 +386,7 @@ const InsightsLandingDashboard = (props) => {
               {setLocale(locale, "admin.dashboard.insights.trends")}
             </span>
           ),
-          content: <TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.enrollmentOverTime" dates={enrolleDashboardData?.enrollmentDates} />
+          content: renderGeneralTrends()
         }
       ],
       progress: [
@@ -501,7 +528,8 @@ const mapStateToProps = ({ analytics, grant }) => {
     demographicDashboardData,
     progressDemographicDashboardData,
     enrolleDashboardData,
-    enrolleesCourseProgressData
+    enrolleesCourseProgressData,
+    allUserLoginFootprintData
   } = analytics;
   return {
     allCourses,
@@ -515,6 +543,7 @@ const mapStateToProps = ({ analytics, grant }) => {
     demographicDashboardData,
     progressDemographicDashboardData,
     enrolleesCourseProgressData,
+    allUserLoginFootprintData,
     user
   };
 };

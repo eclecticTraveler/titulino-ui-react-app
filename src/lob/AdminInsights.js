@@ -728,7 +728,7 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
             dataIndex: 'contactProficiency',
             editable: false,
             filterSearch: true,
-            width: '25%',
+            width: '10%',
             filters: Array.from(filters.proficiencyFilter || []),
             onFilter: (value, record) => record.contactProficiency?.indexOf(value) === 0,
             sorter: (a, b) => a.contactProficiency.localeCompare(b.contactProficiency),

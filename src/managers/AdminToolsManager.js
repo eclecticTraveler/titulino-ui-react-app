@@ -3,6 +3,7 @@ import TitulinoAuthService from "services/TitulinoAuthService";
 import LocalStorageService from "services/LocalStorageService";
 import AdminInsights from "lob/AdminInsights";
 import StudentProgress from "lob/StudentProgress";
+import LoginFootprint from "lob/LoginFootprint";
 import utils from 'utils';
 
 const getTokenFromEmail = async (emailId) => {
@@ -89,12 +90,42 @@ export const getContactCourseProgressActivity = async (contactInternalId, course
   };
 };
 
+export const getContactLoginFootprint = async (contactInternalId, emailId) => {
+  const adminUser = await LocalStorageService.getCachedObject(`UserProfile_${emailId}`);
+  const token = adminUser?.innerToken;
+
+  if (!token || !contactInternalId) {
+    return {
+      contactInternalId,
+      rows: [],
+      heatmapData: [],
+      scatterData: [],
+      summary: LoginFootprint.buildLoginFootprintSummary([])
+    };
+  }
+
+  const rows = await TitulinoAuthService.getUserLoginFootprintByContact(
+    contactInternalId,
+    token,
+    'getContactLoginFootprint'
+  );
+
+  return {
+    contactInternalId,
+    rows,
+    heatmapData: LoginFootprint.buildLoginFootprintHeatmapData(rows),
+    scatterData: LoginFootprint.buildLoginFootprintScatterData(rows, { includeSegment: false }),
+    summary: LoginFootprint.buildLoginFootprintSummary(rows)
+  };
+};
+
 const AdminToolsManager = {
   initAdminTools,
   assignRoleToCourse,
   assignGlobalRole,
   upsertCourse,
-  getContactCourseProgressActivity
+  getContactCourseProgressActivity,
+  getContactLoginFootprint
 };
 
 export default AdminToolsManager;
