@@ -119,13 +119,41 @@ export const getContactLoginFootprint = async (contactInternalId, emailId) => {
   };
 };
 
+export const getAllUserLoginFootprint = async (emailId) => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) {
+    return {
+      emailId,
+      rows: [],
+      heatmapData: [],
+      scatterData: [],
+      summary: LoginFootprint.buildLoginFootprintSummary([])
+    };
+  }
+
+  const rows = await TitulinoAuthService.getAllUserLoginFootprint(
+    token,
+    'getAllUserLoginFootprint'
+  );
+
+  return {
+    emailId,
+    rows,
+    heatmapData: LoginFootprint.buildLoginFootprintHeatmapData(rows),
+    scatterData: LoginFootprint.buildLoginFootprintScatterData(rows, { groupBy: 'profile', includeSegment: true }),
+    summary: LoginFootprint.buildLoginFootprintSummary(rows)
+  };
+};
+
 const AdminToolsManager = {
   initAdminTools,
   assignRoleToCourse,
   assignGlobalRole,
   upsertCourse,
   getContactCourseProgressActivity,
-  getContactLoginFootprint
+  getContactLoginFootprint,
+  getAllUserLoginFootprint
 };
 
 export default AdminToolsManager;

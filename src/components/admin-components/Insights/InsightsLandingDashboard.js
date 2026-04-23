@@ -18,7 +18,6 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
-import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 
 const InsightsLandingDashboard = (props) => {
@@ -37,7 +36,6 @@ const InsightsLandingDashboard = (props) => {
     overviewProgressDashboardData,
     enrolleDashboardData,
     enrolleesCourseProgressData,
-    allUserLoginFootprintData,
     user,
     onLoadingAllDashboardContents
   } = props;
@@ -216,16 +214,7 @@ const InsightsLandingDashboard = (props) => {
 	const renderGeneralOverview = () => renderOverviewGrid(overviewDashboardData);
 
 	const renderGeneralTrends = () => (
-		<>
-			<TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.enrollmentOverTime" dates={enrolleDashboardData?.enrollmentDates} />
-			<div style={{ marginTop: 16 }}>
-				<LoginFootprintBubbleScatterGraph
-					localizedTitle="admin.dashboard.insights.trends.loginFootprint"
-					scatterData={allUserLoginFootprintData?.scatterData || []}
-					emptyDescriptionKey="admin.dashboard.insights.trends.noLoginFootprint"
-				/>
-			</div>
-		</>
+		<TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.enrollmentOverTime" dates={enrolleDashboardData?.enrollmentDates} />
 	);
 
 	const renderProgressOverview = () => {
@@ -528,8 +517,7 @@ const mapStateToProps = ({ analytics, grant }) => {
     demographicDashboardData,
     progressDemographicDashboardData,
     enrolleDashboardData,
-    enrolleesCourseProgressData,
-    allUserLoginFootprintData
+    enrolleesCourseProgressData
   } = analytics;
   return {
     allCourses,
@@ -543,7 +531,6 @@ const mapStateToProps = ({ analytics, grant }) => {
     demographicDashboardData,
     progressDemographicDashboardData,
     enrolleesCourseProgressData,
-    allUserLoginFootprintData,
     user
   };
 };

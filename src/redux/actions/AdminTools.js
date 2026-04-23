@@ -6,7 +6,8 @@ import {
   ON_CLEAR_SELECTED_CONTACT,
   ON_UPSERTING_COURSE,
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
-  ON_LOADING_CONTACT_LOGIN_FOOTPRINT
+  ON_LOADING_CONTACT_LOGIN_FOOTPRINT,
+  ON_LOADING_ALL_USER_LOGIN_FOOTPRINT
 } from '../constants/AdminTools';
 
 export const onLoadingAdminToolsInit = async (emailId) => {
@@ -42,6 +43,11 @@ export const onLoadingContactCourseProgressActivity = async (contactInternalId, 
 export const onLoadingContactLoginFootprint = async (contactInternalId, emailId) => {
   const contactLoginFootprint = await AdminToolsManager.getContactLoginFootprint(contactInternalId, emailId);
   return { type: ON_LOADING_CONTACT_LOGIN_FOOTPRINT, contactLoginFootprint };
+};
+
+export const onLoadingAllUserLoginFootprint = async (emailId) => {
+  const allUserLoginFootprint = await AdminToolsManager.getAllUserLoginFootprint(emailId);
+  return { type: ON_LOADING_ALL_USER_LOGIN_FOOTPRINT, allUserLoginFootprint };
 };
 
 export const onClearSelectedContact = () => {

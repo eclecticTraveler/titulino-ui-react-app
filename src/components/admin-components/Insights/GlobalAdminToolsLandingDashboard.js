@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
 import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined } from '@ant-design/icons';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
 import IntlMessage from 'components/util-components/IntlMessage';
@@ -24,7 +24,8 @@ import {
   onClearSelectedContact,
   onUpsertingCourse,
   onLoadingContactCourseProgressActivity,
-  onLoadingContactLoginFootprint
+  onLoadingContactLoginFootprint,
+  onLoadingAllUserLoginFootprint
 } from "redux/actions/AdminTools";
 
 const GlobalAdminToolsLandingDashboard = (props) => {
@@ -42,7 +43,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onLoadingContactCourseProgressActivity,
     onLoadingContactLoginFootprint,
     contactCourseProgressActivity,
-    contactLoginFootprint
+    contactLoginFootprint,
+    onLoadingAllUserLoginFootprint,
+    allUserLoginFootprint
   } = props;
 
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
@@ -58,6 +61,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [selectedProgressCourseId, setSelectedProgressCourseId] = useState('all');
   const [contactProgressLoading, setContactProgressLoading] = useState(false);
   const [contactLoginLoading, setContactLoginLoading] = useState(false);
+  const [monitoringLoading, setMonitoringLoading] = useState(false);
 
   /* ── Course Management state ── */
   const [courseSearchText, setCourseSearchText] = useState('');
@@ -113,6 +117,28 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       });
     }
   }, [contactTabKey, selectedContact]);
+
+  useEffect(() => {
+    if (
+      activeOuterTabKey !== 'monitoring' ||
+      !emailId ||
+      allUserLoginFootprint?.emailId === emailId
+    ) {
+      return;
+    }
+
+    let isActive = true;
+    setMonitoringLoading(true);
+
+    onLoadingAllUserLoginFootprint(emailId)?.finally(() => {
+      if (isActive) setMonitoringLoading(false);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeOuterTabKey, emailId, allUserLoginFootprint?.emailId]);
 
   const PROFICIENCY_MAP = {
     be: { color: 'purple', key: 'admin.tools.label.proficiency.be' },
@@ -1399,11 +1425,48 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </>
   );
 
+  const renderMonitoring = () => (
+    <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
+      <h4 style={{ marginBottom: 12 }}>
+        <DashboardOutlined style={{ marginRight: 8 }} />
+        {setLocale(locale, 'admin.tools.monitoring.title')}
+      </h4>
+      {(monitoringLoading || (emailId && allUserLoginFootprint?.emailId !== emailId)) ? (
+        <p style={{ textAlign: 'center', color: '#999', padding: 40 }}>
+          {setLocale(locale, 'admin.tools.monitoring.loading')}
+        </p>
+      ) : (
+        <>
+          <Divider orientation="left">
+            <LoginOutlined style={{ marginRight: 6 }} />
+            {setLocale(locale, 'admin.tools.monitoring.loginHeatmap')}
+          </Divider>
+          <LoginFootprintHeatmapGraph
+            hideCard
+            heatmapData={allUserLoginFootprint?.heatmapData || []}
+            emptyDescriptionKey="admin.tools.loginFootprint.noActivity"
+          />
+
+          <Divider orientation="left">
+            <LineChartOutlined style={{ marginRight: 6 }} />
+            {setLocale(locale, 'admin.tools.monitoring.loginBubbleScatter')}
+          </Divider>
+          <LoginFootprintBubbleScatterGraph
+            hideCard
+            scatterData={allUserLoginFootprint?.scatterData || []}
+            emptyDescriptionKey="admin.tools.loginFootprint.noActivity"
+          />
+        </>
+      )}
+    </Card>
+  );
+
   const coverUrl = 'https://images.unsplash.com/photo-1593153041370-5ebf6b82886a?q=80&w=1461&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
   const outerTabsConfig = [
     { key: 'access', tab: <span><UserOutlined /> {setLocale(locale, 'admin.tools.tab.accessManagement')}</span> },
-    { key: 'courses', tab: <span><BookOutlined /> {setLocale(locale, 'admin.tools.tab.courseManagement')}</span> }
+    { key: 'courses', tab: <span><BookOutlined /> {setLocale(locale, 'admin.tools.tab.courseManagement')}</span> },
+    { key: 'monitoring', tab: <span><DashboardOutlined /> {setLocale(locale, 'admin.tools.tab.monitoring')}</span> }
   ];
 
   return (
@@ -1425,6 +1488,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       >
         {activeOuterTabKey === 'access' && renderAccessManagement()}
         {activeOuterTabKey === 'courses' && renderCourseManagement()}
+        {activeOuterTabKey === 'monitoring' && renderMonitoring()}
       </Card>
     </div>
   );
@@ -1438,7 +1502,8 @@ function mapDispatchToProps(dispatch) {
     onClearSelectedContact,
     onUpsertingCourse,
     onLoadingContactCourseProgressActivity,
-    onLoadingContactLoginFootprint
+    onLoadingContactLoginFootprint,
+    onLoadingAllUserLoginFootprint
   }, dispatch);
 }
 
@@ -1450,9 +1515,19 @@ const mapStateToProps = ({ adminTools, grant }) => {
     allEnrollees,
     allRawCourses,
     contactCourseProgressActivity,
-    contactLoginFootprint
+    contactLoginFootprint,
+    allUserLoginFootprint
   } = adminTools;
-  return { user, allCourses, allRoles, allEnrollees, allRawCourses, contactCourseProgressActivity, contactLoginFootprint };
+  return {
+    user,
+    allCourses,
+    allRoles,
+    allEnrollees,
+    allRawCourses,
+    contactCourseProgressActivity,
+    contactLoginFootprint,
+    allUserLoginFootprint
+  };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(GlobalAdminToolsLandingDashboard);
