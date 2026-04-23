@@ -471,6 +471,7 @@
 	"admin.tools.monitoring.title": "Monitoramento de Login",
 	"admin.tools.monitoring.loginHeatmap": "Mapa de Calor de Login",
 	"admin.tools.monitoring.loginBubbleScatter": "Dispersão de Bolhas de Login",
+	"admin.tools.monitoring.loginBreakdownTable": "Tabela Detalhada de Login",
 	"admin.tools.monitoring.loading": "Carregando monitoramento de login...",
 	"admin.tools.progress.allCourses": "Todos",
 	"admin.tools.progress.noActivity": "Nenhuma atividade de progresso encontrada",

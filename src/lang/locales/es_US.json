@@ -471,6 +471,7 @@
 	"admin.tools.monitoring.title": "Monitoreo de Inicios de Sesion",
 	"admin.tools.monitoring.loginHeatmap": "Mapa de Calor de Inicios de Sesion",
 	"admin.tools.monitoring.loginBubbleScatter": "Dispersion de Burbujas de Inicios de Sesion",
+	"admin.tools.monitoring.loginBreakdownTable": "Tabla Detallada de Inicios de Sesion",
 	"admin.tools.monitoring.loading": "Cargando monitoreo de inicios de sesion...",
 	"admin.tools.progress.allCourses": "Todos",
 	"admin.tools.progress.noActivity": "No se encontro actividad de progreso",

@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
 import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined } from '@ant-design/icons';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
 import IntlMessage from 'components/util-components/IntlMessage';
@@ -12,6 +12,7 @@ import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthe
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/LoginFootprintHeatmapGraph';
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
+import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
 import { getGeoMapResource } from 'services/GoogleService';
 import { generateCourseCodeId, buildCourseUpsertPayload, prefillFromTemplate } from 'lob/AdminTools';
@@ -561,14 +562,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             {setLocale(locale, 'admin.tools.progress.loading')}
           </p>
         ) : (
-          <TimelineTrendGraph
-            trendData={trendData}
-            seriesField="course"
-            hideCard
-            chartSpacingTop={12}
-            legendPosition="top-right"
-            emptyDescriptionKey="admin.tools.progress.noActivity"
-          />
+            <TimelineTrendGraph
+              trendData={trendData}
+              seriesField="course"
+              hideCard
+              chartSpacingTop={12}
+              enableGradientArea
+              legendPosition="top-right"
+              emptyDescriptionKey="admin.tools.progress.noActivity"
+            />
         )}
       </div>
     );
@@ -1455,6 +1457,18 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             hideCard
             scatterData={allUserLoginFootprint?.scatterData || []}
             emptyDescriptionKey="admin.tools.loginFootprint.noActivity"
+          />
+
+          <Divider orientation="left">
+            <TableOutlined style={{ marginRight: 6 }} />
+            {setLocale(locale, 'admin.tools.monitoring.loginBreakdownTable')}
+          </Divider>
+          <AbstractTable
+            tableData={allUserLoginFootprint?.tableModel?.tableData || []}
+            tableColumns={allUserLoginFootprint?.tableModel?.columns || []}
+            tableExpandables={allUserLoginFootprint?.tableModel?.expandable}
+            isAllowedToEditTableData={false}
+            isToRenderActionButton={false}
           />
         </>
       )}

@@ -314,8 +314,8 @@ const FacilitatorsLandingDashboard = (props) => {
           {setLocale(locale, 'facilitador.dashboard.trends')}
         </span>
       ),
-      children: <TimelineTrendGraph localizedTitle="facilitador.dashboard.trends.progressOverTime" dates={facilitadorEnrolleeData?.progressDates} lineColor="#e35aff" />
-    },
+        children: <TimelineTrendGraph localizedTitle="facilitador.dashboard.trends.progressOverTime" dates={facilitadorEnrolleeData?.progressDates} lineColor="#e35aff" enableGradientArea />
+      },
     ...(showMyProgressTab ? [{
       key: 'myProgress',
       label: (

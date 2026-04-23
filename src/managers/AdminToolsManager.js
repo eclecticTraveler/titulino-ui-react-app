@@ -100,6 +100,7 @@ export const getContactLoginFootprint = async (contactInternalId, emailId) => {
       rows: [],
       heatmapData: [],
       scatterData: [],
+      tableModel: LoginFootprint.buildLoginFootprintTableModel([]),
       summary: LoginFootprint.buildLoginFootprintSummary([])
     };
   }
@@ -142,6 +143,7 @@ export const getAllUserLoginFootprint = async (emailId) => {
     rows,
     heatmapData: LoginFootprint.buildLoginFootprintHeatmapData(rows),
     scatterData: LoginFootprint.buildLoginFootprintScatterData(rows, { groupBy: 'profile', includeSegment: true }),
+    tableModel: LoginFootprint.buildLoginFootprintTableModel(rows),
     summary: LoginFootprint.buildLoginFootprintSummary(rows)
   };
 };
