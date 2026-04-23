@@ -149,15 +149,13 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
     console.warn("No token found for course");
     return { tableData: [], columns: [] };
   }
- console.log("BEFOREEE course progress rows:");
+
   const progressRows =
     await TitulinoAuthService.getCourseProgress(
       courseCodeId,
       token,
       "getEnrolleesCourseProgressAdminDashboard"
     );
-
-    console.log("Fetched course progress rows:", progressRows);
 
       // 3️⃣ Fetch enrollee list EXACTLY like getEnrolleeInfoAdminDashboard does
   const isAll = locationType?.toLowerCase() === "all";

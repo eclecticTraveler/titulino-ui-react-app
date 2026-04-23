@@ -57,14 +57,24 @@ const getAgeGroup = (age) => {
   return '65+';
 };
 
+const getGenderLabel = (value) => {
+  if (!value) return null;
+
+  const normalizedValue = String(value).trim().toUpperCase();
+  if (normalizedValue === 'M' || normalizedValue === 'MALE') return 'Male';
+  if (normalizedValue === 'F' || normalizedValue === 'FEMALE') return 'Female';
+
+  return String(value).trim();
+};
+
 const normalizeLoginRow = (row) => {
   const loginParts = getUtcLoginParts(getLoginDateValue(row));
   if (!loginParts) return null;
 
   const isGlobalAccessUser = getBooleanValue(row?.IsGlobalAccessUser ?? row?.isGlobalAccessUser);
   const primaryRole = row?.PrimaryRole || row?.primaryRole || null;
-  const gender = row?.Gender || row?.gender || null;
-  const countryOfResidency = row?.CountryOfResidency || row?.countryOfResidency || UNKNOWN_LABEL;
+  const gender = getGenderLabel(row?.Gender || row?.gender);
+  const countryOfResidency = row?.CountryOfResidency || row?.countryOfResidency || null;
   const age = row?.Age ?? row?.age ?? null;
 
   return {
@@ -80,7 +90,7 @@ const normalizeLoginRow = (row) => {
     gender: gender || UNKNOWN_LABEL,
     age,
     ageGroup: row?.AgeGroup || row?.ageGroup || getAgeGroup(age),
-    countryOfResidency,
+    countryOfResidency: countryOfResidency || UNKNOWN_LABEL,
     accessProfile: isGlobalAccessUser
       ? (primaryRole || 'Global Access')
       : 'Course User',

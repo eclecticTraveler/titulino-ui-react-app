@@ -102,6 +102,7 @@ const LoginFootprintBubbleScatterGraph = ({
           const datum = item?.data || item?.datum || {};
           const count = datum?.count ?? item?.value ?? 0;
           const uniqueUsers = datum?.uniqueUsers ?? 0;
+          const hasKnownCountry = datum?.countryOfResidency && datum.countryOfResidency !== 'Unknown';
 
           return `
             <div style="${tooltipStyle}">
@@ -110,7 +111,9 @@ const LoginFootprintBubbleScatterGraph = ({
               <span>${escapeHtml(datum?.segment || item?.name || 'Logins')}</span><br/>
               <span>${escapeHtml(count)} logins</span><br/>
               ${uniqueUsers ? `<span style="color:${tooltipMutedColor}">${escapeHtml(uniqueUsers)} unique users</span><br/>` : ''}
-              ${datum?.countryOfResidency ? `<span style="color:${tooltipMutedColor}">${escapeHtml(datum.countryOfResidency)}</span>` : ''}
+              ${datum?.gender ? `<span style="color:${tooltipMutedColor}">Gender: ${escapeHtml(datum.gender)}</span><br/>` : ''}
+              ${datum?.ageGroup && datum.ageGroup !== 'Unknown' ? `<span style="color:${tooltipMutedColor}">Age group: ${escapeHtml(datum.ageGroup)}</span><br/>` : ''}
+              ${hasKnownCountry ? `<span style="color:${tooltipMutedColor}">${escapeHtml(datum.countryOfResidency)}</span>` : ''}
             </div>
           `;
         },
