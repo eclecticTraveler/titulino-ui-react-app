@@ -1,3 +1,4 @@
+import KnowMeProfiles from "lob/KnowMeProfiles";
 import {
   ON_LOADING_ADMIN_TOOLS_INIT,
   ON_ASSIGNING_ROLE_TO_COURSE,
@@ -6,15 +7,30 @@ import {
   ON_UPSERTING_COURSE,
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
   ON_LOADING_CONTACT_LOGIN_FOOTPRINT,
-  ON_LOADING_ALL_USER_LOGIN_FOOTPRINT
+  ON_LOADING_ALL_USER_LOGIN_FOOTPRINT,
+  ON_HYDRATING_ADMIN_TOOLS_AVATARS
 } from '../constants/AdminTools';
 
-const initState = {};
+const initState = {
+  avatarUrlMap: {}
+};
+
+const applyAvatarCacheToEnrollees = (allEnrollees = [], avatarUrlMap = {}) => (
+  KnowMeProfiles.mergeKnowMeProfileUrlsIntoItems(allEnrollees, avatarUrlMap, {
+    avatarField: 'AvatarUrl'
+  })
+);
 
 const adminTools = (state = initState, action) => {
   switch (action.type) {
     case ON_LOADING_ADMIN_TOOLS_INIT:
-      return { ...state, allCourses: action.allCourses, allRoles: action.allRoles, allEnrollees: action.allEnrollees, allRawCourses: action.allRawCourses };
+      return {
+        ...state,
+        allCourses: action.allCourses,
+        allRoles: action.allRoles,
+        allEnrollees: applyAvatarCacheToEnrollees(action.allEnrollees, state.avatarUrlMap),
+        allRawCourses: action.allRawCourses
+      };
     case ON_ASSIGNING_ROLE_TO_COURSE:
       return { ...state, lastAssignResult: action.assignResult };
     case ON_ASSIGNING_GLOBAL_ROLE:
@@ -27,6 +43,12 @@ const adminTools = (state = initState, action) => {
       return { ...state, contactLoginFootprint: action.contactLoginFootprint };
     case ON_LOADING_ALL_USER_LOGIN_FOOTPRINT:
       return { ...state, allUserLoginFootprint: action.allUserLoginFootprint };
+    case ON_HYDRATING_ADMIN_TOOLS_AVATARS:
+      return {
+        ...state,
+        avatarUrlMap: action.avatarUrlMap || state.avatarUrlMap,
+        allEnrollees: action.allEnrollees || state.allEnrollees
+      };
     case ON_CLEAR_SELECTED_CONTACT:
       return { ...state, contactCourseProgressActivity: null, contactLoginFootprint: null };
     default:

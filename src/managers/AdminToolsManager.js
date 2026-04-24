@@ -4,6 +4,7 @@ import LocalStorageService from "services/LocalStorageService";
 import AdminInsights from "lob/AdminInsights";
 import StudentProgress from "lob/StudentProgress";
 import LoginFootprint from "lob/LoginFootprint";
+import KnowMeProfiles from "lob/KnowMeProfiles";
 import utils from 'utils';
 
 const getTokenFromEmail = async (emailId) => {
@@ -28,6 +29,56 @@ export const initAdminTools = async (emailId) => {
   ]);
   const allCourses = await AdminInsights.courseSelectionConverter(rawCourses);
   return { allCourses, allRoles, allEnrollees, allRawCourses: rawCourses };
+};
+
+export const hydrateAdminToolAvatarUrls = async (
+  emailId,
+  allEnrollees = [],
+  contactInternalIds = [],
+  existingAvatarUrlMap = {}
+) => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) {
+    return {
+      avatarUrlMap: existingAvatarUrlMap || {},
+      allEnrollees
+    };
+  }
+
+  const contactIdSet = new Set(
+    KnowMeProfiles.extractContactInternalIds(contactInternalIds, value => value)
+  );
+
+  const targetItems = contactIdSet.size > 0
+    ? (allEnrollees || []).filter(item => contactIdSet.has(normalizeIdentifier(item?.ContactInternalId)))
+    : (allEnrollees || []);
+
+  const fetchedAvatarUrlMap = await KnowMeProfiles.getMissingKnowMeProfileUrlMap(
+    token,
+    targetItems,
+    existingAvatarUrlMap,
+    'hydrateAdminToolAvatarUrls',
+    {
+      avatarField: 'AvatarUrl'
+    }
+  );
+
+  const nextAvatarUrlMap = {
+    ...(existingAvatarUrlMap || {}),
+    ...fetchedAvatarUrlMap
+  };
+
+  return {
+    avatarUrlMap: nextAvatarUrlMap,
+    allEnrollees: KnowMeProfiles.mergeKnowMeProfileUrlsIntoItems(
+      allEnrollees,
+      nextAvatarUrlMap,
+      {
+        avatarField: 'AvatarUrl'
+      }
+    )
+  };
 };
 
 export const assignRoleToCourse = async (contactInternalId, courseCodeId, roleId, contactEmailId, adminEmailId) => {
@@ -155,7 +206,8 @@ const AdminToolsManager = {
   upsertCourse,
   getContactCourseProgressActivity,
   getContactLoginFootprint,
-  getAllUserLoginFootprint
+  getAllUserLoginFootprint,
+  hydrateAdminToolAvatarUrls
 };
 
 export default AdminToolsManager;

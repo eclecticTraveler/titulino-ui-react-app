@@ -8,7 +8,7 @@ import DropdownInsightSelection from './DropdownInsightSelection';
 import { faPersonPraying, faPieChart, faMapPin, faPersonHiking, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
-import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard, onSubmittingAdminEnrolleeProgress, onLoadingAllDashboardContents } from "redux/actions/Analytics";
+import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard, onSubmittingAdminEnrolleeProgress, onLoadingAllDashboardContents, onHydratingAnalyticsAvatars } from "redux/actions/Analytics";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
 import DoubleCounterDisplay from 'components/layout-components/DoubleCounterDisplay';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
@@ -19,6 +19,20 @@ import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthe
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
+
+const normalizeContactInternalId = (value) => (
+  value == null ? '' : String(value).trim().toLowerCase()
+);
+
+const hasAvatarResolution = (avatarUrlMap = {}, contactInternalId) => (
+  Object.prototype.hasOwnProperty.call(avatarUrlMap || {}, normalizeContactInternalId(contactInternalId))
+);
+
+const tableModelHasMissingAvatarResolutions = (tableModel, avatarUrlMap = {}) => (
+  (tableModel?.tableData || []).some(row => (
+    row?.contactInternalId && !hasAvatarResolution(avatarUrlMap, row.contactInternalId)
+  ))
+);
 
 const InsightsLandingDashboard = (props) => {
   const {
@@ -37,7 +51,9 @@ const InsightsLandingDashboard = (props) => {
     enrolleDashboardData,
     enrolleesCourseProgressData,
     user,
-    onLoadingAllDashboardContents
+    onLoadingAllDashboardContents,
+    onHydratingAnalyticsAvatars,
+    avatarUrlMap
   } = props;
 
   const intl = useIntl();
@@ -141,6 +157,36 @@ const InsightsLandingDashboard = (props) => {
 			setFilteredProgressData(enrolleesCourseProgressData.tableData);
 		}
 	}, [enrolleesCourseProgressData]);
+
+  useEffect(() => {
+    if (
+      activeOuterTabKey !== 'general' ||
+      activeInnerTabs.general !== 'general-enrollee-list' ||
+      !user?.emailId ||
+      !tableModelHasMissingAvatarResolutions(enrolleDashboardData, avatarUrlMap)
+    ) {
+      return;
+    }
+
+    onHydratingAnalyticsAvatars(user.emailId, avatarUrlMap, {
+      enrolleDashboardData
+    });
+  }, [activeOuterTabKey, activeInnerTabs.general, enrolleDashboardData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars]);
+
+  useEffect(() => {
+    if (
+      activeOuterTabKey !== 'progress' ||
+      activeInnerTabs.progress !== 'progress-enrollee-list' ||
+      !user?.emailId ||
+      !tableModelHasMissingAvatarResolutions(enrolleesCourseProgressData, avatarUrlMap)
+    ) {
+      return;
+    }
+
+    onHydratingAnalyticsAvatars(user.emailId, avatarUrlMap, {
+      enrolleesCourseProgressData
+    });
+  }, [activeOuterTabKey, activeInnerTabs.progress, enrolleesCourseProgressData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars]);
 
 	useEffect(() => {
 		// Load data only if necessary
@@ -499,7 +545,8 @@ function mapDispatchToProps(dispatch) {
 		onRenderingAdminInsightsDashboard: onRenderingAdminInsightsDashboard,
 		onRenderingLocationTypeSelectionsToDashboard: onRenderingLocationTypeSelectionsToDashboard,
 		onSubmittingAdminEnrolleeProgress: onSubmittingAdminEnrolleeProgress,
-		onLoadingAllDashboardContents: onLoadingAllDashboardContents
+		onLoadingAllDashboardContents: onLoadingAllDashboardContents,
+    onHydratingAnalyticsAvatars: onHydratingAnalyticsAvatars
 	}, dispatch);
 }
 
@@ -517,7 +564,8 @@ const mapStateToProps = ({ analytics, grant }) => {
     demographicDashboardData,
     progressDemographicDashboardData,
     enrolleDashboardData,
-    enrolleesCourseProgressData
+    enrolleesCourseProgressData,
+    avatarUrlMap
   } = analytics;
   return {
     allCourses,
@@ -531,6 +579,7 @@ const mapStateToProps = ({ analytics, grant }) => {
     demographicDashboardData,
     progressDemographicDashboardData,
     enrolleesCourseProgressData,
+    avatarUrlMap,
     user
   };
 };

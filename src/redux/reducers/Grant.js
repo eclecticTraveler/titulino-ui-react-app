@@ -57,7 +57,11 @@ const grant = (state = initState, action) => {
     case ON_LOADING_AUTHENTICATED_LANDING_PAGE:
       return {
         ...state,
-        user: action.user
+        user: {
+          ...state.user,
+          ...action.user,
+          innerToken: action.user?.innerToken || state.user?.innerToken || localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
+        }
       };
     case ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH:
       return {

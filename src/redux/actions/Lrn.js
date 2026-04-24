@@ -254,38 +254,44 @@ export const onSubmittingUserCourseProgress = async (email, courseProgress) => {
   }
 }
 
-export const onSubmittingEnrollee = async (enrollees, isFullEnrollment) => {
-  let submittedEnrollee = [];
-  let wasSuccessful = false;
-  const token = await TitulinoNetService.getRegistrationToken("onLoginEnrolleeContact");
-  if(token){
-    submittedEnrollee = await TitulinoNetService.upsertEnrollment(token, enrollees, "onSubmittingEnrollee");
-    console.log("submittedEnrollee Net", submittedEnrollee?.length > 0);
-    if(submittedEnrollee?.length > 0){
-      wasSuccessful = true;
-    }else{
-      // Backup
-      submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
-      console.log("submittedEnrollee DW");
-      if(submittedEnrollee?.length > 0){
-        wasSuccessful = true;
-      }else{
-        wasSuccessful = false;
-      }
-    }
-  }else{
-    submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
-    console.log("submittedEnrollee 2nd DW");
-    if(submittedEnrollee){
-      wasSuccessful = true;
-    }else{
-      wasSuccessful = false;
-    }
-  }
+export const onSubmittingEnrollee = async (enrollees, isFullEnrollment, filesMap = {}, profilePictureContext = {}) => {
+  const {
+    submittedEnrollee,
+    wasSuccessful,
+    uploadResult
+  } = await LrnManager.submitUnauthenticatedEnrollment({
+    enrollees,
+    filesMap,
+    profilePictureContext,
+    isFullEnrollment
+  });
+
   return {
     type: ON_SUBMITTING_ENROLLEE,
-    wasSubmittingEnrolleeSucessful: wasSuccessful
+    wasSubmittingEnrolleeSucessful: wasSuccessful,
+    submittedEnrollee,
+    uploadedProfilePicture: uploadResult
   }
+}
+
+// Authenticated Section
+export const onSubmittingAuthenticatedEnrollee = async (enrollees, filesMap = {}, user = {}) => {
+  const {
+    submittedEnrollee,
+    wasSuccessful,
+    uploadResult
+  } = await LrnManager.submitAuthenticatedEnrollment({
+    enrollees,
+    filesMap,
+    user
+  });
+
+  return {
+    type: ON_SUBMITTING_ENROLLEE,
+    wasSubmittingEnrolleeSucessful: wasSuccessful,
+    submittedEnrollee,
+    uploadedProfilePicture: uploadResult
+  };
 }
 
 export const onResetSubmittingEnrollee = async (resetValue) => {

@@ -366,21 +366,66 @@ export const assignGlobalRole = async (contactInternalId, roleId, token, whoCall
 };
 
 export const upsertCourse = async (courseData, token, whoCalledMe = 'upsertCourse') => {
-  if (!token || !courseData) return false;
+  if (!token || !courseData) {
+    return {
+      success: false,
+      data: null,
+      status: null,
+      errorMessage: 'Missing token or course data.',
+    };
+  }
   const url = `${SupabaseConfig.baseApiUrl}/UpsertCourse`;
   const requestOptions = {
     method: 'POST',
     headers: getHeaders(token),
-    body: JSON.stringify({ course_data: courseData }),
+    body: JSON.stringify({ p_courses_json: courseData }),
     redirect: 'follow',
   };
   try {
     const response = await fetch(url, requestOptions);
-    if (!response.ok) return false;
-    return (await response.json()) ?? false;
+    const responseText = await response.text();
+    let parsedResult = null;
+
+    if (responseText) {
+      try {
+        parsedResult = JSON.parse(responseText);
+      } catch (parseError) {
+        parsedResult = responseText;
+      }
+    }
+
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') {
+        console.warn(`[${whoCalledMe}] upsertCourse failed with status ${response.status}`);
+        console.warn(`[${whoCalledMe}] upsertCourse response body:`, parsedResult);
+      }
+
+      return {
+        success: false,
+        data: parsedResult,
+        status: response.status,
+        errorMessage:
+          parsedResult?.message ||
+          parsedResult?.Message ||
+          response.statusText ||
+          'Course upsert failed.',
+      };
+    }
+
+    return {
+      success: true,
+      data: parsedResult,
+      status: response.status,
+      errorMessage: null,
+    };
   } catch (error) {
     console.error(`[${whoCalledMe}] Exception:`, error);
-    return false;
+    return {
+      success: false,
+      data: null,
+      status: null,
+      errorMessage: error?.message || 'Course upsert failed.',
+    };
   }
 };
 

@@ -7,7 +7,8 @@ import {
   ON_UPSERTING_COURSE,
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
   ON_LOADING_CONTACT_LOGIN_FOOTPRINT,
-  ON_LOADING_ALL_USER_LOGIN_FOOTPRINT
+  ON_LOADING_ALL_USER_LOGIN_FOOTPRINT,
+  ON_HYDRATING_ADMIN_TOOLS_AVATARS
 } from '../constants/AdminTools';
 
 export const onLoadingAdminToolsInit = async (emailId) => {
@@ -48,6 +49,21 @@ export const onLoadingContactLoginFootprint = async (contactInternalId, emailId)
 export const onLoadingAllUserLoginFootprint = async (emailId) => {
   const allUserLoginFootprint = await AdminToolsManager.getAllUserLoginFootprint(emailId);
   return { type: ON_LOADING_ALL_USER_LOGIN_FOOTPRINT, allUserLoginFootprint };
+};
+
+export const onHydratingAdminToolAvatars = async (emailId, avatarUrlMap, allEnrollees, contactInternalIds) => {
+  const result = await AdminToolsManager.hydrateAdminToolAvatarUrls(
+    emailId,
+    allEnrollees,
+    contactInternalIds,
+    avatarUrlMap
+  );
+
+  return {
+    type: ON_HYDRATING_ADMIN_TOOLS_AVATARS,
+    avatarUrlMap: result?.avatarUrlMap || avatarUrlMap || {},
+    allEnrollees: result?.allEnrollees || allEnrollees || []
+  };
 };
 
 export const onClearSelectedContact = () => {

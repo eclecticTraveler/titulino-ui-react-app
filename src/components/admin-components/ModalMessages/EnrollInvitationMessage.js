@@ -1,9 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { Button } from 'antd';
 import { useHistory } from 'utils/routerCompat';
 import IntlMessage from "components/util-components/IntlMessage";
 
-const EnrollInvitationMessage = ({handlePostButtonClick}) => {
+const EnrollInvitationMessage = ({handlePostButtonClick, token, user}) => {
   const history = useHistory();
   const locale = true;
 
@@ -13,7 +14,7 @@ const EnrollInvitationMessage = ({handlePostButtonClick}) => {
 
   const doAction = () => {
     handlePostButtonClick();
-    history.push("/lrn/enroll");
+    history.push(token && user?.contactId ? "/lrn-auth/enroll" : "/lrn/enroll");
   };
 
   return (
@@ -33,4 +34,10 @@ const EnrollInvitationMessage = ({handlePostButtonClick}) => {
   );
 };
 
-export default EnrollInvitationMessage;
+const mapStateToProps = ({ auth, grant }) => {
+  const { token } = auth;
+  const { user } = grant;
+  return { token, user };
+};
+
+export default connect(mapStateToProps)(EnrollInvitationMessage);

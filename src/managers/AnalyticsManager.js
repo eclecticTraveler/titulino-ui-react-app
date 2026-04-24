@@ -4,11 +4,21 @@ import TitulinoAuthService from "services/TitulinoAuthService";
 import GoogleService from "services/GoogleService";
 import LocalStorageService from "services/LocalStorageService";
 import AdminInsights from "lob/AdminInsights";
+import KnowMeProfiles from "lob/KnowMeProfiles";
 import utils from 'utils';
 
 // Use unified cache functions
 const getCached = LocalStorageService.getCachedObject;
 const setCached = LocalStorageService.setCachedObject;
+
+const getUserProfileFromEmail = async (emailId) => {
+  if (!emailId) return null;
+  return LocalStorageService.getCachedObject(`UserProfile_${emailId}`);
+};
+
+const getKnowMeTokenFromUserProfile = (user, fallbackToken) => (
+  user?.innerToken || fallbackToken || null
+);
 
 export const getAllCourses = async () => {
   const key = `adminAllCourses`;
@@ -124,7 +134,7 @@ export const getCourseProgressDemographicInfoAdminDashboard = async (courseCodeI
   };
 };
 
-export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, countryId) => {
+export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
   const isAll = locationType?.toLowerCase() === "all";
 
   const enrolleeList = isAll
@@ -136,7 +146,7 @@ export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, 
   else if (locationType?.toLowerCase() === "residency") extracted = enrolleeList?.Residency;
   else if (locationType?.toLowerCase() === "birth") extracted = enrolleeList?.Birth;
 
-  return await AdminInsights.handleEnrolleeListConvertor(extracted, locationType, courseCodeId);
+  return AdminInsights.handleEnrolleeListConvertor(extracted, locationType, courseCodeId);
 };
 
 export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
@@ -238,6 +248,48 @@ export const getFacilitadorEnrolleesCourseProgressDashboard = async (courseCodeI
   return result;
 };
 
+export const hydrateAnalyticsAvatarUrls = async (
+  emailId,
+  tableModels = {},
+  existingAvatarUrlMap = {}
+) => {
+  const user = await getUserProfileFromEmail(emailId);
+  const token = getKnowMeTokenFromUserProfile(user);
+
+  if (!token) {
+    return {
+      avatarUrlMap: existingAvatarUrlMap || {},
+      tableModels
+    };
+  }
+
+  const combinedItems = Object.values(tableModels || {}).flatMap((tableModel) => tableModel?.tableData || []);
+  const fetchedAvatarUrlMap = await KnowMeProfiles.getMissingKnowMeProfileUrlMap(
+    token,
+    combinedItems,
+    existingAvatarUrlMap,
+    "hydrateAnalyticsAvatarUrls"
+  );
+
+  const nextAvatarUrlMap = {
+    ...(existingAvatarUrlMap || {}),
+    ...fetchedAvatarUrlMap
+  };
+
+  const nextTableModels = Object.entries(tableModels || {}).reduce((accumulator, [tableKey, tableModel]) => {
+    accumulator[tableKey] = KnowMeProfiles.applyKnowMeProfileUrlMapToTableModel(
+      tableModel,
+      nextAvatarUrlMap
+    );
+    return accumulator;
+  }, {});
+
+  return {
+    avatarUrlMap: nextAvatarUrlMap,
+    tableModels: nextTableModels
+  };
+};
+
 const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {
   const localStorageKey = `UserProfile_${emailId}`;  
   const user = await LocalStorageService.getCachedObject(localStorageKey);
@@ -313,6 +365,7 @@ const AnalyticsManager = {
   getEnrolleeKnowMeProfilePictureForCourse,
   getEnrolleesCourseProgressAdminDashboard,
   getFacilitadorEnrolleesCourseProgressDashboard,
+  hydrateAnalyticsAvatarUrls,
   upsertAdminEnrolleeCourseProgress,
   getFacilitadorDrillDownDemographics
 };

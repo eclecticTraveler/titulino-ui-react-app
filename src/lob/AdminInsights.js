@@ -1,9 +1,62 @@
 import Flag from "react-world-flags";
-import { Tag, Table, Progress, Avatar } from 'antd';
+import { Tag, Table, Progress, Avatar, Image } from 'antd';
 import { UserOutlined, CopyOutlined } from '@ant-design/icons';
 import StudentProgress from "lob/StudentProgress";
 import AdminProgressEditable from "components/layout-components/AdminProgressEditable";
 import IntlMessage from "components/util-components/IntlMessage";
+
+const hasAvatarUrl = (avatarUrl) =>
+  typeof avatarUrl === 'string' ? avatarUrl.trim().length > 0 : Boolean(avatarUrl);
+
+const avatarPresenceFilters = [
+  { text: 'With Photo', value: 'withPhoto' },
+  { text: 'Without Photo', value: 'withoutPhoto' }
+];
+
+const avatarPresenceFilter = (value, record) =>
+  value === 'withPhoto' ? hasAvatarUrl(record?.avatarUrl) : !hasAvatarUrl(record?.avatarUrl);
+
+const avatarPresenceSorter = (a, b) =>
+  Number(hasAvatarUrl(a?.avatarUrl)) - Number(hasAvatarUrl(b?.avatarUrl));
+
+const avatarColumnTitle = (
+  <span style={{ whiteSpace: 'nowrap' }}>
+    <UserOutlined style={{ fontSize: 12, marginRight: 4 }} />
+    Photo
+  </span>
+);
+
+const renderAvatarCell = (url) => (
+  hasAvatarUrl(url) ? (
+    <div
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        overflow: 'hidden',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <Image
+        src={url}
+        alt="profile"
+        width={40}
+        height={40}
+        fallback="data:image/png;"
+        style={{ objectFit: 'cover' }}
+      />
+    </div>
+  ) : (
+    <Avatar
+      shape="square"
+      size={40}
+      icon={<UserOutlined />}
+      style={{ backgroundColor: '#87d068' }}
+    />
+  )
+);
 
 const getLatestProficiencyForCourse = (item, courseCodeId) => {
   if (!item) {
@@ -333,6 +386,7 @@ export const handleEnrolleeListConvertor = async (data, locationType, courseCode
         key: i,
         langLevel: currentLevel,
         enrolleeId: item?.ContactExternalId,
+        contactInternalId: item?.ContactInternalId,
         avatarUrl: null,
         names: item?.Names,
         lastNames: item?.LastNames,
@@ -453,7 +507,18 @@ export const handleEnrolleeListConvertor = async (data, locationType, courseCode
           title: 'Profile',
           children: [
               { title: 'Id', width: 100, dataIndex: 'enrolleeId', editable: false, filterSearch: true, filters: Array.from(filters.enrolleeIdFilter), onFilter: (value, record) => record.enrolleeId === value ? true : false, sorter: (a, b) => a.enrolleeId - b.enrolleeId },
-              { title: <UserOutlined style={{ fontSize: 12 }} />, dataIndex: 'avatarUrl', width: 60, align: 'center', render: (url) => <Avatar size={28} src={url || undefined} icon={<UserOutlined />} style={{ backgroundColor: url ? 'transparent' : '#87d068' }} /> },
+              {
+                title: avatarColumnTitle,
+                dataIndex: 'avatarUrl',
+                width: 96,
+                align: 'center',
+                filters: avatarPresenceFilters,
+                filterMultiple: false,
+                onFilter: avatarPresenceFilter,
+                sorter: avatarPresenceSorter,
+                sortDirections: ['descend', 'ascend'],
+                render: renderAvatarCell
+              },
               { title: 'Names', width: 150, dataIndex: 'names', editable: false, filterSearch: true, filters: Array.from(filters.namesFilter), onFilter: (value, record) => record.names?.indexOf(value) === 0, sorter: (a, b) => a.names.localeCompare(b.names), sortDirections: ["ascend", "descend"] },
               { title: 'Last Names', width: 150, dataIndex: 'lastNames', editable: false, filterSearch: true, filters: Array.from(filters.lastNamesFilter), onFilter: (value, record) => record.lastNames?.indexOf(value) === 0, sorter: (a, b) => a.lastNames.localeCompare(b.lastNames), sortDirections: ["ascend", "descend"] },
               { title: 'Age', width: 60, dataIndex: 'age', editable: false, filterSearch: true, filters: Array.from(filters.ageFilter), onFilter: (value, record) => record.age === value ? true : false, sorter: (a, b) => a.age - b.age },
@@ -643,6 +708,7 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
         key: index,
         enrolleeId: item?.ContactExternalId,
         contactInternalId: item?.ContactInternalId,
+        avatarUrl: null,
         fullName: `${item.LastNames}, ${item.Names}`,
         countryOfResidency,
         countryOfBirth,
@@ -746,6 +812,18 @@ export const handleEnrolleeProgressListConvertor = async (data, locationType, pr
           filters: Array.from(filters.enrolleeIdFilter || []), 
           onFilter: (value, record) => record.enrolleeId === value ? true : false,
           sorter: (a, b) => a.enrolleeId - b.enrolleeId
+        },
+        {
+          title: avatarColumnTitle,
+          dataIndex: 'avatarUrl',
+          width: 96,
+          align: 'center',
+          filters: avatarPresenceFilters,
+          filterMultiple: false,
+          onFilter: avatarPresenceFilter,
+          sorter: avatarPresenceSorter,
+          sortDirections: ['descend', 'ascend'],
+          render: renderAvatarCell
         },
         {
           title: <IntlMessage id="admin.dashboard.insights.progress.fullName" />,
@@ -992,11 +1070,16 @@ export const handleFacilitadorEnrolleeListConvertor = async (enrolleeData, progr
           sorter: (a, b) => a.enrolleeId - b.enrolleeId
         },
         {
-          title: <UserOutlined style={{ fontSize: 12 }} />,
+          title: avatarColumnTitle,
           dataIndex: 'avatarUrl',
-          width: 50,
+          width: 96,
           align: 'center',
-          render: (url) => <Avatar size={28} src={url || undefined} icon={<UserOutlined />} style={{ backgroundColor: url ? 'transparent' : '#87d068' }} />
+          filters: avatarPresenceFilters,
+          filterMultiple: false,
+          onFilter: avatarPresenceFilter,
+          sorter: avatarPresenceSorter,
+          sortDirections: ['descend', 'ascend'],
+          render: renderAvatarCell
         },
         {
           title: <IntlMessage id="admin.dashboard.insights.progress.fullName" />,

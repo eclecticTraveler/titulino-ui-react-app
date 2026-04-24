@@ -8,7 +8,8 @@ import {
   ON_LOADING_USER_AUTHENTICATED_PROGRESS_DASHBOARD,
   ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS,
   ON_LOADING_FACILITADOR_DASHBOARD_CONTENTS,
-  ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS
+  ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS,
+  ON_HYDRATING_ANALYTICS_AVATARS
 } from '../constants/Analytics';
 
 export function onTestingDefault(defaultValue) {
@@ -58,7 +59,7 @@ export const onLoadingAllDashboardContents = async (courseCodeId, locationType, 
       TitulinoManager.getCourseProgressOverviewInfoAdminDashboard(courseCodeId, locationType, countryId, emailId),
       TitulinoManager.getDemographicInfoAdminDashboard(courseCodeId, locationType, countryId),
       TitulinoManager.getCourseProgressDemographicInfoAdminDashboard(courseCodeId, locationType, countryId, emailId),
-      TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, locationType, countryId),
+      TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, locationType, countryId, emailId),
       TitulinoManager.getEnrolleesCourseProgressAdminDashboard(courseCodeId, locationType, countryId, emailId)
     ]);
 
@@ -126,7 +127,7 @@ export const onLoadingFacilitadorDashboardContents = async (courseCodeId, emailI
       TitulinoManager.getCourseProgressOverviewInfoAdminDashboard(courseCodeId, 'all', 'All', emailId),
       TitulinoManager.getDemographicInfoAdminDashboard(courseCodeId, 'all', 'All'),
       TitulinoManager.getCourseProgressDemographicInfoAdminDashboard(courseCodeId, 'all', 'All', emailId),
-      TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, 'all', 'All'),
+      TitulinoManager.getEnrolleeInfoAdminDashboard(courseCodeId, 'all', 'All', emailId),
       TitulinoManager.getFacilitadorEnrolleesCourseProgressDashboard(courseCodeId, emailId)
     ]);
 
@@ -144,6 +145,20 @@ export const onLoadingFacilitadorDashboardContents = async (courseCodeId, emailI
     console.error('Error loading facilitador dashboard data:', error);
     throw error;
   }
+};
+
+export const onHydratingAnalyticsAvatars = async (emailId, avatarUrlMap, tableModels) => {
+  const result = await TitulinoManager.hydrateAnalyticsAvatarUrls(
+    emailId,
+    tableModels,
+    avatarUrlMap
+  );
+
+  return {
+    type: ON_HYDRATING_ANALYTICS_AVATARS,
+    avatarUrlMap: result?.avatarUrlMap || avatarUrlMap || {},
+    tableModels: result?.tableModels || {}
+  };
 };
 
 export const onLoadingUserAuthenticatedProgressDashboard = (emailId, dob, course) => {

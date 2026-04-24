@@ -48,7 +48,7 @@ const EmailYearSearchForm = (props) => {
     const dobString = fullDateOfBirth?.format("YYYY-MM-DD"); 
     console.log("fullDateOfBirth", dobString, user?.emailId)
     history.push({
-      pathname: "/lrn/enroll",
+      pathname: user?.contactId ? "/lrn-auth/enroll" : "/lrn/enroll",
       state: {
         email: user?.emailId,
         dateOfBirth: dobString,

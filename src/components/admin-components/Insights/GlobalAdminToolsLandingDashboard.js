@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm } from 'antd';
+import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image } from 'antd';
 import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined } from '@ant-design/icons';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
@@ -26,8 +26,17 @@ import {
   onUpsertingCourse,
   onLoadingContactCourseProgressActivity,
   onLoadingContactLoginFootprint,
-  onLoadingAllUserLoginFootprint
+  onLoadingAllUserLoginFootprint,
+  onHydratingAdminToolAvatars
 } from "redux/actions/AdminTools";
+
+const normalizeContactInternalId = (value) => (
+  value == null ? '' : String(value).trim().toLowerCase()
+);
+
+const hasAvatarResolution = (avatarUrlMap = {}, contactInternalId) => (
+  Object.prototype.hasOwnProperty.call(avatarUrlMap || {}, normalizeContactInternalId(contactInternalId))
+);
 
 const GlobalAdminToolsLandingDashboard = (props) => {
   const {
@@ -46,7 +55,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     contactCourseProgressActivity,
     contactLoginFootprint,
     onLoadingAllUserLoginFootprint,
-    allUserLoginFootprint
+    allUserLoginFootprint,
+    onHydratingAdminToolAvatars,
+    avatarUrlMap
   } = props;
 
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
@@ -78,6 +89,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const setLocale = (isLocaleOn, localeKey) =>
     isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   const t = (key) => intl.formatMessage({ id: key });
+  const getCourseUpsertResult = (actionResult) => actionResult?.upsertResult || actionResult || null;
+  const isCourseUpsertSuccessful = (actionResult) => getCourseUpsertResult(actionResult)?.success === true;
 
   const emailId = user?.emailId || null;
 
@@ -98,6 +111,18 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setContactProgressLoading(false);
     setContactLoginLoading(false);
   }, [selectedContact]);
+
+  useEffect(() => {
+    if (!selectedContact?.ContactInternalId || !allEnrollees?.length) return;
+
+    const refreshedSelectedContact = (allEnrollees || []).find(
+      enrollee => enrollee.ContactInternalId === selectedContact.ContactInternalId
+    );
+
+    if (refreshedSelectedContact && refreshedSelectedContact !== selectedContact) {
+      setSelectedContact(refreshedSelectedContact);
+    }
+  }, [allEnrollees, selectedContact]);
 
   useEffect(() => {
     if (contactTabKey === 'detailed' && selectedContact) {
@@ -162,6 +187,59 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       (e.Emails || []).some(em => (em.EmailId || '').toLowerCase().includes(lower))
     ).slice(0, 20);
   }, [searchText, allEnrollees]);
+
+  const visibleContactIdsForAvatarHydration = useMemo(() => {
+    const visibleIds = filteredEnrollees
+      .map(enrollee => enrollee?.ContactInternalId)
+      .filter(Boolean);
+
+    if (selectedContact?.ContactInternalId) {
+      visibleIds.push(selectedContact.ContactInternalId);
+    }
+
+    return Array.from(new Set(visibleIds.map(normalizeContactInternalId).filter(Boolean)));
+  }, [filteredEnrollees, selectedContact?.ContactInternalId]);
+
+  const filteredEnrolleesWithAvatarUrls = useMemo(() => (
+    (filteredEnrollees || []).map((enrollee) => ({
+      ...enrollee,
+      AvatarUrl: enrollee?.AvatarUrl || enrollee?.avatarUrl || avatarUrlMap?.[normalizeContactInternalId(enrollee?.ContactInternalId)] || null
+    }))
+  ), [filteredEnrollees, avatarUrlMap]);
+
+  const filteredEnrolleeMap = useMemo(() => (
+    (filteredEnrolleesWithAvatarUrls || []).reduce((accumulator, enrollee) => {
+      const contactInternalId = enrollee?.ContactInternalId;
+      if (contactInternalId) {
+        accumulator[contactInternalId] = enrollee;
+      }
+      return accumulator;
+    }, {})
+  ), [filteredEnrolleesWithAvatarUrls]);
+
+  useEffect(() => {
+    if (
+      activeOuterTabKey !== 'access' ||
+      !emailId ||
+      !allEnrollees?.length ||
+      visibleContactIdsForAvatarHydration.length === 0
+    ) {
+      return;
+    }
+
+    const unresolvedContactIds = visibleContactIdsForAvatarHydration.filter(
+      contactInternalId => !hasAvatarResolution(avatarUrlMap, contactInternalId)
+    );
+
+    if (unresolvedContactIds.length === 0) return;
+
+    onHydratingAdminToolAvatars(
+      emailId,
+      avatarUrlMap,
+      allEnrollees,
+      unresolvedContactIds
+    );
+  }, [activeOuterTabKey, emailId, allEnrollees, visibleContactIdsForAvatarHydration, avatarUrlMap, onHydratingAdminToolAvatars]);
 
   /* ── Course search memos (must be before early return) ── */
   const latestCourses = useMemo(() => {
@@ -307,6 +385,39 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     return generateCourseCodeId(courseFormValues.course, courseFormValues.StartDate, existingIds);
   }, [courseFormValues.course, courseFormValues.StartDate, allRawCourses]);
 
+  const renderSquarePreviewImage = (src, alt, icon, size = 160, backgroundColor = '#87d068') => (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 8,
+        overflow: 'hidden',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: src ? 'transparent' : '#f5f5f5'
+      }}
+    >
+      {src ? (
+        <Image
+          src={src}
+          alt={alt}
+          width={size}
+          height={size}
+          fallback="data:image/png;"
+          style={{ objectFit: 'cover' }}
+        />
+      ) : (
+        <Avatar
+          shape="square"
+          size={size}
+          icon={icon}
+          style={{ backgroundColor }}
+        />
+      )}
+    </div>
+  );
+
   if (user?.emailId && !user?.yearOfBirth) {
     return (
       <div id="unathenticated-landing-page-margin">
@@ -315,7 +426,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   }
 
-  const searchOptions = filteredEnrollees.map(e => ({
+  const searchOptions = filteredEnrolleesWithAvatarUrls.map(e => ({
     key: e.ContactInternalId,
     value: `${e.FullName || `${e.Names} ${e.LastNames}`} — ${e.Emails?.[0]?.EmailId || ''}`,
     label: (
@@ -323,7 +434,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         {e?.Location?.BirthLocation?.CountryOfBirth && (
           <Flag code={e.Location.BirthLocation.CountryOfBirth} style={{ width: 20, flexShrink: 0 }} />
         )}
-        <Avatar size={32} icon={<UserOutlined />} style={{ backgroundColor: '#87d068', flexShrink: 0 }} />
+        <Avatar size={32} src={e?.AvatarUrl || e?.avatarUrl} icon={<UserOutlined />} style={{ backgroundColor: (e?.AvatarUrl || e?.avatarUrl) ? 'transparent' : '#87d068', flexShrink: 0 }} />
         <div>
           <strong>{e.FullName || `${e.Names} ${e.LastNames}`}</strong>
           <br />
@@ -336,7 +447,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const handleSearchChange = (value) => setSearchText(value);
 
   const handleContactSelect = (value, option) => {
-    const found = (allEnrollees || []).find(e => e.ContactInternalId === option.key);
+    const found = filteredEnrolleeMap?.[option.key] || (allEnrollees || []).find(e => e.ContactInternalId === option.key);
     setSelectedContact(found || null);
   };
 
@@ -667,7 +778,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         {/* Profile header */}
         <Row gutter={24} style={{ marginBottom: 16 }}>
           <Col xs={24} sm={6} md={4} style={{ textAlign: 'center' }}>
-            <Avatar size={96} icon={<UserOutlined />} style={{ backgroundColor: '#87d068' }} />
+            {renderSquarePreviewImage(
+              selectedContact?.AvatarUrl || selectedContact?.avatarUrl,
+              selectedContact?.FullName || 'profile image',
+              <UserOutlined />,
+              160,
+              '#87d068'
+            )}
             <div style={{ marginTop: 8 }}>
               {selectedContact.IsActive
                 ? <Tag color="green">{t('admin.tools.label.active')}</Tag>
@@ -1031,7 +1148,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         NativeLanguageId: section === 'links' ? courseFormValues.NativeLanguageId : selectedCourseObj.NativeLanguageId,
         TargetLanguageId: section === 'links' ? courseFormValues.TargetLanguageId : selectedCourseObj.TargetLanguageId
       }];
-      await onUpsertingCourse(payload, emailId);
+      const actionResult = await onUpsertingCourse(payload, emailId);
+      if (!isCourseUpsertSuccessful(actionResult)) {
+        throw new Error(getCourseUpsertResult(actionResult)?.errorMessage || 'Course update failed.');
+      }
       message.success(t('admin.tools.course.msg.updateSuccess'));
       setEditingSections(prev => ({ ...prev, [section]: false }));
       // Refresh data
@@ -1068,7 +1188,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     try {
       const finalValues = { ...courseFormValues, CourseCodeId: createCourseGeneratedId };
       const payload = buildCourseUpsertPayload(finalValues);
-      await onUpsertingCourse(payload, emailId);
+      const actionResult = await onUpsertingCourse(payload, emailId);
+      if (!isCourseUpsertSuccessful(actionResult)) {
+        throw new Error(getCourseUpsertResult(actionResult)?.errorMessage || 'Course create failed.');
+      }
       message.success(t('admin.tools.course.msg.createSuccess'));
       setCourseFormValues({});
       setCourseTemplateId(null);
@@ -1119,10 +1242,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         {/* Profile header */}
         <Row gutter={24} style={{ marginBottom: 16 }}>
           <Col xs={24} sm={6} md={4} style={{ textAlign: 'center' }}>
-            {cd.imageUrl
-              ? <img src={cd.imageUrl} alt="course" style={{ width: 160, height: 160, objectFit: 'cover', borderRadius: 8 }} />
-              : <Avatar size={160} icon={<BookOutlined />} style={{ backgroundColor: '#1890ff' }} />
-            }
+            {renderSquarePreviewImage(
+              cd.imageUrl,
+              c.CourseCodeId || 'course image',
+              <BookOutlined />,
+              160,
+              '#1890ff'
+            )}
             <div style={{ marginTop: 8 }}>
               {c.OnGoing
                 ? <Tag color="green">{t('admin.tools.course.label.onGoingYes')}</Tag>
@@ -1517,7 +1643,8 @@ function mapDispatchToProps(dispatch) {
     onUpsertingCourse,
     onLoadingContactCourseProgressActivity,
     onLoadingContactLoginFootprint,
-    onLoadingAllUserLoginFootprint
+    onLoadingAllUserLoginFootprint,
+    onHydratingAdminToolAvatars
   }, dispatch);
 }
 
@@ -1530,7 +1657,8 @@ const mapStateToProps = ({ adminTools, grant }) => {
     allRawCourses,
     contactCourseProgressActivity,
     contactLoginFootprint,
-    allUserLoginFootprint
+    allUserLoginFootprint,
+    avatarUrlMap
   } = adminTools;
   return {
     user,
@@ -1540,7 +1668,8 @@ const mapStateToProps = ({ adminTools, grant }) => {
     allRawCourses,
     contactCourseProgressActivity,
     contactLoginFootprint,
-    allUserLoginFootprint
+    allUserLoginFootprint,
+    avatarUrlMap
   };
 };
 

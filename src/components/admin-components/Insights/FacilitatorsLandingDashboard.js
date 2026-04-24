@@ -8,7 +8,7 @@ import { faPieChart, faMapPin, faPersonHiking, faListCheck, faChartLine } from '
 import { faBook } from '@fortawesome/free-solid-svg-icons';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
-import { onLoadingFacilitadorDashboardContents, onSubmittingAdminEnrolleeProgress, onLoadingFacilitadorDrillDownDemographics } from "redux/actions/Analytics";
+import { onLoadingFacilitadorDashboardContents, onSubmittingAdminEnrolleeProgress, onLoadingFacilitadorDrillDownDemographics, onHydratingAnalyticsAvatars } from "redux/actions/Analytics";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
 import DoubleCounterDisplayV2 from 'components/layout-components/DoubleCounterDisplayV2';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
@@ -22,6 +22,20 @@ import EmailYearSearchForm from 'components/layout-components/EmailYearSearchFor
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import Flag from 'react-world-flags';
+
+const normalizeContactInternalId = (value) => (
+  value == null ? '' : String(value).trim().toLowerCase()
+);
+
+const hasAvatarResolution = (avatarUrlMap = {}, contactInternalId) => (
+  Object.prototype.hasOwnProperty.call(avatarUrlMap || {}, normalizeContactInternalId(contactInternalId))
+);
+
+const tableModelHasMissingAvatarResolutions = (tableModel, avatarUrlMap = {}) => (
+  (tableModel?.tableData || []).some(row => (
+    row?.contactInternalId && !hasAvatarResolution(avatarUrlMap, row.contactInternalId)
+  ))
+);
 
 const coverUrl = 'https://images.unsplash.com/photo-1561089489-f13d5e730d72?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
@@ -41,7 +55,9 @@ const FacilitatorsLandingDashboard = (props) => {
     drillDownDemographicData,
     facilitadorEnrolleeData,
     selectedCourseCodeId,
-    user
+    user,
+    onHydratingAnalyticsAvatars,
+    avatarUrlMap
   } = props;
 
   const intl = useIntl();
@@ -73,6 +89,20 @@ const FacilitatorsLandingDashboard = (props) => {
       setFilteredData(facilitadorEnrolleeData.tableData);
     }
   }, [facilitadorEnrolleeData]);
+
+  useEffect(() => {
+    if (
+      activeTabKey !== 'enrollees' ||
+      !user?.emailId ||
+      !tableModelHasMissingAvatarResolutions(facilitadorEnrolleeData, avatarUrlMap)
+    ) {
+      return;
+    }
+
+    onHydratingAnalyticsAvatars(user.emailId, avatarUrlMap, {
+      facilitadorEnrolleeData
+    });
+  }, [activeTabKey, facilitadorEnrolleeData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars]);
 
   // Merged demographics: general in consistent color, progress in distinct colors
   const mergedDemographicData = useMemo(() => {
@@ -370,7 +400,8 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     onLoadingFacilitadorDashboardContents,
     onSubmittingAdminEnrolleeProgress,
-    onLoadingFacilitadorDrillDownDemographics
+    onLoadingFacilitadorDrillDownDemographics,
+    onHydratingAnalyticsAvatars
   }, dispatch);
 }
 
@@ -385,7 +416,8 @@ const mapStateToProps = ({ analytics, grant }) => {
     drillDownMapJson,
     drillDownDemographicData,
     enrolleDashboardData,
-    facilitadorEnrolleeData
+    facilitadorEnrolleeData,
+    avatarUrlMap
   } = analytics;
   return {
     selectedCourseCodeId,
@@ -397,6 +429,7 @@ const mapStateToProps = ({ analytics, grant }) => {
     drillDownDemographicData,
     enrolleDashboardData,
     facilitadorEnrolleeData,
+    avatarUrlMap,
     user
   };
 };
