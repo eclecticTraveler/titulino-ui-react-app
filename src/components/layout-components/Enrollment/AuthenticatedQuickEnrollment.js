@@ -14,6 +14,7 @@ import Flag from "react-world-flags";
 import CourseDetails from "./CourseDetails";
 import EnrollmentProfilePictureField, { PROFILE_PICTURE_FIELD_NAME } from "./EnrollmentProfilePictureField";
 import { useIntl } from "react-intl";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
@@ -51,6 +52,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [pendingSubmission, setPendingSubmission] = useState(null);
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const intl = useIntl();
   const locale = true;
   const termsVersionLabel = "v2.1";
@@ -115,8 +117,8 @@ export const AuthenticatedQuickEnrollment = (props) => {
     if (!pendingSubmission?.records?.length) return;
 
     const upsertFormattedData = async () => {
-      const { records, filesMap } = pendingSubmission;
-      const upsertedRecords = await onSubmittingAuthenticatedEnrollee(records, filesMap, user);
+      const { records, filesMap, recaptchaToken } = pendingSubmission;
+      const upsertedRecords = await onSubmittingAuthenticatedEnrollee(records, filesMap, user, recaptchaToken);
       const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
 
       if (wasSuccessful === true) {
@@ -376,9 +378,22 @@ export const AuthenticatedQuickEnrollment = (props) => {
       }
 
       setSubmittingLoading(true);
+      if (!executeRecaptcha) {
+        console.warn("reCAPTCHA not ready");
+        setSubmittingLoading(false);
+        alert("reCAPTCHA not ready. Please try again.");
+        return;
+      }
+      const recaptchaToken = await executeRecaptcha("enrollment_submit");
+      if (!recaptchaToken) {
+        setSubmittingLoading(false);
+        alert("Could not verify reCAPTCHA. Please try again.");
+        return;
+      }
       setPendingSubmission({
         records: formattedDatatoSubmit,
-        filesMap
+        filesMap,
+        recaptchaToken
       });
       console.log("formattedDatatoSubmit", formattedDatatoSubmit);
     } catch (error) {

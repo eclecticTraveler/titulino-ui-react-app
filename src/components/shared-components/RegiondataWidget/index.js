@@ -108,8 +108,9 @@ const getProjectionConfig = (mapType) => {
     case "GT":
       return { scale: 8000, center: [-90.2, 15.3] };
     case "DO":
-    case "PR":
       return { scale: 10000, center: [-70.1, 18.7] };
+    case "PR":
+      return { scale: 19000, center: [-66.5, 18.3] };
     case "EC":
       return { scale: 4000, center: [-78, -2] };
     case "SV":

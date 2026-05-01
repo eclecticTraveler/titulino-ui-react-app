@@ -130,7 +130,7 @@ export const getRegistrationToken = async (whoCalledMe, userName) => {
   }
 }
 
-export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
+export const upsertEnrollment = async (token, enrolle, whoCalledMe, recaptchaToken) => {
   const recordsToSubmit = enrolle ? [...enrolle] : [];
   if (recordsToSubmit?.length > 0 && token) {
     const upsertEnrolleeUrl = `${titulinoNetEnrollmentApiUri}/enrollees`;
@@ -139,9 +139,14 @@ export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
       recordsToSubmit,
     );
 
+    const headers = getHeaders(token);
+    if (recaptchaToken) {
+      headers.append("X-Recaptcha-Token", recaptchaToken);
+    }
+
     const requestOptions = {
       method: "POST",
-      headers: getHeaders(token),
+      headers,
       body: raw,
       redirect: "follow",
     };

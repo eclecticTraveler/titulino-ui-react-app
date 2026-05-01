@@ -9,6 +9,7 @@ import CourseDetails from "./CourseDetails";
 import ContactEnrollment from './ContactEnrollment';
 import EnrollmentProfilePictureField, { PROFILE_PICTURE_FIELD_NAME } from "./EnrollmentProfilePictureField";
 import { useIntl } from 'react-intl';
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
@@ -39,6 +40,7 @@ export const QuickToFullEnrollment = (props) => {
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [pendingSubmission, setPendingSubmission] = useState(null);
+  const { executeRecaptcha } = useGoogleReCaptcha();
     console.log("passedEmail ", passedEmail, passedDateOfBirth);
   const intl = useIntl();
   const locale = true;
@@ -137,12 +139,13 @@ export const QuickToFullEnrollment = (props) => {
       if (!pendingSubmission?.records?.length) return;
 
       const upsertFormattedData = async () => {
-        const { records, filesMap, profilePictureContext } = pendingSubmission;
+        const { records, filesMap, profilePictureContext, recaptchaToken } = pendingSubmission;
         const upsertedRecords = await onSubmittingEnrollee(
           records,
           null,
           filesMap,
-          profilePictureContext
+          profilePictureContext,
+          recaptchaToken
         );
         const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
 
@@ -440,11 +443,23 @@ useEffect(() => {
         contactInternalId: returningEnrolleeCountryDivisionInfo?.contactInternalId || null
       };
       console.log("profilePictureContext", profilePictureContext, returningEnrolleeCountryDivisionInfo);
+
+      if (!executeRecaptcha) {
+        message.error(setLocaleString(locale, "enrollment.form.recaptchaNotReady", "reCAPTCHA not ready. Please try again."));
+        return;
+      }
+      const recaptchaToken = await executeRecaptcha("enrollment_submit");
+      if (!recaptchaToken) {
+        message.error(setLocaleString(locale, "enrollment.form.recaptchaFailed", "Could not verify reCAPTCHA. Please try again."));
+        return;
+      }
+
       setSubmittingLoading(true);
       setPendingSubmission({
         records: formattedDatatoSubmit,
         filesMap,
-        profilePictureContext
+        profilePictureContext,
+        recaptchaToken
       });
       console.log("formattedDatatoSubmit", formattedDatatoSubmit);
 

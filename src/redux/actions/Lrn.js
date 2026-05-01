@@ -254,7 +254,7 @@ export const onSubmittingUserCourseProgress = async (email, courseProgress) => {
   }
 }
 
-export const onSubmittingEnrollee = async (enrollees, isFullEnrollment, filesMap = {}, profilePictureContext = {}) => {
+export const onSubmittingEnrollee = async (enrollees, isFullEnrollment, filesMap = {}, profilePictureContext = {}, recaptchaToken = null) => {
   const {
     submittedEnrollee,
     wasSuccessful,
@@ -263,7 +263,8 @@ export const onSubmittingEnrollee = async (enrollees, isFullEnrollment, filesMap
     enrollees,
     filesMap,
     profilePictureContext,
-    isFullEnrollment
+    isFullEnrollment,
+    recaptchaToken
   });
 
   return {
@@ -275,7 +276,7 @@ export const onSubmittingEnrollee = async (enrollees, isFullEnrollment, filesMap
 }
 
 // Authenticated Section
-export const onSubmittingAuthenticatedEnrollee = async (enrollees, filesMap = {}, user = {}) => {
+export const onSubmittingAuthenticatedEnrollee = async (enrollees, filesMap = {}, user = {}, recaptchaToken = null) => {
   const {
     submittedEnrollee,
     wasSuccessful,
@@ -283,7 +284,8 @@ export const onSubmittingAuthenticatedEnrollee = async (enrollees, filesMap = {}
   } = await LrnManager.submitAuthenticatedEnrollment({
     enrollees,
     filesMap,
-    user
+    user,
+    recaptchaToken
   });
 
   return {

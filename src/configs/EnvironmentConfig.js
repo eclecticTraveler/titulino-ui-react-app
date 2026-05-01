@@ -7,6 +7,7 @@ const commonConfig = {
   IS_TO_USE_LOCAL_COURSE_THEME_DATA: false,
   TITULINO_NET_API: process.env.REACT_APP_TITULINO_NET_API || '',
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
+  RECAPTCHA_SITE_KEY: process.env.REACT_APP_RECAPTCHA_SITE_KEY || '',
 };
 
 const dev = {

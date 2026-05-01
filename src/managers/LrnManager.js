@@ -108,14 +108,14 @@ const getSubmittedContactInternalId = (submittedEnrollee) => {
   );
 };
 
-const submitEnrollmentRecords = async (enrollees, whoCalledMe = "submitEnrollmentRecords") => {
+const submitEnrollmentRecords = async (enrollees, whoCalledMe = "submitEnrollmentRecords", recaptchaToken = null) => {
   let submittedEnrollee = [];
   let wasSuccessful = false;
 
   const token = await TitulinoNetService.getRegistrationToken(`${whoCalledMe}:getRegistrationToken`);
 
   if (token) {
-    submittedEnrollee = await TitulinoNetService.upsertEnrollment(token, enrollees, whoCalledMe);
+    submittedEnrollee = await TitulinoNetService.upsertEnrollment(token, enrollees, whoCalledMe, recaptchaToken);
 
     if (submittedEnrollee?.length > 0) {
       wasSuccessful = true;
@@ -556,11 +556,13 @@ export const ensureEnrollmentProfilePicture = async ({
 export const submitAuthenticatedEnrollment = async ({
   enrollees,
   filesMap = {},
-  user
+  user,
+  recaptchaToken = null
 }) => {
   const { submittedEnrollee, wasSuccessful, registrationToken } = await submitEnrollmentRecords(
     enrollees,
-    "submitAuthenticatedEnrollment"
+    "submitAuthenticatedEnrollment",
+    recaptchaToken
   );
 
   let uploadResult = null;
@@ -589,11 +591,13 @@ export const submitAuthenticatedEnrollment = async ({
 export const submitUnauthenticatedEnrollment = async ({
   enrollees,
   filesMap = {},
-  profilePictureContext = {}
+  profilePictureContext = {},
+  recaptchaToken = null
 }) => {
   const { submittedEnrollee, wasSuccessful, registrationToken } = await submitEnrollmentRecords(
     enrollees,
-    "submitUnauthenticatedEnrollment"
+    "submitUnauthenticatedEnrollment",
+    recaptchaToken
   );
 
   let uploadResult = null;
