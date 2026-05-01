@@ -50,8 +50,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
   const [, setEnrolleeBirthDivision] = useState("");
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
-  const [submittedRecords, setSubmittingRecords] = useState([]);
-  const [submittedFilesMap, setSubmittedFilesMap] = useState({});
+  const [pendingSubmission, setPendingSubmission] = useState(null);
   const intl = useIntl();
   const locale = true;
   const termsVersionLabel = "v2.1";
@@ -113,25 +112,26 @@ export const AuthenticatedQuickEnrollment = (props) => {
   ), [birthDivisions]);
 
   useEffect(() => {
-    if (submittedRecords?.length > 0) {
-      const upsertFormattedData = async () => {
-        const upsertedRecords = await onSubmittingAuthenticatedEnrollee(submittedRecords, submittedFilesMap, user);
-        const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
+    if (!pendingSubmission?.records?.length) return;
 
-        if (wasSuccessful === true) {
-          setIsEnrollmentModalVisible(true);
-        } else if (wasSuccessful === false) {
-          console.log("wasSuccessful", wasSuccessful);
-          setIsEnrollmentModalVisible(false);
-        }
+    const upsertFormattedData = async () => {
+      const { records, filesMap } = pendingSubmission;
+      const upsertedRecords = await onSubmittingAuthenticatedEnrollee(records, filesMap, user);
+      const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
 
-        setSubmittingLoading(false);
-      };
+      if (wasSuccessful === true) {
+        setIsEnrollmentModalVisible(true);
+      } else if (wasSuccessful === false) {
+        console.log("wasSuccessful", wasSuccessful);
+        setIsEnrollmentModalVisible(false);
+      }
 
-      upsertFormattedData();
-    }
+      setSubmittingLoading(false);
+    };
+
+    upsertFormattedData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [submittedRecords, submittedFilesMap]);
+  }, [pendingSubmission]);
 
   const handleCloseModal = () => {
     setIsEnrollmentModalVisible(false);
@@ -376,8 +376,10 @@ export const AuthenticatedQuickEnrollment = (props) => {
       }
 
       setSubmittingLoading(true);
-      setSubmittedFilesMap(filesMap);
-      setSubmittingRecords(formattedDatatoSubmit);
+      setPendingSubmission({
+        records: formattedDatatoSubmit,
+        filesMap
+      });
       console.log("formattedDatatoSubmit", formattedDatatoSubmit);
     } catch (error) {
       console.log("Form invalid", error);
@@ -400,8 +402,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
     setEnrolleeBirthDivision("");
     onResetSubmittingEnrollee(undefined);
     setSubmittingLoading(false);
-    setSubmittedFilesMap({});
-    setSubmittingRecords([]);
+    setPendingSubmission(null);
     onSelectingEnrollmentCourses([]);
   };
 
@@ -584,9 +585,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
                       initialValue={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId ?? undefined}
                     >
                       <Select
-                        showSearch
-                        optionFilterProp="searchText"
-                        filterOption={filterOption}
+                        showSearch={{ optionFilterProp: "searchText", filterOption }}
                         placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
                         onChange={(value) => {
                           setSelectedCountryOfResidence(value);
@@ -605,9 +604,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
                         initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdResidency ?? undefined}
                       >
                         <Select
-                          showSearch
-                          optionFilterProp="searchText"
-                          filterOption={filterOption}
+                          showSearch={{ optionFilterProp: "searchText", filterOption }}
                           placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegion" })}
                           onChange={(value) => {
                             setEnrolleeResidencyDivision(value);
@@ -629,9 +626,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
                           initialValue={returningEnrolleeCountryDivisionInfo?.countryOfBirthId ?? undefined}
                         >
                           <Select
-                            showSearch
-                            optionFilterProp="searchText"
-                            filterOption={filterOption}
+                            showSearch={{ optionFilterProp: "searchText", filterOption }}
                             placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
                             onChange={(value) => {
                               setSelectedBirthCountry(value);
@@ -650,9 +645,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
                             initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth ?? undefined}
                           >
                             <Select
-                              showSearch
-                              optionFilterProp="searchText"
-                              filterOption={filterOption}
+                              showSearch={{ optionFilterProp: "searchText", filterOption }}
                               placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegionOfBirth" })}
                               onChange={(value) => {
                                 setEnrolleeBirthDivision(value);

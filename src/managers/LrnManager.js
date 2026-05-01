@@ -188,7 +188,7 @@ const resolveEnrollmentProfileContext = async ({
   let resolvedContactInternalId = contactInternalId || getContactInternalIdFromSubmittedEnrollee(submittedEnrollee, emailId);
   let resolvedToken = token || null;
 
-  if ((!resolvedContactInternalId || !resolvedToken) && emailId && dobOrYob) {
+  if (!resolvedContactInternalId && emailId && dobOrYob) {
     const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(
       emailId,
       dobOrYob,
@@ -558,7 +558,7 @@ export const submitAuthenticatedEnrollment = async ({
   filesMap = {},
   user
 }) => {
-  const { submittedEnrollee, wasSuccessful } = await submitEnrollmentRecords(
+  const { submittedEnrollee, wasSuccessful, registrationToken } = await submitEnrollmentRecords(
     enrollees,
     "submitAuthenticatedEnrollment"
   );
@@ -574,7 +574,7 @@ export const submitAuthenticatedEnrollment = async ({
       emailId: user?.emailId || enrollee?.emailAddress || enrollee?.emailId || null,
       dobOrYob: user?.yearOfBirth || enrollee?.dateOfBirth || null,
       contactInternalId: user?.contactInternalId || getSubmittedContactInternalId(submittedEnrollee) || null,
-      token: user?.innerToken || null,
+      token: user?.innerToken || registrationToken || null,
       submittedEnrollee
     });
   }
@@ -591,7 +591,7 @@ export const submitUnauthenticatedEnrollment = async ({
   filesMap = {},
   profilePictureContext = {}
 }) => {
-  const { submittedEnrollee, wasSuccessful } = await submitEnrollmentRecords(
+  const { submittedEnrollee, wasSuccessful, registrationToken } = await submitEnrollmentRecords(
     enrollees,
     "submitUnauthenticatedEnrollment"
   );
@@ -607,7 +607,7 @@ export const submitUnauthenticatedEnrollment = async ({
       emailId: profilePictureContext?.emailId || enrollee?.emailAddress || enrollee?.emailId || null,
       dobOrYob: profilePictureContext?.dobOrYob || enrollee?.dateOfBirth || null,
       contactInternalId: profilePictureContext?.contactInternalId || getSubmittedContactInternalId(submittedEnrollee) || null,
-      token: profilePictureContext?.token || null,
+      token: profilePictureContext?.token || registrationToken || null,
       submittedEnrollee
     });
   }
