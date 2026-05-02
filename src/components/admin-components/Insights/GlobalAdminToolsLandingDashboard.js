@@ -14,8 +14,6 @@ import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/Logi
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
-import { getGeoMapResource } from 'services/GoogleService';
-import { generateCourseCodeId, buildCourseUpsertPayload, prefillFromTemplate } from 'lob/AdminTools';
 import { env } from 'configs/EnvironmentConfig';
 import dayjs from 'dayjs';
 import {
@@ -27,7 +25,13 @@ import {
   onLoadingContactCourseProgressActivity,
   onLoadingContactLoginFootprint,
   onLoadingAllUserLoginFootprint,
-  onHydratingAdminToolAvatars
+  onHydratingAdminToolAvatars,
+  onLoadingContactGeoMaps,
+  onUploadingCourseCoverImage,
+  generateCourseCodeId,
+  buildCourseUpsertPayload,
+  prefillFromTemplate,
+  isValidHttpUrl
 } from "redux/actions/AdminTools";
 
 const normalizeContactInternalId = (value) => (
@@ -57,7 +61,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onLoadingAllUserLoginFootprint,
     allUserLoginFootprint,
     onHydratingAdminToolAvatars,
-    avatarUrlMap
+    avatarUrlMap,
+    onLoadingContactGeoMaps,
+    contactGeoMaps,
+    onUploadingCourseCoverImage
   } = props;
 
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
@@ -69,7 +76,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [contactTabKey, setContactTabKey] = useState('summary');
-  const [geoMaps, setGeoMaps] = useState({ birth: null, residency: null });
+  const geoMaps = contactGeoMaps || { birth: null, residency: null };
   const [selectedProgressCourseId, setSelectedProgressCourseId] = useState('all');
   const [contactProgressLoading, setContactProgressLoading] = useState(false);
   const [contactLoginLoading, setContactLoginLoading] = useState(false);
@@ -83,6 +90,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [editingSections, setEditingSections] = useState({});
   const [courseSubmitting, setCourseSubmitting] = useState(false);
   const [courseTemplateId, setCourseTemplateId] = useState(null);
+  // 'upload' (default) or 'url' — controls how the cover image is provided when creating a course.
+  const [courseImageSourceMode, setCourseImageSourceMode] = useState('upload');
 
   const locale = true;
   const intl = useIntl();
@@ -106,7 +115,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       setSelectedEmail(selectedContact.Emails[0].EmailId);
     }
     setContactTabKey('summary');
-    setGeoMaps({ birth: null, residency: null });
     setSelectedProgressCourseId('all');
     setContactProgressLoading(false);
     setContactLoginLoading(false);
@@ -126,22 +134,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   useEffect(() => {
     if (contactTabKey === 'detailed' && selectedContact) {
-      const bCode = selectedContact?.Location?.BirthLocation?.CountryOfBirth;
-      const bRegion = selectedContact?.Location?.BirthLocation?.CountryDivisionBirthName;
-      const rCode = selectedContact?.Location?.ResidencyLocation?.CountryOfResidency;
-      const rRegion = selectedContact?.Location?.ResidencyLocation?.CountryDivisionResidencyName;
-
-      const birthPromise = (bCode && bRegion)
-        ? getGeoMapResource(bCode, 'AdminTools-Birth').catch(() => null)
-        : Promise.resolve(null);
-      const residencyPromise = (rCode && rRegion)
-        ? (rCode === bCode && bRegion ? birthPromise : getGeoMapResource(rCode, 'AdminTools-Residency').catch(() => null))
-        : Promise.resolve(null);
-
-      Promise.all([birthPromise, residencyPromise]).then(([b, r]) => {
-        setGeoMaps({ birth: b, residency: r });
-      });
+      onLoadingContactGeoMaps(selectedContact);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contactTabKey, selectedContact]);
 
   useEffect(() => {
@@ -385,6 +380,32 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     return generateCourseCodeId(courseFormValues.course, courseFormValues.StartDate, existingIds);
   }, [courseFormValues.course, courseFormValues.StartDate, allRawCourses]);
 
+  // Courses already taken by the selected contact (enrolled or with a course role).
+  const selectedContactExistingCourseIds = useMemo(() => {
+    if (!selectedContact) return new Set();
+    const ids = [
+      ...(selectedContact.CoursesHistory || []).map(c => c?.CourseCodeId),
+      ...(selectedContact.UserCourseRoles || []).map(r => r?.CourseCodeId)
+    ].filter(Boolean);
+    return new Set(ids);
+  }, [selectedContact]);
+
+  const enrollableCourseSelectOptions = useMemo(() => {
+    return (allCourses || [])
+      .filter(c => c?.value && !selectedContactExistingCourseIds.has(c.value))
+      .map(c => ({
+        key: c.value,
+        value: c.value,
+        label: `${c.value} \u2014 ${c.name || c.value}`
+      }));
+  }, [allCourses, selectedContactExistingCourseIds]);
+
+  // Clear the selected course whenever the role changes so a stale selection
+  // can't survive when the enrollable list might also change.
+  useEffect(() => {
+    setSelectedCourse(null);
+  }, [selectedRole]);
+
   const renderSquarePreviewImage = (src, alt, icon, size = 160, backgroundColor = '#87d068') => (
     <div
       style={{
@@ -459,7 +480,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setSelectedRole(null);
     setSelectedEmail(null);
     setContactTabKey('summary');
-    setGeoMaps({ birth: null, residency: null });
   };
 
   const handleSubmit = async () => {
@@ -510,14 +530,20 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     label: c.name || c.value
   }));
 
+  // Course role dropdown is intentionally limited to Facilitator and User.
+  const ENROLL_ROLE_LOCALIZATION_KEYS = ['titulino.facilitator', 'titulino.user'];
+
   const roleSelectOptions = (allRoles || []).slice().sort((a, b) => (a.UserRolePriority ?? 999) - (b.UserRolePriority ?? 999)).map(r => ({
     key: r.UserRoleId,
     value: r.UserRoleId,
     label: r.LocalizationKey ? t(r.LocalizationKey) : r.UserRoleId,
-    isGlobal: !!r.IsGlobalAccessUserRole
+    isGlobal: !!r.IsGlobalAccessUserRole,
+    localizationKey: r.LocalizationKey || ''
   }));
 
-  const courseRoleOptions = roleSelectOptions.filter(r => !r.isGlobal);
+  const courseRoleOptions = roleSelectOptions.filter(r =>
+    !r.isGlobal && ENROLL_ROLE_LOCALIZATION_KEYS.includes((r.localizationKey || '').toLowerCase())
+  );
   const globalRoleOptions = roleSelectOptions.filter(r => r.isGlobal);
 
   const renderRolesAndCourses = (roles, courses) => (
@@ -560,9 +586,14 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                             const friendlyName = courseDef?.CourseDetails?.course;
                             return (
                               <Tooltip title={ce.CourseCodeId} key={i}>
-                                <Tag color="green" style={{ width: 'fit-content', cursor: 'default' }}>
-                                  {friendlyName || ce.CourseCodeId}
-                                </Tag>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                  <Tag color="green" style={{ width: 'fit-content', cursor: 'default', marginRight: 0 }}>
+                                    {friendlyName || ce.CourseCodeId}
+                                  </Tag>
+                                  <Tag color="geekblue" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
+                                    {ce.CourseCodeId}
+                                  </Tag>
+                                </span>
                               </Tooltip>
                             );
                           })}
@@ -945,11 +976,96 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         >
           <Radio.Button value="summary">{setLocale(locale, 'admin.tools.tab.summary')}</Radio.Button>
           <Radio.Button value="detailed">{setLocale(locale, 'admin.tools.tab.detailed')}</Radio.Button>
+          <Radio.Button value="access">{setLocale(locale, 'admin.tools.tab.access')}</Radio.Button>
         </Radio.Group>
 
         {contactTabKey === 'summary' && summaryContent}
         {contactTabKey === 'detailed' && detailedContent}
+        {contactTabKey === 'access' && renderAssignAccess()}
       </Card>
+    );
+  };
+
+  const renderAssignAccess = () => {
+    if (!selectedContact) return null;
+    const isEnroll = actionType === 'enroll';
+    const isCourseDisabled = isEnroll && !selectedRole;
+
+    return (
+      <>
+        <h4 style={{ marginBottom: 12 }}>
+          <SafetyCertificateOutlined style={{ marginRight: 8 }} />
+          {setLocale(locale, 'admin.tools.assignAccess')}
+        </h4>
+
+        <Radio.Group
+          value={actionType}
+          onChange={(e) => { setActionType(e.target.value); }}
+          style={{ marginBottom: 16 }}
+        >
+          <Radio.Button value="enroll">{setLocale(locale, 'admin.tools.enrollToCourse')}</Radio.Button>
+          <Radio.Button value="global">{setLocale(locale, 'admin.tools.assignGlobalRole')}</Radio.Button>
+        </Radio.Group>
+
+        <Row gutter={16}>
+          <Col xs={24} sm={12} md={8}>
+            <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.role')}</strong></div>
+            <Select
+              showSearch={{
+                filterOption: (input, option) =>
+                  (option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
+              }}
+              placeholder={t('admin.tools.selectRole')}
+              value={selectedRole}
+              onChange={setSelectedRole}
+              style={{ width: '100%' }}
+              options={isEnroll ? courseRoleOptions : globalRoleOptions}
+            />
+          </Col>
+          {isEnroll && (
+            <Col xs={24} sm={12} md={8}>
+              <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.course')}</strong></div>
+              <Select
+                showSearch={{
+                  filterOption: (input, option) =>
+                    (option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
+                }}
+                placeholder={t('admin.tools.selectCourse')}
+                value={selectedCourse}
+                onChange={setSelectedCourse}
+                style={{ width: '100%' }}
+                options={enrollableCourseSelectOptions}
+                disabled={isCourseDisabled}
+              />
+            </Col>
+          )}
+          {isEnroll && (
+            <Col xs={24} sm={12} md={8}>
+              <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.email')}</strong></div>
+              {(selectedContact.Emails || []).length > 1 ? (
+                <Select
+                  value={selectedEmail}
+                  onChange={setSelectedEmail}
+                  style={{ width: '100%' }}
+                  options={(selectedContact.Emails || []).map(e => ({ value: e.EmailId, label: e.EmailId }))}
+                />
+              ) : (
+                <Input value={selectedEmail || ''} readOnly />
+              )}
+            </Col>
+          )}
+        </Row>
+
+        <Button
+          type="primary"
+          onClick={handleSubmit}
+          loading={submitting}
+          style={{ marginTop: 16 }}
+          disabled={!selectedRole || (isEnroll && !selectedCourse)}
+        >
+          {isEnroll ? setLocale(locale, 'admin.tools.assignToCourse') : setLocale(locale, 'admin.tools.assignGlobalRole')}
+        </Button>
+      </>
     );
   };
 
@@ -981,85 +1097,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </div>
       </Card>
 
-      {/* Step 2: Contact Summary */}
+      {/* Step 2: Contact Summary (with Summary / Detailed / Access tabs) */}
       {renderContactSummary()}
-
-      {/* Step 3: Action Form */}
-      {selectedContact && (
-        <Card variant="outlined" size="small">
-          <h4 style={{ marginBottom: 12 }}>
-            <SafetyCertificateOutlined style={{ marginRight: 8 }} />
-            {setLocale(locale, 'admin.tools.assignAccess')}
-          </h4>
-
-          <Radio.Group
-            value={actionType}
-            onChange={(e) => { setActionType(e.target.value); }}
-            style={{ marginBottom: 16 }}
-          >
-            <Radio.Button value="enroll">{setLocale(locale, 'admin.tools.enrollToCourse')}</Radio.Button>
-            <Radio.Button value="global">{setLocale(locale, 'admin.tools.assignGlobalRole')}</Radio.Button>
-          </Radio.Group>
-
-          <Row gutter={16}>
-            {actionType === 'enroll' && (
-              <Col xs={24} sm={12} md={8}>
-                <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.course')}</strong></div>
-                <Select
-                  showSearch={{
-                    filterOption: (input, option) =>
-                      (option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
-                  }}
-                  placeholder={t('admin.tools.selectCourse')}
-                  value={selectedCourse}
-                  onChange={setSelectedCourse}
-                  style={{ width: '100%' }}
-                  options={courseSelectOptions}
-                />
-              </Col>
-            )}
-            <Col xs={24} sm={12} md={8}>
-              <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.role')}</strong></div>
-              <Select
-                showSearch={{
-                  filterOption: (input, option) =>
-                    (option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
-                }}
-                placeholder={t('admin.tools.selectRole')}
-                value={selectedRole}
-                onChange={setSelectedRole}
-                style={{ width: '100%' }}
-                options={actionType === 'enroll' ? courseRoleOptions : globalRoleOptions}
-              />
-            </Col>
-            {actionType === 'enroll' && (
-              <Col xs={24} sm={12} md={8}>
-                <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.email')}</strong></div>
-                {(selectedContact.Emails || []).length > 1 ? (
-                  <Select
-                    value={selectedEmail}
-                    onChange={setSelectedEmail}
-                    style={{ width: '100%' }}
-                    options={(selectedContact.Emails || []).map(e => ({ value: e.EmailId, label: e.EmailId }))}
-                  />
-                ) : (
-                  <Input value={selectedEmail || ''} readOnly />
-                )}
-              </Col>
-            )}
-          </Row>
-
-          <Button
-            type="primary"
-            onClick={handleSubmit}
-            loading={submitting}
-            style={{ marginTop: 16 }}
-            disabled={!selectedRole || (actionType === 'enroll' && !selectedCourse)}
-          >
-            {actionType === 'enroll' ? setLocale(locale, 'admin.tools.assignToCourse') : setLocale(locale, 'admin.tools.assignGlobalRole')}
-          </Button>
-        </Card>
-      )}
 
       {!selectedContact && !searchText && (
         <Empty description={setLocale(locale, 'admin.tools.searchToGetStarted')} style={{ marginTop: 40 }} />
@@ -1184,9 +1223,34 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       message.warning(t('admin.tools.course.msg.fillRequired'));
       return;
     }
+
+    // Validate the URL up-front when in URL mode — avoids a wasted upsert.
+    if (courseImageSourceMode === 'url' && courseFormValues.imageUrl && !isValidHttpUrl(courseFormValues.imageUrl)) {
+      message.error(t('admin.tools.course.msg.invalidImageUrl'));
+      return;
+    }
+
     setCourseSubmitting(true);
     try {
-      const finalValues = { ...courseFormValues, CourseCodeId: createCourseGeneratedId };
+      let resolvedImageUrl = courseFormValues.imageUrl || '';
+
+      // Step 1 — if the user picked a file in upload mode, upload it first and
+      // replace the local data-URL preview with the public URL the backend returns.
+      if (courseImageSourceMode === 'upload' && courseFormValues._imageFile) {
+        const uploadAction = await onUploadingCourseCoverImage(emailId, courseFormValues._imageFile);
+        const uploadResult = uploadAction?.uploadResult || uploadAction;
+        if (!uploadResult?.success || !uploadResult?.imageUrl) {
+          throw new Error(uploadResult?.errorMessage || 'Course cover upload failed.');
+        }
+        resolvedImageUrl = uploadResult.imageUrl;
+      }
+
+      // Step 2 — upsert the course with the resolved (public) imageUrl.
+      const finalValues = {
+        ...courseFormValues,
+        imageUrl: resolvedImageUrl,
+        CourseCodeId: createCourseGeneratedId
+      };
       const payload = buildCourseUpsertPayload(finalValues);
       const actionResult = await onUpsertingCourse(payload, emailId);
       if (!isCourseUpsertSuccessful(actionResult)) {
@@ -1195,11 +1259,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       message.success(t('admin.tools.course.msg.createSuccess'));
       setCourseFormValues({});
       setCourseTemplateId(null);
+      setCourseImageSourceMode('upload');
       setCourseTabKey('summary');
       if (emailId) onLoadingAdminToolsInit(emailId);
     } catch (e) {
       console.error(e);
-      message.error(t('admin.tools.course.msg.upsertError'));
+      const fallbackKey = courseImageSourceMode === 'upload' && courseFormValues._imageFile
+        ? 'admin.tools.course.msg.imageUploadFailed'
+        : 'admin.tools.course.msg.upsertError';
+      message.error(t(fallbackKey));
     }
     setCourseSubmitting(false);
   };
@@ -1453,25 +1521,54 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong><MessageOutlined style={{ marginRight: 4, color: '#25D366' }} />{t('admin.tools.course.label.whatsAppLink')}</strong></div><Input value={courseFormValues.whatsAppLink || ''} onChange={e => setCourseFormValues(p => ({ ...p, whatsAppLink: e.target.value }))} /></Col>
         </Row>
         <Row gutter={16} style={{ marginTop: 12 }}>
-          <Col xs={24} sm={12}>
-            <div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.imageUrl')}</strong></div>
-            <Input value={courseFormValues.imageUrl || ''} onChange={e => setCourseFormValues(p => ({ ...p, imageUrl: e.target.value }))} placeholder="https://..." />
-          </Col>
-          <Col xs={24} sm={12}>
-            <div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.uploadImage')}</strong> <small style={{ color: '#999' }}>({t('admin.tools.course.label.orEnterUrl')})</small></div>
-            <Upload
-              accept="image/*"
-              maxCount={1}
-              beforeUpload={(file) => {
-                const reader = new FileReader();
-                reader.onload = () => setCourseFormValues(p => ({ ...p, imageUrl: reader.result, _imageFile: file }));
-                reader.readAsDataURL(file);
-                return false;
+          <Col xs={24}>
+            <div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.imageSource')}</strong></div>
+            <Radio.Group
+              value={courseImageSourceMode}
+              onChange={(e) => {
+                const next = e.target.value;
+                setCourseImageSourceMode(next);
+                // Switching modes clears the staged image so the two paths can't bleed into each other.
+                setCourseFormValues(p => ({ ...p, imageUrl: '', _imageFile: undefined }));
               }}
-              showUploadList={false}
+              style={{ marginBottom: 8 }}
             >
-              <Button icon={<UploadOutlined />}>{t('admin.tools.course.label.uploadImage')}</Button>
-            </Upload>
+              <Radio.Button value="upload">
+                <UploadOutlined style={{ marginRight: 4 }} />
+                {t('admin.tools.course.label.imageSource.upload')}
+              </Radio.Button>
+              <Radio.Button value="url">
+                <GlobalOutlined style={{ marginRight: 4 }} />
+                {t('admin.tools.course.label.imageSource.url')}
+              </Radio.Button>
+            </Radio.Group>
+            {courseImageSourceMode === 'url' ? (
+              <Input
+                value={courseFormValues.imageUrl || ''}
+                onChange={e => setCourseFormValues(p => ({ ...p, imageUrl: e.target.value, _imageFile: undefined }))}
+                placeholder="https://..."
+                status={courseFormValues.imageUrl && !isValidHttpUrl(courseFormValues.imageUrl) ? 'error' : ''}
+              />
+            ) : (
+              <Upload
+                accept="image/*"
+                maxCount={1}
+                beforeUpload={(file) => {
+                  const reader = new FileReader();
+                  reader.onload = () => setCourseFormValues(p => ({ ...p, imageUrl: reader.result, _imageFile: file }));
+                  reader.readAsDataURL(file);
+                  return false;
+                }}
+                showUploadList={false}
+              >
+                <Button icon={<UploadOutlined />}>{t('admin.tools.course.label.uploadImage')}</Button>
+              </Upload>
+            )}
+            {courseImageSourceMode === 'url' && courseFormValues.imageUrl && !isValidHttpUrl(courseFormValues.imageUrl) && (
+              <div style={{ color: '#ff4d4f', marginTop: 4, fontSize: 12 }}>
+                {t('admin.tools.course.msg.invalidImageUrl')}
+              </div>
+            )}
             {courseFormValues.imageUrl && (
               <Avatar size={48} src={courseFormValues.imageUrl} icon={<BookOutlined />} style={{ marginTop: 8 }} />
             )}
@@ -1644,7 +1741,9 @@ function mapDispatchToProps(dispatch) {
     onLoadingContactCourseProgressActivity,
     onLoadingContactLoginFootprint,
     onLoadingAllUserLoginFootprint,
-    onHydratingAdminToolAvatars
+    onHydratingAdminToolAvatars,
+    onLoadingContactGeoMaps,
+    onUploadingCourseCoverImage
   }, dispatch);
 }
 
@@ -1658,7 +1757,8 @@ const mapStateToProps = ({ adminTools, grant }) => {
     contactCourseProgressActivity,
     contactLoginFootprint,
     allUserLoginFootprint,
-    avatarUrlMap
+    avatarUrlMap,
+    contactGeoMaps
   } = adminTools;
   return {
     user,
@@ -1669,7 +1769,8 @@ const mapStateToProps = ({ adminTools, grant }) => {
     contactCourseProgressActivity,
     contactLoginFootprint,
     allUserLoginFootprint,
-    avatarUrlMap
+    avatarUrlMap,
+    contactGeoMaps
   };
 };
 

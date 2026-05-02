@@ -143,10 +143,43 @@ export const prefillFromTemplate = (rawCourse) => {
   };
 };
 
+/**
+ * Extract the public image URL from the /course-cover/upload response.
+ * Backend may return a string URL or an object with one of several shapes.
+ */
+export const extractUploadedCoverImageUrl = (uploadResult) => {
+  if (!uploadResult) return null;
+  if (typeof uploadResult === 'string') return uploadResult;
+  return (
+    uploadResult.url ||
+    uploadResult.Url ||
+    uploadResult.imageUrl ||
+    uploadResult.ImageUrl ||
+    uploadResult.publicUrl ||
+    uploadResult.PublicUrl ||
+    null
+  );
+};
+
+/**
+ * Strict HTTP/HTTPS URL validation for the manual image-URL entry mode.
+ */
+export const isValidHttpUrl = (value) => {
+  if (!value || typeof value !== 'string') return false;
+  try {
+    const parsed = new URL(value.trim());
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 const AdminToolsLob = {
   generateCourseCodeId,
   buildCourseUpsertPayload,
-  prefillFromTemplate
+  prefillFromTemplate,
+  extractUploadedCoverImageUrl,
+  isValidHttpUrl
 };
 
 export default AdminToolsLob;

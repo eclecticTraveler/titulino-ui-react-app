@@ -1,10 +1,19 @@
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoAuthService from "services/TitulinoAuthService";
+import TitulinoNetService from "services/TitulinoNetService";
 import LocalStorageService from "services/LocalStorageService";
+import { getGeoMapResource } from "services/GoogleService";
 import AdminInsights from "lob/AdminInsights";
 import StudentProgress from "lob/StudentProgress";
 import LoginFootprint from "lob/LoginFootprint";
 import KnowMeProfiles from "lob/KnowMeProfiles";
+import {
+  generateCourseCodeId as lobGenerateCourseCodeId,
+  buildCourseUpsertPayload as lobBuildCourseUpsertPayload,
+  prefillFromTemplate as lobPrefillFromTemplate,
+  extractUploadedCoverImageUrl,
+  isValidHttpUrl
+} from "lob/AdminTools";
 import utils from 'utils';
 
 const getTokenFromEmail = async (emailId) => {
@@ -199,6 +208,42 @@ export const getAllUserLoginFootprint = async (emailId) => {
   };
 };
 
+export const uploadCourseCoverImage = async (adminEmailId, file) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) {
+    return { success: false, imageUrl: null, errorMessage: 'Missing admin token.' };
+  }
+  if (!file) {
+    return { success: false, imageUrl: null, errorMessage: 'No file provided.' };
+  }
+  const apiResult = await TitulinoNetService.uploadCourseCoverImage(token, file, 'AdminToolsManager');
+  if (!apiResult) {
+    return { success: false, imageUrl: null, errorMessage: 'Course cover upload failed.' };
+  }
+  const imageUrl = extractUploadedCoverImageUrl(apiResult);
+  if (!imageUrl) {
+    return { success: false, imageUrl: null, errorMessage: 'Upload response did not include a public image URL.' };
+  }
+  return { success: true, imageUrl, errorMessage: null };
+};
+
+export const getContactGeoMaps = async (selectedContact) => {
+  const bCode = selectedContact?.Location?.BirthLocation?.CountryOfBirth;
+  const bRegion = selectedContact?.Location?.BirthLocation?.CountryDivisionBirthName;
+  const rCode = selectedContact?.Location?.ResidencyLocation?.CountryOfResidency;
+  const rRegion = selectedContact?.Location?.ResidencyLocation?.CountryDivisionResidencyName;
+
+  const birthPromise = (bCode && bRegion)
+    ? getGeoMapResource(bCode, 'AdminTools-Birth').catch(() => null)
+    : Promise.resolve(null);
+  const residencyPromise = (rCode && rRegion)
+    ? (rCode === bCode && bRegion ? birthPromise : getGeoMapResource(rCode, 'AdminTools-Residency').catch(() => null))
+    : Promise.resolve(null);
+
+  const [birth, residency] = await Promise.all([birthPromise, residencyPromise]);
+  return { birth, residency };
+};
+
 const AdminToolsManager = {
   initAdminTools,
   assignRoleToCourse,
@@ -207,7 +252,13 @@ const AdminToolsManager = {
   getContactCourseProgressActivity,
   getContactLoginFootprint,
   getAllUserLoginFootprint,
-  hydrateAdminToolAvatarUrls
+  hydrateAdminToolAvatarUrls,
+  getContactGeoMaps,
+  uploadCourseCoverImage,
+  generateCourseCodeId: lobGenerateCourseCodeId,
+  buildCourseUpsertPayload: lobBuildCourseUpsertPayload,
+  prefillFromTemplate: lobPrefillFromTemplate,
+  isValidHttpUrl
 };
 
 export default AdminToolsManager;

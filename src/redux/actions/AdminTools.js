@@ -8,8 +8,18 @@ import {
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
   ON_LOADING_CONTACT_LOGIN_FOOTPRINT,
   ON_LOADING_ALL_USER_LOGIN_FOOTPRINT,
-  ON_HYDRATING_ADMIN_TOOLS_AVATARS
+  ON_HYDRATING_ADMIN_TOOLS_AVATARS,
+  ON_LOADING_CONTACT_GEO_MAPS,
+  ON_UPLOADING_COURSE_COVER_IMAGE
 } from '../constants/AdminTools';
+
+// Pure helpers re-exported via the manager so components keep a single
+// import surface (redux/actions/AdminTools) and stay compliant with the
+// Component → Redux → Manager → Service/LOB convention.
+export const generateCourseCodeId = (...args) => AdminToolsManager.generateCourseCodeId(...args);
+export const buildCourseUpsertPayload = (...args) => AdminToolsManager.buildCourseUpsertPayload(...args);
+export const prefillFromTemplate = (...args) => AdminToolsManager.prefillFromTemplate(...args);
+export const isValidHttpUrl = (...args) => AdminToolsManager.isValidHttpUrl(...args);
 
 export const onLoadingAdminToolsInit = async (emailId) => {
   const { allCourses, allRoles, allEnrollees, allRawCourses } = await AdminToolsManager.initAdminTools(emailId);
@@ -68,4 +78,14 @@ export const onHydratingAdminToolAvatars = async (emailId, avatarUrlMap, allEnro
 
 export const onClearSelectedContact = () => {
   return { type: ON_CLEAR_SELECTED_CONTACT };
+};
+
+export const onLoadingContactGeoMaps = async (selectedContact) => {
+  const contactGeoMaps = await AdminToolsManager.getContactGeoMaps(selectedContact);
+  return { type: ON_LOADING_CONTACT_GEO_MAPS, contactGeoMaps };
+};
+
+export const onUploadingCourseCoverImage = async (adminEmailId, file) => {
+  const uploadResult = await AdminToolsManager.uploadCourseCoverImage(adminEmailId, file);
+  return { type: ON_UPLOADING_COURSE_COVER_IMAGE, uploadResult };
 };

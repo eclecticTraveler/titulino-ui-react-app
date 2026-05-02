@@ -8,7 +8,9 @@ import {
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
   ON_LOADING_CONTACT_LOGIN_FOOTPRINT,
   ON_LOADING_ALL_USER_LOGIN_FOOTPRINT,
-  ON_HYDRATING_ADMIN_TOOLS_AVATARS
+  ON_HYDRATING_ADMIN_TOOLS_AVATARS,
+  ON_LOADING_CONTACT_GEO_MAPS,
+  ON_UPLOADING_COURSE_COVER_IMAGE
 } from '../constants/AdminTools';
 
 const initState = {
@@ -49,8 +51,12 @@ const adminTools = (state = initState, action) => {
         avatarUrlMap: action.avatarUrlMap || state.avatarUrlMap,
         allEnrollees: action.allEnrollees || state.allEnrollees
       };
+    case ON_LOADING_CONTACT_GEO_MAPS:
+      return { ...state, contactGeoMaps: action.contactGeoMaps };
+    case ON_UPLOADING_COURSE_COVER_IMAGE:
+      return { ...state, lastCourseCoverUploadResult: action.uploadResult };
     case ON_CLEAR_SELECTED_CONTACT:
-      return { ...state, contactCourseProgressActivity: null, contactLoginFootprint: null };
+      return { ...state, contactCourseProgressActivity: null, contactLoginFootprint: null, contactGeoMaps: null };
     default:
       return state;
   }
