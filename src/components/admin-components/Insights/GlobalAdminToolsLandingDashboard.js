@@ -1178,7 +1178,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         ...(section === 'info' && { course: courseFormValues.course, teacher: courseFormValues.teacher, imageUrl: courseFormValues.imageUrl, location: courseFormValues.location, gatheringDay: courseFormValues.gatheringDay, gatheringTime: courseFormValues.gatheringTime, gatheringStartingDate: courseFormValues.gatheringStartingDate, courseWeeksLength: courseFormValues.courseWeeksLength }),
         ...(section === 'links' && { whatsAppLink: courseFormValues.whatsAppLink, targetAudienceNativeLanguage: courseFormValues.targetAudienceNativeLanguage })
       };
-      const payload = [{
+      const payload = buildCourseUpsertPayload({
         CourseCodeId: selectedCourseObj.CourseCodeId,
         CreationDate: selectedCourseObj.CreationDate,
         StartDate: section === 'dates' ? courseFormValues.StartDate : selectedCourseObj.StartDate,
@@ -1186,7 +1186,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         CourseDetails: merged,
         NativeLanguageId: section === 'links' ? courseFormValues.NativeLanguageId : selectedCourseObj.NativeLanguageId,
         TargetLanguageId: section === 'links' ? courseFormValues.TargetLanguageId : selectedCourseObj.TargetLanguageId
-      }];
+      });
       const actionResult = await onUpsertingCourse(payload, emailId);
       if (!isCourseUpsertSuccessful(actionResult)) {
         throw new Error(getCourseUpsertResult(actionResult)?.errorMessage || 'Course update failed.');

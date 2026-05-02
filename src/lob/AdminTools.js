@@ -70,18 +70,25 @@ export const generateCourseCodeId = (courseName, startDate, existingIds = []) =>
 };
 
 /**
- * Build the upsert payload that matches the DB course_type:
- *   { CourseCodeId, CreationDate, StartDate, EndDate, CourseDetails (jsonb), NativeLanguageId, TargetLanguageId }
- *
+ * Build the upsert payload expected by the course API.
  * Returns the payload wrapped in an array (the endpoint expects an array).
  */
-export const buildCourseUpsertPayload = (formValues) => {
+export const buildCourseUpsertPayload = (formValues = {}) => {
   const {
     CourseCodeId,
+    courseCodeId,
+    CreationDate,
+    creationDate,
     StartDate,
+    startDate,
     EndDate,
+    endDate,
     NativeLanguageId,
+    nativeLanguageId,
     TargetLanguageId,
+    targetLanguageId,
+    CourseDetails,
+    courseDetails,
     course,
     teacher,
     imageUrl,
@@ -93,26 +100,27 @@ export const buildCourseUpsertPayload = (formValues) => {
     whatsAppLink,
     targetAudienceNativeLanguage
   } = formValues;
+  const details = CourseDetails || courseDetails || {};
 
   return [{
-    CourseCodeId,
-    CreationDate: new Date().toISOString(),
-    StartDate: StartDate || null,
-    EndDate: EndDate || null,
-    CourseDetails: {
-      course: course || '',
-      teacher: teacher || '',
-      imageUrl: imageUrl || '',
-      location: location || '',
-      gatheringDay: gatheringDay || '',
-      gatheringTime: gatheringTime || '',
-      gatheringStartingDate: gatheringStartingDate || '',
-      courseWeeksLength: courseWeeksLength ?? null,
-      whatsAppLink: whatsAppLink || '',
-      targetAudienceNativeLanguage: targetAudienceNativeLanguage || ''
-    },
-    NativeLanguageId: NativeLanguageId || '',
-    TargetLanguageId: TargetLanguageId || ''
+    courseCodeId: CourseCodeId || courseCodeId || '',
+    creationDate: CreationDate || creationDate || new Date().toISOString(),
+    startDate: StartDate || startDate || null,
+    endDate: EndDate || endDate || null,
+    nativeLanguageId: NativeLanguageId ?? nativeLanguageId ?? '',
+    targetLanguageId: TargetLanguageId ?? targetLanguageId ?? '',
+    courseDetails: {
+      course: course ?? details.course ?? '',
+      teacher: teacher ?? details.teacher ?? '',
+      imageUrl: imageUrl ?? details.imageUrl ?? '',
+      location: location ?? details.location ?? '',
+      gatheringDay: gatheringDay ?? details.gatheringDay ?? '',
+      gatheringTime: gatheringTime ?? details.gatheringTime ?? '',
+      gatheringStartingDate: gatheringStartingDate ?? details.gatheringStartingDate ?? '',
+      courseWeeksLength: courseWeeksLength ?? details.courseWeeksLength ?? null,
+      whatsAppLink: whatsAppLink ?? details.whatsAppLink ?? '',
+      targetAudienceNativeLanguage: targetAudienceNativeLanguage ?? details.targetAudienceNativeLanguage ?? ''
+    }
   }];
 };
 
