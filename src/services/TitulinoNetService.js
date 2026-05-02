@@ -468,12 +468,13 @@ export const upsertStudentKnowMeClassFiles = async (token, filesToSubmit, whoCal
 
 
 
-export const uploadCourseCoverImage = async (token, file, whoCalledMe) => {
-  if (!file || !token) return null;
+export const uploadCourseCoverImage = async (token, file, courseCodeId, whoCalledMe) => {
+  if (!file || !token || !courseCodeId) return null;
 
   const upsertUrl = `${titulinoNetLrnApiUri}/course/cover/upload`;
 
   const formData = new FormData();
+  formData.append("CourseCodeId", courseCodeId);
   formData.append("File", file);
 
   const requestOptions = {

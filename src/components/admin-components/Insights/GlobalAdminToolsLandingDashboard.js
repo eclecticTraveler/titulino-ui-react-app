@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image } from 'antd';
+import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert } from 'antd';
 import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined } from '@ant-design/icons';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
@@ -379,6 +379,48 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     const existingIds = (allRawCourses || []).map(c => c.CourseCodeId);
     return generateCourseCodeId(courseFormValues.course, courseFormValues.StartDate, existingIds);
   }, [courseFormValues.course, courseFormValues.StartDate, allRawCourses]);
+
+  const hasRequiredCourseValue = (value) => {
+    if (typeof value === 'string') return value.trim().length > 0;
+    return value !== null && value !== undefined;
+  };
+
+  const getCourseCreateValidation = () => {
+    const imageUrl = typeof courseFormValues.imageUrl === 'string'
+      ? courseFormValues.imageUrl.trim()
+      : '';
+    const hasUploadFile = !!courseFormValues._imageFile;
+    const hasValidRemoteImageUrl = imageUrl.length > 0 && isValidHttpUrl(imageUrl);
+    const hasInvalidImageUrl = imageUrl.length > 0 && !hasUploadFile && !hasValidRemoteImageUrl;
+
+    const requiredFields = [
+      { label: t('admin.tools.course.label.courseName'), isValid: hasRequiredCourseValue(courseFormValues.course) },
+      { label: t('admin.tools.course.label.teacher'), isValid: hasRequiredCourseValue(courseFormValues.teacher) },
+      { label: t('admin.tools.course.label.startDate'), isValid: hasRequiredCourseValue(courseFormValues.StartDate) },
+      { label: t('admin.tools.course.label.courseWeeksLength'), isValid: Number(courseFormValues.courseWeeksLength) > 0 },
+      { label: t('admin.tools.course.label.endDate'), isValid: hasRequiredCourseValue(courseFormValues.EndDate) },
+      { label: t('admin.tools.course.label.nativeLanguage'), isValid: hasRequiredCourseValue(courseFormValues.NativeLanguageId) },
+      { label: t('admin.tools.course.label.targetLanguage'), isValid: hasRequiredCourseValue(courseFormValues.TargetLanguageId) },
+      { label: t('admin.tools.course.label.location'), isValid: hasRequiredCourseValue(courseFormValues.location) },
+      { label: t('admin.tools.course.label.gatheringDay'), isValid: hasRequiredCourseValue(courseFormValues.gatheringDay) },
+      { label: t('admin.tools.course.label.gatheringTime'), isValid: hasRequiredCourseValue(courseFormValues.gatheringTime) },
+      { label: t('admin.tools.course.label.gatheringStartingDate'), isValid: hasRequiredCourseValue(courseFormValues.gatheringStartingDate) },
+      { label: t('admin.tools.course.label.targetAudience'), isValid: hasRequiredCourseValue(courseFormValues.targetAudienceNativeLanguage) },
+      { label: t('admin.tools.course.label.whatsAppLink'), isValid: hasRequiredCourseValue(courseFormValues.whatsAppLink) },
+      { label: t('admin.tools.course.label.imageSource'), isValid: hasUploadFile || hasValidRemoteImageUrl }
+    ];
+    const missingLabels = requiredFields
+      .filter(field => !field.isValid)
+      .map(field => field.label);
+
+    return {
+      missingLabels,
+      hasInvalidImageUrl,
+      isComplete: missingLabels.length === 0 && !hasInvalidImageUrl
+    };
+  };
+
+  const courseCreateValidation = getCourseCreateValidation();
 
   // Courses already taken by the selected contact (enrolled or with a course role).
   const selectedContactExistingCourseIds = useMemo(() => {
@@ -1219,25 +1261,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   };
 
   const handleCreateCourse = async () => {
-    if (!courseFormValues.course || !courseFormValues.StartDate) {
-      message.warning(t('admin.tools.course.msg.fillRequired'));
-      return;
-    }
-
-    // Validate the URL up-front when in URL mode — avoids a wasted upsert.
-    if (courseImageSourceMode === 'url' && courseFormValues.imageUrl && !isValidHttpUrl(courseFormValues.imageUrl)) {
-      message.error(t('admin.tools.course.msg.invalidImageUrl'));
+    const validation = getCourseCreateValidation();
+    if (!validation.isComplete) {
+      message.warning(`${t('admin.tools.course.msg.fillRequired')} ${validation.missingLabels.join(', ')}`);
       return;
     }
 
     setCourseSubmitting(true);
     try {
       let resolvedImageUrl = courseFormValues.imageUrl || '';
+      const courseCodeId = createCourseGeneratedId;
 
       // Step 1 — if the user picked a file in upload mode, upload it first and
       // replace the local data-URL preview with the public URL the backend returns.
       if (courseImageSourceMode === 'upload' && courseFormValues._imageFile) {
-        const uploadAction = await onUploadingCourseCoverImage(emailId, courseFormValues._imageFile);
+        const uploadAction = await onUploadingCourseCoverImage(emailId, courseFormValues._imageFile, courseCodeId);
         const uploadResult = uploadAction?.uploadResult || uploadAction;
         if (!uploadResult?.success || !uploadResult?.imageUrl) {
           throw new Error(uploadResult?.errorMessage || 'Course cover upload failed.');
@@ -1249,7 +1287,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       const finalValues = {
         ...courseFormValues,
         imageUrl: resolvedImageUrl,
-        CourseCodeId: createCourseGeneratedId
+        CourseCodeId: courseCodeId
       };
       const payload = buildCourseUpsertPayload(finalValues);
       const actionResult = await onUpsertingCourse(payload, emailId);
@@ -1499,30 +1537,30 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         {/* Form fields */}
         <Row gutter={16}>
           <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.courseName')} *</strong></div><Input value={courseFormValues.course || ''} onChange={e => setCourseFormValues(p => ({ ...p, course: e.target.value }))} /></Col>
-          <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.teacher')}</strong></div><Input value={courseFormValues.teacher || ''} onChange={e => setCourseFormValues(p => ({ ...p, teacher: e.target.value }))} /></Col>
+          <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.teacher')} *</strong></div><Input value={courseFormValues.teacher || ''} onChange={e => setCourseFormValues(p => ({ ...p, teacher: e.target.value }))} /></Col>
         </Row>
         <Row gutter={16} style={{ marginTop: 12 }}>
           <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.startDate')} *</strong></div><DatePicker value={courseFormValues.StartDate ? dayjs(courseFormValues.StartDate) : null} onChange={(d) => { const iso = d ? d.toISOString() : null; setCourseFormValues(p => { const updated = { ...p, StartDate: iso }; if (iso && p.courseWeeksLength) { updated.EndDate = dayjs(iso).add(p.courseWeeksLength, 'week').toISOString(); } if (iso && !p.gatheringStartingDate) { updated.gatheringStartingDate = dayjs(iso).format('MMMM D, YYYY'); } return updated; }); }} style={{ width: '100%' }} /></Col>
-          <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.courseWeeksLength')}</strong></div><InputNumber min={1} max={52} value={courseFormValues.courseWeeksLength} onChange={v => setCourseFormValues(p => { const updated = { ...p, courseWeeksLength: v }; if (p.StartDate && v) { updated.EndDate = dayjs(p.StartDate).add(v, 'week').toISOString(); } return updated; })} style={{ width: '100%' }} /></Col>
-          <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.endDate')}</strong></div><DatePicker value={courseFormValues.EndDate ? dayjs(courseFormValues.EndDate) : null} onChange={(d) => setCourseFormValues(p => ({ ...p, EndDate: d ? d.toISOString() : null }))} style={{ width: '100%' }} /></Col>
+          <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.courseWeeksLength')} *</strong></div><InputNumber min={1} max={52} value={courseFormValues.courseWeeksLength} onChange={v => setCourseFormValues(p => { const updated = { ...p, courseWeeksLength: v }; if (p.StartDate && v) { updated.EndDate = dayjs(p.StartDate).add(v, 'week').toISOString(); } return updated; })} style={{ width: '100%' }} /></Col>
+          <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.endDate')} *</strong></div><DatePicker value={courseFormValues.EndDate ? dayjs(courseFormValues.EndDate) : null} onChange={(d) => setCourseFormValues(p => ({ ...p, EndDate: d ? d.toISOString() : null }))} style={{ width: '100%' }} /></Col>
         </Row>
         <Row gutter={16} style={{ marginTop: 12 }}>
-          <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.nativeLanguage')}</strong></div><Select value={courseFormValues.NativeLanguageId || undefined} onChange={v => setCourseFormValues(p => ({ ...p, NativeLanguageId: v }))} options={langOptions} style={{ width: '100%' }} /></Col>
-          <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.targetLanguage')}</strong></div><Select value={courseFormValues.TargetLanguageId || undefined} onChange={v => setCourseFormValues(p => ({ ...p, TargetLanguageId: v }))} options={langOptions} style={{ width: '100%' }} /></Col>
-          <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.location')}</strong></div><Input value={courseFormValues.location || ''} onChange={e => setCourseFormValues(p => ({ ...p, location: e.target.value }))} /></Col>
+          <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.nativeLanguage')} *</strong></div><Select value={courseFormValues.NativeLanguageId || undefined} onChange={v => setCourseFormValues(p => ({ ...p, NativeLanguageId: v }))} options={langOptions} style={{ width: '100%' }} /></Col>
+          <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.targetLanguage')} *</strong></div><Select value={courseFormValues.TargetLanguageId || undefined} onChange={v => setCourseFormValues(p => ({ ...p, TargetLanguageId: v }))} options={langOptions} style={{ width: '100%' }} /></Col>
+          <Col xs={24} sm={8}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.location')} *</strong></div><Input value={courseFormValues.location || ''} onChange={e => setCourseFormValues(p => ({ ...p, location: e.target.value }))} /></Col>
         </Row>
         <Row gutter={16} style={{ marginTop: 12 }}>
-          <Col xs={24} sm={6}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.gatheringDay')}</strong></div><Select value={courseFormValues.gatheringDay || undefined} onChange={v => setCourseFormValues(p => ({ ...p, gatheringDay: v }))} options={[{value:'Mondays',label:'Mondays'},{value:'Tuesdays',label:'Tuesdays'},{value:'Wednesdays',label:'Wednesdays'},{value:'Thursdays',label:'Thursdays'},{value:'Fridays',label:'Fridays'},{value:'Saturdays',label:'Saturdays'},{value:'Sundays',label:'Sundays'}]} style={{ width: '100%' }} /></Col>
-          <Col xs={24} sm={6}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.gatheringTime')}</strong></div><TimePicker use12Hours format="h:mm a" value={courseFormValues.gatheringTime ? dayjs(courseFormValues.gatheringTime, 'h:mm a') : null} onChange={(t) => setCourseFormValues(p => ({ ...p, gatheringTime: t ? t.format('h:mm a') : '' }))} style={{ width: '100%' }} /></Col>
-          <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.gatheringStartingDate')}</strong></div><DatePicker value={courseFormValues.gatheringStartingDate ? dayjs(courseFormValues.gatheringStartingDate, 'MMMM D, YYYY') : null} onChange={(d) => setCourseFormValues(p => ({ ...p, gatheringStartingDate: d ? d.format('MMMM D, YYYY') : '' }))} style={{ width: '100%' }} /></Col>
+          <Col xs={24} sm={6}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.gatheringDay')} *</strong></div><Select value={courseFormValues.gatheringDay || undefined} onChange={v => setCourseFormValues(p => ({ ...p, gatheringDay: v }))} options={[{value:'Mondays',label:'Mondays'},{value:'Tuesdays',label:'Tuesdays'},{value:'Wednesdays',label:'Wednesdays'},{value:'Thursdays',label:'Thursdays'},{value:'Fridays',label:'Fridays'},{value:'Saturdays',label:'Saturdays'},{value:'Sundays',label:'Sundays'}]} style={{ width: '100%' }} /></Col>
+          <Col xs={24} sm={6}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.gatheringTime')} *</strong></div><TimePicker use12Hours format="h:mm a" value={courseFormValues.gatheringTime ? dayjs(courseFormValues.gatheringTime, 'h:mm a') : null} onChange={(t) => setCourseFormValues(p => ({ ...p, gatheringTime: t ? t.format('h:mm a') : '' }))} style={{ width: '100%' }} /></Col>
+          <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.gatheringStartingDate')} *</strong></div><DatePicker value={courseFormValues.gatheringStartingDate ? dayjs(courseFormValues.gatheringStartingDate, 'MMMM D, YYYY') : null} onChange={(d) => setCourseFormValues(p => ({ ...p, gatheringStartingDate: d ? d.format('MMMM D, YYYY') : '' }))} style={{ width: '100%' }} /></Col>
         </Row>
         <Row gutter={16} style={{ marginTop: 12 }}>
-          <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.targetAudience')}</strong></div><Select value={courseFormValues.targetAudienceNativeLanguage || undefined} onChange={v => setCourseFormValues(p => ({ ...p, targetAudienceNativeLanguage: v }))} options={langData.map(l => ({ value: l.langName, label: l.langName }))} style={{ width: '100%' }} /></Col>
-          <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong><MessageOutlined style={{ marginRight: 4, color: '#25D366' }} />{t('admin.tools.course.label.whatsAppLink')}</strong></div><Input value={courseFormValues.whatsAppLink || ''} onChange={e => setCourseFormValues(p => ({ ...p, whatsAppLink: e.target.value }))} /></Col>
+          <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.targetAudience')} *</strong></div><Select value={courseFormValues.targetAudienceNativeLanguage || undefined} onChange={v => setCourseFormValues(p => ({ ...p, targetAudienceNativeLanguage: v }))} options={langData.map(l => ({ value: l.langName, label: l.langName }))} style={{ width: '100%' }} /></Col>
+          <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong><MessageOutlined style={{ marginRight: 4, color: '#25D366' }} />{t('admin.tools.course.label.whatsAppLink')} *</strong></div><Input value={courseFormValues.whatsAppLink || ''} onChange={e => setCourseFormValues(p => ({ ...p, whatsAppLink: e.target.value }))} /></Col>
         </Row>
         <Row gutter={16} style={{ marginTop: 12 }}>
           <Col xs={24}>
-            <div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.imageSource')}</strong></div>
+            <div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.imageSource')} *</strong></div>
             <Radio.Group
               value={courseImageSourceMode}
               onChange={(e) => {
@@ -1575,7 +1613,17 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           </Col>
         </Row>
 
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateCourse} loading={courseSubmitting} style={{ marginTop: 24 }} disabled={!courseFormValues.course || !courseFormValues.StartDate}>
+        {!courseCreateValidation.isComplete && (
+          <Alert
+            type={courseCreateValidation.hasInvalidImageUrl ? 'error' : 'info'}
+            showIcon
+            style={{ marginTop: 16 }}
+            message={`${t('admin.tools.course.msg.fillRequired')} ${courseCreateValidation.missingLabels.join(', ')}`}
+            description={courseCreateValidation.hasInvalidImageUrl ? t('admin.tools.course.msg.invalidImageUrl') : null}
+          />
+        )}
+
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateCourse} loading={courseSubmitting} style={{ marginTop: 16 }} disabled={!courseCreateValidation.isComplete || courseSubmitting}>
           {t('admin.tools.course.btn.create')}
         </Button>
       </>

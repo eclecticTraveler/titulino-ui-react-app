@@ -208,7 +208,7 @@ export const getAllUserLoginFootprint = async (emailId) => {
   };
 };
 
-export const uploadCourseCoverImage = async (adminEmailId, file) => {
+export const uploadCourseCoverImage = async (adminEmailId, file, courseCodeId) => {
   const token = await getTokenFromEmail(adminEmailId);
   if (!token) {
     return { success: false, imageUrl: null, errorMessage: 'Missing admin token.' };
@@ -216,7 +216,10 @@ export const uploadCourseCoverImage = async (adminEmailId, file) => {
   if (!file) {
     return { success: false, imageUrl: null, errorMessage: 'No file provided.' };
   }
-  const apiResult = await TitulinoNetService.uploadCourseCoverImage(token, file, 'AdminToolsManager');
+  if (!courseCodeId) {
+    return { success: false, imageUrl: null, errorMessage: 'Missing course code ID.' };
+  }
+  const apiResult = await TitulinoNetService.uploadCourseCoverImage(token, file, courseCodeId, 'AdminToolsManager');
   if (!apiResult) {
     return { success: false, imageUrl: null, errorMessage: 'Course cover upload failed.' };
   }

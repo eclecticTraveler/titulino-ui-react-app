@@ -85,7 +85,7 @@ export const onLoadingContactGeoMaps = async (selectedContact) => {
   return { type: ON_LOADING_CONTACT_GEO_MAPS, contactGeoMaps };
 };
 
-export const onUploadingCourseCoverImage = async (adminEmailId, file) => {
-  const uploadResult = await AdminToolsManager.uploadCourseCoverImage(adminEmailId, file);
+export const onUploadingCourseCoverImage = async (adminEmailId, file, courseCodeId) => {
+  const uploadResult = await AdminToolsManager.uploadCourseCoverImage(adminEmailId, file, courseCodeId);
   return { type: ON_UPLOADING_COURSE_COVER_IMAGE, uploadResult };
 };

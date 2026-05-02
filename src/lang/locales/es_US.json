@@ -544,7 +544,7 @@
 	"admin.tools.course.msg.createSuccess": "Curso creado exitosamente.",
 	"admin.tools.course.msg.updateSuccess": "Curso actualizado exitosamente.",
 	"admin.tools.course.msg.upsertError": "Error al guardar el curso.",
-	"admin.tools.course.msg.fillRequired": "Por favor complete al menos el nombre del curso y la fecha de inicio.",	"admin.tools.course.msg.invalidImageUrl": "Ingrese una URL de imagen válida (debe comenzar con http:// o https://).",
+	"admin.tools.course.msg.fillRequired": "Por favor complete todos los campos requeridos del curso:",	"admin.tools.course.msg.invalidImageUrl": "Ingrese una URL de imagen válida (debe comenzar con http:// o https://).",
 	"admin.tools.course.msg.imageUploadFailed": "Error al subir la imagen de portada del curso. Inténtelo nuevamente.",
 	"admin.tools.course.label.imageSource": "Imagen de Portada",
 	"admin.tools.course.label.imageSource.upload": "Subir",

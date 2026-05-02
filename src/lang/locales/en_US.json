@@ -543,7 +543,7 @@
 	"admin.tools.course.msg.createSuccess": "Course created successfully.",
 	"admin.tools.course.msg.updateSuccess": "Course updated successfully.",
 	"admin.tools.course.msg.upsertError": "Error saving course.",
-	"admin.tools.course.msg.fillRequired": "Please fill in at least the course name and start date.",
+	"admin.tools.course.msg.fillRequired": "Please fill in all required course fields:",
 	"admin.tools.course.msg.invalidImageUrl": "Please enter a valid image URL (must start with http:// or https://).",
 	"admin.tools.course.msg.imageUploadFailed": "Failed to upload course cover image. Please try again.",
 	"admin.tools.course.label.imageSource": "Cover Image",

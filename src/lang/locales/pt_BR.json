@@ -544,7 +544,7 @@
 	"admin.tools.course.msg.createSuccess": "Curso criado com sucesso.",
 	"admin.tools.course.msg.updateSuccess": "Curso atualizado com sucesso.",
 	"admin.tools.course.msg.upsertError": "Erro ao salvar o curso.",
-	"admin.tools.course.msg.fillRequired": "Por favor, preencha pelo menos o nome do curso e a data de início.",
+	"admin.tools.course.msg.fillRequired": "Por favor, preencha todos os campos obrigatorios do curso:",
 	"admin.tools.course.msg.invalidImageUrl": "Insira uma URL de imagem válida (deve começar com http:// ou https://).",
 	"admin.tools.course.msg.imageUploadFailed": "Falha ao enviar a imagem de capa do curso. Tente novamente.",
 	"admin.tools.course.label.imageSource": "Imagem de Capa",
