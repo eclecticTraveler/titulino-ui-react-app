@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { Card, Row, Col, Badge, Grid } from "antd";
+import React, { useMemo, useRef, useState } from "react";
+import { Card, Row, Col, Badge, Grid, Button } from "antd";
 import PropTypes from "prop-types";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature as topojsonFeature } from "topojson-client";
@@ -15,6 +15,38 @@ const hoverPercentage = -10;
 const mapHeight = 580;
 const mapWidth = 1000;
 const worldVerticalOffset = 62;
+const minZoom = 1;
+const maxZoom = 4;
+const zoomStep = 0.5;
+
+const defaultMapTransform = { scale: 1, x: 0, y: 0 };
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const constrainMapTransform = (transform) => {
+  const scale = clamp(transform.scale, minZoom, maxZoom);
+
+  if (scale <= minZoom) {
+    return defaultMapTransform;
+  }
+
+  return {
+    scale,
+    x: clamp(transform.x, mapWidth * (1 - scale), 0),
+    y: clamp(transform.y, mapHeight * (1 - scale), 0)
+  };
+};
+
+const zoomMapAtPoint = (transform, nextScale, point = { x: mapWidth / 2, y: mapHeight / 2 }) => {
+  const scale = clamp(nextScale, minZoom, maxZoom);
+  const ratio = scale / transform.scale;
+
+  return constrainMapTransform({
+    scale,
+    x: point.x - (point.x - transform.x) * ratio,
+    y: point.y - (point.y - transform.y) * ratio
+  });
+};
 
 const normalizeRegionName = (value) => {
   if (value === null || value === undefined) return "";
@@ -307,7 +339,10 @@ const getFeatureRegionName = (geoFeature, mapType) => {
 
 const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
   const [hoveredRegionKey, setHoveredRegionKey] = useState("");
-  const projectionConfig = getProjectionConfig(mapType);
+  const [mapTransform, setMapTransform] = useState(defaultMapTransform);
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef(null);
+  const projectionConfig = useMemo(() => getProjectionConfig(mapType), [mapType]);
   const features = useMemo(() => getMapFeatures(mapSource, mapType), [mapSource, mapType]);
   const dataLookup = useMemo(() => buildRegionDataLookup(data), [data]);
 
@@ -320,48 +355,160 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
     return geoPath().projection(projection);
   }, [projectionConfig]);
 
+  const getSvgPoint = (event) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    return {
+      x: ((event.clientX - bounds.left) / bounds.width) * mapWidth,
+      y: ((event.clientY - bounds.top) / bounds.height) * mapHeight
+    };
+  };
+
+  const handleZoom = (direction) => {
+    setMapTransform((currentTransform) => (
+      zoomMapAtPoint(currentTransform, currentTransform.scale + direction * zoomStep)
+    ));
+  };
+
+  const handleResetZoom = () => {
+    setMapTransform(defaultMapTransform);
+    setIsPanning(false);
+    panStartRef.current = null;
+  };
+
+  const handleWheel = (event) => {
+    event.preventDefault();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    const point = getSvgPoint(event);
+    setMapTransform((currentTransform) => (
+      zoomMapAtPoint(currentTransform, currentTransform.scale + direction * zoomStep, point)
+    ));
+  };
+
+  const handlePointerDown = (event) => {
+    if (mapTransform.scale <= minZoom) return;
+
+    const bounds = event.currentTarget.getBoundingClientRect();
+    panStartRef.current = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      x: mapTransform.x,
+      y: mapTransform.y,
+      svgUnitX: mapWidth / bounds.width,
+      svgUnitY: mapHeight / bounds.height
+    };
+    setIsPanning(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handlePointerMove = (event) => {
+    const panStart = panStartRef.current;
+    if (!panStart) return;
+
+    const deltaX = (event.clientX - panStart.clientX) * panStart.svgUnitX;
+    const deltaY = (event.clientY - panStart.clientY) * panStart.svgUnitY;
+    setMapTransform((currentTransform) => (
+      constrainMapTransform({
+        ...currentTransform,
+        x: panStart.x + deltaX,
+        y: panStart.y + deltaY
+      })
+    ));
+  };
+
+  const handlePointerUp = (event) => {
+    panStartRef.current = null;
+    setIsPanning(false);
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
   return (
-    <div style={{ transform: mapType === "world" ? `translateY(${worldVerticalOffset}px)` : "none" }}>
+    <div
+      style={{
+        position: "relative",
+        transform: mapType === "world" ? `translateY(${worldVerticalOffset}px)` : "none"
+      }}
+    >
+      <div
+        className="d-flex align-items-center"
+        style={{
+          position: "absolute",
+          top: 12,
+          right: 12,
+          zIndex: 2,
+          gap: 4,
+          padding: 4,
+          border: "1px solid #E6E8EE",
+          borderRadius: 6,
+          background: "rgba(255, 255, 255, 0.92)",
+          boxShadow: "0 6px 18px rgba(15, 23, 42, 0.08)"
+        }}
+      >
+        <Button size="small" title="Zoom out" aria-label="Zoom out" disabled={mapTransform.scale <= minZoom} onClick={() => handleZoom(-1)}>
+          -
+        </Button>
+        <Button size="small" title="Reset zoom" aria-label="Reset zoom" disabled={mapTransform.scale <= minZoom} onClick={handleResetZoom}>
+          1x
+        </Button>
+        <Button size="small" title="Zoom in" aria-label="Zoom in" disabled={mapTransform.scale >= maxZoom} onClick={() => handleZoom(1)}>
+          +
+        </Button>
+      </div>
       <svg
         data-tip=""
         width="100%"
         height={mapHeight}
         viewBox={`0 0 ${mapWidth} ${mapHeight}`}
         preserveAspectRatio="xMidYMid meet"
+        onWheel={handleWheel}
+        onDoubleClick={() => handleZoom(1)}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        style={{
+          cursor: mapTransform.scale > minZoom ? (isPanning ? "grabbing" : "grab") : "default",
+          touchAction: "none"
+        }}
       >
-        {features.map((geoFeature, index) => {
-          const geoName = getFeatureRegionName(geoFeature, mapType);
-          const pathData = pathGenerator(geoFeature);
+        <g transform={`translate(${mapTransform.x} ${mapTransform.y}) scale(${mapTransform.scale})`}>
+          {features.map((geoFeature, index) => {
+            const geoName = getFeatureRegionName(geoFeature, mapType);
+            const pathData = pathGenerator(geoFeature);
 
-          if (!pathData) {
-            return null;
-          }
+            if (!pathData) {
+              return null;
+            }
 
-          const regionKey = `${geoFeature?.id ?? geoName}-${index}`;
-          const isHovered = hoveredRegionKey === regionKey;
-          const fill = isHovered
-            ? getRegionHoverColor(geoFeature, mapType, dataLookup)
-            : getHighlightedRegion(geoFeature, mapType, dataLookup);
+            const regionKey = `${geoFeature?.id ?? geoName}-${index}`;
+            const isHovered = hoveredRegionKey === regionKey;
+            const fill = isHovered
+              ? getRegionHoverColor(geoFeature, mapType, dataLookup)
+              : getHighlightedRegion(geoFeature, mapType, dataLookup);
 
-          return (
-            <path
-              key={regionKey}
-              d={pathData}
-              fill={fill}
-              stroke="#D6D6DA"
-              strokeWidth={0.75}
-              onMouseEnter={() => {
-                setHoveredRegionKey(regionKey);
-                setTooltipContent(getRegionValue(geoFeature, mapType, dataLookup));
-              }}
-              onMouseLeave={() => {
-                setHoveredRegionKey("");
-                setTooltipContent("");
-              }}
-              style={{ cursor: "pointer", transition: "fill 120ms ease-in-out" }}
-            />
-          );
-        })}
+            return (
+              <path
+                key={regionKey}
+                d={pathData}
+                fill={fill}
+                stroke="#D6D6DA"
+                strokeWidth={0.75}
+                vectorEffect="non-scaling-stroke"
+                onMouseEnter={() => {
+                  setHoveredRegionKey(regionKey);
+                  setTooltipContent(getRegionValue(geoFeature, mapType, dataLookup));
+                }}
+                onMouseLeave={() => {
+                  setHoveredRegionKey("");
+                  setTooltipContent("");
+                }}
+                style={{ cursor: "pointer", transition: "fill 120ms ease-in-out" }}
+              />
+            );
+          })}
+        </g>
       </svg>
     </div>
   );
