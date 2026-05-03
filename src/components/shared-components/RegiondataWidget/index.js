@@ -123,6 +123,7 @@ const getRegionHoverColor = (geoFeature, mapType, dataLookup) => {
   return utils.shadeColor(region?.color || mapColor, hoverPercentage);
 };
 
+// eslint-disable-next-line no-unused-vars
 const getRegionValueByName = (name, data) => {
   if (data.length > 0 || name) {
     for (let i = 0; i < data.length; i++) {
@@ -146,9 +147,36 @@ const getRegionValueByName = (name, data) => {
   return "";
 };
 
+const getFeatureCountryCode = (geoFeature, mapType) => {
+  const props = geoFeature?.properties || {};
+  if (mapType !== "world") return mapType;
+  return props.ISO_A2 || props.ISO2 || props.iso_a2 || props.ADM0_A3 || props.ISO_A3 || "";
+};
+
+const getFeatureTooltipName = (geoFeature, mapType) => {
+  const props = geoFeature?.properties || {};
+  const regionName = getFeatureRegionName(geoFeature, mapType);
+
+  if (mapType === "world") {
+    return regionName;
+  }
+
+  const countryName = props.COUNTRY || props.NAME_0 || "";
+  return countryName && regionName && normalizeRegionName(countryName) !== normalizeRegionName(regionName)
+    ? `${countryName} - ${regionName}`
+    : regionName || countryName;
+};
+
 const getRegionValue = (geoFeature, mapType, dataLookup) => {
   const region = findRegionData(geoFeature, mapType, dataLookup);
-  if (!region) return getRegionValueByName("", []);
+  if (!region) {
+    return (
+      <>
+        <Flag code={getFeatureCountryCode(geoFeature, mapType)} style={{ width: 20, marginRight: 10 }} />
+        {`${getFeatureTooltipName(geoFeature, mapType)} - 0`}
+      </>
+    );
+  }
 
   const value = region.count ?? region.value;
   const displayName = getRegionDisplayName(region, mapType);
