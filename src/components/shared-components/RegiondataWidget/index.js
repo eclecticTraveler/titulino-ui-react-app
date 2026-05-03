@@ -339,7 +339,7 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
   );
 };
 
-const Map = (props) => {
+const RegionMap = (props) => {
   const { data, mapSource, mapType } = props;
   const [content, setContent] = useState("");
   return (
@@ -383,7 +383,7 @@ export const RegiondataWidget = (props) => {
         <Col xs={24} sm={24} md={24} lg={17}>
           <div className="d-flex flex-column justify-content-center" style={{ minHeight: isMobile ? 200 : 435 }}>
             <div className="p-3 w-100">
-              <Map data={data} mapSource={mapSource} mapType={mapType} />
+              <RegionMap data={data} mapSource={mapSource} mapType={mapType} />
             </div>
           </div>
         </Col>
