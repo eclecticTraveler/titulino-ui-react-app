@@ -18,7 +18,7 @@ import { env } from 'configs/EnvironmentConfig';
 import dayjs from 'dayjs';
 import {
   onLoadingAdminToolsInit,
-  onAssigningRoleToCourse,
+  onAssigningEnrolleeRoleToCourse,
   onAssigningGlobalRole,
   onClearSelectedContact,
   onUpsertingCourse,
@@ -50,7 +50,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     allEnrollees,
     allRawCourses,
     onLoadingAdminToolsInit,
-    onAssigningRoleToCourse,
+    onAssigningEnrolleeRoleToCourse,
     onAssigningGlobalRole,
     onClearSelectedContact,
     onUpsertingCourse,
@@ -538,7 +538,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           setSubmitting(false);
           return;
         }
-        await onAssigningRoleToCourse(
+        await onAssigningEnrolleeRoleToCourse(
           selectedContact.ContactInternalId,
           selectedCourse,
           selectedRole,
@@ -1782,7 +1782,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     onLoadingAdminToolsInit,
-    onAssigningRoleToCourse,
+    onAssigningEnrolleeRoleToCourse,
     onAssigningGlobalRole,
     onClearSelectedContact,
     onUpsertingCourse,

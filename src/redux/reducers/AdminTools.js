@@ -1,7 +1,7 @@
 import KnowMeProfiles from "lob/KnowMeProfiles";
 import {
   ON_LOADING_ADMIN_TOOLS_INIT,
-  ON_ASSIGNING_ROLE_TO_COURSE,
+  ON_ASSIGNING_ENROLLEE_ROLE_TO_COURSE,
   ON_ASSIGNING_GLOBAL_ROLE,
   ON_CLEAR_SELECTED_CONTACT,
   ON_UPSERTING_COURSE,
@@ -33,7 +33,7 @@ const adminTools = (state = initState, action) => {
         allEnrollees: applyAvatarCacheToEnrollees(action.allEnrollees, state.avatarUrlMap),
         allRawCourses: action.allRawCourses
       };
-    case ON_ASSIGNING_ROLE_TO_COURSE:
+    case ON_ASSIGNING_ENROLLEE_ROLE_TO_COURSE:
       return { ...state, lastAssignResult: action.assignResult };
     case ON_ASSIGNING_GLOBAL_ROLE:
       return { ...state, lastAssignResult: action.assignResult };

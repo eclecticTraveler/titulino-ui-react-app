@@ -7,13 +7,7 @@ import AdminInsights from "lob/AdminInsights";
 import StudentProgress from "lob/StudentProgress";
 import LoginFootprint from "lob/LoginFootprint";
 import KnowMeProfiles from "lob/KnowMeProfiles";
-import {
-  generateCourseCodeId as lobGenerateCourseCodeId,
-  buildCourseUpsertPayload as lobBuildCourseUpsertPayload,
-  prefillFromTemplate as lobPrefillFromTemplate,
-  extractUploadedCoverImageUrl,
-  isValidHttpUrl
-} from "lob/AdminTools";
+import AdminTools from "lob/AdminTools";
 import utils from 'utils';
 
 const getTokenFromEmail = async (emailId) => {
@@ -90,10 +84,16 @@ export const hydrateAdminToolAvatarUrls = async (
   };
 };
 
-export const assignRoleToCourse = async (contactInternalId, courseCodeId, roleId, contactEmailId, adminEmailId) => {
+export const assignEnrolleeRoleToCourse = async (contactInternalId, courseCodeId, roleId, contactEmailId, adminEmailId) => {
   const token = await getTokenFromEmail(adminEmailId);
   if (!token) return false;
-  return TitulinoAuthService.assignRoleToCourse(contactInternalId, courseCodeId, roleId, contactEmailId, token, 'AdminToolsManager');
+  const payload = AdminTools.buildEnrollExistingContactToCoursePayload({
+    contactInternalId,
+    emailId: contactEmailId,
+    courseCodeId,
+    roleId
+  });
+  return TitulinoAuthService.assignEnrolleeRoleToCourse(payload, token, 'AdminToolsManager');
 };
 
 export const assignGlobalRole = async (contactInternalId, roleId, adminEmailId) => {
@@ -223,7 +223,7 @@ export const uploadCourseCoverImage = async (adminEmailId, file, courseCodeId) =
   if (!apiResult) {
     return { success: false, imageUrl: null, errorMessage: 'Course cover upload failed.' };
   }
-  const imageUrl = extractUploadedCoverImageUrl(apiResult);
+  const imageUrl = AdminTools.extractUploadedCoverImageUrl(apiResult);
   if (!imageUrl) {
     return { success: false, imageUrl: null, errorMessage: 'Upload response did not include a public image URL.' };
   }
@@ -249,7 +249,7 @@ export const getContactGeoMaps = async (selectedContact) => {
 
 const AdminToolsManager = {
   initAdminTools,
-  assignRoleToCourse,
+  assignEnrolleeRoleToCourse,
   assignGlobalRole,
   upsertCourse,
   getContactCourseProgressActivity,
@@ -258,10 +258,11 @@ const AdminToolsManager = {
   hydrateAdminToolAvatarUrls,
   getContactGeoMaps,
   uploadCourseCoverImage,
-  generateCourseCodeId: lobGenerateCourseCodeId,
-  buildCourseUpsertPayload: lobBuildCourseUpsertPayload,
-  prefillFromTemplate: lobPrefillFromTemplate,
-  isValidHttpUrl
+  generateCourseCodeId: AdminTools.generateCourseCodeId,
+  buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
+  buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,
+  prefillFromTemplate: AdminTools.prefillFromTemplate,
+  isValidHttpUrl: AdminTools.isValidHttpUrl
 };
 
 export default AdminToolsManager;

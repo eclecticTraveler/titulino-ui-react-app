@@ -321,16 +321,23 @@ export const getUserRoles = async (token, whoCalledMe = 'getUserRoles') => {
   }
 };
 
-export const assignRoleToCourse = async (contactInternalId, courseCodeId, roleId, emailId, token, whoCalledMe = 'assignRoleToCourse') => {
-  if (!token || !contactInternalId || !courseCodeId || !roleId) {
+export const assignEnrolleeRoleToCourse = async (payload, token, whoCalledMe = 'assignEnrolleeRoleToCourse') => {
+  if (!token || !Array.isArray(payload) || payload.length === 0) {
     console.warn(`[${whoCalledMe}] Missing required params`);
     return false;
   }
-  const url = `${SupabaseConfig.baseApiUrl}/AssignRoleToCourse`;
+  const url = `${SupabaseConfig.baseApiUrl}/EnrollExistingContactToCourse`;
+  const requestBody = { p_payload: payload };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] assignEnrolleeRoleToCourse endpoint:`, url);
+    console.log(`[${whoCalledMe}] assignEnrolleeRoleToCourse payload:`, requestBody);
+  }
+
   const requestOptions = {
     method: 'POST',
     headers: getHeaders(token),
-    body: JSON.stringify({ p_contact_internal_id: contactInternalId, p_course_code_id: courseCodeId, p_role_id: roleId, p_email: emailId }),
+    body: JSON.stringify(requestBody),
     redirect: 'follow',
   };
   try {
@@ -499,7 +506,7 @@ const TitulinoAuthService = {
   upsertUserKnowMeSubmission,
   getAllEnrollees,
   getUserRoles,
-  assignRoleToCourse,
+  assignEnrolleeRoleToCourse,
   assignGlobalRole,
   upsertCourse,
   getAllUserLoginFootprint,

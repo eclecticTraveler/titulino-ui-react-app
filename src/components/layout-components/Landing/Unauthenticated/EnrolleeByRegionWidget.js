@@ -15,7 +15,7 @@ export const EnrolleeByRegionWidget = ({enrolleeRegionData, mapSource, mapType, 
 			data={enrolleeRegionData}
 			mapSource={mapSource}
 			mapType={mapType}
-			// content={renderRegionTopEntrance}
+			content={content} //renderRegionTopEntrance
 		/>		
 	  </>
 	)

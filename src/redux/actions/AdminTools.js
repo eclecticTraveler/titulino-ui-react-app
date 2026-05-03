@@ -1,7 +1,7 @@
 import AdminToolsManager from 'managers/AdminToolsManager';
 import {
   ON_LOADING_ADMIN_TOOLS_INIT,
-  ON_ASSIGNING_ROLE_TO_COURSE,
+  ON_ASSIGNING_ENROLLEE_ROLE_TO_COURSE,
   ON_ASSIGNING_GLOBAL_ROLE,
   ON_CLEAR_SELECTED_CONTACT,
   ON_UPSERTING_COURSE,
@@ -26,9 +26,9 @@ export const onLoadingAdminToolsInit = async (emailId) => {
   return { type: ON_LOADING_ADMIN_TOOLS_INIT, allCourses, allRoles, allEnrollees, allRawCourses };
 };
 
-export const onAssigningRoleToCourse = async (contactInternalId, courseCodeId, roleId, contactEmailId, adminEmailId) => {
-  const result = await AdminToolsManager.assignRoleToCourse(contactInternalId, courseCodeId, roleId, contactEmailId, adminEmailId);
-  return { type: ON_ASSIGNING_ROLE_TO_COURSE, assignResult: result };
+export const onAssigningEnrolleeRoleToCourse = async (contactInternalId, courseCodeId, roleId, contactEmailId, adminEmailId) => {
+  const result = await AdminToolsManager.assignEnrolleeRoleToCourse(contactInternalId, courseCodeId, roleId, contactEmailId, adminEmailId);
+  return { type: ON_ASSIGNING_ENROLLEE_ROLE_TO_COURSE, assignResult: result };
 };
 
 export const onAssigningGlobalRole = async (contactInternalId, roleId, adminEmailId) => {

@@ -16,43 +16,114 @@ const mapHeight = 580;
 const mapWidth = 1000;
 const worldVerticalOffset = 62;
 
-const getHighlightedRegion = (name, data) => {
-  if (data.length > 0 || name) {
-    for (let i = 0; i < data.length; i++) {
-      const elm = data[i];
-      if (
-        name === elm.name ||
-        name === elm.nativeName ||
-        name === elm.name?.replaceAll(" ", "") ||
-        name === elm.nativeName?.replaceAll(" ", "")
-      ) {
-        return elm.color;
-      }
-    }
-    return mapColor;
-  }
-  return mapColor;
+const normalizeRegionName = (value) => {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]/g, "");
 };
 
-const getRegionHoverColor = (name, data) => {
-  if (data.length > 0 || name) {
-    for (let i = 0; i < data.length; i++) {
-      const elm = data[i];
-      if (
-        name === elm.name ||
-        name === elm.nativeName ||
-        name === elm.name?.replaceAll(" ", "") ||
-        name === elm.nativeName?.replaceAll(" ", "")
-      ) {
-        return utils.shadeColor(elm.color, hoverPercentage);
-      }
-    }
-    return utils.shadeColor(mapColor, hoverPercentage);
+const getNameVariants = (value) => {
+  if (value === null || value === undefined) return [];
+  const baseValue = String(value).trim();
+  if (!baseValue) return [];
+
+  const variants = [baseValue];
+  const withoutParenthetical = baseValue.replace(/\s*\([^)]*\)\s*/g, " ").trim();
+  if (withoutParenthetical && withoutParenthetical !== baseValue) {
+    variants.push(withoutParenthetical);
   }
-  return utils.shadeColor(mapColor, hoverPercentage);
+
+  baseValue
+    .split(/[|,;/]/)
+    .map(item => item.trim())
+    .filter(Boolean)
+    .forEach(item => variants.push(item));
+
+  return Array.from(new Set(variants));
 };
 
-const getRegionValue = (name, data) => {
+const addNormalizedAliases = (aliases, value) => {
+  getNameVariants(value).forEach((variant) => {
+    const normalized = normalizeRegionName(variant);
+    if (normalized) aliases.add(normalized);
+  });
+};
+
+const getDataRegionAliases = (item) => {
+  const aliases = new Set();
+  [
+    item?.name,
+    item?.nativeName,
+    item?.regionName,
+    item?.divisionName,
+    item?.divisionNativeName,
+    item?.countryDivisionName,
+    item?.countryDivisionNativeName
+  ].forEach(value => addNormalizedAliases(aliases, value));
+  return aliases;
+};
+
+const getFeatureRegionAliases = (geoFeature, mapType) => {
+  const props = geoFeature?.properties || {};
+  const keys = mapType === "world"
+    ? ["name", "NAME", "NAME_0", "ADMIN"]
+    : ["NAME_1", "VARNAME_1", "NL_NAME_1", "NAME_2", "VARNAME_2", "NL_NAME_2", "name", "NAME"];
+
+  const aliases = new Set();
+  keys.forEach(key => addNormalizedAliases(aliases, props[key]));
+  return aliases;
+};
+
+const buildRegionDataLookup = (data = []) => {
+  const lookup = new Map();
+  data.forEach((item) => {
+    getDataRegionAliases(item).forEach((alias) => {
+      if (!lookup.has(alias)) {
+        lookup.set(alias, item);
+      }
+    });
+  });
+  return lookup;
+};
+
+const findRegionData = (geoFeature, mapType, dataLookup) => {
+  if (!dataLookup || dataLookup.size === 0) return null;
+  const aliases = getFeatureRegionAliases(geoFeature, mapType);
+  for (const alias of aliases) {
+    if (dataLookup.has(alias)) {
+      return dataLookup.get(alias);
+    }
+  }
+  return null;
+};
+
+const getRegionDisplayName = (item, mapType) => {
+  if (!item) return "";
+  if (item.regionName) return item.regionName;
+  if (item.divisionName) return item.divisionName;
+  if (item.countryDivisionName) return item.countryDivisionName;
+  if (mapType !== "world" && !item.divisionId && item.name) {
+    return item.nativeName && normalizeRegionName(item.nativeName) !== normalizeRegionName(item.name)
+      ? `${item.nativeName} - ${item.name}`
+      : item.name;
+  }
+  return item.nativeName || item.name || "";
+};
+
+const getHighlightedRegion = (geoFeature, mapType, dataLookup) => {
+  return findRegionData(geoFeature, mapType, dataLookup)?.color || mapColor;
+};
+
+const getRegionHoverColor = (geoFeature, mapType, dataLookup) => {
+  const region = findRegionData(geoFeature, mapType, dataLookup);
+  return utils.shadeColor(region?.color || mapColor, hoverPercentage);
+};
+
+const getRegionValueByName = (name, data) => {
   if (data.length > 0 || name) {
     for (let i = 0; i < data.length; i++) {
       const elm = data[i];
@@ -73,6 +144,24 @@ const getRegionValue = (name, data) => {
     return "";
   }
   return "";
+};
+
+const getRegionValue = (geoFeature, mapType, dataLookup) => {
+  const region = findRegionData(geoFeature, mapType, dataLookup);
+  if (!region) return getRegionValueByName("", []);
+
+  const value = region.count ?? region.value;
+  const displayName = getRegionDisplayName(region, mapType);
+  const tooltipText = value !== undefined && value !== null && value !== ""
+    ? `${displayName} - ${value}`
+    : displayName;
+
+  return (
+    <>
+      <Flag code={region?.countryId} style={{ width: 20, marginRight: 10 }} />
+      {tooltipText}
+    </>
+  );
 };
 
 const getProjectionConfig = (mapType) => {
@@ -185,13 +274,14 @@ const getFeatureRegionName = (geoFeature, mapType) => {
   const props = geoFeature?.properties;
   if (!props) return "";
   if (mapType === "world") return props.name || "";
-  return props.NAME_1 || props.name || "";
+  return props.NAME_1 || props.VARNAME_1 || props.name || "";
 };
 
 const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
-  const [hoveredRegionName, setHoveredRegionName] = useState("");
+  const [hoveredRegionKey, setHoveredRegionKey] = useState("");
   const projectionConfig = getProjectionConfig(mapType);
   const features = useMemo(() => getMapFeatures(mapSource, mapType), [mapSource, mapType]);
+  const dataLookup = useMemo(() => buildRegionDataLookup(data), [data]);
 
   const pathGenerator = useMemo(() => {
     const projection = geoMercator()
@@ -219,24 +309,25 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
             return null;
           }
 
-          const isHovered = hoveredRegionName === geoName;
+          const regionKey = `${geoFeature?.id ?? geoName}-${index}`;
+          const isHovered = hoveredRegionKey === regionKey;
           const fill = isHovered
-            ? getRegionHoverColor(geoName, data)
-            : getHighlightedRegion(geoName, data);
+            ? getRegionHoverColor(geoFeature, mapType, dataLookup)
+            : getHighlightedRegion(geoFeature, mapType, dataLookup);
 
           return (
             <path
-              key={`${geoFeature?.id ?? geoName}-${index}`}
+              key={regionKey}
               d={pathData}
               fill={fill}
               stroke="#D6D6DA"
               strokeWidth={0.75}
               onMouseEnter={() => {
-                setHoveredRegionName(geoName);
-                setTooltipContent(getRegionValue(geoName, data));
+                setHoveredRegionKey(regionKey);
+                setTooltipContent(getRegionValue(geoFeature, mapType, dataLookup));
               }}
               onMouseLeave={() => {
-                setHoveredRegionName("");
+                setHoveredRegionKey("");
                 setTooltipContent("");
               }}
               style={{ cursor: "pointer", transition: "fill 120ms ease-in-out" }}
@@ -259,17 +350,20 @@ const Map = (props) => {
   );
 };
 
-const renderDataList = (data) => {
-  const list = data?.map((elm) => (
-    <div className="d-flex align-items-center justify-content-between mb-3" key={elm?.name}>
-      <div className="d-flex align-items-center">
-        <Badge color={elm?.color} style={{ marginRight: 10 }} />
-        <Flag code={elm?.countryId} style={{ width: 20, marginRight: 10 }} />
-        <span className="text-gray-light">{elm?.nativeName}</span>
+const renderDataList = (data, mapType) => {
+  const list = data?.map((elm) => {
+    const displayName = getRegionDisplayName(elm, mapType);
+    return (
+      <div className="d-flex align-items-center justify-content-between mb-3" key={`${elm?.countryId || ""}-${elm?.name || displayName}`}>
+        <div className="d-flex align-items-center">
+          <Badge color={elm?.color} style={{ marginRight: 10 }} />
+          <Flag code={elm?.countryId} style={{ width: 20, marginRight: 10 }} />
+          <span className="text-gray-light">{displayName}</span>
+        </div>
+        <span className="font-weight-bold text-dark">{elm?.value}</span>
       </div>
-      <span className="font-weight-bold text-dark">{elm?.value}</span>
-    </div>
-  ));
+    );
+  });
   return list;
 };
 
@@ -283,7 +377,7 @@ export const RegiondataWidget = (props) => {
           <div className="d-flex flex-column p-3 justify-content-between">
             <div>{title && <h4 className="font-weight-bold">{title}</h4>}</div>
             <div>{content}</div>
-            <div>{list ? list : renderDataList(data)}</div>
+            <div>{list ? list : renderDataList(data, mapType)}</div>
           </div>
         </Col>
         <Col xs={24} sm={24} md={24} lg={17}>
