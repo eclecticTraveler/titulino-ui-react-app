@@ -9,7 +9,11 @@ import {
   ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS,
   ON_LOADING_FACILITADOR_DASHBOARD_CONTENTS,
   ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS,
-  ON_HYDRATING_ANALYTICS_AVATARS
+  ON_HYDRATING_ANALYTICS_AVATARS,
+  ON_LOADING_FACILITADOR_OVERVIEW_CARD_ORDER,
+  ON_SAVING_FACILITADOR_OVERVIEW_CARD_ORDER,
+  ON_LOADING_ANALYTICS_DASHBOARD_CARD_ORDER,
+  ON_SAVING_ANALYTICS_DASHBOARD_CARD_ORDER
 } from '../constants/Analytics';
 
 export function onTestingDefault(defaultValue) {
@@ -158,6 +162,64 @@ export const onHydratingAnalyticsAvatars = async (emailId, avatarUrlMap, tableMo
     type: ON_HYDRATING_ANALYTICS_AVATARS,
     avatarUrlMap: result?.avatarUrlMap || avatarUrlMap || {},
     tableModels: result?.tableModels || {}
+  };
+};
+
+export const onLoadingFacilitadorOverviewCardOrder = async (emailId, courseCodeId, defaultCardOrder) => {
+  const facilitadorOverviewCardOrder = await TitulinoManager.getFacilitadorOverviewCardOrder(
+    emailId,
+    courseCodeId,
+    defaultCardOrder
+  );
+
+  return {
+    type: ON_LOADING_FACILITADOR_OVERVIEW_CARD_ORDER,
+    facilitadorOverviewCardOrder
+  };
+};
+
+export const onSavingFacilitadorOverviewCardOrder = async (emailId, courseCodeId, cardOrder, defaultCardOrder) => {
+  const facilitadorOverviewCardOrder = await TitulinoManager.saveFacilitadorOverviewCardOrder(
+    emailId,
+    courseCodeId,
+    cardOrder,
+    defaultCardOrder
+  );
+
+  return {
+    type: ON_SAVING_FACILITADOR_OVERVIEW_CARD_ORDER,
+    facilitadorOverviewCardOrder
+  };
+};
+
+export const onLoadingAnalyticsDashboardCardOrder = async (dashboardKey, emailId, courseCodeId, defaultCardOrder) => {
+  const cardOrder = await TitulinoManager.getAnalyticsDashboardCardOrder(
+    dashboardKey,
+    emailId,
+    courseCodeId,
+    defaultCardOrder
+  );
+
+  return {
+    type: ON_LOADING_ANALYTICS_DASHBOARD_CARD_ORDER,
+    dashboardKey,
+    cardOrder
+  };
+};
+
+export const onSavingAnalyticsDashboardCardOrder = async (dashboardKey, emailId, courseCodeId, cardOrder, defaultCardOrder) => {
+  const savedCardOrder = await TitulinoManager.saveAnalyticsDashboardCardOrder(
+    dashboardKey,
+    emailId,
+    courseCodeId,
+    cardOrder,
+    defaultCardOrder
+  );
+
+  return {
+    type: ON_SAVING_ANALYTICS_DASHBOARD_CARD_ORDER,
+    dashboardKey,
+    cardOrder: savedCardOrder
   };
 };
 

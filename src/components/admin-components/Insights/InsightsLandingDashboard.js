@@ -8,7 +8,15 @@ import DropdownInsightSelection from './DropdownInsightSelection';
 import { faPersonPraying, faPieChart, faMapPin, faPersonHiking, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
-import { onRenderingAdminInsightsDashboard, onRenderingLocationTypeSelectionsToDashboard, onSubmittingAdminEnrolleeProgress, onLoadingAllDashboardContents, onHydratingAnalyticsAvatars } from "redux/actions/Analytics";
+import {
+  onRenderingAdminInsightsDashboard,
+  onRenderingLocationTypeSelectionsToDashboard,
+  onSubmittingAdminEnrolleeProgress,
+  onLoadingAllDashboardContents,
+  onHydratingAnalyticsAvatars,
+  onLoadingAnalyticsDashboardCardOrder,
+  onSavingAnalyticsDashboardCardOrder
+} from "redux/actions/Analytics";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
 import DoubleCounterDisplay from 'components/layout-components/DoubleCounterDisplay';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
@@ -19,6 +27,22 @@ import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthe
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
+import DraggableDashboardGrid from 'components/shared-components/DraggableDashboardGrid';
+
+const defaultInsightsOverviewCardOrder = [
+  'totalEnrollees',
+  'totalMalesVsFemales',
+  'genderPercentages',
+  'averageAge',
+  'avgMaleVsFemaleAge',
+  'ageGroups',
+  'newVsReturning',
+  'enrolleeType',
+  'languageProficiencyCount',
+  'languageProficiencyPercentage'
+];
+
+const insightsOverviewDashboardKey = 'insights-overview';
 
 const normalizeContactInternalId = (value) => (
   value == null ? '' : String(value).trim().toLowerCase()
@@ -53,7 +77,10 @@ const InsightsLandingDashboard = (props) => {
     user,
     onLoadingAllDashboardContents,
     onHydratingAnalyticsAvatars,
-    avatarUrlMap
+    avatarUrlMap,
+    analyticsDashboardCardOrders,
+    onLoadingAnalyticsDashboardCardOrder,
+    onSavingAnalyticsDashboardCardOrder
   } = props;
 
   const intl = useIntl();
@@ -66,6 +93,7 @@ const InsightsLandingDashboard = (props) => {
 	const [searchValue, setSearchValue] = useState('');
   	const [filteredEnrolleeData, setFilteredEnrolleeData] = useState([]);
 	const [filteredProgressData, setFilteredProgressData] = useState([]);
+  const [localDashboardCardOrders, setLocalDashboardCardOrders] = useState({});
 
 
 	const handleAdminProgressSubmit = async (formattedData) => {
@@ -200,6 +228,32 @@ const InsightsLandingDashboard = (props) => {
 		}
 	  // eslint-disable-next-line react-hooks/exhaustive-deps
 	  }, [allCourses, locationTypes]);
+
+  useEffect(() => {
+    setLocalDashboardCardOrders({
+      [insightsOverviewDashboardKey]: defaultInsightsOverviewCardOrder
+    });
+
+    if (!selectedCourseCodeId || !user?.emailId) {
+      return;
+    }
+
+    onLoadingAnalyticsDashboardCardOrder(
+      insightsOverviewDashboardKey,
+      user.emailId,
+      selectedCourseCodeId,
+      defaultInsightsOverviewCardOrder
+    )?.catch((error) => console.error("Error loading insights overview card order:", error));
+  }, [selectedCourseCodeId, user?.emailId, onLoadingAnalyticsDashboardCardOrder]);
+
+  useEffect(() => {
+    if (analyticsDashboardCardOrders && Object.keys(analyticsDashboardCardOrders).length) {
+      setLocalDashboardCardOrders(prev => ({
+        ...prev,
+        ...analyticsDashboardCardOrders
+      }));
+    }
+  }, [analyticsDashboardCardOrders]);
 	  
 	  
 
@@ -207,57 +261,93 @@ const InsightsLandingDashboard = (props) => {
   const titleOfEnrollment = 'insights';
   const locale = true;
 
-  const renderOverviewGrid = (overviewData) => (
-	<>
-		<Row gutter={16}>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.totalEnrollees"} count={overviewData?.totalEnrollees}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.totalMalesVsFemales"} graphData={overviewData?.genderCount} passedValue={"count"} passedType={"sex"}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<PieGraph localizedTitle={"admin.dashboard.insights.overview.genderPercentages"} graphData={overviewData?.genderPercentages} passedValue={"percentage"} passedType={"sex"}/>
-			</Col>
+  const handleDashboardCardOrderChange = (dashboardKey, nextCardOrder) => {
+    setLocalDashboardCardOrders(prev => ({
+      ...prev,
+      [dashboardKey]: nextCardOrder
+    }));
 
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={overviewData?.averageGeneralAge} />
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay
-				localizedTitle={"admin.dashboard.insights.overview.avgMaleVsFemaleAge"}
-				firstCount={overviewData?.averageMaleAge}
-				secondCount={overviewData?.averageFemaleAge}
-				firstLabelKey={"enrollment.form.male"}
-				secondLabelKey={"enrollment.form.female"}
-			/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.agesGroups"} graphData={overviewData?.agesPercentages} passedValue={"count"} passedType={"label"}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<DoubleCounterDisplay
-				localizedTitle={"admin.dashboard.insights.overview.newVsReturning"}
-				firstCount={overviewData?.totalNewEnrollees}
-				secondCount={overviewData?.totalReturningEnrollees}
-				firstLabelKey={"admin.dashboard.insights.overview.newEnrollees"}
-				secondLabelKey={"admin.dashboard.insights.overview.returningEnrollees"}
-			/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={overviewData?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<ColumnBar localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={overviewData?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""}/>
-			</Col>
-			<Col xs={24} sm={24} md={24} lg={8}>
-			<BarGraph localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={overviewData?.enrolleeProficiencyGroups} passedValue={"percentage"} passedType={"type"} symbol={"%"}/>
-			</Col>
-		</Row>
-	</>
-	);
+    onSavingAnalyticsDashboardCardOrder(
+      dashboardKey,
+      user?.emailId,
+      selectedCourseCodeId,
+      nextCardOrder,
+      defaultInsightsOverviewCardOrder
+    )?.catch((error) => console.error("Error saving insights overview card order:", error));
+  };
 
-	const renderGeneralOverview = () => renderOverviewGrid(overviewDashboardData);
+  const renderOverviewGrid = (overviewData, dashboardKey) => {
+    const overviewCards = [
+      {
+        key: 'totalEnrollees',
+        content: <CounterDisplay localizedTitle={"admin.dashboard.insights.overview.totalEnrollees"} count={overviewData?.totalEnrollees} />
+      },
+      {
+        key: 'totalMalesVsFemales',
+        content: <BarGraph localizedTitle={"admin.dashboard.insights.overview.totalMalesVsFemales"} graphData={overviewData?.genderCount} passedValue={"count"} passedType={"sex"} />
+      },
+      {
+        key: 'genderPercentages',
+        content: <PieGraph localizedTitle={"admin.dashboard.insights.overview.genderPercentages"} graphData={overviewData?.genderPercentages} passedValue={"percentage"} passedType={"sex"} />
+      },
+      {
+        key: 'averageAge',
+        content: <CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={overviewData?.averageGeneralAge} />
+      },
+      {
+        key: 'avgMaleVsFemaleAge',
+        content: (
+          <DoubleCounterDisplay
+            localizedTitle={"admin.dashboard.insights.overview.avgMaleVsFemaleAge"}
+            firstCount={overviewData?.averageMaleAge}
+            secondCount={overviewData?.averageFemaleAge}
+            firstLabelKey={"enrollment.form.male"}
+            secondLabelKey={"enrollment.form.female"}
+          />
+        )
+      },
+      {
+        key: 'ageGroups',
+        content: <BarGraph localizedTitle={"admin.dashboard.insights.overview.agesGroups"} graphData={overviewData?.agesPercentages} passedValue={"count"} passedType={"label"} />
+      },
+      {
+        key: 'newVsReturning',
+        content: (
+          <DoubleCounterDisplay
+            localizedTitle={"admin.dashboard.insights.overview.newVsReturning"}
+            firstCount={overviewData?.totalNewEnrollees}
+            secondCount={overviewData?.totalReturningEnrollees}
+            firstLabelKey={"admin.dashboard.insights.overview.newEnrollees"}
+            secondLabelKey={"admin.dashboard.insights.overview.returningEnrollees"}
+          />
+        )
+      },
+      {
+        key: 'enrolleeType',
+        content: <BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={overviewData?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"} />
+      },
+      {
+        key: 'languageProficiencyCount',
+        content: <ColumnBar localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={overviewData?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""} />
+      },
+      {
+        key: 'languageProficiencyPercentage',
+        content: <BarGraph localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={overviewData?.enrolleeProficiencyGroups} passedValue={"percentage"} passedType={"type"} symbol={"%"} />
+      }
+    ];
+
+    return (
+      <DraggableDashboardGrid
+        cards={overviewCards}
+        cardOrder={localDashboardCardOrders[dashboardKey] || defaultInsightsOverviewCardOrder}
+        onCardOrderChange={(nextCardOrder) => handleDashboardCardOrderChange(dashboardKey, nextCardOrder)}
+        gutter={16}
+        colProps={{ xs: 24, sm: 24, md: 24, lg: 8 }}
+      />
+    );
+  };
+
+	const renderGeneralOverview = () => renderOverviewGrid(overviewDashboardData, insightsOverviewDashboardKey);
 
 	const renderGeneralTrends = () => (
 		<TimelineTrendGraph localizedTitle="admin.dashboard.insights.trends.enrollmentOverTime" dates={enrolleDashboardData?.enrollmentDates} enableGradientArea />
@@ -265,7 +355,7 @@ const InsightsLandingDashboard = (props) => {
 
 	const renderProgressOverview = () => {
     const progressOverviewData = overviewProgressDashboardData ?? overviewDashboardData;
-    return renderOverviewGrid(progressOverviewData);
+    return renderOverviewGrid(progressOverviewData, insightsOverviewDashboardKey);
   };
 
   const renderEnrolleeListTab = () => (
@@ -546,7 +636,9 @@ function mapDispatchToProps(dispatch) {
 		onRenderingLocationTypeSelectionsToDashboard: onRenderingLocationTypeSelectionsToDashboard,
 		onSubmittingAdminEnrolleeProgress: onSubmittingAdminEnrolleeProgress,
 		onLoadingAllDashboardContents: onLoadingAllDashboardContents,
-    onHydratingAnalyticsAvatars: onHydratingAnalyticsAvatars
+    onHydratingAnalyticsAvatars: onHydratingAnalyticsAvatars,
+    onLoadingAnalyticsDashboardCardOrder: onLoadingAnalyticsDashboardCardOrder,
+    onSavingAnalyticsDashboardCardOrder: onSavingAnalyticsDashboardCardOrder
 	}, dispatch);
 }
 
@@ -565,7 +657,8 @@ const mapStateToProps = ({ analytics, grant }) => {
     progressDemographicDashboardData,
     enrolleDashboardData,
     enrolleesCourseProgressData,
-    avatarUrlMap
+    avatarUrlMap,
+    analyticsDashboardCardOrders
   } = analytics;
   return {
     allCourses,
@@ -580,6 +673,7 @@ const mapStateToProps = ({ analytics, grant }) => {
     progressDemographicDashboardData,
     enrolleesCourseProgressData,
     avatarUrlMap,
+    analyticsDashboardCardOrders,
     user
   };
 };

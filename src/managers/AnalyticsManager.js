@@ -5,6 +5,8 @@ import GoogleService from "services/GoogleService";
 import LocalStorageService from "services/LocalStorageService";
 import AdminInsights from "lob/AdminInsights";
 import KnowMeProfiles from "lob/KnowMeProfiles";
+import FacilitadorDashboard from "lob/FacilitadorDashboard";
+import DashboardLayout from "lob/DashboardLayout";
 import utils from 'utils';
 
 // Use unified cache functions
@@ -290,6 +292,46 @@ export const hydrateAnalyticsAvatarUrls = async (
   };
 };
 
+export const getFacilitadorOverviewCardOrder = async (emailId, courseCodeId, defaultCardOrder = []) => {
+  const cacheKey = FacilitadorDashboard.getFacilitadorOverviewCardOrderCacheKey(emailId, courseCodeId);
+  const savedOrder = await LocalStorageService.getCachedObject(cacheKey);
+
+  return FacilitadorDashboard.normalizeFacilitadorOverviewCardOrder(savedOrder, defaultCardOrder);
+};
+
+export const saveFacilitadorOverviewCardOrder = async (emailId, courseCodeId, cardOrder = [], defaultCardOrder = []) => {
+  const normalizedOrder = FacilitadorDashboard.normalizeFacilitadorOverviewCardOrder(cardOrder, defaultCardOrder);
+  const cacheKey = FacilitadorDashboard.getFacilitadorOverviewCardOrderCacheKey(emailId, courseCodeId);
+
+  await LocalStorageService.setCachedObject(
+    cacheKey,
+    normalizedOrder,
+    FacilitadorDashboard.dashboardLayoutCacheMinutes
+  );
+
+  return normalizedOrder;
+};
+
+export const getAnalyticsDashboardCardOrder = async (dashboardKey, emailId, courseCodeId, defaultCardOrder = []) => {
+  const cacheKey = DashboardLayout.getDashboardCardOrderCacheKey(dashboardKey, emailId, courseCodeId);
+  const savedOrder = await LocalStorageService.getCachedObject(cacheKey);
+
+  return DashboardLayout.normalizeDashboardCardOrder(savedOrder, defaultCardOrder);
+};
+
+export const saveAnalyticsDashboardCardOrder = async (dashboardKey, emailId, courseCodeId, cardOrder = [], defaultCardOrder = []) => {
+  const normalizedOrder = DashboardLayout.normalizeDashboardCardOrder(cardOrder, defaultCardOrder);
+  const cacheKey = DashboardLayout.getDashboardCardOrderCacheKey(dashboardKey, emailId, courseCodeId);
+
+  await LocalStorageService.setCachedObject(
+    cacheKey,
+    normalizedOrder,
+    DashboardLayout.dashboardLayoutCacheMinutes
+  );
+
+  return normalizedOrder;
+};
+
 const getEnrolleeKnowMeProfilePictureForCourse = async (emailId) => {
   const localStorageKey = `UserProfile_${emailId}`;  
   const user = await LocalStorageService.getCachedObject(localStorageKey);
@@ -366,6 +408,10 @@ const AnalyticsManager = {
   getEnrolleesCourseProgressAdminDashboard,
   getFacilitadorEnrolleesCourseProgressDashboard,
   hydrateAnalyticsAvatarUrls,
+  getFacilitadorOverviewCardOrder,
+  saveFacilitadorOverviewCardOrder,
+  getAnalyticsDashboardCardOrder,
+  saveAnalyticsDashboardCardOrder,
   upsertAdminEnrolleeCourseProgress,
   getFacilitadorDrillDownDemographics
 };

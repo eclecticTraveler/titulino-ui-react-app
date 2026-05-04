@@ -8,7 +8,14 @@ import { faPieChart, faMapPin, faPersonHiking, faListCheck, faChartLine } from '
 import { faBook } from '@fortawesome/free-solid-svg-icons';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
-import { onLoadingFacilitadorDashboardContents, onSubmittingAdminEnrolleeProgress, onLoadingFacilitadorDrillDownDemographics, onHydratingAnalyticsAvatars } from "redux/actions/Analytics";
+import {
+  onLoadingFacilitadorDashboardContents,
+  onSubmittingAdminEnrolleeProgress,
+  onLoadingFacilitadorDrillDownDemographics,
+  onHydratingAnalyticsAvatars,
+  onLoadingFacilitadorOverviewCardOrder,
+  onSavingFacilitadorOverviewCardOrder
+} from "redux/actions/Analytics";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
 import DoubleCounterDisplayV2 from 'components/layout-components/DoubleCounterDisplayV2';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
@@ -21,6 +28,7 @@ import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTren
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
+import DraggableDashboardGrid from 'components/shared-components/DraggableDashboardGrid';
 import Flag from 'react-world-flags';
 
 const normalizeContactInternalId = (value) => (
@@ -38,6 +46,13 @@ const tableModelHasMissingAvatarResolutions = (tableModel, avatarUrlMap = {}) =>
 );
 
 const coverUrl = 'https://images.unsplash.com/photo-1561089489-f13d5e730d72?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+const defaultOverviewCardOrder = [
+  'enrolledVsProgressing',
+  'genderPercentages',
+  'averageAge',
+  'languageProficiency',
+  'enrolleeType'
+];
 
 const FacilitatorsLandingDashboard = (props) => {
   const {
@@ -57,7 +72,10 @@ const FacilitatorsLandingDashboard = (props) => {
     selectedCourseCodeId,
     user,
     onHydratingAnalyticsAvatars,
-    avatarUrlMap
+    avatarUrlMap,
+    facilitadorOverviewCardOrder,
+    onLoadingFacilitadorOverviewCardOrder,
+    onSavingFacilitadorOverviewCardOrder
   } = props;
 
   const intl = useIntl();
@@ -67,6 +85,7 @@ const FacilitatorsLandingDashboard = (props) => {
   const [searchValue, setSearchValue] = useState('');
   const [filteredData, setFilteredData] = useState([]);
   const [selectedDemoCountry, setSelectedDemoCountry] = useState(null);
+  const [localOverviewCardOrder, setLocalOverviewCardOrder] = useState(defaultOverviewCardOrder);
 
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
@@ -82,6 +101,26 @@ const FacilitatorsLandingDashboard = (props) => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseCodeId, user?.emailId]);
+
+  useEffect(() => {
+    setLocalOverviewCardOrder(defaultOverviewCardOrder);
+
+    if (!courseCodeId || !user?.emailId) {
+      return;
+    }
+
+    onLoadingFacilitadorOverviewCardOrder(
+      user.emailId,
+      courseCodeId,
+      defaultOverviewCardOrder
+    )?.catch((error) => console.error("Error loading facilitador overview card order:", error));
+  }, [courseCodeId, user?.emailId, onLoadingFacilitadorOverviewCardOrder]);
+
+  useEffect(() => {
+    if (facilitadorOverviewCardOrder?.length) {
+      setLocalOverviewCardOrder(facilitadorOverviewCardOrder);
+    }
+  }, [facilitadorOverviewCardOrder]);
 
   // Sync combined table when data changes
   useEffect(() => {    
@@ -177,6 +216,17 @@ const FacilitatorsLandingDashboard = (props) => {
     }));
   };
 
+  const handleOverviewCardOrderChange = (nextCardOrder) => {
+    setLocalOverviewCardOrder(nextCardOrder);
+
+    onSavingFacilitadorOverviewCardOrder(
+      user?.emailId,
+      courseCodeId,
+      nextCardOrder,
+      defaultOverviewCardOrder
+    )?.catch((error) => console.error("Error saving facilitador overview card order:", error));
+  };
+
     if (user?.emailId && !user?.yearOfBirth) {
       return (
         <div id="unathenticated-landing-page-margin">
@@ -189,9 +239,10 @@ const FacilitatorsLandingDashboard = (props) => {
   const renderOverview = () => {
     const generalData = overviewDashboardData;
     const progressData = overviewProgressDashboardData;
-    return (
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={24} md={24} lg={8}>
+    const overviewCards = [
+      {
+        key: 'enrolledVsProgressing',
+        content: (
           <DoubleCounterDisplayV2
             localizedTitle={"facilitador.dashboard.enrolledVsProgressing"}
             firstCount={generalData?.totalEnrollees}
@@ -199,20 +250,41 @@ const FacilitatorsLandingDashboard = (props) => {
             firstLabelKey={"facilitador.dashboard.totalEnrolled"}
             secondLabelKey={"facilitador.dashboard.totalWithProgress"}
           />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8}>
+        )
+      },
+      {
+        key: 'genderPercentages',
+        content: (
           <PieGraph localizedTitle={"admin.dashboard.insights.overview.genderPercentages"} graphData={generalData?.genderPercentages} passedValue={"percentage"} passedType={"sex"} />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8}>
+        )
+      },
+      {
+        key: 'averageAge',
+        content: (
           <CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={generalData?.averageGeneralAge} />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8}>
+        )
+      },
+      {
+        key: 'languageProficiency',
+        content: (
           <ColumnBar localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={generalData?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""} />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8}>
+        )
+      },
+      {
+        key: 'enrolleeType',
+        content: (
           <BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={generalData?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"} />
-        </Col>
-      </Row>
+        )
+      }
+    ];
+    return (
+      <DraggableDashboardGrid
+        cards={overviewCards}
+        cardOrder={localOverviewCardOrder}
+        onCardOrderChange={handleOverviewCardOrderChange}
+        gutter={[16, 16]}
+        colProps={{ xs: 24, sm: 24, md: 24, lg: 8 }}
+      />
     );
   };
 
@@ -401,7 +473,9 @@ function mapDispatchToProps(dispatch) {
     onLoadingFacilitadorDashboardContents,
     onSubmittingAdminEnrolleeProgress,
     onLoadingFacilitadorDrillDownDemographics,
-    onHydratingAnalyticsAvatars
+    onHydratingAnalyticsAvatars,
+    onLoadingFacilitadorOverviewCardOrder,
+    onSavingFacilitadorOverviewCardOrder
   }, dispatch);
 }
 
@@ -417,7 +491,8 @@ const mapStateToProps = ({ analytics, grant }) => {
     drillDownDemographicData,
     enrolleDashboardData,
     facilitadorEnrolleeData,
-    avatarUrlMap
+    avatarUrlMap,
+    facilitadorOverviewCardOrder
   } = analytics;
   return {
     selectedCourseCodeId,
@@ -430,6 +505,7 @@ const mapStateToProps = ({ analytics, grant }) => {
     enrolleDashboardData,
     facilitadorEnrolleeData,
     avatarUrlMap,
+    facilitadorOverviewCardOrder,
     user
   };
 };

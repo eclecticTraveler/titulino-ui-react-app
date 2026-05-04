@@ -9,11 +9,17 @@ import {
   ON_SUBMITTING_ADMIN_ENROLLEE_PROGRESS,
   ON_LOADING_FACILITADOR_DASHBOARD_CONTENTS,
   ON_LOADING_FACILITADOR_DRILLDOWN_DEMOGRAPHICS,
-  ON_HYDRATING_ANALYTICS_AVATARS
+  ON_HYDRATING_ANALYTICS_AVATARS,
+  ON_LOADING_FACILITADOR_OVERVIEW_CARD_ORDER,
+  ON_SAVING_FACILITADOR_OVERVIEW_CARD_ORDER,
+  ON_LOADING_ANALYTICS_DASHBOARD_CARD_ORDER,
+  ON_SAVING_ANALYTICS_DASHBOARD_CARD_ORDER
 } from '../constants/Analytics';
 
 const initState = {
-  avatarUrlMap: {}
+  avatarUrlMap: {},
+  facilitadorOverviewCardOrder: [],
+  analyticsDashboardCardOrders: {}
 };
 
 const applyAvatarCacheToTableModel = (tableModel, avatarUrlMap = {}) => (
@@ -45,6 +51,21 @@ const analytics = (state = initState, action) => {
         ...state,
         drillDownMapJson: action.drillDownMapJson,
         drillDownDemographicData: action.drillDownDemographicData
+      }
+    case ON_LOADING_FACILITADOR_OVERVIEW_CARD_ORDER:
+    case ON_SAVING_FACILITADOR_OVERVIEW_CARD_ORDER:
+      return {
+        ...state,
+        facilitadorOverviewCardOrder: action.facilitadorOverviewCardOrder || []
+      }
+    case ON_LOADING_ANALYTICS_DASHBOARD_CARD_ORDER:
+    case ON_SAVING_ANALYTICS_DASHBOARD_CARD_ORDER:
+      return {
+        ...state,
+        analyticsDashboardCardOrders: {
+          ...(state.analyticsDashboardCardOrders || {}),
+          [action.dashboardKey]: action.cardOrder || []
+        }
       }
     case ON_LOADING_ALL_DASHBOARD_CONTENTS:
       return {
