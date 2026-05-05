@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee, onSelectingEnrollmentCourses } from "redux/actions/Lrn";
-import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs, message } from "antd";
+import { App, Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs } from "antd";
 import dayjs from "dayjs";
 import Flag from "react-world-flags";
 import CourseDetails from "./CourseDetails";
@@ -19,6 +19,7 @@ export const QuickToFullEnrollment = (props) => {
   const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, baseLanguage, passedEmail, passedDateOfBirth, passedSubmitBtnEnabled,
          onSubmittingEnrollee, selfLanguageLevel, countries, isToDoFullEnrollment, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
+  const { message } = App.useApp();
   const [isEmailVisible, setEmailVisible] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [, setEmail] = useState(passedEmail || "");

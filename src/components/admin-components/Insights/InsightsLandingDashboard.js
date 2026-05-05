@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { Row, Col, Card, Tabs, Input, message } from 'antd';
+import { App, Row, Col, Card, Tabs, Input } from 'antd';
 import { useIntl } from 'react-intl';
 import IntlMessage from 'components/util-components/IntlMessage';
 import DropdownInsightSelection from './DropdownInsightSelection';
@@ -84,6 +84,7 @@ const InsightsLandingDashboard = (props) => {
   } = props;
 
   const intl = useIntl();
+  const { message: messageApi } = App.useApp();
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('general');
   const [activeInnerTabs, setActiveInnerTabs] = useState({
     general: 'general-overview',
@@ -107,7 +108,7 @@ const InsightsLandingDashboard = (props) => {
 		user?.emailId         // ✅ admin email for token/profile
 		);
 
-		message.success("Progress saved successfully!");
+		messageApi.success("Progress saved successfully!");
 
 		// 2) refresh dashboards (recommended: reload current selection)
 		if (selectedCourseCodeId && selectedLocationType && selectedCountryId && user?.emailId) {
@@ -124,7 +125,7 @@ const InsightsLandingDashboard = (props) => {
 
 	} catch (error) {
 		console.error("Error submitting admin progress:", error);
-		message.error("Error saving progress.");
+		messageApi.error("Error saving progress.");
 	}
 	};
 

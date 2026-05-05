@@ -552,8 +552,7 @@ export const getAllUserLoginFootprint = async (token, whoCalledMe = 'getAllUserL
       return _results;
     }
 
-    const apiResult = await response.json();
-    console.log("getAllUserLoginFootprint apiResult", apiResult);
+    const apiResult = await response.json();    
     return Array.isArray(apiResult) ? apiResult : _results;
   } catch (error) {
     console.error(`[${whoCalledMe}] Exception:`, error);
@@ -591,6 +590,176 @@ export const getUserLoginFootprintByContact = async (contactInternalId, token, w
   }
 };
 
+export const getOptedOutActiveContactProfiles = async (token, whoCalledMe = 'getOptedOutActiveContactProfiles') => {
+  if (!token) {
+    console.warn(`[${whoCalledMe}] Missing token`);
+    return _results;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/GetOptedOutActiveContactProfiles`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({}),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') console.warn(`[${whoCalledMe}] status ${response.status}`);
+      return _results;
+    }
+
+    const apiResult = await response.json();
+    return Array.isArray(apiResult) ? apiResult : _results;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return _results;
+  }
+};
+
+export const getInactiveContactProfiles = async (token, whoCalledMe = 'getInactiveContactProfiles') => {
+  if (!token) {
+    console.warn(`[${whoCalledMe}] Missing token`);
+    return _results;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/GetInactiveContactProfiles`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({}),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') console.warn(`[${whoCalledMe}] status ${response.status}`);
+      return _results;
+    }
+
+    const apiResult = await response.json();
+    return Array.isArray(apiResult) ? apiResult : _results;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return _results;
+  }
+};
+
+export const toggleContactEmailOptOut = async (payload, token, whoCalledMe = 'toggleContactEmailOptOut') => {
+  if (!token || !Array.isArray(payload) || payload.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/ToggleContactEmailOptOut`;
+  const requestBody = { p_payload: payload };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] toggleContactEmailOptOut endpoint:`, url);
+    console.log(`[${whoCalledMe}] toggleContactEmailOptOut payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    const responseText = await response.text();
+    if (!responseText) return true;
+    try {
+      return JSON.parse(responseText);
+    } catch {
+      return responseText;
+    }
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
+export const toggleContactActive = async (payload, token, whoCalledMe = 'toggleContactActive') => {
+  if (!token || !Array.isArray(payload) || payload.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/ToggleContactActive`;
+  const requestBody = { p_payload: payload };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] toggleContactActive endpoint:`, url);
+    console.log(`[${whoCalledMe}] toggleContactActive payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    const responseText = await response.text();
+    if (!responseText) return true;
+    try {
+      return JSON.parse(responseText);
+    } catch {
+      return responseText;
+    }
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
+export const upsertEnrolleeList = async (enrollees, token, whoCalledMe = 'upsertEnrolleeList') => {
+  const recordsToSubmit = Array.isArray(enrollees) ? enrollees : [];
+  if (!token || recordsToSubmit.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/UpsertEnrolleeList`;
+  const requestBody = { enrollees: recordsToSubmit };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] upsertEnrolleeList endpoint:`, url);
+    console.log(`[${whoCalledMe}] upsertEnrolleeList payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    const responseText = await response.text();
+    if (!responseText) return true;
+    try {
+      return JSON.parse(responseText);
+    } catch {
+      return responseText;
+    }
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
 
 const TitulinoAuthService = {
   getCourseProgress,
@@ -608,7 +777,12 @@ const TitulinoAuthService = {
   assignGlobalRole,
   upsertCourse,
   getAllUserLoginFootprint,
-  getUserLoginFootprintByContact
+  getUserLoginFootprintByContact,
+  getOptedOutActiveContactProfiles,
+  getInactiveContactProfiles,
+  toggleContactEmailOptOut,
+  toggleContactActive,
+  upsertEnrolleeList
 };
 
 export default TitulinoAuthService;

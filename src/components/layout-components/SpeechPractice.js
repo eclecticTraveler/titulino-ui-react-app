@@ -211,7 +211,7 @@ export const SpeechPractice = ({ wordData, imageUri }) => {
       <div className="container customerName wordBreak">
         <Card>
           <Alert
-            message="Speech Recognition Not Supported"
+            title="Speech Recognition Not Supported"
             description="Your browser does not support the Web Speech API. Please use Google Chrome or Microsoft Edge for the best experience."
             type="warning"
             showIcon
@@ -229,7 +229,7 @@ export const SpeechPractice = ({ wordData, imageUri }) => {
 
       {recognitionError && (
         <Alert
-          message={recognitionError}
+          title={recognitionError}
           type="error"
           closable
           onClose={() => setRecognitionError(null)}

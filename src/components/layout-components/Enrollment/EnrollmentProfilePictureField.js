@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Card, Form, Upload, message } from "antd";
+import { App, Card, Form, Upload } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useIntl } from "react-intl";
 import IntlMessage from "components/util-components/IntlMessage";
@@ -71,7 +71,7 @@ const getLocalPreviewDataUrl = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-const beforeUploadProfilePicture = (file, intl) => {
+const beforeUploadProfilePicture = (file, intl, message) => {
   const isImage = ACCEPTED_PROFILE_PICTURE_TYPES.has(file.type) || fileNameHasAcceptedImageExtension(file.name);
   if (!isImage) {
     message.error(intl.formatMessage({ id: "enrollment.form.profilePictureInvalidType" }));
@@ -104,6 +104,7 @@ export default function EnrollmentProfilePictureField({
   skipExistingProfileLookup = false
 }) {
   const intl = useIntl();
+  const { message } = App.useApp();
   const locale = true;
   const [requirement, setRequirement] = useState({
     checked: false,
@@ -265,7 +266,7 @@ export default function EnrollmentProfilePictureField({
         <Upload
           listType="picture-card"
           accept="image/*"
-          beforeUpload={(file) => beforeUploadProfilePicture(file, intl)}
+          beforeUpload={(file) => beforeUploadProfilePicture(file, intl, message)}
           previewFile={getLocalPreviewDataUrl}
           customRequest={({ onSuccess }) => setTimeout(() => onSuccess("ok"), 0)}
           maxCount={1}

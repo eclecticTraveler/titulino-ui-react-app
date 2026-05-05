@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined } from '@ant-design/icons';
+import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table } from 'antd';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined } from '@ant-design/icons';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
 import IntlMessage from 'components/util-components/IntlMessage';
@@ -12,11 +12,15 @@ import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthe
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/LoginFootprintHeatmapGraph';
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
+import ContactProfileEditor from 'components/shared-components/ContactProfileEditor';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
 import AccessManagementPolicy from 'lob/AccessManagementPolicy';
+import ContactProfileEditorLob from 'lob/ContactProfileEditor';
+import ContactProfilesMonitoring from 'lob/ContactProfilesMonitoring';
 import { env } from 'configs/EnvironmentConfig';
 import dayjs from 'dayjs';
+import { onRenderingCourseRegistration, onRequestingGeographicalDivision } from 'redux/actions/Lrn';
 import {
   onLoadingAdminToolsInit,
   onAssigningEnrolleeRoleToCourse,
@@ -29,9 +33,15 @@ import {
   onLoadingContactCourseProgressActivity,
   onLoadingContactLoginFootprint,
   onLoadingAllUserLoginFootprint,
+  onLoadingContactProfileMonitoring,
+  onTogglingContactEmailOptOut,
+  onTogglingContactActive,
+  onTogglingSelectedContactEmailOptOut,
+  onTogglingSelectedContactActive,
   onHydratingAdminToolAvatars,
   onLoadingContactGeoMaps,
   onUploadingCourseCoverImage,
+  onUpsertingSelectedContactProfile,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -53,6 +63,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     allRoles,
     allEnrollees,
     allRawCourses,
+    countries,
+    selfLanguageLevel,
     onLoadingAdminToolsInit,
     onAssigningEnrolleeRoleToCourse,
     onRevokingCourseFacilitatorAccess,
@@ -67,12 +79,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     contactLoginFootprint,
     onLoadingAllUserLoginFootprint,
     allUserLoginFootprint,
+    onLoadingContactProfileMonitoring,
+    onTogglingContactEmailOptOut,
+    onTogglingContactActive,
+    onTogglingSelectedContactEmailOptOut,
+    onTogglingSelectedContactActive,
+    contactProfileMonitoring,
     contactGlobalUserRole,
     onHydratingAdminToolAvatars,
     avatarUrlMap,
     onLoadingContactGeoMaps,
     contactGeoMaps,
-    onUploadingCourseCoverImage
+    onUploadingCourseCoverImage,
+    onUpsertingSelectedContactProfile,
+    onRenderingCourseRegistration,
+    onRequestingGeographicalDivision
   } = props;
 
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
@@ -85,16 +106,38 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [selectedRevokeCourse, setSelectedRevokeCourse] = useState(null);
   const [selectedRevokeEmail, setSelectedRevokeEmail] = useState(null);
   const [selectedRevokeGlobalRole, setSelectedRevokeGlobalRole] = useState(null);
+  const [selectedContactStatusEmail, setSelectedContactStatusEmail] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [revokeSubmitting, setRevokeSubmitting] = useState(false);
   const [globalRoleLoading, setGlobalRoleLoading] = useState(false);
   const [globalRevokeSubmitting, setGlobalRevokeSubmitting] = useState(false);
+  const [contactStatusSubmitting, setContactStatusSubmitting] = useState({
+    communication: false,
+    active: false
+  });
   const [contactTabKey, setContactTabKey] = useState('summary');
   const geoMaps = contactGeoMaps || { birth: null, residency: null };
   const [selectedProgressCourseId, setSelectedProgressCourseId] = useState('all');
   const [contactProgressLoading, setContactProgressLoading] = useState(false);
   const [contactLoginLoading, setContactLoginLoading] = useState(false);
   const [monitoringLoading, setMonitoringLoading] = useState(false);
+  const [monitoringInnerTabKey, setMonitoringInnerTabKey] = useState('general-access');
+  const [contactProfileSearchText, setContactProfileSearchText] = useState('');
+  const [contactProfileMonitoringLoading, setContactProfileMonitoringLoading] = useState(false);
+  const [selectedOptedOutEmailRowKeys, setSelectedOptedOutEmailRowKeys] = useState([]);
+  const [selectedOptedOutEmailRowsByKey, setSelectedOptedOutEmailRowsByKey] = useState({});
+  const [selectedInactiveProfileRowKeys, setSelectedInactiveProfileRowKeys] = useState([]);
+  const [selectedInactiveProfileRows, setSelectedInactiveProfileRows] = useState([]);
+  const [contactProfileTableCounts, setContactProfileTableCounts] = useState({
+    optedOut: { count: null, hasGridFilters: false },
+    inactive: { count: null, hasGridFilters: false }
+  });
+  const [contactProfileSubmitLoading, setContactProfileSubmitLoading] = useState({
+    optedOut: false,
+    inactive: false
+  });
+  const [isContactProfileEditorOpen, setContactProfileEditorOpen] = useState(false);
+  const [contactProfileEditorSubmitting, setContactProfileEditorSubmitting] = useState(false);
 
   /* ── Course Management state ── */
   const [courseSearchText, setCourseSearchText] = useState('');
@@ -109,6 +152,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const locale = true;
   const intl = useIntl();
+  const { message: messageApi } = App.useApp();
   const setLocale = (isLocaleOn, localeKey) =>
     isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   const t = (key) => intl.formatMessage({ id: key });
@@ -116,6 +160,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const isCourseUpsertSuccessful = (actionResult) => getCourseUpsertResult(actionResult)?.success === true;
 
   const emailId = user?.emailId || null;
+  const accessManagementPolicy = useMemo(
+    () => AccessManagementPolicy.buildAccessManagementPolicy(user, allRoles),
+    [user, allRoles]
+  );
+  const contactProfileMonitoringAuthorization = accessManagementPolicy.canManageContactProfiles();
+  const canManageContactProfileMonitoring = contactProfileMonitoringAuthorization.isAllowed;
 
   useEffect(() => {
     if (emailId) {
@@ -125,12 +175,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }, [emailId]);
 
   useEffect(() => {
+    if ((countries?.length > 0 && selfLanguageLevel?.length > 0) || !onRenderingCourseRegistration) return;
+
+    onRenderingCourseRegistration();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countries?.length, selfLanguageLevel?.length]);
+
+  useEffect(() => {
     if (selectedContact?.Emails?.length > 0) {
       setSelectedEmail(selectedContact.Emails[0].EmailId);
       setSelectedRevokeEmail(selectedContact.Emails[0].EmailId);
+      setSelectedContactStatusEmail(selectedContact.Emails[0].EmailId);
     } else {
       setSelectedEmail(null);
       setSelectedRevokeEmail(null);
+      setSelectedContactStatusEmail(null);
     }
     setSelectedRevokeCourse(null);
     setSelectedRevokeGlobalRole(null);
@@ -162,6 +221,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   useEffect(() => {
     if (
       activeOuterTabKey !== 'monitoring' ||
+      monitoringInnerTabKey !== 'general-access' ||
       !emailId ||
       allUserLoginFootprint?.emailId === emailId
     ) {
@@ -179,7 +239,37 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       isActive = false;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeOuterTabKey, emailId, allUserLoginFootprint?.emailId]);
+  }, [activeOuterTabKey, monitoringInnerTabKey, emailId, allUserLoginFootprint?.emailId]);
+
+  useEffect(() => {
+    if (
+      activeOuterTabKey !== 'monitoring' ||
+      monitoringInnerTabKey !== 'contact-profiles' ||
+      !emailId ||
+      !canManageContactProfileMonitoring ||
+      contactProfileMonitoring?.emailId === emailId
+    ) {
+      return;
+    }
+
+    let isActive = true;
+    setContactProfileMonitoringLoading(true);
+
+    onLoadingContactProfileMonitoring(emailId)?.finally(() => {
+      if (isActive) setContactProfileMonitoringLoading(false);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeOuterTabKey,
+    monitoringInnerTabKey,
+    emailId,
+    canManageContactProfileMonitoring,
+    contactProfileMonitoring?.emailId
+  ]);
 
   useEffect(() => {
     if (
@@ -493,6 +583,155 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setSelectedCourse(null);
   }, [selectedRole]);
 
+  const selectedOptedOutEmailRows = useMemo(
+    () => selectedOptedOutEmailRowKeys
+      .map(key => selectedOptedOutEmailRowsByKey[key])
+      .filter(Boolean),
+    [selectedOptedOutEmailRowKeys, selectedOptedOutEmailRowsByKey]
+  );
+
+  const optedOutEmailSelection = useMemo(() => ({
+    selectedRowKeys: selectedOptedOutEmailRowKeys,
+    preserveSelectedRowKeys: true,
+    getCheckboxProps: (emailRecord) => ({
+      disabled: !canManageContactProfileMonitoring || emailRecord?.hasOptedOutOfCommunication !== true
+    }),
+    onSelect: (emailRecord, selected) => {
+      const selectionKey = emailRecord?.selectionKey;
+      if (!selectionKey) return;
+
+      setSelectedOptedOutEmailRowKeys(prev => (
+        selected
+          ? Array.from(new Set([...prev, selectionKey]))
+          : prev.filter(key => key !== selectionKey)
+      ));
+      setSelectedOptedOutEmailRowsByKey(prev => {
+        if (selected) {
+          return { ...prev, [selectionKey]: emailRecord };
+        }
+
+        const next = { ...prev };
+        delete next[selectionKey];
+        return next;
+      });
+    },
+    onSelectAll: (selected, _selectedRows, changedRows = []) => {
+      const selectableRows = (changedRows || []).filter(emailRecord => (
+        emailRecord?.hasOptedOutOfCommunication === true
+      ));
+
+      setSelectedOptedOutEmailRowKeys(prev => {
+        const changedKeys = selectableRows.map(emailRecord => emailRecord.selectionKey).filter(Boolean);
+        return selected
+          ? Array.from(new Set([...prev, ...changedKeys]))
+          : prev.filter(key => !changedKeys.includes(key));
+      });
+      setSelectedOptedOutEmailRowsByKey(prev => {
+        const next = { ...prev };
+        selectableRows.forEach(emailRecord => {
+          if (!emailRecord?.selectionKey) return;
+          if (selected) {
+            next[emailRecord.selectionKey] = emailRecord;
+          } else {
+            delete next[emailRecord.selectionKey];
+          }
+        });
+        return next;
+      });
+    }
+  }), [canManageContactProfileMonitoring, selectedOptedOutEmailRowKeys]);
+
+  const handleContactProfileInternalIdCopied = useCallback(() => {
+    messageApi.success(intl.formatMessage({ id: 'admin.tools.msg.copied' }));
+  }, [intl, messageApi]);
+  const copyInternalIdTitle = useMemo(
+    () => intl.formatMessage({ id: 'admin.tools.copyInternalId' }),
+    [intl]
+  );
+
+  const optedOutContactProfileTableModel = useMemo(
+    () => ContactProfilesMonitoring.buildContactProfileTableModel(
+      contactProfileMonitoring?.optedOutActiveContactProfiles || [],
+      {
+        optedOutEmailSelection,
+        onCopyInternalId: handleContactProfileInternalIdCopied,
+        copyInternalIdTitle
+      }
+    ),
+    [contactProfileMonitoring?.optedOutActiveContactProfiles, optedOutEmailSelection, handleContactProfileInternalIdCopied, copyInternalIdTitle]
+  );
+  const inactiveContactProfileTableModel = useMemo(
+    () => ContactProfilesMonitoring.buildContactProfileTableModel(
+      contactProfileMonitoring?.inactiveContactProfiles || [],
+      {
+        hideCommunicationColumns: true,
+        onCopyInternalId: handleContactProfileInternalIdCopied,
+        copyInternalIdTitle
+      }
+    ),
+    [contactProfileMonitoring?.inactiveContactProfiles, handleContactProfileInternalIdCopied, copyInternalIdTitle]
+  );
+  const filteredOptedOutContactProfileData = useMemo(
+    () => ContactProfilesMonitoring.filterContactProfileTableData(
+      optedOutContactProfileTableModel?.tableData || [],
+      contactProfileSearchText
+    ),
+    [optedOutContactProfileTableModel?.tableData, contactProfileSearchText]
+  );
+  const filteredInactiveContactProfileData = useMemo(
+    () => ContactProfilesMonitoring.filterContactProfileTableData(
+      inactiveContactProfileTableModel?.tableData || [],
+      contactProfileSearchText
+    ),
+    [inactiveContactProfileTableModel?.tableData, contactProfileSearchText]
+  );
+  const isContactProfileMonitoringStale = (
+    canManageContactProfileMonitoring &&
+    emailId &&
+    contactProfileMonitoring?.emailId !== emailId
+  );
+  const isContactProfileMonitoringTableLoading = (
+    contactProfileMonitoringLoading ||
+    (monitoringInnerTabKey === 'contact-profiles' && isContactProfileMonitoringStale)
+  );
+
+  useEffect(() => {
+    setContactProfileTableCounts({
+      optedOut: { count: null, hasGridFilters: false },
+      inactive: { count: null, hasGridFilters: false }
+    });
+  }, [contactProfileSearchText]);
+
+  const isContactProfileSearchActive = contactProfileSearchText.trim().length > 0;
+  const getContactProfileFilteredCount = (tableKey, filteredRows = [], options = {}) => {
+    const tableCountState = contactProfileTableCounts[tableKey] || {};
+    if (tableCountState.hasGridFilters) {
+      return tableCountState.count ?? 0;
+    }
+
+    if (isContactProfileSearchActive) {
+      return filteredRows.length;
+    }
+
+    return options.showDefaultTotal ? filteredRows.length : null;
+  };
+  const getContactProfileCountSuffix = (count) => (
+    count == null ? '' : ` (${count})`
+  );
+  const handleContactProfileTableChange = (tableKey) => (_pagination, filters, _sorter, extra = {}) => {
+    const hasGridFilters = Object.values(filters || {}).some(value => (
+      Array.isArray(value) ? value.length > 0 : value != null
+    ));
+
+    setContactProfileTableCounts(prev => ({
+      ...prev,
+      [tableKey]: {
+        hasGridFilters,
+        count: hasGridFilters ? (extra?.currentDataSource || []).length : null
+      }
+    }));
+  };
+
   const renderSquarePreviewImage = (src, alt, icon, size = 160, backgroundColor = '#87d068') => (
     <div
       style={{
@@ -569,11 +808,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setSelectedRevokeCourse(null);
     setSelectedRevokeEmail(null);
     setSelectedRevokeGlobalRole(null);
+    setSelectedContactStatusEmail(null);
     setContactTabKey('summary');
   };
 
   const refreshAdminToolsDataAndSelectedContact = async () => {
-    if (!emailId || !selectedContact?.ContactInternalId) return;
+    if (!emailId || !selectedContact?.ContactInternalId) return null;
 
     const initAction = await onLoadingAdminToolsInit(emailId);
     const refreshedContact = (initAction?.allEnrollees || []).find(
@@ -582,7 +822,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     if (refreshedContact) {
       setSelectedContact(refreshedContact);
+      return refreshedContact;
     }
+
+    return null;
   };
 
   const refreshGlobalUserRoleForSelectedContact = async () => {
@@ -590,9 +833,249 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     return onLoadingGlobalUserRole(selectedContact.ContactInternalId, emailId);
   };
 
+  const refreshContactProfileMonitoring = async () => {
+    if (!emailId || !canManageContactProfileMonitoring) return null;
+
+    setContactProfileMonitoringLoading(true);
+    try {
+      return await onLoadingContactProfileMonitoring(emailId);
+    } finally {
+      setContactProfileMonitoringLoading(false);
+    }
+  };
+
+  const patchSelectedContactEmailOptOut = (targetEmailId, hasOptedOutOfCommunication) => {
+    const patchEmails = (emails = []) => (emails || []).map(emailRecord => (
+      (emailRecord?.EmailId || emailRecord?.emailId) === targetEmailId
+        ? { ...emailRecord, HasOptedOutOfCommunication: hasOptedOutOfCommunication, hasOptedOutOfCommunication }
+        : emailRecord
+    ));
+
+    setSelectedContact(prev => prev ? ({
+      ...prev,
+      ...(Array.isArray(prev.Emails) ? { Emails: patchEmails(prev.Emails) } : {}),
+      ...(Array.isArray(prev.emails) ? { emails: patchEmails(prev.emails) } : {})
+    }) : prev);
+  };
+
+  const patchSelectedContactActive = (targetContactInternalId, isActive) => {
+    setSelectedContact(prev => (
+      prev?.ContactInternalId === targetContactInternalId
+        ? {
+          ...prev,
+          IsActive: isActive,
+          isActive
+        }
+        : prev
+    ));
+  };
+
+  const handleSubmitSelectedContactProfileUpdate = async (profileUpdate) => {
+    if (!selectedContact?.ContactInternalId) {
+      messageApi.warning(t('admin.tools.msg.selectContactFirst'));
+      return;
+    }
+
+    if (!canManageContactProfileMonitoring) {
+      messageApi.warning(t(contactProfileMonitoringAuthorization.reasonKey || 'admin.tools.msg.notEnoughContactProfileMonitoringPermissions'));
+      return;
+    }
+
+    setContactProfileEditorSubmitting(true);
+    try {
+      const actionResult = await onUpsertingSelectedContactProfile(profileUpdate, emailId);
+      const upsertResult = actionResult?.upsertResult || actionResult;
+
+      if (upsertResult?.success === true) {
+        const patch = upsertResult?.contactProfilePatch || actionResult?.contactProfilePatch || profileUpdate?.patch;
+        if (patch) {
+          setSelectedContact(prev => ContactProfileEditorLob.mergeContactProfilePatch(prev, patch));
+        }
+        messageApi.success(t('admin.tools.profileEditor.saveSuccess'));
+        setContactProfileEditorOpen(false);
+        if (contactTabKey === 'detailed') {
+          onLoadingContactGeoMaps(ContactProfileEditorLob.mergeContactProfilePatch(selectedContact, patch));
+        }
+      } else {
+        messageApi.error(t('admin.tools.profileEditor.saveError'));
+      }
+    } catch (error) {
+      console.error('Error saving selected contact profile:', error);
+      messageApi.error(t('admin.tools.profileEditor.saveError'));
+    } finally {
+      setContactProfileEditorSubmitting(false);
+    }
+  };
+
+  const handleManualRefreshContactProfileMonitoring = async () => {
+    await refreshContactProfileMonitoring();
+    messageApi.success(t('admin.tools.monitoring.msg.refreshSuccess'));
+  };
+
+  const isToggleResultSuccessful = (actionResult) => {
+    const result = actionResult?.toggleResult ?? actionResult;
+    if (result === true) return true;
+    if (!result) return false;
+    if (Array.isArray(result)) return true;
+    if (result?.success === false || result?.Success === false) return false;
+    return result?.success === true || result?.Success === true || typeof result === 'object';
+  };
+
+  const handleRestoreSelectedCommunication = async () => {
+    if (!canManageContactProfileMonitoring) {
+      messageApi.warning(t(contactProfileMonitoringAuthorization.reasonKey || 'admin.tools.msg.notEnoughContactProfileMonitoringPermissions'));
+      return;
+    }
+    if (!selectedOptedOutEmailRows.length) {
+      messageApi.warning(t('admin.tools.monitoring.msg.selectOptedOutContacts'));
+      return;
+    }
+
+    setContactProfileSubmitLoading(prev => ({ ...prev, optedOut: true }));
+    try {
+      const actionResult = await onTogglingContactEmailOptOut(
+        selectedOptedOutEmailRows,
+        emailId
+      );
+
+      if (isToggleResultSuccessful(actionResult)) {
+        messageApi.success(t('admin.tools.monitoring.msg.restoreCommunicationSuccess'));
+        setSelectedOptedOutEmailRowKeys([]);
+        setSelectedOptedOutEmailRowsByKey({});
+        (selectedOptedOutEmailRows || [])
+          .filter(row => row?.contactInternalId === selectedContact?.ContactInternalId)
+          .forEach(row => patchSelectedContactEmailOptOut(row.emailId, false));
+        await refreshContactProfileMonitoring();
+      } else {
+        messageApi.error(t('admin.tools.monitoring.msg.restoreCommunicationError'));
+      }
+    } catch (error) {
+      console.error('Error restoring contact communication:', error);
+      messageApi.error(t('admin.tools.monitoring.msg.restoreCommunicationError'));
+    } finally {
+      setContactProfileSubmitLoading(prev => ({ ...prev, optedOut: false }));
+    }
+  };
+
+  const handleReactivateSelectedContacts = async () => {
+    if (!canManageContactProfileMonitoring) {
+      messageApi.warning(t(contactProfileMonitoringAuthorization.reasonKey || 'admin.tools.msg.notEnoughContactProfileMonitoringPermissions'));
+      return;
+    }
+    if (!selectedInactiveProfileRows.length) {
+      messageApi.warning(t('admin.tools.monitoring.msg.selectInactiveContacts'));
+      return;
+    }
+
+    setContactProfileSubmitLoading(prev => ({ ...prev, inactive: true }));
+    try {
+      const actionResult = await onTogglingContactActive(
+        selectedInactiveProfileRows,
+        emailId
+      );
+
+      if (isToggleResultSuccessful(actionResult)) {
+        messageApi.success(t('admin.tools.monitoring.msg.reactivateContactsSuccess'));
+        setSelectedInactiveProfileRowKeys([]);
+        setSelectedInactiveProfileRows([]);
+        if ((selectedInactiveProfileRows || []).some(row => row?.contactInternalId === selectedContact?.ContactInternalId)) {
+          patchSelectedContactActive(selectedContact.ContactInternalId, true);
+        }
+        await refreshContactProfileMonitoring();
+      } else {
+        messageApi.error(t('admin.tools.monitoring.msg.reactivateContactsError'));
+      }
+    } catch (error) {
+      console.error('Error reactivating contact profiles:', error);
+      messageApi.error(t('admin.tools.monitoring.msg.reactivateContactsError'));
+    } finally {
+      setContactProfileSubmitLoading(prev => ({ ...prev, inactive: false }));
+    }
+  };
+
+  const handleToggleSelectedContactEmailCommunication = async () => {
+    if (!selectedContact?.ContactInternalId) {
+      messageApi.warning(t('admin.tools.msg.selectContactFirst'));
+      return;
+    }
+    if (!canManageContactProfileMonitoring) {
+      messageApi.warning(t(contactProfileMonitoringAuthorization.reasonKey || 'admin.tools.msg.notEnoughContactProfileMonitoringPermissions'));
+      return;
+    }
+    if (!activeContactStatusEmail) {
+      messageApi.warning(t('admin.tools.msg.selectEmail'));
+      return;
+    }
+    setContactStatusSubmitting(prev => ({ ...prev, communication: true }));
+    try {
+      const actionResult = await onTogglingSelectedContactEmailOptOut(
+        selectedContact.ContactInternalId,
+        activeContactStatusEmail,
+        emailId,
+        !isSelectedContactStatusEmailOptedOut
+      );
+
+      if (isToggleResultSuccessful(actionResult)) {
+        messageApi.success(t(isSelectedContactStatusEmailOptedOut
+          ? 'admin.tools.monitoring.msg.restoreCommunicationSuccess'
+          : 'admin.tools.msg.optOutCommunicationSuccess'));
+        patchSelectedContactEmailOptOut(activeContactStatusEmail, !isSelectedContactStatusEmailOptedOut);
+        await refreshContactProfileMonitoring();
+      } else {
+        messageApi.error(t(isSelectedContactStatusEmailOptedOut
+          ? 'admin.tools.monitoring.msg.restoreCommunicationError'
+          : 'admin.tools.msg.optOutCommunicationError'));
+      }
+    } catch (error) {
+      console.error('Error toggling contact communication:', error);
+      messageApi.error(t(isSelectedContactStatusEmailOptedOut
+        ? 'admin.tools.monitoring.msg.restoreCommunicationError'
+        : 'admin.tools.msg.optOutCommunicationError'));
+    } finally {
+      setContactStatusSubmitting(prev => ({ ...prev, communication: false }));
+    }
+  };
+
+  const handleSetSelectedContactInactive = async () => {
+    if (!selectedContact?.ContactInternalId) {
+      messageApi.warning(t('admin.tools.msg.selectContactFirst'));
+      return;
+    }
+    if (!canManageContactProfileMonitoring) {
+      messageApi.warning(t(contactProfileMonitoringAuthorization.reasonKey || 'admin.tools.msg.notEnoughContactProfileMonitoringPermissions'));
+      return;
+    }
+    if (!isSelectedContactActive) {
+      messageApi.info(t('admin.tools.msg.contactAlreadyInactive'));
+      return;
+    }
+
+    setContactStatusSubmitting(prev => ({ ...prev, active: true }));
+    try {
+      const actionResult = await onTogglingSelectedContactActive(
+        selectedContact.ContactInternalId,
+        emailId,
+        false
+      );
+
+      if (isToggleResultSuccessful(actionResult)) {
+        messageApi.success(t('admin.tools.msg.setContactInactiveSuccess'));
+        patchSelectedContactActive(selectedContact.ContactInternalId, false);
+        await refreshContactProfileMonitoring();
+      } else {
+        messageApi.error(t('admin.tools.msg.setContactInactiveError'));
+      }
+    } catch (error) {
+      console.error('Error setting contact inactive:', error);
+      messageApi.error(t('admin.tools.msg.setContactInactiveError'));
+    } finally {
+      setContactStatusSubmitting(prev => ({ ...prev, active: false }));
+    }
+  };
+
   const handleSubmit = async () => {
     if (!selectedContact) {
-      message.warning(t('admin.tools.msg.selectContactFirst'));
+      messageApi.warning(t('admin.tools.msg.selectContactFirst'));
       return;
     }
 
@@ -600,7 +1083,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     try {
       if (actionType === 'enroll') {
         if (!selectedCourse || !selectedRole) {
-          message.warning(t('admin.tools.msg.selectCourseAndRole'));
+          messageApi.warning(t('admin.tools.msg.selectCourseAndRole'));
           setSubmitting(false);
           return;
         }
@@ -611,11 +1094,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           selectedEmail,
           emailId
         );
-        message.success(t('admin.tools.msg.roleToCourseSuccess'));
+        messageApi.success(t('admin.tools.msg.roleToCourseSuccess'));
         await refreshAdminToolsDataAndSelectedContact();
       } else {
         if (!selectedRole) {
-          message.warning(t('admin.tools.msg.selectRole'));
+          messageApi.warning(t('admin.tools.msg.selectRole'));
           setSubmitting(false);
           return;
         }
@@ -624,24 +1107,24 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           selectedRole,
           emailId
         );
-        message.success(t('admin.tools.msg.globalRoleSuccess'));
+        messageApi.success(t('admin.tools.msg.globalRoleSuccess'));
         await refreshAdminToolsDataAndSelectedContact();
         await refreshGlobalUserRoleForSelectedContact();
       }
     } catch (error) {
       console.error('Error assigning role:', error);
-      message.error(t('admin.tools.msg.assignError'));
+      messageApi.error(t('admin.tools.msg.assignError'));
     }
     setSubmitting(false);
   };
 
   const handleRevokeFacilitatorAccess = async () => {
     if (!selectedContact) {
-      message.warning(t('admin.tools.msg.selectContactFirst'));
+      messageApi.warning(t('admin.tools.msg.selectContactFirst'));
       return;
     }
     if (!selectedRevokeCourse || !activeRevokeEmail) {
-      message.warning(t('admin.tools.msg.selectCourseAndEmail'));
+      messageApi.warning(t('admin.tools.msg.selectCourseAndEmail'));
       return;
     }
 
@@ -654,23 +1137,23 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         emailId,
         userCourseRoleId
       );
-      message.success(t('admin.tools.msg.revokeAccessSuccess'));
+      messageApi.success(t('admin.tools.msg.revokeAccessSuccess'));
       setSelectedRevokeCourse(null);
       await refreshAdminToolsDataAndSelectedContact();
     } catch (error) {
       console.error('Error revoking facilitator access:', error);
-      message.error(t('admin.tools.msg.revokeAccessError'));
+      messageApi.error(t('admin.tools.msg.revokeAccessError'));
     }
     setRevokeSubmitting(false);
   };
 
   const handleRevokeGlobalRoleAccess = async () => {
     if (!selectedContact) {
-      message.warning(t('admin.tools.msg.selectContactFirst'));
+      messageApi.warning(t('admin.tools.msg.selectContactFirst'));
       return;
     }
     if (!activeRevokeGlobalRole) {
-      message.warning(t('admin.tools.msg.selectRole'));
+      messageApi.warning(t('admin.tools.msg.selectRole'));
       return;
     }
 
@@ -681,13 +1164,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         activeRevokeGlobalRole,
         emailId
       );
-      message.success(t('admin.tools.msg.revokeGlobalAccessSuccess'));
+      messageApi.success(t('admin.tools.msg.revokeGlobalAccessSuccess'));
       setSelectedRevokeGlobalRole(null);
       await refreshAdminToolsDataAndSelectedContact();
       await refreshGlobalUserRoleForSelectedContact();
     } catch (error) {
       console.error('Error revoking global access:', error);
-      message.error(t('admin.tools.msg.revokeGlobalAccessError'));
+      messageApi.error(t('admin.tools.msg.revokeGlobalAccessError'));
     }
     setGlobalRevokeSubmitting(false);
   };
@@ -711,7 +1194,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const facilitatorRoleId = facilitatorRoleOption?.value || 'titulino_facilitator';
   const userCourseRoleOption = courseRoleOptions.find(r => (r.localizationKey || '').toLowerCase() === 'titulino.user');
   const userCourseRoleId = userCourseRoleOption?.value || 'titulino_user';
-  const accessManagementPolicy = AccessManagementPolicy.buildAccessManagementPolicy(user, allRoles);
   const selectedAssignAccessScope = actionType === 'global' ? 'global' : 'course';
   const selectedAssignAccessAuthorization = selectedRole
     ? accessManagementPolicy.canManageRole(selectedRole, selectedAssignAccessScope)
@@ -774,6 +1256,29 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     ...(selectedContact?.Emails || []).map(e => e?.EmailId),
     ...selectedContactPermissionRows.map(row => row.email)
   ].filter(Boolean))).map(email => ({ value: email, label: email }));
+  const selectedContactStatusEmailOptions = (selectedContact?.Emails || [])
+    .map((emailRecord) => {
+      const email = emailRecord?.EmailId || emailRecord?.emailId;
+      const isOptedOut = emailRecord?.HasOptedOutOfCommunication === true ||
+        emailRecord?.hasOptedOutOfCommunication === true;
+
+      return {
+        value: email,
+        searchText: email,
+        label: (
+          <span>
+            {email}
+            <Tag color={isOptedOut ? 'red' : 'green'} style={{ marginLeft: 8, marginRight: 0 }}>
+              {isOptedOut
+                ? setLocale(locale, 'admin.tools.label.optedOut')
+                : setLocale(locale, 'admin.tools.label.communicationAllowed')}
+            </Tag>
+          </span>
+        ),
+        isOptedOut
+      };
+    })
+    .filter(option => option.value);
 
   const comparePermissionRowsByRolePriorityAsc = (a, b) => {
     if (a.rolePriority !== b.rolePriority) {
@@ -891,6 +1396,39 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   );
 
   const activeRevokeEmail = selectedRevokeEmail || selectedContactEmailOptions[0]?.value || null;
+  const activeContactStatusEmail = selectedContactStatusEmail || selectedContactStatusEmailOptions[0]?.value || null;
+  const selectedContactStatusEmailRecord = (selectedContact?.Emails || []).find(emailRecord => (
+    (emailRecord?.EmailId || emailRecord?.emailId) === activeContactStatusEmail
+  ));
+  const isSelectedContactStatusEmailOptedOut = (
+    selectedContactStatusEmailRecord?.HasOptedOutOfCommunication === true ||
+    selectedContactStatusEmailRecord?.hasOptedOutOfCommunication === true
+  );
+  const isSelectedContactActive = selectedContact?.IsActive !== false && selectedContact?.isActive !== false;
+  const contactStatusName = selectedContact?.FullName || `${selectedContact?.Names || ''} ${selectedContact?.LastNames || ''}`.trim() || t('admin.tools.contact');
+  const optOutCommunicationConfirmMessage = intl.formatMessage(
+    { id: 'admin.tools.msg.optOutCommunicationConfirm' },
+    {
+      name: contactStatusName,
+      email: activeContactStatusEmail || t('admin.tools.label.email')
+    }
+  );
+  const restoreContactCommunicationConfirmMessage = intl.formatMessage(
+    { id: 'admin.tools.msg.restoreContactCommunicationConfirm' },
+    {
+      name: contactStatusName,
+      email: activeContactStatusEmail || t('admin.tools.label.email')
+    }
+  );
+  const contactCommunicationConfirmMessage = isSelectedContactStatusEmailOptedOut
+    ? restoreContactCommunicationConfirmMessage
+    : optOutCommunicationConfirmMessage;
+  const setInactiveConfirmMessage = intl.formatMessage(
+    { id: 'admin.tools.msg.setContactInactiveConfirm' },
+    {
+      name: contactStatusName
+    }
+  );
 
   const facilitatorPermissionRows = selectedContactPermissionRows.filter(row => row.isFacilitator && row.courseCodeId);
   const revokeRoleOptions = facilitatorRoleOption
@@ -1035,7 +1573,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             return {
               key: i,
               color: isCurrent ? 'green' : 'gray',
-              children: (
+              content: (
                 <div>
                   <Tag color={profInfo.color} style={{ marginBottom: 4 }}>{profLabel}</Tag>
                   {isCurrent && <Tag color="green" style={{ marginBottom: 4 }}>{t('admin.tools.label.current')}</Tag>}
@@ -1154,7 +1692,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     const handleCopyInternalId = () => {
       navigator.clipboard.writeText(selectedContact.ContactInternalId || '').then(() => {
-        message.success(t('admin.tools.msg.copied'));
+        messageApi.success(t('admin.tools.msg.copied'));
       });
     };
 
@@ -1243,7 +1781,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                         <CopyOutlined
                           style={{ cursor: 'pointer', color: '#1890ff', fontSize: 12 }}
                           onClick={() => {
-                            navigator.clipboard.writeText(em).then(() => message.success(t('admin.tools.msg.copied')));
+                            navigator.clipboard.writeText(em).then(() => messageApi.success(t('admin.tools.msg.copied')));
                           }}
                         />
                       </div>
@@ -1358,10 +1896,22 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     return (
       <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
-        <h4 style={{ marginBottom: 12 }}>
-          <SolutionOutlined style={{ marginRight: 8 }} />
-          {setLocale(locale, 'admin.tools.contact')}
-        </h4>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          <h4 style={{ marginBottom: 0 }}>
+            <SolutionOutlined style={{ marginRight: 8 }} />
+            {setLocale(locale, 'admin.tools.contact')}
+          </h4>
+          {contactTabKey === 'detailed' && (
+            <Tooltip title={setLocale(locale, 'admin.tools.profileEditor.title')}>
+              <Button
+                type="text"
+                icon={<EditOutlined />}
+                onClick={() => setContactProfileEditorOpen(true)}
+                disabled={!canManageContactProfileMonitoring}
+              />
+            </Tooltip>
+          )}
+        </div>
 
         <Radio.Group
           value={contactTabKey}
@@ -1376,6 +1926,18 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         {contactTabKey === 'summary' && summaryContent}
         {contactTabKey === 'detailed' && detailedContent}
         {contactTabKey === 'access' && renderAssignAccess()}
+        <ContactProfileEditor
+          open={isContactProfileEditorOpen}
+          contact={selectedContact}
+          countries={countries}
+          selfLanguageLevel={selfLanguageLevel}
+          languageData={langData}
+          submitting={contactProfileEditorSubmitting}
+          canEdit={canManageContactProfileMonitoring}
+          onClose={() => setContactProfileEditorOpen(false)}
+          onSubmit={handleSubmitSelectedContactProfileUpdate}
+          onRequestingGeographicalDivision={onRequestingGeographicalDivision}
+        />
       </Card>
     );
   };
@@ -1490,6 +2052,122 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     />
   );
 
+  const renderContactStatusManagement = () => {
+    if (!selectedContact) return null;
+
+    return (
+      <>
+        <Divider titlePlacement="left" style={{ marginTop: 0 }}>
+          <SolutionOutlined style={{ marginRight: 6 }} />
+          {setLocale(locale, 'admin.tools.contactStatus')}
+        </Divider>
+
+        {!canManageContactProfileMonitoring && (
+          <Alert
+            type="warning"
+            showIcon
+            title={setLocale(locale, 'admin.tools.msg.notEnoughContactProfileMonitoringPermissions')}
+            style={{ marginBottom: 16 }}
+          />
+        )}
+
+        <div style={{ opacity: canManageContactProfileMonitoring ? 1 : 0.55 }}>
+          <Row gutter={16}>
+            <Col xs={24} sm={12} md={8}>
+              <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.email')}</strong></div>
+              {selectedContactStatusEmailOptions.length > 1 ? (
+                <Select
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.searchText || '').toString().toLowerCase().includes(input.toLowerCase())
+                  }
+                  value={activeContactStatusEmail}
+                  onChange={setSelectedContactStatusEmail}
+                  style={{ width: '100%' }}
+                  options={selectedContactStatusEmailOptions}
+                  disabled={!canManageContactProfileMonitoring}
+                />
+              ) : (
+                <Input value={activeContactStatusEmail || ''} readOnly disabled={!canManageContactProfileMonitoring} />
+              )}
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.contactStatus')}</strong></div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', paddingTop: 4 }}>
+                <Tag color={isSelectedContactActive ? 'green' : 'red'}>
+                  {isSelectedContactActive
+                    ? setLocale(locale, 'admin.tools.label.active')
+                    : setLocale(locale, 'admin.tools.label.inactive')}
+                </Tag>
+                <Tag color={isSelectedContactStatusEmailOptedOut ? 'red' : 'green'}>
+                  {isSelectedContactStatusEmailOptedOut
+                    ? setLocale(locale, 'admin.tools.label.optedOut')
+                    : setLocale(locale, 'admin.tools.label.communicationAllowed')}
+                </Tag>
+              </div>
+            </Col>
+          </Row>
+
+          {isSelectedContactStatusEmailOptedOut && (
+            <Alert
+              type="info"
+              showIcon
+              title={setLocale(locale, 'admin.tools.msg.contactEmailAlreadyOptedOut')}
+              style={{ marginTop: 16 }}
+            />
+          )}
+          {!isSelectedContactActive && (
+            <Alert
+              type="info"
+              showIcon
+              title={setLocale(locale, 'admin.tools.msg.contactAlreadyInactive')}
+              style={{ marginTop: 16 }}
+            />
+          )}
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
+            <Popconfirm
+              title={contactCommunicationConfirmMessage}
+              onConfirm={handleToggleSelectedContactEmailCommunication}
+              okText={t('admin.tools.confirmYes')}
+              cancelText={t('admin.tools.confirmNo')}
+              disabled={!canManageContactProfileMonitoring || !activeContactStatusEmail}
+            >
+              <Button
+                danger={!isSelectedContactStatusEmailOptedOut}
+                type={isSelectedContactStatusEmailOptedOut ? 'primary' : 'default'}
+                icon={<MessageOutlined />}
+                loading={contactStatusSubmitting.communication}
+                disabled={!canManageContactProfileMonitoring || !activeContactStatusEmail}
+              >
+                {isSelectedContactStatusEmailOptedOut
+                  ? setLocale(locale, 'admin.tools.monitoring.restoreCommunication')
+                  : setLocale(locale, 'admin.tools.optOutCommunication')}
+              </Button>
+            </Popconfirm>
+
+            <Popconfirm
+              title={setInactiveConfirmMessage}
+              onConfirm={handleSetSelectedContactInactive}
+              okText={t('admin.tools.confirmYes')}
+              cancelText={t('admin.tools.confirmNo')}
+              disabled={!canManageContactProfileMonitoring || !isSelectedContactActive}
+            >
+              <Button
+                danger
+                icon={<CloseCircleOutlined />}
+                loading={contactStatusSubmitting.active}
+                disabled={!canManageContactProfileMonitoring || !isSelectedContactActive}
+              >
+                {setLocale(locale, 'admin.tools.setContactInactive')}
+              </Button>
+            </Popconfirm>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   const renderAssignAccess = () => {
     if (!selectedContact) return null;
     const isEnroll = actionType === 'enroll';
@@ -1497,7 +2175,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     return (
       <>
-        <Divider titlePlacement="left" style={{ marginTop: 0 }}>
+        {renderContactStatusManagement()}
+
+        <Divider titlePlacement="left" style={{ marginTop: 24 }}>
           <SafetyCertificateOutlined style={{ marginRight: 6 }} />
           {setLocale(locale, 'admin.tools.assignAccess')}
         </Divider>
@@ -1515,7 +2195,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <Alert
             type="warning"
             showIcon
-            message={setLocale(locale, 'admin.tools.msg.notEnoughAccessManagementPermissions')}
+            title={setLocale(locale, 'admin.tools.msg.notEnoughAccessManagementPermissions')}
             style={{ marginBottom: 16 }}
           />
         )}
@@ -1590,7 +2270,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               <Alert
                 type="info"
                 showIcon
-                message={setLocale(locale, 'admin.tools.msg.noFacilitatorAccess')}
+                title={setLocale(locale, 'admin.tools.msg.noFacilitatorAccess')}
                 style={{ marginBottom: 16 }}
               />
             )}
@@ -1598,7 +2278,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               <Alert
                 type="warning"
                 showIcon
-                message={setLocale(locale, 'admin.tools.msg.notEnoughAccessManagementPermissions')}
+                title={setLocale(locale, 'admin.tools.msg.notEnoughAccessManagementPermissions')}
                 style={{ marginBottom: 16 }}
               />
             )}
@@ -1676,7 +2356,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               <Alert
                 type="info"
                 showIcon
-                message={setLocale(locale, 'admin.tools.msg.noGlobalAccess')}
+                title={setLocale(locale, 'admin.tools.msg.noGlobalAccess')}
                 style={{ marginBottom: 16 }}
               />
             )}
@@ -1684,7 +2364,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               <Alert
                 type="warning"
                 showIcon
-                message={setLocale(locale, 'admin.tools.msg.notEnoughAccessManagementPermissions')}
+                title={setLocale(locale, 'admin.tools.msg.notEnoughAccessManagementPermissions')}
                 style={{ marginBottom: 16 }}
               />
             )}
@@ -1860,13 +2540,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       if (!isCourseUpsertSuccessful(actionResult)) {
         throw new Error(getCourseUpsertResult(actionResult)?.errorMessage || 'Course update failed.');
       }
-      message.success(t('admin.tools.course.msg.updateSuccess'));
+      messageApi.success(t('admin.tools.course.msg.updateSuccess'));
       setEditingSections(prev => ({ ...prev, [section]: false }));
       // Refresh data
       if (emailId) onLoadingAdminToolsInit(emailId);
     } catch (e) {
       console.error(e);
-      message.error(t('admin.tools.course.msg.upsertError'));
+      messageApi.error(t('admin.tools.course.msg.upsertError'));
     }
     setCourseSubmitting(false);
   };
@@ -1890,7 +2570,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const handleCreateCourse = async () => {
     const validation = getCourseCreateValidation();
     if (!validation.isComplete) {
-      message.warning(`${t('admin.tools.course.msg.fillRequired')} ${validation.missingLabels.join(', ')}`);
+      messageApi.warning(`${t('admin.tools.course.msg.fillRequired')} ${validation.missingLabels.join(', ')}`);
       return;
     }
 
@@ -1921,7 +2601,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       if (!isCourseUpsertSuccessful(actionResult)) {
         throw new Error(getCourseUpsertResult(actionResult)?.errorMessage || 'Course create failed.');
       }
-      message.success(t('admin.tools.course.msg.createSuccess'));
+      messageApi.success(t('admin.tools.course.msg.createSuccess'));
       setCourseFormValues({});
       setCourseTemplateId(null);
       setCourseImageSourceMode('upload');
@@ -1932,7 +2612,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       const fallbackKey = courseImageSourceMode === 'upload' && courseFormValues._imageFile
         ? 'admin.tools.course.msg.imageUploadFailed'
         : 'admin.tools.course.msg.upsertError';
-      message.error(t(fallbackKey));
+      messageApi.error(t(fallbackKey));
     }
     setCourseSubmitting(false);
   };
@@ -1947,7 +2627,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     const summaryContent = (
       <Descriptions column={{ xs: 1, sm: 2, md: 3 }} size="small" bordered>
         <Descriptions.Item label={setLocale(locale, 'admin.tools.course.label.courseCodeId')}>
-          {c.CourseCodeId ? <>{c.CourseCodeId} <CopyOutlined style={{ cursor: 'pointer', color: '#1890ff', marginLeft: 4 }} onClick={() => { navigator.clipboard.writeText(c.CourseCodeId); message.success(t('admin.tools.copied')); }} /></> : '—'}
+          {c.CourseCodeId ? <>{c.CourseCodeId} <CopyOutlined style={{ cursor: 'pointer', color: '#1890ff', marginLeft: 4 }} onClick={() => { navigator.clipboard.writeText(c.CourseCodeId); messageApi.success(t('admin.tools.copied')); }} /></> : '—'}
         </Descriptions.Item>
         <Descriptions.Item label={setLocale(locale, 'admin.tools.course.label.onGoing')}>
           {c.OnGoing
@@ -1992,7 +2672,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <Col xs={24} sm={18} md={20}>
             <Descriptions column={{ xs: 1, sm: 2 }} size="small" bordered>
               <Descriptions.Item label={setLocale(locale, 'admin.tools.course.label.courseCodeId')}>
-                {c.CourseCodeId ? <>{c.CourseCodeId} <CopyOutlined style={{ cursor: 'pointer', color: '#1890ff', marginLeft: 4 }} onClick={() => { navigator.clipboard.writeText(c.CourseCodeId); message.success(t('admin.tools.copied')); }} /></> : '—'}
+                {c.CourseCodeId ? <>{c.CourseCodeId} <CopyOutlined style={{ cursor: 'pointer', color: '#1890ff', marginLeft: 4 }} onClick={() => { navigator.clipboard.writeText(c.CourseCodeId); messageApi.success(t('admin.tools.copied')); }} /></> : '—'}
               </Descriptions.Item>
               <Descriptions.Item label={setLocale(locale, 'admin.tools.course.label.creationDate')}>
                 {c.CreationDate ? new Date(c.CreationDate).toLocaleDateString() : '—'}
@@ -2245,7 +2925,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             type={courseCreateValidation.hasInvalidImageUrl ? 'error' : 'info'}
             showIcon
             style={{ marginTop: 16 }}
-            message={`${t('admin.tools.course.msg.fillRequired')} ${courseCreateValidation.missingLabels.join(', ')}`}
+            title={`${t('admin.tools.course.msg.fillRequired')} ${courseCreateValidation.missingLabels.join(', ')}`}
             description={courseCreateValidation.hasInvalidImageUrl ? t('admin.tools.course.msg.invalidImageUrl') : null}
           />
         )}
@@ -2325,51 +3005,213 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </>
   );
 
+  const buildContactProfileRowSelection = (selectedRowKeys, setRowKeys, setRows) => ({
+    selectedRowKeys,
+    onChange: (nextSelectedRowKeys, nextSelectedRows) => {
+      setRowKeys(nextSelectedRowKeys);
+      setRows(nextSelectedRows);
+    },
+    getCheckboxProps: () => ({
+      disabled: !canManageContactProfileMonitoring
+    })
+  });
+
+  const inactiveContactProfileRowSelection = buildContactProfileRowSelection(
+    selectedInactiveProfileRowKeys,
+    setSelectedInactiveProfileRowKeys,
+    setSelectedInactiveProfileRows
+  );
+
+  const renderGeneralAccessMonitoring = () => (
+    (monitoringLoading || (emailId && allUserLoginFootprint?.emailId !== emailId)) ? (
+      <p style={{ textAlign: 'center', color: '#999', padding: 40 }}>
+        {setLocale(locale, 'admin.tools.monitoring.loading')}
+      </p>
+    ) : (
+      <>
+        <Divider titlePlacement="left">
+          <LoginOutlined style={{ marginRight: 6 }} />
+          {setLocale(locale, 'admin.tools.monitoring.loginHeatmap')}
+        </Divider>
+        <LoginFootprintHeatmapGraph
+          hideCard
+          heatmapData={allUserLoginFootprint?.heatmapData || []}
+          emptyDescriptionKey="admin.tools.loginFootprint.noActivity"
+        />
+
+        <Divider titlePlacement="left">
+          <LineChartOutlined style={{ marginRight: 6 }} />
+          {setLocale(locale, 'admin.tools.monitoring.loginBubbleScatter')}
+        </Divider>
+        <LoginFootprintBubbleScatterGraph
+          hideCard
+          scatterData={allUserLoginFootprint?.scatterData || []}
+          emptyDescriptionKey="admin.tools.loginFootprint.noActivity"
+        />
+
+        <Divider titlePlacement="left">
+          <TableOutlined style={{ marginRight: 6 }} />
+          {setLocale(locale, 'admin.tools.monitoring.loginBreakdownTable')}
+        </Divider>
+        <AbstractTable
+          tableData={allUserLoginFootprint?.tableModel?.tableData || []}
+          tableColumns={allUserLoginFootprint?.tableModel?.columns || []}
+          tableExpandables={allUserLoginFootprint?.tableModel?.expandable}
+          isAllowedToEditTableData={false}
+          isToRenderActionButton={false}
+        />
+      </>
+    )
+  );
+
+  const renderContactProfilesMonitoring = () => {
+    const optedOutFilteredCount = getContactProfileFilteredCount(
+      'optedOut',
+      filteredOptedOutContactProfileData
+    );
+    const inactiveFilteredCount = getContactProfileFilteredCount(
+      'inactive',
+      filteredInactiveContactProfileData,
+      { showDefaultTotal: true }
+    );
+    const restoreCommunicationConfirmMessage = intl.formatMessage(
+      { id: 'admin.tools.monitoring.msg.restoreCommunicationConfirm' },
+      { count: selectedOptedOutEmailRows.length }
+    );
+    const reactivateContactsConfirmMessage = intl.formatMessage(
+      { id: 'admin.tools.monitoring.msg.reactivateContactsConfirm' },
+      { count: selectedInactiveProfileRows.length }
+    );
+
+    return (
+      <>
+        <Divider titlePlacement="left" style={{ marginTop: 0 }}>
+          <UserOutlined style={{ marginRight: 6 }} />
+          {setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}
+        </Divider>
+
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
+          <Input
+            allowClear
+            prefix={<SearchOutlined />}
+            value={contactProfileSearchText}
+            onChange={(event) => setContactProfileSearchText(event.target.value)}
+            placeholder={t('admin.tools.monitoring.contactProfiles.searchPlaceholder')}
+            style={{ maxWidth: 520 }}
+          />
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={handleManualRefreshContactProfileMonitoring}
+            loading={contactProfileMonitoringLoading}
+            disabled={!canManageContactProfileMonitoring}
+          >
+            {setLocale(locale, 'admin.tools.monitoring.refresh')}
+          </Button>
+        </div>
+
+        {!canManageContactProfileMonitoring && (
+          <Alert
+            type="warning"
+            showIcon
+            title={setLocale(locale, 'admin.tools.msg.notEnoughContactProfileMonitoringPermissions')}
+            style={{ marginBottom: 16 }}
+          />
+        )}
+
+        <div style={{ opacity: canManageContactProfileMonitoring ? 1 : 0.55 }}>
+          <Divider titlePlacement="left">
+            <MessageOutlined style={{ marginRight: 6 }} />
+            {setLocale(locale, 'admin.tools.monitoring.communicationOptOuts')}
+            {getContactProfileCountSuffix(optedOutFilteredCount)}
+          </Divider>
+          <AbstractTable
+            key={`opted-out-${contactProfileSearchText}`}
+            tableData={filteredOptedOutContactProfileData}
+            tableColumns={optedOutContactProfileTableModel?.columns || []}
+            tableExpandables={optedOutContactProfileTableModel?.expandable}
+            isAllowedToEditTableData={false}
+            isToRenderActionButton={false}
+            rowKey="key"
+            loading={isContactProfileMonitoringTableLoading}
+            onChange={handleContactProfileTableChange('optedOut')}
+          />
+          <Popconfirm
+            title={restoreCommunicationConfirmMessage}
+            onConfirm={handleRestoreSelectedCommunication}
+            okText={t('admin.tools.confirmYes')}
+            cancelText={t('admin.tools.confirmNo')}
+            disabled={!canManageContactProfileMonitoring || selectedOptedOutEmailRows.length === 0}
+          >
+            <Button
+              type="primary"
+              icon={<MessageOutlined />}
+              loading={contactProfileSubmitLoading.optedOut}
+              disabled={!canManageContactProfileMonitoring || selectedOptedOutEmailRows.length === 0}
+              style={{ marginTop: 12 }}
+            >
+              {setLocale(locale, 'admin.tools.monitoring.restoreCommunication')}
+            </Button>
+          </Popconfirm>
+
+          <Divider titlePlacement="left" style={{ marginTop: 24 }}>
+            <CloseCircleOutlined style={{ marginRight: 6 }} />
+            {setLocale(locale, 'admin.tools.monitoring.inactiveProfiles')}
+            {getContactProfileCountSuffix(inactiveFilteredCount)}
+          </Divider>
+          <AbstractTable
+            key={`inactive-${contactProfileSearchText}`}
+            tableData={filteredInactiveContactProfileData}
+            tableColumns={inactiveContactProfileTableModel?.columns || []}
+            tableExpandables={inactiveContactProfileTableModel?.expandable}
+            isAllowedToEditTableData={false}
+            isToRenderActionButton={false}
+            rowSelection={inactiveContactProfileRowSelection}
+            rowKey="key"
+            loading={isContactProfileMonitoringTableLoading}
+            onChange={handleContactProfileTableChange('inactive')}
+          />
+          <Popconfirm
+            title={reactivateContactsConfirmMessage}
+            onConfirm={handleReactivateSelectedContacts}
+            okText={t('admin.tools.confirmYes')}
+            cancelText={t('admin.tools.confirmNo')}
+            disabled={!canManageContactProfileMonitoring || selectedInactiveProfileRows.length === 0}
+          >
+            <Button
+              type="primary"
+              danger
+              icon={<UserOutlined />}
+              loading={contactProfileSubmitLoading.inactive}
+              disabled={!canManageContactProfileMonitoring || selectedInactiveProfileRows.length === 0}
+              style={{ marginTop: 12 }}
+            >
+              {setLocale(locale, 'admin.tools.monitoring.reactivateContacts')}
+            </Button>
+          </Popconfirm>
+        </div>
+      </>
+    );
+  };
+
   const renderMonitoring = () => (
     <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
       <h4 style={{ marginBottom: 12 }}>
         <DashboardOutlined style={{ marginRight: 8 }} />
         {setLocale(locale, 'admin.tools.monitoring.title')}
       </h4>
-      {(monitoringLoading || (emailId && allUserLoginFootprint?.emailId !== emailId)) ? (
-        <p style={{ textAlign: 'center', color: '#999', padding: 40 }}>
-          {setLocale(locale, 'admin.tools.monitoring.loading')}
-        </p>
-      ) : (
-        <>
-          <Divider titlePlacement="left">
-            <LoginOutlined style={{ marginRight: 6 }} />
-            {setLocale(locale, 'admin.tools.monitoring.loginHeatmap')}
-          </Divider>
-          <LoginFootprintHeatmapGraph
-            hideCard
-            heatmapData={allUserLoginFootprint?.heatmapData || []}
-            emptyDescriptionKey="admin.tools.loginFootprint.noActivity"
-          />
 
-          <Divider titlePlacement="left">
-            <LineChartOutlined style={{ marginRight: 6 }} />
-            {setLocale(locale, 'admin.tools.monitoring.loginBubbleScatter')}
-          </Divider>
-          <LoginFootprintBubbleScatterGraph
-            hideCard
-            scatterData={allUserLoginFootprint?.scatterData || []}
-            emptyDescriptionKey="admin.tools.loginFootprint.noActivity"
-          />
+      <Radio.Group
+        value={monitoringInnerTabKey}
+        onChange={(event) => setMonitoringInnerTabKey(event.target.value)}
+        style={{ marginBottom: 16 }}
+      >
+        <Radio.Button value="general-access">{setLocale(locale, 'admin.tools.monitoring.tab.generalAccess')}</Radio.Button>
+        <Radio.Button value="contact-profiles">{setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}</Radio.Button>
+      </Radio.Group>
 
-          <Divider titlePlacement="left">
-            <TableOutlined style={{ marginRight: 6 }} />
-            {setLocale(locale, 'admin.tools.monitoring.loginBreakdownTable')}
-          </Divider>
-          <AbstractTable
-            tableData={allUserLoginFootprint?.tableModel?.tableData || []}
-            tableColumns={allUserLoginFootprint?.tableModel?.columns || []}
-            tableExpandables={allUserLoginFootprint?.tableModel?.expandable}
-            isAllowedToEditTableData={false}
-            isToRenderActionButton={false}
-          />
-        </>
-      )}
+      {monitoringInnerTabKey === 'general-access'
+        ? renderGeneralAccessMonitoring()
+        : renderContactProfilesMonitoring()}
     </Card>
   );
 
@@ -2419,14 +3261,23 @@ function mapDispatchToProps(dispatch) {
     onLoadingContactCourseProgressActivity,
     onLoadingContactLoginFootprint,
     onLoadingAllUserLoginFootprint,
+    onLoadingContactProfileMonitoring,
+    onTogglingContactEmailOptOut,
+    onTogglingContactActive,
+    onTogglingSelectedContactEmailOptOut,
+    onTogglingSelectedContactActive,
     onHydratingAdminToolAvatars,
     onLoadingContactGeoMaps,
-    onUploadingCourseCoverImage
+    onUploadingCourseCoverImage,
+    onUpsertingSelectedContactProfile,
+    onRenderingCourseRegistration,
+    onRequestingGeographicalDivision
   }, dispatch);
 }
 
-const mapStateToProps = ({ adminTools, grant }) => {
+const mapStateToProps = ({ adminTools, grant, lrn }) => {
   const { user } = grant;
+  const { countries, selfLanguageLevel } = lrn;
   const {
     allCourses,
     allRoles,
@@ -2435,6 +3286,7 @@ const mapStateToProps = ({ adminTools, grant }) => {
     contactCourseProgressActivity,
     contactLoginFootprint,
     allUserLoginFootprint,
+    contactProfileMonitoring,
     contactGlobalUserRole,
     avatarUrlMap,
     contactGeoMaps
@@ -2445,9 +3297,12 @@ const mapStateToProps = ({ adminTools, grant }) => {
     allRoles,
     allEnrollees,
     allRawCourses,
+    countries,
+    selfLanguageLevel,
     contactCourseProgressActivity,
     contactLoginFootprint,
     allUserLoginFootprint,
+    contactProfileMonitoring,
     contactGlobalUserRole,
     avatarUrlMap,
     contactGeoMaps

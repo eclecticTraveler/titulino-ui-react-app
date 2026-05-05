@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Checkbox, Select, Button, Divider, Row, Col, Card, Tag, Tooltip, message } from "antd";
+import { App, Checkbox, Select, Button, Divider, Row, Col, Card, Tag, Tooltip } from "antd";
 import { CopyOutlined } from '@ant-design/icons';
 import { useUserProgressLogic } from "hooks/useUserProgressLogic";
 import IntlMessage from "components/util-components/IntlMessage";
@@ -19,6 +19,7 @@ const AdminProgressEditable = ({
   onEmailChange,
   onCopyEmail
 }) => {
+  const { message } = App.useApp();
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();

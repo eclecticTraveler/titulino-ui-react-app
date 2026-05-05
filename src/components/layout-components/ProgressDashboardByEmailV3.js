@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { onModalInteraction, onVerifyingProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs, DatePicker } from 'antd';
+import { App, Card, Input, Button, Form, Row, Col, Divider, Tabs, DatePicker } from 'antd';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
 import LiquidStarPercent from "./LiquidStarPercent";
@@ -28,6 +28,7 @@ export const ProgressDashboardByEmailV3 = (props) => {
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, courseTheme, onVerifyingProgressByEmailIdAndCourseCodeId, selectedContentLanguage, hasUserInteractedWithModal } = props;
 
   const [form] = Form.useForm();
+  const { message } = App.useApp();
   const [selectedLessonsForSubmission, setSelectedLessonsForSubmission] = useState({});
   const [selectedLessons, setSelectedLessons] = useState({});
   const [handleUserProgressSubmit, setHandleUserProgressSubmit] = useState(null); // To hold the child's submit function

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { Row, Col, Card, Tabs, Input, Select, message } from 'antd';
+import { App, Row, Col, Card, Tabs, Input, Select } from 'antd';
 import { useIntl } from 'react-intl';
 import IntlMessage from 'components/util-components/IntlMessage';
 import { faPieChart, faMapPin, faPersonHiking, faListCheck, faChartLine } from '@fortawesome/free-solid-svg-icons';
@@ -79,6 +79,7 @@ const FacilitatorsLandingDashboard = (props) => {
   } = props;
 
   const intl = useIntl();
+  const { message: messageApi } = App.useApp();
   const t = (id) => intl.formatMessage({ id });
   const [activeTabKey, setActiveTabKey] = useState('overview');
   const [loading, setLoading] = useState(false);
@@ -190,7 +191,7 @@ const FacilitatorsLandingDashboard = (props) => {
   const handleAdminProgressSubmit = async (formattedData) => {
     try {
       await onSubmittingAdminEnrolleeProgress(formattedData, selectedCourseCodeId, user?.emailId);
-      message.success(t('admin.progressEditable.saveProgress'));
+      messageApi.success(t('admin.progressEditable.saveProgress'));
       if (courseCodeId && user?.emailId) {
         setLoading(true);
         onLoadingFacilitadorDashboardContents(courseCodeId, user.emailId)
@@ -198,7 +199,7 @@ const FacilitatorsLandingDashboard = (props) => {
       }
     } catch (error) {
       console.error("Error submitting progress:", error);
-      message.error("Error saving progress.");
+      messageApi.error("Error saving progress.");
     }
   };
 

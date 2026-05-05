@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Form, Row, Col, DatePicker, Button, message, Card } from 'antd';
+import { App, Form, Row, Col, DatePicker, Button, Card } from 'antd';
 import dayjs from 'dayjs';
 import getLocaleText from "components/util-components/IntString";
 import { useHistory } from 'utils/routerCompat';
@@ -11,7 +11,7 @@ import IntlMessage from "components/util-components/IntlMessage";
 const EmailYearSearchForm = (props) => {
   // Destructure props
   const { user, onRetrievingUserProfile } = props;
-  const [form] = Form.useForm();
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [, setSearchResult] = useState(null);
   const [submitted, setSubmitted] = useState(false);
@@ -58,14 +58,14 @@ const EmailYearSearchForm = (props) => {
     });
   };
 
-  const handleSearch = () => {
+  const handleSearch = (values = {}) => {
 
   if (loading) return;
 
   const email = user?.emailId?.trim()?.toLowerCase();
 
-  const year = form?.getFieldValue("yearOfBirth")?.year();
-  const fullDate = form?.getFieldValue("dateOfBirth");
+  const year = values?.yearOfBirth?.year?.() || yearOfBirth;
+  const fullDate = values?.dateOfBirth || fullDateOfBirth;
 
   if (!email || (!year && !fullDate)) {
     message.warning("Please fill in all fields correctly.");
@@ -194,7 +194,7 @@ useEffect(() => {
   fetchProfile();
 }, [submitted, searchParams, onRetrievingUserProfile, setProfileData, history, askFullBirthDate]);
 
-  const selectedYearOfBirth = form?.getFieldValue("yearOfBirth")?.format("YYYY");
+  const selectedYearOfBirth = yearOfBirth ? String(yearOfBirth) : null;
   const coverUrl =
     "https://images.unsplash.com/photo-1516382799247-87df95d790b7?q=80&w=1748&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
@@ -211,7 +211,7 @@ useEffect(() => {
       loading={loading} 
       variant="outlined"
     >
-      <Form layout="vertical" onFinish={handleSearch} form={form}>
+      <Form layout="vertical" onFinish={handleSearch}>
         {/* Row for input fields */}
         <Row gutter={[16, 16]} justify="center">
         <Col xs={24} sm={24} lg={6}>

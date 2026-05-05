@@ -2,7 +2,7 @@ import React, { useState, useMemo  } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onSelectingEnrollmentCourses } from "redux/actions/Lrn";
-import { Button, Card, Row, Col, message  } from "antd";
+import { App, Button, Card, Row, Col } from "antd";
 import { CheckCircleOutlined, MinusCircleOutlined } from "@ant-design/icons";
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
@@ -91,6 +91,7 @@ const daysOfWeek = [
 ];
 
 const WeeklyCourseSelector = (props) => {
+  const { message } = App.useApp();
   const [selectedCourses, setSelectedCourses] = useState([]);
   const { availableCourses, onSelectingEnrollmentCourses } = props;
   let availableCoursesToSelectFrom = [];  

@@ -16,6 +16,8 @@ const ROLE_IDS = {
  * - titulino_general_support can grant/revoke titulino_proofer.
  * - titulino_customer_support can grant/revoke course titulino_user.
  * - titulino_proofer and titulino_report_builder cannot grant/revoke permissions.
+ * - Contact-profile monitoring actions are limited to super admins,
+ *   administrators, and customer support.
  *
  * These rules intentionally live in the LOB layer so the dashboard can ask
  * policy questions without hardcoding role-specific behavior in the UI.
@@ -23,27 +25,33 @@ const ROLE_IDS = {
 const ACCESS_MANAGEMENT_POLICIES = {
   [ROLE_IDS.SUPER_ADMIN]: {
     global: { strategy: 'all' },
-    course: { strategy: 'all' }
+    course: { strategy: 'all' },
+    contactProfiles: { strategy: 'all' }
   },
   [ROLE_IDS.ADMINISTRATOR]: {
     global: { strategy: 'lowerPriority' },
-    course: { strategy: 'all' }
+    course: { strategy: 'all' },
+    contactProfiles: { strategy: 'all' }
   },
   [ROLE_IDS.GENERAL_SUPPORT]: {
     global: { roleIds: [ROLE_IDS.PROOFER] },
-    course: { roleIds: [] }
+    course: { roleIds: [] },
+    contactProfiles: { roleIds: [] }
   },
   [ROLE_IDS.CUSTOMER_SUPPORT]: {
     global: { roleIds: [] },
-    course: { roleIds: [ROLE_IDS.USER] }
+    course: { roleIds: [ROLE_IDS.USER] },
+    contactProfiles: { strategy: 'all' }
   },
   [ROLE_IDS.PROOFER]: {
     global: { roleIds: [] },
-    course: { roleIds: [] }
+    course: { roleIds: [] },
+    contactProfiles: { roleIds: [] }
   },
   [ROLE_IDS.REPORT_BUILDER]: {
     global: { roleIds: [] },
-    course: { roleIds: [] }
+    course: { roleIds: [] },
+    contactProfiles: { roleIds: [] }
   }
 };
 
@@ -128,12 +136,13 @@ const canManageByRule = ({
 
 export const buildAccessManagementPolicy = (user = {}, allRoles = []) => {
   const currentUserGlobalRoles = normalizeGlobalRoles(user);
+  const hasGlobalAccess = user?.isGlobalAccessUser === true || currentUserGlobalRoles.length > 0;
 
   const canManageRole = (targetRoleId, scope) => {
     const normalizedTargetRoleId = normalizeRoleId(targetRoleId);
     const normalizedScope = scope === 'global' ? 'global' : 'course';
 
-    if (!user?.isGlobalAccessUser || currentUserGlobalRoles.length === 0) {
+    if (!hasGlobalAccess || currentUserGlobalRoles.length === 0) {
       return {
         isAllowed: false,
         reasonKey: 'admin.tools.msg.notEnoughAccessManagementPermissions'
@@ -165,10 +174,29 @@ export const buildAccessManagementPolicy = (user = {}, allRoles = []) => {
     return (allRoles || []).some(role => canManageRole(role?.UserRoleId, normalizedScope).isAllowed);
   };
 
+  const canManageContactProfiles = () => {
+    if (!hasGlobalAccess || currentUserGlobalRoles.length === 0) {
+      return {
+        isAllowed: false,
+        reasonKey: 'admin.tools.msg.notEnoughContactProfileMonitoringPermissions'
+      };
+    }
+
+    const isAllowed = currentUserGlobalRoles.some(roleId => (
+      ACCESS_MANAGEMENT_POLICIES[roleId]?.contactProfiles?.strategy === 'all'
+    ));
+
+    return {
+      isAllowed,
+      reasonKey: isAllowed ? null : 'admin.tools.msg.notEnoughContactProfileMonitoringPermissions'
+    };
+  };
+
   return {
     currentUserGlobalRoles,
     canManageRole,
-    canManageAnyRole
+    canManageAnyRole,
+    canManageContactProfiles
   };
 };
 

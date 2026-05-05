@@ -8,6 +8,9 @@ import StudentProgress from "lob/StudentProgress";
 import LoginFootprint from "lob/LoginFootprint";
 import KnowMeProfiles from "lob/KnowMeProfiles";
 import AdminTools from "lob/AdminTools";
+import ContactProfilesMonitoring from "lob/ContactProfilesMonitoring";
+import ContactProfileEditor from "lob/ContactProfileEditor";
+import LrnConfiguration from "lob/LrnConfiguration";
 import utils from 'utils';
 
 const getTokenFromEmail = async (emailId) => {
@@ -307,6 +310,214 @@ export const getAllUserLoginFootprint = async (emailId) => {
   };
 };
 
+export const getContactProfileMonitoring = async (emailId) => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) {
+    return {
+      emailId,
+      optedOutActiveContactProfiles: [],
+      inactiveContactProfiles: [],
+      optedOutActiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel([]),
+      inactiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel([])
+    };
+  }
+
+  const [optedOutActiveContactProfiles, inactiveContactProfiles] = await Promise.all([
+    TitulinoAuthService.getOptedOutActiveContactProfiles(
+      token,
+      'getContactProfileMonitoring'
+    ),
+    TitulinoAuthService.getInactiveContactProfiles(
+      token,
+      'getContactProfileMonitoring'
+    )
+  ]);
+
+  return {
+    emailId,
+    optedOutActiveContactProfiles,
+    inactiveContactProfiles,
+    optedOutActiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel(
+      optedOutActiveContactProfiles
+    ),
+    inactiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel(
+      inactiveContactProfiles
+    )
+  };
+};
+
+const isToggleApiResultSuccessful = (result) => {
+  if (result === true) return true;
+  if (!result) return false;
+  if (Array.isArray(result)) return true;
+  if (result?.success === false || result?.Success === false) return false;
+  return result?.success === true || result?.Success === true || typeof result === 'object' || typeof result === 'string';
+};
+
+const isUpsertApiResultSuccessful = (result) => {
+  if (result === true) return true;
+  if (!result) return false;
+  if (Array.isArray(result)) return result.length > 0;
+  if (result?.success === false || result?.Success === false) return false;
+  return result?.success === true || result?.Success === true || typeof result === 'object' || typeof result === 'string';
+};
+
+const buildToggleMutationResult = (apiResult, payload = [], mutationPatches = {}) => ({
+  success: isToggleApiResultSuccessful(apiResult),
+  apiResult,
+  payload,
+  ...mutationPatches
+});
+
+export const toggleContactEmailOptOut = async (selectedRows, adminEmailId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+
+  const payload = ContactProfilesMonitoring.buildToggleContactEmailOptOutPayload(selectedRows);
+  if (!payload.length) return false;
+
+  const apiResult = await TitulinoAuthService.toggleContactEmailOptOut(
+    payload,
+    token,
+    'AdminToolsManager'
+  );
+
+  return buildToggleMutationResult(apiResult, payload, {
+    contactEmailOptOutPatches: payload.map(item => ({
+      ...item,
+      hasOptedOutOfCommunication: false
+    }))
+  });
+};
+
+export const toggleContactEmailOptOutByContact = async (
+  contactInternalId,
+  emailId,
+  adminEmailId,
+  nextHasOptedOutOfCommunication
+) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+
+  const payload = ContactProfilesMonitoring.buildContactEmailOptOutPayload(contactInternalId, emailId);
+  if (!payload.length) return false;
+
+  const apiResult = await TitulinoAuthService.toggleContactEmailOptOut(
+    payload,
+    token,
+    'AdminToolsManager'
+  );
+
+  return buildToggleMutationResult(apiResult, payload, {
+    contactEmailOptOutPatches: payload.map(item => ({
+      ...item,
+      hasOptedOutOfCommunication: nextHasOptedOutOfCommunication === undefined
+        ? true
+        : nextHasOptedOutOfCommunication
+    }))
+  });
+};
+
+export const toggleContactActive = async (selectedRows, adminEmailId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+
+  const payload = ContactProfilesMonitoring.buildToggleContactActivePayload(selectedRows);
+  if (!payload.length) return false;
+
+  const apiResult = await TitulinoAuthService.toggleContactActive(
+    payload,
+    token,
+    'AdminToolsManager'
+  );
+
+  return buildToggleMutationResult(apiResult, payload, {
+    contactActivePatches: payload.map(item => ({
+      ...item,
+      isActive: true
+    }))
+  });
+};
+
+export const toggleContactActiveByContact = async (contactInternalId, adminEmailId, nextIsActive = false) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+
+  const payload = ContactProfilesMonitoring.buildContactActivePayload(contactInternalId);
+  if (!payload.length) return false;
+
+  const apiResult = await TitulinoAuthService.toggleContactActive(
+    payload,
+    token,
+    'AdminToolsManager'
+  );
+
+  return buildToggleMutationResult(apiResult, payload, {
+    contactActivePatches: payload.map(item => ({
+      ...item,
+      isActive: nextIsActive
+    }))
+  });
+};
+
+export const upsertSelectedContactProfile = async (profileUpdate, adminEmailId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token || !profileUpdate?.payload?.length) {
+    return {
+      success: false,
+      submittedEnrollee: null,
+      contactProfilePatch: null,
+      uploadedProfilePicture: null
+    };
+  }
+
+  const submittedEnrollee = await TitulinoAuthService.upsertEnrolleeList(
+    profileUpdate.payload,
+    token,
+    'AdminToolsManager.upsertSelectedContactProfile'
+  );
+  const success = isUpsertApiResultSuccessful(submittedEnrollee);
+  let uploadedProfilePicture = null;
+  let contactProfilePatch = profileUpdate.patch || null;
+
+  const rawProfileFile = profileUpdate?.filesMap?.profilePictureUpload?.[0]?.originFileObj ||
+    profileUpdate?.filesMap?.profilePictureUpload?.[0] ||
+    null;
+
+  if (success && rawProfileFile && contactProfilePatch?.ContactInternalId) {
+    const emailId = profileUpdate?.payload?.[0]?.emailAddress || ContactProfileEditor.getPrimaryContactEmail(contactProfilePatch);
+    const fileToUpload = await LrnConfiguration.buildStudentKnowMeFileName(
+      rawProfileFile,
+      contactProfilePatch.ContactInternalId,
+      emailId,
+      0
+    );
+
+    uploadedProfilePicture = await TitulinoNetService.upsertStudentKnowMeProfileImage(
+      token,
+      fileToUpload,
+      'AdminToolsManager.upsertSelectedContactProfile'
+    );
+
+    const profileUrl = uploadedProfilePicture?.profileUrl || uploadedProfilePicture?.ProfileUrl || null;
+    if (profileUrl) {
+      contactProfilePatch = {
+        ...contactProfilePatch,
+        AvatarUrl: profileUrl,
+        avatarUrl: profileUrl
+      };
+    }
+  }
+
+  return {
+    success,
+    submittedEnrollee,
+    contactProfilePatch,
+    uploadedProfilePicture
+  };
+};
+
 export const uploadCourseCoverImage = async (adminEmailId, file, courseCodeId) => {
   const token = await getTokenFromEmail(adminEmailId);
   if (!token) {
@@ -358,6 +569,12 @@ const AdminToolsManager = {
   getContactCourseProgressActivity,
   getContactLoginFootprint,
   getAllUserLoginFootprint,
+  getContactProfileMonitoring,
+  toggleContactEmailOptOut,
+  toggleContactEmailOptOutByContact,
+  toggleContactActive,
+  toggleContactActiveByContact,
+  upsertSelectedContactProfile,
   hydrateAdminToolAvatarUrls,
   getContactGeoMaps,
   uploadCourseCoverImage,

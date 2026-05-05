@@ -11,9 +11,13 @@ import {
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
   ON_LOADING_CONTACT_LOGIN_FOOTPRINT,
   ON_LOADING_ALL_USER_LOGIN_FOOTPRINT,
+  ON_LOADING_CONTACT_PROFILE_MONITORING,
+  ON_TOGGLING_CONTACT_EMAIL_OPT_OUT,
+  ON_TOGGLING_CONTACT_ACTIVE,
   ON_HYDRATING_ADMIN_TOOLS_AVATARS,
   ON_LOADING_CONTACT_GEO_MAPS,
-  ON_UPLOADING_COURSE_COVER_IMAGE
+  ON_UPLOADING_COURSE_COVER_IMAGE,
+  ON_UPSERTING_SELECTED_CONTACT_PROFILE
 } from '../constants/AdminTools';
 
 // Pure helpers re-exported via the manager so components keep a single
@@ -79,6 +83,57 @@ export const onLoadingAllUserLoginFootprint = async (emailId) => {
   return { type: ON_LOADING_ALL_USER_LOGIN_FOOTPRINT, allUserLoginFootprint };
 };
 
+export const onLoadingContactProfileMonitoring = async (emailId) => {
+  const contactProfileMonitoring = await AdminToolsManager.getContactProfileMonitoring(emailId);
+  return { type: ON_LOADING_CONTACT_PROFILE_MONITORING, contactProfileMonitoring };
+};
+
+export const onTogglingContactEmailOptOut = async (selectedRows, adminEmailId) => {
+  const result = await AdminToolsManager.toggleContactEmailOptOut(selectedRows, adminEmailId);
+  return {
+    type: ON_TOGGLING_CONTACT_EMAIL_OPT_OUT,
+    toggleResult: result,
+    contactEmailOptOutPatches: result?.contactEmailOptOutPatches || []
+  };
+};
+
+export const onTogglingSelectedContactEmailOptOut = async (
+  contactInternalId,
+  emailId,
+  adminEmailId,
+  nextHasOptedOutOfCommunication
+) => {
+  const result = await AdminToolsManager.toggleContactEmailOptOutByContact(
+    contactInternalId,
+    emailId,
+    adminEmailId,
+    nextHasOptedOutOfCommunication
+  );
+  return {
+    type: ON_TOGGLING_CONTACT_EMAIL_OPT_OUT,
+    toggleResult: result,
+    contactEmailOptOutPatches: result?.contactEmailOptOutPatches || []
+  };
+};
+
+export const onTogglingContactActive = async (selectedRows, adminEmailId) => {
+  const result = await AdminToolsManager.toggleContactActive(selectedRows, adminEmailId);
+  return {
+    type: ON_TOGGLING_CONTACT_ACTIVE,
+    toggleResult: result,
+    contactActivePatches: result?.contactActivePatches || []
+  };
+};
+
+export const onTogglingSelectedContactActive = async (contactInternalId, adminEmailId, nextIsActive = false) => {
+  const result = await AdminToolsManager.toggleContactActiveByContact(contactInternalId, adminEmailId, nextIsActive);
+  return {
+    type: ON_TOGGLING_CONTACT_ACTIVE,
+    toggleResult: result,
+    contactActivePatches: result?.contactActivePatches || []
+  };
+};
+
 export const onHydratingAdminToolAvatars = async (emailId, avatarUrlMap, allEnrollees, contactInternalIds) => {
   const result = await AdminToolsManager.hydrateAdminToolAvatarUrls(
     emailId,
@@ -106,4 +161,13 @@ export const onLoadingContactGeoMaps = async (selectedContact) => {
 export const onUploadingCourseCoverImage = async (adminEmailId, file, courseCodeId) => {
   const uploadResult = await AdminToolsManager.uploadCourseCoverImage(adminEmailId, file, courseCodeId);
   return { type: ON_UPLOADING_COURSE_COVER_IMAGE, uploadResult };
+};
+
+export const onUpsertingSelectedContactProfile = async (profileUpdate, adminEmailId) => {
+  const upsertResult = await AdminToolsManager.upsertSelectedContactProfile(profileUpdate, adminEmailId);
+  return {
+    type: ON_UPSERTING_SELECTED_CONTACT_PROFILE,
+    upsertResult,
+    contactProfilePatch: upsertResult?.contactProfilePatch || null
+  };
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Button, message, Card } from "antd";
+import { App, Form, Button, Card } from "antd";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import DynamicFormRenderer from "./DynamicFormRenderer";
@@ -9,6 +9,7 @@ import {
 
 export const KnowMeV2 = (props) => {
   const { user, onUpsertingKnowMeByChapter, chapterNo, levelTheme } = props;
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [submittedKnowMe, setSubmittedKnowMe] = useState(null);
