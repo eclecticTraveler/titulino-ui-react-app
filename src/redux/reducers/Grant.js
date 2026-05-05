@@ -21,6 +21,7 @@ const initState = {
     expirationDate: null,
     hasEverBeenFacilitator: false,
     isGlobalAccessUser: false,
+    globalRoles: [],
     contactPaymentProviderId: null,
     innerToken: localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
   }

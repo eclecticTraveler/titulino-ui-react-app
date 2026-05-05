@@ -2,7 +2,10 @@ import KnowMeProfiles from "lob/KnowMeProfiles";
 import {
   ON_LOADING_ADMIN_TOOLS_INIT,
   ON_ASSIGNING_ENROLLEE_ROLE_TO_COURSE,
+  ON_REVOKING_COURSE_FACILITATOR_ACCESS,
+  ON_LOADING_GLOBAL_USER_ROLE,
   ON_ASSIGNING_GLOBAL_ROLE,
+  ON_REVOKING_GLOBAL_ROLE,
   ON_CLEAR_SELECTED_CONTACT,
   ON_UPSERTING_COURSE,
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
@@ -35,8 +38,14 @@ const adminTools = (state = initState, action) => {
       };
     case ON_ASSIGNING_ENROLLEE_ROLE_TO_COURSE:
       return { ...state, lastAssignResult: action.assignResult };
+    case ON_REVOKING_COURSE_FACILITATOR_ACCESS:
+      return { ...state, lastRevokeResult: action.revokeResult };
+    case ON_LOADING_GLOBAL_USER_ROLE:
+      return { ...state, contactGlobalUserRole: action.globalUserRole };
     case ON_ASSIGNING_GLOBAL_ROLE:
       return { ...state, lastAssignResult: action.assignResult };
+    case ON_REVOKING_GLOBAL_ROLE:
+      return { ...state, lastGlobalRevokeResult: action.revokeResult };
     case ON_UPSERTING_COURSE:
       return { ...state, lastCourseUpsertResult: action.upsertResult };
     case ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY:
@@ -56,7 +65,7 @@ const adminTools = (state = initState, action) => {
     case ON_UPLOADING_COURSE_COVER_IMAGE:
       return { ...state, lastCourseCoverUploadResult: action.uploadResult };
     case ON_CLEAR_SELECTED_CONTACT:
-      return { ...state, contactCourseProgressActivity: null, contactLoginFootprint: null, contactGeoMaps: null };
+      return { ...state, contactCourseProgressActivity: null, contactLoginFootprint: null, contactGeoMaps: null, contactGlobalUserRole: null };
     default:
       return state;
   }

@@ -2,7 +2,10 @@ import AdminToolsManager from 'managers/AdminToolsManager';
 import {
   ON_LOADING_ADMIN_TOOLS_INIT,
   ON_ASSIGNING_ENROLLEE_ROLE_TO_COURSE,
+  ON_REVOKING_COURSE_FACILITATOR_ACCESS,
+  ON_LOADING_GLOBAL_USER_ROLE,
   ON_ASSIGNING_GLOBAL_ROLE,
+  ON_REVOKING_GLOBAL_ROLE,
   ON_CLEAR_SELECTED_CONTACT,
   ON_UPSERTING_COURSE,
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
@@ -31,9 +34,24 @@ export const onAssigningEnrolleeRoleToCourse = async (contactInternalId, courseC
   return { type: ON_ASSIGNING_ENROLLEE_ROLE_TO_COURSE, assignResult: result };
 };
 
+export const onRevokingCourseFacilitatorAccess = async (contactInternalId, courseCodeId, contactEmailId, adminEmailId, targetRoleId) => {
+  const result = await AdminToolsManager.revokeCourseFacilitatorAccess(contactInternalId, courseCodeId, contactEmailId, adminEmailId, targetRoleId);
+  return { type: ON_REVOKING_COURSE_FACILITATOR_ACCESS, revokeResult: result };
+};
+
+export const onLoadingGlobalUserRole = async (contactInternalId, adminEmailId) => {
+  const globalUserRole = await AdminToolsManager.getGlobalUserRole(contactInternalId, adminEmailId);
+  return { type: ON_LOADING_GLOBAL_USER_ROLE, contactInternalId, globalUserRole };
+};
+
 export const onAssigningGlobalRole = async (contactInternalId, roleId, adminEmailId) => {
   const result = await AdminToolsManager.assignGlobalRole(contactInternalId, roleId, adminEmailId);
   return { type: ON_ASSIGNING_GLOBAL_ROLE, assignResult: result };
+};
+
+export const onRevokingGlobalRole = async (contactInternalId, roleId, adminEmailId) => {
+  const result = await AdminToolsManager.revokeGlobalRole(contactInternalId, roleId, adminEmailId);
+  return { type: ON_REVOKING_GLOBAL_ROLE, revokeResult: result };
 };
 
 export const onUpsertingCourse = async (courseDataArray, adminEmailId) => {

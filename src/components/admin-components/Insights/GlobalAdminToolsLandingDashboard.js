@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert } from 'antd';
+import { Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, message, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table } from 'antd';
 import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined } from '@ant-design/icons';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
@@ -14,12 +14,16 @@ import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/Logi
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
+import AccessManagementPolicy from 'lob/AccessManagementPolicy';
 import { env } from 'configs/EnvironmentConfig';
 import dayjs from 'dayjs';
 import {
   onLoadingAdminToolsInit,
   onAssigningEnrolleeRoleToCourse,
+  onRevokingCourseFacilitatorAccess,
+  onLoadingGlobalUserRole,
   onAssigningGlobalRole,
+  onRevokingGlobalRole,
   onClearSelectedContact,
   onUpsertingCourse,
   onLoadingContactCourseProgressActivity,
@@ -51,7 +55,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     allRawCourses,
     onLoadingAdminToolsInit,
     onAssigningEnrolleeRoleToCourse,
+    onRevokingCourseFacilitatorAccess,
+    onLoadingGlobalUserRole,
     onAssigningGlobalRole,
+    onRevokingGlobalRole,
     onClearSelectedContact,
     onUpsertingCourse,
     onLoadingContactCourseProgressActivity,
@@ -60,6 +67,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     contactLoginFootprint,
     onLoadingAllUserLoginFootprint,
     allUserLoginFootprint,
+    contactGlobalUserRole,
     onHydratingAdminToolAvatars,
     avatarUrlMap,
     onLoadingContactGeoMaps,
@@ -74,7 +82,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedEmail, setSelectedEmail] = useState(null);
+  const [selectedRevokeCourse, setSelectedRevokeCourse] = useState(null);
+  const [selectedRevokeEmail, setSelectedRevokeEmail] = useState(null);
+  const [selectedRevokeGlobalRole, setSelectedRevokeGlobalRole] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [revokeSubmitting, setRevokeSubmitting] = useState(false);
+  const [globalRoleLoading, setGlobalRoleLoading] = useState(false);
+  const [globalRevokeSubmitting, setGlobalRevokeSubmitting] = useState(false);
   const [contactTabKey, setContactTabKey] = useState('summary');
   const geoMaps = contactGeoMaps || { birth: null, residency: null };
   const [selectedProgressCourseId, setSelectedProgressCourseId] = useState('all');
@@ -113,7 +127,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   useEffect(() => {
     if (selectedContact?.Emails?.length > 0) {
       setSelectedEmail(selectedContact.Emails[0].EmailId);
+      setSelectedRevokeEmail(selectedContact.Emails[0].EmailId);
+    } else {
+      setSelectedEmail(null);
+      setSelectedRevokeEmail(null);
     }
+    setSelectedRevokeCourse(null);
+    setSelectedRevokeGlobalRole(null);
     setContactTabKey('summary');
     setSelectedProgressCourseId('all');
     setContactProgressLoading(false);
@@ -160,6 +180,31 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeOuterTabKey, emailId, allUserLoginFootprint?.emailId]);
+
+  useEffect(() => {
+    if (
+      activeOuterTabKey !== 'access' ||
+      !selectedContact?.ContactInternalId ||
+      !emailId
+    ) {
+      return;
+    }
+
+    let isActive = true;
+    setGlobalRoleLoading(true);
+
+    onLoadingGlobalUserRole(
+      selectedContact.ContactInternalId,
+      emailId
+    )?.finally(() => {
+      if (isActive) setGlobalRoleLoading(false);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeOuterTabKey, selectedContact?.ContactInternalId, emailId]);
 
   const PROFICIENCY_MAP = {
     be: { color: 'purple', key: 'admin.tools.label.proficiency.be' },
@@ -521,7 +566,28 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setSelectedCourse(null);
     setSelectedRole(null);
     setSelectedEmail(null);
+    setSelectedRevokeCourse(null);
+    setSelectedRevokeEmail(null);
+    setSelectedRevokeGlobalRole(null);
     setContactTabKey('summary');
+  };
+
+  const refreshAdminToolsDataAndSelectedContact = async () => {
+    if (!emailId || !selectedContact?.ContactInternalId) return;
+
+    const initAction = await onLoadingAdminToolsInit(emailId);
+    const refreshedContact = (initAction?.allEnrollees || []).find(
+      enrollee => enrollee?.ContactInternalId === selectedContact.ContactInternalId
+    );
+
+    if (refreshedContact) {
+      setSelectedContact(refreshedContact);
+    }
+  };
+
+  const refreshGlobalUserRoleForSelectedContact = async () => {
+    if (!emailId || !selectedContact?.ContactInternalId) return null;
+    return onLoadingGlobalUserRole(selectedContact.ContactInternalId, emailId);
   };
 
   const handleSubmit = async () => {
@@ -546,6 +612,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           emailId
         );
         message.success(t('admin.tools.msg.roleToCourseSuccess'));
+        await refreshAdminToolsDataAndSelectedContact();
       } else {
         if (!selectedRole) {
           message.warning(t('admin.tools.msg.selectRole'));
@@ -558,6 +625,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           emailId
         );
         message.success(t('admin.tools.msg.globalRoleSuccess'));
+        await refreshAdminToolsDataAndSelectedContact();
+        await refreshGlobalUserRoleForSelectedContact();
       }
     } catch (error) {
       console.error('Error assigning role:', error);
@@ -566,11 +635,62 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setSubmitting(false);
   };
 
-  const courseSelectOptions = (allCourses || []).map(c => ({
-    key: c.value,
-    value: c.value,
-    label: c.name || c.value
-  }));
+  const handleRevokeFacilitatorAccess = async () => {
+    if (!selectedContact) {
+      message.warning(t('admin.tools.msg.selectContactFirst'));
+      return;
+    }
+    if (!selectedRevokeCourse || !activeRevokeEmail) {
+      message.warning(t('admin.tools.msg.selectCourseAndEmail'));
+      return;
+    }
+
+    setRevokeSubmitting(true);
+    try {
+      await onRevokingCourseFacilitatorAccess(
+        selectedContact.ContactInternalId,
+        selectedRevokeCourse,
+        activeRevokeEmail,
+        emailId,
+        userCourseRoleId
+      );
+      message.success(t('admin.tools.msg.revokeAccessSuccess'));
+      setSelectedRevokeCourse(null);
+      await refreshAdminToolsDataAndSelectedContact();
+    } catch (error) {
+      console.error('Error revoking facilitator access:', error);
+      message.error(t('admin.tools.msg.revokeAccessError'));
+    }
+    setRevokeSubmitting(false);
+  };
+
+  const handleRevokeGlobalRoleAccess = async () => {
+    if (!selectedContact) {
+      message.warning(t('admin.tools.msg.selectContactFirst'));
+      return;
+    }
+    if (!activeRevokeGlobalRole) {
+      message.warning(t('admin.tools.msg.selectRole'));
+      return;
+    }
+
+    setGlobalRevokeSubmitting(true);
+    try {
+      await onRevokingGlobalRole(
+        selectedContact.ContactInternalId,
+        activeRevokeGlobalRole,
+        emailId
+      );
+      message.success(t('admin.tools.msg.revokeGlobalAccessSuccess'));
+      setSelectedRevokeGlobalRole(null);
+      await refreshAdminToolsDataAndSelectedContact();
+      await refreshGlobalUserRoleForSelectedContact();
+    } catch (error) {
+      console.error('Error revoking global access:', error);
+      message.error(t('admin.tools.msg.revokeGlobalAccessError'));
+    }
+    setGlobalRevokeSubmitting(false);
+  };
 
   // Course role dropdown is intentionally limited to Facilitator and User.
   const ENROLL_ROLE_LOCALIZATION_KEYS = ['titulino.facilitator', 'titulino.user'];
@@ -587,6 +707,232 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     !r.isGlobal && ENROLL_ROLE_LOCALIZATION_KEYS.includes((r.localizationKey || '').toLowerCase())
   );
   const globalRoleOptions = roleSelectOptions.filter(r => r.isGlobal);
+  const facilitatorRoleOption = courseRoleOptions.find(r => (r.localizationKey || '').toLowerCase() === 'titulino.facilitator');
+  const facilitatorRoleId = facilitatorRoleOption?.value || 'titulino_facilitator';
+  const userCourseRoleOption = courseRoleOptions.find(r => (r.localizationKey || '').toLowerCase() === 'titulino.user');
+  const userCourseRoleId = userCourseRoleOption?.value || 'titulino_user';
+  const accessManagementPolicy = AccessManagementPolicy.buildAccessManagementPolicy(user, allRoles);
+  const selectedAssignAccessScope = actionType === 'global' ? 'global' : 'course';
+  const selectedAssignAccessAuthorization = selectedRole
+    ? accessManagementPolicy.canManageRole(selectedRole, selectedAssignAccessScope)
+    : { isAllowed: true, reasonKey: null };
+  const canManageAnySelectedAccessScope = accessManagementPolicy.canManageAnyRole(selectedAssignAccessScope);
+  const canAssignSelectedAccess = selectedRole
+    ? selectedAssignAccessAuthorization.isAllowed
+    : canManageAnySelectedAccessScope;
+  const shouldShowAssignAccessPermissionWarning = !canManageAnySelectedAccessScope || (selectedRole && !canAssignSelectedAccess);
+  const revokeCourseAccessAuthorization = accessManagementPolicy.canManageRole(facilitatorRoleId, 'course');
+  const canRevokeCourseAccess = revokeCourseAccessAuthorization.isAllowed;
+
+  const getRoleDisplayName = (roleId) => {
+    const roleDef = (allRoles || []).find(r => r.UserRoleId === roleId);
+    return roleDef?.LocalizationKey ? t(roleDef.LocalizationKey) : roleId;
+  };
+
+  const getRolePriority = (roleId) => {
+    const roleDef = (allRoles || []).find(r => r.UserRoleId === roleId);
+    const parsedPriority = Number(roleDef?.UserRolePriority);
+    return Number.isFinite(parsedPriority) ? parsedPriority : Number.NEGATIVE_INFINITY;
+  };
+
+  const getCourseDisplayInfo = (courseCodeId) => {
+    const rawCourse = (allRawCourses || []).find(c => c.CourseCodeId === courseCodeId);
+    const contactCourse = (selectedContact?.CoursesHistory || []).find(c => c.CourseCodeId === courseCodeId);
+    const courseDetails = rawCourse?.CourseDetails || contactCourse?.CourseDetails || {};
+
+    return {
+      courseTitle: courseDetails?.course || selectedContactCourseLabels[courseCodeId] || courseCodeId,
+      imageUrl: courseDetails?.imageUrl,
+      targetLanguageId: rawCourse?.TargetLanguageId || contactCourse?.TargetLanguageId
+    };
+  };
+
+  const selectedContactPermissionRows = (selectedContact?.UserCourseRoles || []).map((roleEntry, index) => {
+    const roleId = roleEntry?.UserRoleId || roleEntry?.userRoleId || '';
+    const courseCodeId = roleEntry?.CourseCodeId || roleEntry?.courseCodeId || '';
+    const email = roleEntry?.EmailId || roleEntry?.emailId || '';
+    const roleName = getRoleDisplayName(roleId);
+    const rolePriority = getRolePriority(roleId);
+    const courseInfo = courseCodeId ? getCourseDisplayInfo(courseCodeId) : {};
+
+    return {
+      key: `${roleId}-${courseCodeId || 'global'}-${email || index}-${index}`,
+      roleId,
+      roleName,
+      rolePriority,
+      courseCodeId,
+      courseTitle: courseInfo.courseTitle || '',
+      email,
+      createdAt: roleEntry?.CreatedAt || roleEntry?.createdAt || '',
+      modifiedAt: roleEntry?.ModifiedAt || roleEntry?.modifiedAt || '',
+      isGlobal: !!roleEntry?.IsGlobalAccessUserRole || !courseCodeId,
+      isFacilitator: roleId === facilitatorRoleId || roleName?.toLowerCase().includes('facilitator')
+    };
+  });
+
+  const selectedContactEmailOptions = Array.from(new Set([
+    ...(selectedContact?.Emails || []).map(e => e?.EmailId),
+    ...selectedContactPermissionRows.map(row => row.email)
+  ].filter(Boolean))).map(email => ({ value: email, label: email }));
+
+  const comparePermissionRowsByRolePriorityAsc = (a, b) => {
+    if (a.rolePriority !== b.rolePriority) {
+      return a.rolePriority > b.rolePriority ? 1 : -1;
+    }
+    return (a.roleName || '').localeCompare(b.roleName || '')
+      || (a.courseTitle || a.courseCodeId || '').localeCompare(b.courseTitle || b.courseCodeId || '')
+      || (a.email || '').localeCompare(b.email || '');
+  };
+
+  const sortedPermissionRows = selectedContactPermissionRows
+    .slice()
+    .sort((a, b) => comparePermissionRowsByRolePriorityAsc(b, a));
+
+  const permissionRoleFilters = Object.values(
+    selectedContactPermissionRows.reduce((filters, row) => {
+      if (!row.roleId || filters[row.roleId]) {
+        return filters;
+      }
+      filters[row.roleId] = {
+        text: row.roleName || row.roleId,
+        value: row.roleId,
+        rolePriority: row.rolePriority
+      };
+      return filters;
+    }, {})
+  )
+    .sort((a, b) => {
+      if (a.rolePriority !== b.rolePriority) {
+        return a.rolePriority > b.rolePriority ? -1 : 1;
+      }
+      return (a.text || '').localeCompare(b.text || '');
+    })
+    .map(({ text, value }) => ({ text, value }));
+
+  const permissionEmailFilters = selectedContactEmailOptions
+    .slice()
+    .sort((a, b) => (a.label || '').localeCompare(b.label || ''))
+    .map(({ label, value }) => ({ text: label, value }));
+
+  const isGlobalUserRoleForSelectedContact = (
+    contactGlobalUserRole?.contactInternalId === selectedContact?.ContactInternalId
+  );
+  const globalRoleRecordsForSelectedContact = (
+    isGlobalUserRoleForSelectedContact && Array.isArray(contactGlobalUserRole?.roleRecords)
+      ? contactGlobalUserRole.roleRecords
+      : []
+  );
+  const legacyActiveGlobalRoleIds = (
+    isGlobalUserRoleForSelectedContact && contactGlobalUserRole?.isGlobal
+      ? Array.from(new Set([
+          ...(Array.isArray(contactGlobalUserRole?.roles) ? contactGlobalUserRole.roles : []),
+          contactGlobalUserRole?.role
+        ].filter(Boolean)))
+      : []
+  );
+  const normalizedGlobalRoleRecords = globalRoleRecordsForSelectedContact.length > 0
+    ? globalRoleRecordsForSelectedContact
+    : legacyActiveGlobalRoleIds.map(roleId => ({
+        roleId,
+        isGlobalAccessUserRole: true,
+        isActive: true,
+        endDate: null
+      }));
+  const globalUserRoleRows = normalizedGlobalRoleRecords
+    .map((roleRecord, index) => {
+      const roleId = roleRecord?.roleId;
+      const isGlobalAccessUserRole = roleRecord?.isGlobalAccessUserRole !== false;
+      const isActive = roleRecord?.isActive !== false;
+
+      return {
+        key: `${roleId}-${index}-${isActive ? 'active' : 'inactive'}-${roleRecord?.endDate || 'open'}`,
+        roleId,
+        roleName: getRoleDisplayName(roleId),
+        rolePriority: getRolePriority(roleId),
+        isGlobalAccessUserRole,
+        isActive,
+        endDate: roleRecord?.endDate || null,
+        scope: isGlobalAccessUserRole ? t('admin.tools.label.global') : '—',
+        status: isActive ? t('admin.tools.label.active') : t('admin.tools.label.inactive')
+      };
+    })
+    .filter(row => row.roleId)
+    .sort((a, b) => comparePermissionRowsByRolePriorityAsc(b, a));
+  const activeGlobalUserRoleRows = globalUserRoleRows.filter(row => row.isGlobalAccessUserRole && row.isActive);
+  const revokeGlobalRoleOptions = activeGlobalUserRoleRows.map(row => ({
+    key: row.roleId,
+    value: row.roleId,
+    label: row.roleName
+  }));
+  const activeRevokeGlobalRole = selectedRevokeGlobalRole || revokeGlobalRoleOptions[0]?.value || null;
+  const selectedGlobalRoleRow = activeGlobalUserRoleRows.find(row => row.roleId === activeRevokeGlobalRole);
+  const revokeGlobalAccessAuthorization = activeRevokeGlobalRole
+    ? accessManagementPolicy.canManageRole(activeRevokeGlobalRole, 'global')
+    : { isAllowed: true, reasonKey: null };
+  const canRevokeGlobalAccess = revokeGlobalAccessAuthorization.isAllowed;
+  const hasGlobalRoleAccess = activeGlobalUserRoleRows.length > 0;
+  const renderGlobalAccessTag = () => {
+    if (!hasGlobalRoleAccess) return null;
+    return (
+      <>
+        {activeGlobalUserRoleRows.map(row => (
+          <Tag key={row.roleId} color="red" style={{ marginRight: 0 }}>
+            {t('admin.tools.label.global')}: {row.roleName}
+          </Tag>
+        ))}
+      </>
+    );
+  };
+  const revokeGlobalAccessConfirmMessage = intl.formatMessage(
+    { id: 'admin.tools.msg.revokeGlobalAccessConfirm' },
+    {
+      role: selectedGlobalRoleRow?.roleName || getRoleDisplayName(activeRevokeGlobalRole) || t('admin.tools.label.role')
+    }
+  );
+
+  const activeRevokeEmail = selectedRevokeEmail || selectedContactEmailOptions[0]?.value || null;
+
+  const facilitatorPermissionRows = selectedContactPermissionRows.filter(row => row.isFacilitator && row.courseCodeId);
+  const revokeRoleOptions = facilitatorRoleOption
+    ? [facilitatorRoleOption]
+    : [{ key: facilitatorRoleId, value: facilitatorRoleId, label: t('titulino.facilitator') }];
+  const revokeCourseSelectOptions = facilitatorPermissionRows.reduce((options, row) => {
+    if (options.some(option => option.value === row.courseCodeId)) {
+      return options;
+    }
+    options.push({
+      key: row.courseCodeId,
+      value: row.courseCodeId,
+      label: `${row.courseCodeId} \u2014 ${row.courseTitle || row.courseCodeId}`,
+      email: row.email
+    });
+    return options;
+  }, []);
+  const hasFacilitatorCourseAccess = facilitatorPermissionRows.length > 0;
+  const selectedRevokePermission = facilitatorPermissionRows.find(row =>
+    row.courseCodeId === selectedRevokeCourse && (!activeRevokeEmail || row.email === activeRevokeEmail)
+  ) || facilitatorPermissionRows.find(row => row.courseCodeId === selectedRevokeCourse);
+  const revokeConfirmRoleName = getRoleDisplayName(facilitatorRoleId);
+  const revokeConfirmCourseName = selectedRevokePermission
+    ? `${selectedRevokePermission.courseTitle || selectedRevokePermission.courseCodeId} (${selectedRevokePermission.courseCodeId})`
+    : selectedRevokeCourse || t('admin.tools.label.course');
+  const revokeConfirmEmail = selectedRevokePermission?.email || activeRevokeEmail || '';
+  const revokeAccessConfirmMessage = intl.formatMessage(
+    { id: 'admin.tools.msg.revokeAccessConfirm' },
+    {
+      role: revokeConfirmRoleName,
+      course: revokeConfirmCourseName,
+      email: revokeConfirmEmail
+    }
+  );
+
+  const handleRevokeCourseChange = (courseCodeId, option) => {
+    setSelectedRevokeCourse(courseCodeId);
+    const permissionEmail = option?.email || facilitatorPermissionRows.find(row => row.courseCodeId === courseCodeId)?.email;
+    if (permissionEmail) {
+      setSelectedRevokeEmail(permissionEmail);
+    }
+  };
 
   const renderRolesAndCourses = (roles, courses) => (
     <div>
@@ -841,7 +1187,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           </Descriptions.Item>
         </Descriptions>
 
-        <Divider orientation="left" style={{ margin: '16px 0 8px' }}>{setLocale(locale, 'admin.tools.label.permissions')}</Divider>
+        <Divider titlePlacement="left" style={{ margin: '16px 0 8px' }}>{setLocale(locale, 'admin.tools.label.permissions')}</Divider>
+        {hasGlobalRoleAccess && (
+          <div style={{ marginBottom: 8 }}>
+            {renderGlobalAccessTag()}
+          </div>
+        )}
         {renderRolesAndCourses(roles, courses)}
       </>
     );
@@ -858,11 +1209,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               160,
               '#87d068'
             )}
-            <div style={{ marginTop: 8 }}>
+            <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
               {selectedContact.IsActive
                 ? <Tag color="green">{t('admin.tools.label.active')}</Tag>
                 : <Tag color="red">{t('admin.tools.label.inactive')}</Tag>
               }
+              {renderGlobalAccessTag()}
             </div>
           </Col>
           <Col xs={24} sm={18} md={20}>
@@ -918,7 +1270,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </Row>
 
         {/* Geography */}
-        <Divider orientation="left"><EnvironmentOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.geography')}</Divider>
+        <Divider titlePlacement="left"><EnvironmentOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.geography')}</Divider>
         {(birthCode || residencyCode) ? (
           <Tabs
             size="small"
@@ -991,15 +1343,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         )}
 
         {/* Language History */}
-        <Divider orientation="left"><GlobalOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.languageHistory')}</Divider>
+        <Divider titlePlacement="left"><GlobalOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.languageHistory')}</Divider>
         {renderLanguageHistory(selectedContact.LanguageProficienciesHistory)}
 
         {/* Course Progress Activity */}
-        <Divider orientation="left"><LineChartOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.courseProgressActivity')}</Divider>
+        <Divider titlePlacement="left"><LineChartOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.courseProgressActivity')}</Divider>
         {renderContactProgressActivity()}
 
         {/* Login Footprint */}
-        <Divider orientation="left"><LoginOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.loginFootprint')}</Divider>
+        <Divider titlePlacement="left"><LoginOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.loginFootprint')}</Divider>
         {renderContactLoginFootprint()}
       </>
     );
@@ -1028,6 +1380,116 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const permissionTableColumns = [
+    {
+      title: setLocale(locale, 'admin.tools.label.role'),
+      dataIndex: 'roleName',
+      key: 'roleName',
+      filters: permissionRoleFilters,
+      filterSearch: true,
+      onFilter: (value, record) => record.roleId === value,
+      sorter: comparePermissionRowsByRolePriorityAsc,
+      defaultSortOrder: 'descend',
+      sortDirections: ['descend', 'ascend'],
+      render: (roleName, record) => (
+        <Tag color={record.isFacilitator ? 'purple' : record.isGlobal ? 'geekblue' : 'blue'} style={{ marginRight: 0 }}>
+          {roleName || '—'}
+        </Tag>
+      )
+    },
+    {
+      title: setLocale(locale, 'admin.tools.label.course'),
+      dataIndex: 'courseTitle',
+      key: 'courseTitle',
+      render: (courseTitle, record) => record.isGlobal ? (
+        <Tag color="geekblue" style={{ marginRight: 0 }}>{setLocale(locale, 'admin.tools.label.global')}</Tag>
+      ) : (
+        courseTitle || record.courseCodeId || '—'
+      )
+    },
+    {
+      title: setLocale(locale, 'admin.tools.course.label.courseCodeId'),
+      dataIndex: 'courseCodeId',
+      key: 'courseCodeId',
+      render: courseCodeId => courseCodeId || '—'
+    },
+    {
+      title: setLocale(locale, 'admin.tools.label.email'),
+      dataIndex: 'email',
+      key: 'email',
+      filters: permissionEmailFilters,
+      filterSearch: true,
+      onFilter: (value, record) => record.email === value,
+      sorter: (a, b) => (a.email || '').localeCompare(b.email || ''),
+      sortDirections: ['ascend', 'descend'],
+      render: email => email || '—'
+    }
+  ];
+
+  const globalPermissionTableColumns = [
+    {
+      title: setLocale(locale, 'admin.tools.label.role'),
+      dataIndex: 'roleName',
+      key: 'roleName',
+      render: (roleName) => (
+        <Tag color="geekblue" style={{ marginRight: 0 }}>
+          {roleName || '—'}
+        </Tag>
+      )
+    },
+    {
+      title: setLocale(locale, 'admin.tools.label.global'),
+      dataIndex: 'scope',
+      key: 'scope',
+      render: (scope, record) => record.isGlobalAccessUserRole ? (
+        <Tag color="red" style={{ marginRight: 0 }}>
+          {scope || '—'}
+        </Tag>
+      ) : '—'
+    },
+    {
+      title: setLocale(locale, 'admin.tools.label.active'),
+      dataIndex: 'status',
+      key: 'status',
+      render: (status, record) => (
+        <Tag color={record.isActive ? 'green' : 'red'} style={{ marginRight: 0 }}>
+          {status || '—'}
+        </Tag>
+      )
+    },
+    {
+      title: setLocale(locale, 'admin.tools.course.label.endDate'),
+      dataIndex: 'endDate',
+      key: 'endDate',
+      render: endDate => endDate ? new Date(endDate).toLocaleDateString() : '—'
+    }
+  ];
+
+  const renderPermissionsTable = () => (
+    <Table
+      size="small"
+      rowKey="key"
+      columns={permissionTableColumns}
+      dataSource={sortedPermissionRows}
+      pagination={false}
+      locale={{ emptyText: setLocale(locale, 'admin.tools.label.none') }}
+      style={{ marginTop: 12 }}
+    />
+  );
+
+  const renderGlobalPermissionsTable = () => (
+    <Table
+      size="small"
+      rowKey="key"
+      columns={globalPermissionTableColumns}
+      dataSource={globalUserRoleRows}
+      pagination={false}
+      loading={globalRoleLoading}
+      locale={{ emptyText: setLocale(locale, 'admin.tools.label.none') }}
+      style={{ marginTop: 12 }}
+    />
+  );
+
   const renderAssignAccess = () => {
     if (!selectedContact) return null;
     const isEnroll = actionType === 'enroll';
@@ -1035,10 +1497,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     return (
       <>
-        <h4 style={{ marginBottom: 12 }}>
-          <SafetyCertificateOutlined style={{ marginRight: 8 }} />
+        <Divider titlePlacement="left" style={{ marginTop: 0 }}>
+          <SafetyCertificateOutlined style={{ marginRight: 6 }} />
           {setLocale(locale, 'admin.tools.assignAccess')}
-        </h4>
+        </Divider>
 
         <Radio.Group
           value={actionType}
@@ -1049,7 +1511,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <Radio.Button value="global">{setLocale(locale, 'admin.tools.assignGlobalRole')}</Radio.Button>
         </Radio.Group>
 
-        <Row gutter={16}>
+        {shouldShowAssignAccessPermissionWarning && (
+          <Alert
+            type="warning"
+            showIcon
+            message={setLocale(locale, 'admin.tools.msg.notEnoughAccessManagementPermissions')}
+            style={{ marginBottom: 16 }}
+          />
+        )}
+
+        <Row gutter={16} style={{ opacity: selectedRole && !canAssignSelectedAccess ? 0.55 : 1 }}>
           <Col xs={24} sm={12} md={8}>
             <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.role')}</strong></div>
             <Select
@@ -1077,7 +1548,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 onChange={setSelectedCourse}
                 style={{ width: '100%' }}
                 options={enrollableCourseSelectOptions}
-                disabled={isCourseDisabled}
+                disabled={isCourseDisabled || (selectedRole && !canAssignSelectedAccess)}
               />
             </Col>
           )}
@@ -1090,9 +1561,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                   onChange={setSelectedEmail}
                   style={{ width: '100%' }}
                   options={(selectedContact.Emails || []).map(e => ({ value: e.EmailId, label: e.EmailId }))}
+                  disabled={selectedRole && !canAssignSelectedAccess}
                 />
               ) : (
-                <Input value={selectedEmail || ''} readOnly />
+                <Input value={selectedEmail || ''} readOnly disabled={selectedRole && !canAssignSelectedAccess} />
               )}
             </Col>
           )}
@@ -1103,10 +1575,165 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           onClick={handleSubmit}
           loading={submitting}
           style={{ marginTop: 16 }}
-          disabled={!selectedRole || (isEnroll && !selectedCourse)}
+          disabled={!selectedRole || (isEnroll && !selectedCourse) || !canAssignSelectedAccess}
         >
           {isEnroll ? setLocale(locale, 'admin.tools.assignToCourse') : setLocale(locale, 'admin.tools.assignGlobalRole')}
         </Button>
+
+        {isEnroll && (
+          <>
+            <Divider titlePlacement="left" style={{ marginTop: 24 }}>
+              <CloseCircleOutlined style={{ marginRight: 6 }} />
+              {setLocale(locale, 'admin.tools.revokeAccess')}
+            </Divider>
+            {!hasFacilitatorCourseAccess && (
+              <Alert
+                type="info"
+                showIcon
+                message={setLocale(locale, 'admin.tools.msg.noFacilitatorAccess')}
+                style={{ marginBottom: 16 }}
+              />
+            )}
+            {hasFacilitatorCourseAccess && !canRevokeCourseAccess && (
+              <Alert
+                type="warning"
+                showIcon
+                message={setLocale(locale, 'admin.tools.msg.notEnoughAccessManagementPermissions')}
+                style={{ marginBottom: 16 }}
+              />
+            )}
+            <div style={{ opacity: hasFacilitatorCourseAccess && canRevokeCourseAccess ? 1 : 0.55 }}>
+              <Row gutter={16}>
+                <Col xs={24} sm={12} md={8}>
+                  <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.role')}</strong></div>
+                  <Select
+                    value={facilitatorRoleId}
+                    style={{ width: '100%' }}
+                    options={revokeRoleOptions}
+                    disabled
+                  />
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.course')}</strong></div>
+                  <Select
+                    showSearch={{
+                      filterOption: (input, option) =>
+                        (option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
+                    }}
+                    placeholder={t('admin.tools.selectCourse')}
+                    value={selectedRevokeCourse}
+                    onChange={handleRevokeCourseChange}
+                    style={{ width: '100%' }}
+                    options={revokeCourseSelectOptions}
+                    disabled={!hasFacilitatorCourseAccess || !canRevokeCourseAccess}
+                  />
+                </Col>
+                <Col xs={24} sm={12} md={8}>
+                  <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.email')}</strong></div>
+                  {selectedContactEmailOptions.length > 1 ? (
+                    <Select
+                      value={activeRevokeEmail}
+                      onChange={(value) => {
+                        setSelectedRevokeEmail(value);
+                        setSelectedRevokeCourse(null);
+                      }}
+                      style={{ width: '100%' }}
+                      options={selectedContactEmailOptions}
+                      disabled={!hasFacilitatorCourseAccess || !canRevokeCourseAccess}
+                    />
+                  ) : (
+                    <Input value={activeRevokeEmail || ''} readOnly disabled={!hasFacilitatorCourseAccess || !canRevokeCourseAccess} />
+                  )}
+                </Col>
+              </Row>
+              <Popconfirm
+                title={revokeAccessConfirmMessage}
+                onConfirm={handleRevokeFacilitatorAccess}
+                okText={t('admin.tools.confirmYes')}
+                cancelText={t('admin.tools.confirmNo')}
+                disabled={!hasFacilitatorCourseAccess || !canRevokeCourseAccess || !selectedRevokeCourse || !activeRevokeEmail}
+              >
+                <Button
+                  danger
+                  loading={revokeSubmitting}
+                  style={{ marginTop: 16 }}
+                  disabled={!hasFacilitatorCourseAccess || !canRevokeCourseAccess || !selectedRevokeCourse || !activeRevokeEmail}
+                >
+                  {setLocale(locale, 'admin.tools.revokeAccess')}
+                </Button>
+              </Popconfirm>
+            </div>
+          </>
+        )}
+
+        {!isEnroll && (
+          <>
+            <Divider titlePlacement="left" style={{ marginTop: 24 }}>
+              <CloseCircleOutlined style={{ marginRight: 6 }} />
+              {setLocale(locale, 'admin.tools.revokeAccess')}
+            </Divider>
+            {!hasGlobalRoleAccess && !globalRoleLoading && (
+              <Alert
+                type="info"
+                showIcon
+                message={setLocale(locale, 'admin.tools.msg.noGlobalAccess')}
+                style={{ marginBottom: 16 }}
+              />
+            )}
+            {hasGlobalRoleAccess && !canRevokeGlobalAccess && (
+              <Alert
+                type="warning"
+                showIcon
+                message={setLocale(locale, 'admin.tools.msg.notEnoughAccessManagementPermissions')}
+                style={{ marginBottom: 16 }}
+              />
+            )}
+            <div style={{ opacity: hasGlobalRoleAccess && canRevokeGlobalAccess ? 1 : 0.55 }}>
+              <Row gutter={16}>
+                <Col xs={24} sm={12} md={8}>
+                  <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.role')}</strong></div>
+                  <Select
+                    showSearch={{
+                      filterOption: (input, option) =>
+                        (option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
+                    }}
+                    placeholder={t('admin.tools.selectRole')}
+                    value={activeRevokeGlobalRole}
+                    onChange={setSelectedRevokeGlobalRole}
+                    style={{ width: '100%' }}
+                    options={revokeGlobalRoleOptions}
+                    loading={globalRoleLoading}
+                    disabled={globalRoleLoading || !hasGlobalRoleAccess}
+                  />
+                </Col>
+              </Row>
+              <Popconfirm
+                title={revokeGlobalAccessConfirmMessage}
+                onConfirm={handleRevokeGlobalRoleAccess}
+                okText={t('admin.tools.confirmYes')}
+                cancelText={t('admin.tools.confirmNo')}
+                disabled={globalRoleLoading || !hasGlobalRoleAccess || !canRevokeGlobalAccess || !activeRevokeGlobalRole}
+              >
+                <Button
+                  danger
+                  loading={globalRevokeSubmitting}
+                  style={{ marginTop: 16 }}
+                  disabled={globalRoleLoading || !hasGlobalRoleAccess || !canRevokeGlobalAccess || !activeRevokeGlobalRole}
+                >
+                  {setLocale(locale, 'admin.tools.revokeAccess')}
+                </Button>
+              </Popconfirm>
+            </div>
+          </>
+        )}
+
+        <Divider titlePlacement="left" style={{ marginTop: 24 }}>
+          <SafetyCertificateOutlined style={{ marginRight: 6 }} />
+          {isEnroll
+            ? setLocale(locale, 'admin.tools.label.permissions')
+            : setLocale(locale, 'admin.tools.globalPermissions')}
+        </Divider>
+        {isEnroll ? renderPermissionsTable() : renderGlobalPermissionsTable()}
       </>
     );
   };
@@ -1375,7 +2002,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </Row>
 
         {/* Section: Course Info */}
-        <Divider orientation="left">
+        <Divider titlePlacement="left">
           <BookOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.course.section.courseInfo')}
           <Button type="link" size="small" icon={editingSections.info ? <CloseCircleOutlined /> : <EditOutlined />} onClick={() => handleToggleEdit('info')} style={{ marginLeft: 8 }}>
             {editingSections.info ? t('admin.tools.course.btn.cancel') : t('admin.tools.course.btn.edit')}
@@ -1421,7 +2048,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         )}
 
         {/* Section: Dates */}
-        <Divider orientation="left">
+        <Divider titlePlacement="left">
           <EnvironmentOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.course.section.dates')}
           <Button type="link" size="small" icon={editingSections.dates ? <CloseCircleOutlined /> : <EditOutlined />} onClick={() => handleToggleEdit('dates')} style={{ marginLeft: 8 }}>
             {editingSections.dates ? t('admin.tools.course.btn.cancel') : t('admin.tools.course.btn.edit')}
@@ -1454,7 +2081,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         )}
 
         {/* Section: Links & Audience */}
-        <Divider orientation="left">
+        <Divider titlePlacement="left">
           <GlobalOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.course.section.links')}
           <Button type="link" size="small" icon={editingSections.links ? <CloseCircleOutlined /> : <EditOutlined />} onClick={() => handleToggleEdit('links')} style={{ marginLeft: 8 }}>
             {editingSections.links ? t('admin.tools.course.btn.cancel') : t('admin.tools.course.btn.edit')}
@@ -1710,7 +2337,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </p>
       ) : (
         <>
-          <Divider orientation="left">
+          <Divider titlePlacement="left">
             <LoginOutlined style={{ marginRight: 6 }} />
             {setLocale(locale, 'admin.tools.monitoring.loginHeatmap')}
           </Divider>
@@ -1720,7 +2347,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             emptyDescriptionKey="admin.tools.loginFootprint.noActivity"
           />
 
-          <Divider orientation="left">
+          <Divider titlePlacement="left">
             <LineChartOutlined style={{ marginRight: 6 }} />
             {setLocale(locale, 'admin.tools.monitoring.loginBubbleScatter')}
           </Divider>
@@ -1730,7 +2357,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             emptyDescriptionKey="admin.tools.loginFootprint.noActivity"
           />
 
-          <Divider orientation="left">
+          <Divider titlePlacement="left">
             <TableOutlined style={{ marginRight: 6 }} />
             {setLocale(locale, 'admin.tools.monitoring.loginBreakdownTable')}
           </Divider>
@@ -1783,7 +2410,10 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     onLoadingAdminToolsInit,
     onAssigningEnrolleeRoleToCourse,
+    onRevokingCourseFacilitatorAccess,
+    onLoadingGlobalUserRole,
     onAssigningGlobalRole,
+    onRevokingGlobalRole,
     onClearSelectedContact,
     onUpsertingCourse,
     onLoadingContactCourseProgressActivity,
@@ -1805,6 +2435,7 @@ const mapStateToProps = ({ adminTools, grant }) => {
     contactCourseProgressActivity,
     contactLoginFootprint,
     allUserLoginFootprint,
+    contactGlobalUserRole,
     avatarUrlMap,
     contactGeoMaps
   } = adminTools;
@@ -1817,6 +2448,7 @@ const mapStateToProps = ({ adminTools, grant }) => {
     contactCourseProgressActivity,
     contactLoginFootprint,
     allUserLoginFootprint,
+    contactGlobalUserRole,
     avatarUrlMap,
     contactGeoMaps
   };

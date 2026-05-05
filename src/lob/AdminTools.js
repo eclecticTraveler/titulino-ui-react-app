@@ -137,6 +137,30 @@ export const buildEnrollExistingContactToCoursePayload = ({
   userRoleId: userRoleId || roleId || 'titulino_user'
 }]);
 
+export const buildUpsertUserRoleCoursePayload = ({
+  contactInternalId,
+  emailId,
+  courseCodeId,
+  roleId,
+  userRoleId
+} = {}) => ([{
+  contactInternalId: contactInternalId || '',
+  courseCodeId: courseCodeId || '',
+  userRoleId: userRoleId || roleId || 'titulino_user',
+  emailId: emailId || ''
+}]);
+
+export const buildUpsertUserRoleGlobalPayload = ({
+  contactInternalId,
+  roleId,
+  userRoleId,
+  isActive = true
+} = {}) => ([{
+  contactInternalId: contactInternalId || '',
+  userRoleId: userRoleId || roleId || '',
+  isActive: isActive === true
+}]);
+
 /**
  * Clone an existing raw course into a template for creation.
  * Preserves CourseDetails but clears dates and flags so the user fills them in.
@@ -199,6 +223,8 @@ const AdminTools = {
   generateCourseCodeId,
   buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload,
+  buildUpsertUserRoleCoursePayload,
+  buildUpsertUserRoleGlobalPayload,
   prefillFromTemplate,
   extractUploadedCoverImageUrl,
   isValidHttpUrl

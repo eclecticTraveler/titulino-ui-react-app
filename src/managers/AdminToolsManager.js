@@ -96,10 +96,109 @@ export const assignEnrolleeRoleToCourse = async (contactInternalId, courseCodeId
   return TitulinoAuthService.assignEnrolleeRoleToCourse(payload, token, 'AdminToolsManager');
 };
 
-export const assignGlobalRole = async (contactInternalId, roleId, adminEmailId) => {
+export const revokeCourseFacilitatorAccess = async (contactInternalId, courseCodeId, contactEmailId, adminEmailId, targetRoleId = 'titulino_user') => {
   const token = await getTokenFromEmail(adminEmailId);
   if (!token) return false;
-  return TitulinoAuthService.assignGlobalRole(contactInternalId, roleId, token, 'AdminToolsManager');
+  const payload = AdminTools.buildUpsertUserRoleCoursePayload({
+    contactInternalId,
+    emailId: contactEmailId,
+    courseCodeId,
+    userRoleId: targetRoleId || 'titulino_user'
+  });
+  return TitulinoAuthService.upsertUserRoleCourse(payload, token, 'AdminToolsManager');
+};
+
+const getGlobalRoleIdFromItem = (item) => {
+  if (!item) return null;
+  if (typeof item === 'string') return item;
+  return item.role || item.Role || item.userRoleId || item.UserRoleId || item.UserRoleID || null;
+};
+
+const isGlobalRoleItem = (item) => {
+  if (!item || typeof item === 'string') return true;
+  if (item.isGlobal === false || item.IsGlobal === false) return false;
+  if (item.isGlobalAccessUserRole === false || item.IsGlobalAccessUserRole === false) return false;
+  return true;
+};
+
+const normalizeGlobalRoleRecord = (item) => {
+  const roleId = getGlobalRoleIdFromItem(item);
+  if (!roleId) return null;
+
+  return {
+    roleId,
+    isGlobalAccessUserRole: typeof item === 'string'
+      ? true
+      : item.isGlobalAccessUserRole ?? item.IsGlobalAccessUserRole ?? item.isGlobal ?? item.IsGlobal ?? true,
+    isActive: typeof item === 'string'
+      ? true
+      : item.isActive ?? item.IsActive ?? true,
+    endDate: typeof item === 'string'
+      ? null
+      : item.endDate || item.EndDate || null
+  };
+};
+
+const normalizeGlobalUserRoleResult = (result, contactInternalId) => {
+  const rawItems = Array.isArray(result)
+    ? result
+    : Array.isArray(result?.roles)
+      ? result.roles
+      : Array.isArray(result?.Roles)
+        ? result.Roles
+        : Array.isArray(result?.globalRoles)
+          ? result.globalRoles
+          : [result];
+
+  const roleRecords = rawItems
+    .filter(isGlobalRoleItem)
+    .map(normalizeGlobalRoleRecord)
+    .filter(Boolean);
+  const roles = Array.from(new Set(
+    roleRecords
+      .filter(record => record.isActive !== false)
+      .map(record => record.roleId)
+  ));
+  const allRoles = Array.from(new Set(roleRecords.map(record => record.roleId)));
+
+  return {
+    contactInternalId,
+    isGlobal: roles.length > 0,
+    role: roles[0] || allRoles[0] || null,
+    roles,
+    allRoles,
+    roleRecords
+  };
+};
+
+export const getGlobalUserRole = async (contactInternalId, adminEmailId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token || !contactInternalId) {
+    return { contactInternalId, isGlobal: false, role: null, roles: [], allRoles: [], roleRecords: [] };
+  }
+
+  const result = await TitulinoAuthService.getGlobalUserRole(contactInternalId, token, 'AdminToolsManager');
+
+  return normalizeGlobalUserRoleResult(result, contactInternalId);
+};
+
+export const upsertGlobalUserRole = async (contactInternalId, roleId, isActive, adminEmailId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+  const payload = AdminTools.buildUpsertUserRoleGlobalPayload({
+    contactInternalId,
+    userRoleId: roleId,
+    isActive
+  });
+  return TitulinoAuthService.upsertUserRoleGlobal(payload, token, 'AdminToolsManager');
+};
+
+export const assignGlobalRole = async (contactInternalId, roleId, adminEmailId) => {
+  return upsertGlobalUserRole(contactInternalId, roleId, true, adminEmailId);
+};
+
+export const revokeGlobalRole = async (contactInternalId, roleId, adminEmailId) => {
+  return upsertGlobalUserRole(contactInternalId, roleId, false, adminEmailId);
 };
 
 export const upsertCourse = async (courseData, adminEmailId) => {
@@ -250,7 +349,11 @@ export const getContactGeoMaps = async (selectedContact) => {
 const AdminToolsManager = {
   initAdminTools,
   assignEnrolleeRoleToCourse,
+  revokeCourseFacilitatorAccess,
+  getGlobalUserRole,
+  upsertGlobalUserRole,
   assignGlobalRole,
+  revokeGlobalRole,
   upsertCourse,
   getContactCourseProgressActivity,
   getContactLoginFootprint,
@@ -261,6 +364,8 @@ const AdminToolsManager = {
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,
+  buildUpsertUserRoleCoursePayload: AdminTools.buildUpsertUserRoleCoursePayload,
+  buildUpsertUserRoleGlobalPayload: AdminTools.buildUpsertUserRoleGlobalPayload,
   prefillFromTemplate: AdminTools.prefillFromTemplate,
   isValidHttpUrl: AdminTools.isValidHttpUrl
 };

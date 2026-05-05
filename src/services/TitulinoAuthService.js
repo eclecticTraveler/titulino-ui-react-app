@@ -350,6 +350,101 @@ export const assignEnrolleeRoleToCourse = async (payload, token, whoCalledMe = '
   }
 };
 
+export const upsertUserRoleCourse = async (payload, token, whoCalledMe = 'upsertUserRoleCourse') => {
+  if (!token || !Array.isArray(payload) || payload.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+  const url = `${SupabaseConfig.baseApiUrl}/UpsertUserRoleCourse`;
+  const requestBody = { p_payload: payload };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] upsertUserRoleCourse endpoint:`, url);
+    console.log(`[${whoCalledMe}] upsertUserRoleCourse payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    return (await response.json()) ?? false;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
+export const getGlobalUserRole = async (contactInternalId, token, whoCalledMe = 'getGlobalUserRole') => {
+  if (!token || !contactInternalId) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return { isGlobal: false, role: null };
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/GetGlobalUserRole`;
+  const requestBody = { p_contact_id: contactInternalId };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] getGlobalUserRole endpoint:`, url);
+    console.log(`[${whoCalledMe}] getGlobalUserRole payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return { isGlobal: false, role: null };
+    const apiResult = await response.json();
+    if (env.ENVIROMENT !== 'prod') {
+      console.log(`[${whoCalledMe}] getGlobalUserRole response:`, apiResult);
+    }
+    return apiResult || { isGlobal: false, role: null };
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return { isGlobal: false, role: null };
+  }
+};
+
+export const upsertUserRoleGlobal = async (payload, token, whoCalledMe = 'upsertUserRoleGlobal') => {
+  if (!token || !Array.isArray(payload) || payload.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/UpsertUserRoleGlobal`;
+  const requestBody = { p_payload: payload };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] upsertUserRoleGlobal endpoint:`, url);
+    console.log(`[${whoCalledMe}] upsertUserRoleGlobal payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    return (await response.json()) ?? false;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
 export const assignGlobalRole = async (contactInternalId, roleId, token, whoCalledMe = 'assignGlobalRole') => {
   if (!token || !contactInternalId || !roleId) {
     console.warn(`[${whoCalledMe}] Missing required params`);
@@ -507,6 +602,9 @@ const TitulinoAuthService = {
   getAllEnrollees,
   getUserRoles,
   assignEnrolleeRoleToCourse,
+  upsertUserRoleCourse,
+  getGlobalUserRole,
+  upsertUserRoleGlobal,
   assignGlobalRole,
   upsertCourse,
   getAllUserLoginFootprint,

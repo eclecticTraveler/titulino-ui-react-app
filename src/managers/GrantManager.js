@@ -53,13 +53,22 @@ const getUserProfile = async (emailId, dobOrYob) => {
   const user = await LocalStorageService.getCachedObject(localStorageKey);
 
   if (user) {
-    return user;
+    const hasGlobalRolesProfile = Array.isArray(user?.globalRoles);
+    if (!user?.isGlobalAccessUser || hasGlobalRolesProfile) {
+      return {
+        ...user,
+        globalRoles: hasGlobalRolesProfile ? user.globalRoles : []
+      };
+    }
   }
 
   // 2. Otherwise fetch from backend
   try {
     const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(emailId, dobOrYob);    
     if (userProfile) {      
+      const globalRoles = Array.isArray(userProfile?.globalRoles)
+        ? userProfile.globalRoles
+        : [];
       // 3. Store encrypted locally with TTL (e.g., 60 minutes)
       const user = {
         userCourses: userProfile?.userCourses ?? null,
@@ -68,7 +77,8 @@ const getUserProfile = async (emailId, dobOrYob) => {
         communicationName: userProfile?.communicationName ?? null,
         expirationDate: userProfile?.expirationDate ?? null,
         hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
-        isGlobalAccessUser: userProfile?.isGlobalAccessUser ?? false,
+        isGlobalAccessUser: userProfile?.isGlobalAccessUser ?? globalRoles.length > 0,
+        globalRoles,
         innerToken: userProfile?.token,
         emailId: emailId,
         yearOfBirth: userProfile?.yearOfBirth,
