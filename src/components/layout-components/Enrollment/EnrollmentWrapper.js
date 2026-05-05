@@ -87,6 +87,9 @@ export const EnrollmentWrapper = (props) => {
          onRenderingCourseRegistration, availableCourses, onRenderingUserCoursesAvailableForRegistration, selectedCoursesToEnroll } = props;
   const location = useLocation();
   const { email, dateOfBirth, isToDoFullEnrollment, isSubmitBtnEnabled } = location.state || {};
+  const hasSelectedCourses = Array.isArray(selectedCoursesToEnroll) && selectedCoursesToEnroll.length > 0;
+  const isAuthenticatedEnrollmentReady = !!token && !!user?.contactId;
+  const isSingleCourseFlow = Array.isArray(availableCourses) && availableCourses.length === 1;
     // If you need componentDidMount/componentDidUpdate-like behavior, you can use useEffect:
     useEffect(() => {
         // This runs once on mount (componentDidMount)
@@ -112,14 +115,14 @@ export const EnrollmentWrapper = (props) => {
             </>
         )
     }else{
-        if((availableCourses && availableCourses?.length > 1) && (selectedCoursesToEnroll && selectedCoursesToEnroll?.length === 0)){
+        if((availableCourses && availableCourses?.length > 1) && !hasSelectedCourses){
             return (
                 <div>
                      <WeeklyCourseSelector/>
                 </div>
             );
         }
-        else if(token && user?.contactId && (selectedCoursesToEnroll && selectedCoursesToEnroll?.length !== 0)){
+        else if(isAuthenticatedEnrollmentReady && (hasSelectedCourses || isSingleCourseFlow)){
           return (
             <div>
               <AuthenticatedQuickEnrollment/>

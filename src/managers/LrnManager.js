@@ -64,6 +64,173 @@ const getCourseToken = async(courseCodeId, emailId) => {
   return token;
 }
 
+const normalizeIdentifier = (value) => (
+  value == null ? "" : String(value).trim().toLowerCase()
+);
+
+const shouldDebugEnrollmentProfilePicture = () => env.ENVIROMENT !== "prod";
+
+const logEnrollmentProfilePictureDebug = (message, payload) => {
+  if (shouldDebugEnrollmentProfilePicture()) {
+    console.log(`[EnrollmentProfilePicture] ${message}`, payload ?? "");
+  }
+};
+
+const summarizeResolvedProfileContext = ({ emailId, dobOrYob, contactInternalId, token }) => ({
+  emailId: emailId || null,
+  dobOrYob: dobOrYob || null,
+  contactInternalId: contactInternalId || null,
+  hasToken: !!token
+});
+
+const getProfilePictureUrl = (apiResult) => (
+  apiResult?.profileUrl ||
+  apiResult?.ProfileUrl ||
+  null
+);
+
+const getSubmittedEnrolleeRecords = (submittedEnrollee) => {
+  if (Array.isArray(submittedEnrollee)) return submittedEnrollee;
+  if (Array.isArray(submittedEnrollee?.records)) return submittedEnrollee.records;
+  if (submittedEnrollee && typeof submittedEnrollee === "object") return [submittedEnrollee];
+  return [];
+};
+
+const getSubmittedContactInternalId = (submittedEnrollee) => {
+  const records = getSubmittedEnrolleeRecords(submittedEnrollee);
+  const record = records[0] || null;
+
+  return (
+    record?.ContactInternalId ||
+    record?.contactInternalId ||
+    record?.contact_internal_id ||
+    null
+  );
+};
+
+const submitEnrollmentRecords = async (enrollees, whoCalledMe = "submitEnrollmentRecords", recaptchaToken = null) => {
+  let submittedEnrollee = [];
+  let wasSuccessful = false;
+
+  const token = await TitulinoNetService.getRegistrationToken(`${whoCalledMe}:getRegistrationToken`);
+
+  if (token) {
+    submittedEnrollee = await TitulinoNetService.upsertEnrollment(token, enrollees, whoCalledMe, recaptchaToken);
+
+    if (submittedEnrollee?.length > 0) {
+      wasSuccessful = true;
+    } else {
+      submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, whoCalledMe);
+      wasSuccessful = submittedEnrollee?.length > 0;
+    }
+  } else {
+    submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, whoCalledMe);
+    wasSuccessful = !!submittedEnrollee;
+  }
+
+  return {
+    submittedEnrollee,
+    wasSuccessful,
+    registrationToken: token || null
+  };
+};
+
+const getEnrolleeRecordsFromSubmission = (submittedEnrollee) => {
+  if (Array.isArray(submittedEnrollee)) return submittedEnrollee;
+  if (Array.isArray(submittedEnrollee?.records)) return submittedEnrollee.records;
+  if (Array.isArray(submittedEnrollee?.enrollees)) return submittedEnrollee.enrollees;
+  if (submittedEnrollee && typeof submittedEnrollee === "object") return [submittedEnrollee];
+  return [];
+};
+
+const getContactInternalIdFromSubmittedEnrollee = (submittedEnrollee, emailId) => {
+  const records = getEnrolleeRecordsFromSubmission(submittedEnrollee);
+  if (records.length === 0) return null;
+
+  const normalizedEmail = normalizeIdentifier(emailId);
+
+  const matchedRecord = records.find((record) => (
+    normalizedEmail &&
+    [
+      record?.emailAddress,
+      record?.EmailAddress,
+      record?.emailId,
+      record?.EmailId,
+      record?.email
+    ].some((candidateEmail) => normalizeIdentifier(candidateEmail) === normalizedEmail)
+  )) || records[0];
+
+  return (
+    matchedRecord?.contactInternalId ||
+    matchedRecord?.ContactInternalId ||
+    matchedRecord?.contact_internal_id ||
+    null
+  );
+};
+
+const resolveEnrollmentProfileContext = async ({
+  emailId,
+  dobOrYob,
+  contactInternalId,
+  token,
+  submittedEnrollee,
+  shouldRetrieveRegistrationToken = false
+}) => {
+  logEnrollmentProfilePictureDebug("resolveEnrollmentProfileContext:start", {
+    emailId: emailId || null,
+    dobOrYob: dobOrYob || null,
+    contactInternalId: contactInternalId || null,
+    hasToken: !!token,
+    shouldRetrieveRegistrationToken,
+    hasSubmittedEnrollee: !!submittedEnrollee
+  });
+
+  let resolvedContactInternalId = contactInternalId || getContactInternalIdFromSubmittedEnrollee(submittedEnrollee, emailId);
+  let resolvedToken = token || null;
+
+  if (!resolvedContactInternalId && emailId && dobOrYob) {
+    const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(
+      emailId,
+      dobOrYob,
+      "resolveEnrollmentProfileContext"
+    );
+
+    resolvedContactInternalId = resolvedContactInternalId || userProfile?.contactInternalId || null;
+    resolvedToken = resolvedToken || userProfile?.token || null;
+
+    logEnrollmentProfilePictureDebug("resolveEnrollmentProfileContext:afterUserProfileLookup", {
+      hasUserProfile: !!userProfile,
+      resolvedContactInternalId,
+      hasResolvedToken: !!resolvedToken
+    });
+  }
+
+  if (shouldRetrieveRegistrationToken && !resolvedToken) {
+    resolvedToken = await TitulinoNetService.getRegistrationToken("resolveEnrollmentProfileContext");
+    logEnrollmentProfilePictureDebug("resolveEnrollmentProfileContext:afterRegistrationTokenLookup", {
+      resolvedContactInternalId,
+      hasResolvedToken: !!resolvedToken
+    });
+  }
+
+  const resolvedContext = {
+    contactInternalId: resolvedContactInternalId,
+    token: resolvedToken
+  };
+
+  logEnrollmentProfilePictureDebug(
+    "resolveEnrollmentProfileContext:resolved",
+    summarizeResolvedProfileContext({
+      emailId,
+      dobOrYob,
+      contactInternalId: resolvedContext.contactInternalId,
+      token: resolvedContext.token
+    })
+  );
+
+  return resolvedContext;
+};
+
 const getUserUpperNavigationConfig = async (isAuthenticated, emailId) => { 
   const localStorageKey = `UserProfile_${emailId}`;  
   const user = await LocalStorageService.getCachedObject(localStorageKey);
@@ -206,6 +373,256 @@ const upsertKnowMeProfilePicture = async (fileToUpload, emailId) => {
   return uploaded?.profileUrl ?? uploaded?.ProfileUrl ?? null;
 };
 
+export const getEnrollmentProfilePictureRequirement = async ({
+  emailId,
+  dobOrYob,
+  contactInternalId,
+  token,
+  skipExistingProfileLookup = false
+}) => {
+  logEnrollmentProfilePictureDebug("getEnrollmentProfilePictureRequirement:start", {
+    emailId: emailId || null,
+    dobOrYob: dobOrYob || null,
+    contactInternalId: contactInternalId || null,
+    hasToken: !!token,
+    forceProfilePictureUpload: !!env.IS_TO_FORCE_ENROLLMENT_PROFILE_PICTURE_UPLOAD,
+    skipExistingProfileLookup
+  });
+
+  if (!emailId) {
+    const result = {
+      requiresUpload: false,
+      profileUrl: null,
+      contactInternalId: contactInternalId || null,
+      token: token || null,
+      canUploadNow: false
+    };
+    logEnrollmentProfilePictureDebug("getEnrollmentProfilePictureRequirement:missingEmail", result);
+    return result;
+  }
+
+  if (skipExistingProfileLookup) {
+    const result = {
+      requiresUpload: true,
+      profileUrl: null,
+      contactInternalId: contactInternalId || null,
+      token: token || null,
+      canUploadNow: !!contactInternalId && !!token
+    };
+    logEnrollmentProfilePictureDebug("getEnrollmentProfilePictureRequirement:skippingLookup", result);
+    return result;
+  }
+
+  const resolvedContext = await resolveEnrollmentProfileContext({
+    emailId,
+    dobOrYob,
+    contactInternalId,
+    token
+  });
+
+  if (env.IS_TO_FORCE_ENROLLMENT_PROFILE_PICTURE_UPLOAD) {
+    const result = {
+      requiresUpload: true,
+      profileUrl: null,
+      contactInternalId: resolvedContext.contactInternalId || null,
+      token: resolvedContext.token || null,
+      canUploadNow: !!resolvedContext.contactInternalId && !!resolvedContext.token
+    };
+
+    logEnrollmentProfilePictureDebug("getEnrollmentProfilePictureRequirement:forcedUpload", result);
+    return result;
+  }
+
+  if (resolvedContext.contactInternalId && resolvedContext.token) {
+    const profile = await TitulinoNetService.getContactEnrolleeKnowMeProfileImage(
+      resolvedContext.token,
+      emailId,
+      resolvedContext.contactInternalId,
+      "getEnrollmentProfilePictureRequirement"
+    );
+    const profileUrl = getProfilePictureUrl(profile);
+
+    const result = {
+      requiresUpload: !profileUrl,
+      profileUrl,
+      contactInternalId: resolvedContext.contactInternalId,
+      token: resolvedContext.token,
+      canUploadNow: true
+    };
+    logEnrollmentProfilePictureDebug("getEnrollmentProfilePictureRequirement:profileLookupResult", {
+      ...result,
+      hasProfilePayload: !!profile
+    });
+    return result;
+  }
+
+  const result = {
+    requiresUpload: true,
+    profileUrl: null,
+    contactInternalId: resolvedContext.contactInternalId || null,
+    token: resolvedContext.token || null,
+    canUploadNow: false
+  };
+  logEnrollmentProfilePictureDebug("getEnrollmentProfilePictureRequirement:missingContext", result);
+  return result;
+};
+
+export const ensureEnrollmentProfilePicture = async ({
+  file,
+  emailId,
+  dobOrYob,
+  contactInternalId,
+  token,
+  submittedEnrollee
+}) => {
+  const rawFile = file?.originFileObj || file || null;
+
+  logEnrollmentProfilePictureDebug("ensureEnrollmentProfilePicture:start", {
+    emailId: emailId || null,
+    dobOrYob: dobOrYob || null,
+    contactInternalId: contactInternalId || null,
+    hasToken: !!token,
+    hasSubmittedEnrollee: !!submittedEnrollee,
+    hasRawFile: !!rawFile
+  });
+
+  if (!rawFile || !emailId) {
+    const result = {
+      wasUploaded: false,
+      profileUrl: null,
+      skipped: true
+    };
+    logEnrollmentProfilePictureDebug("ensureEnrollmentProfilePicture:missingFileOrEmail", result);
+    return result;
+  }
+
+  const resolvedContext = await resolveEnrollmentProfileContext({
+    emailId,
+    dobOrYob,
+    contactInternalId,
+    token,
+    submittedEnrollee,
+    shouldRetrieveRegistrationToken: true
+  });
+
+  if (!resolvedContext.contactInternalId || !resolvedContext.token) {
+    const result = {
+      wasUploaded: false,
+      profileUrl: null,
+      skipped: false
+    };
+    logEnrollmentProfilePictureDebug("ensureEnrollmentProfilePicture:missingResolvedContext", {
+      ...result,
+      resolvedContactInternalId: resolvedContext.contactInternalId || null,
+      hasResolvedToken: !!resolvedContext.token
+    });
+    return result;
+  }
+
+  const fileToUpload = await LrnConfiguration.buildStudentKnowMeFileName(
+    rawFile,
+    resolvedContext.contactInternalId,
+    emailId,
+    0
+  );
+
+  logEnrollmentProfilePictureDebug("ensureEnrollmentProfilePicture:uploading", {
+    fileName: fileToUpload?.fileName || rawFile?.name || null,
+    contactInternalId: resolvedContext.contactInternalId,
+    emailId
+  });
+
+  const uploaded = await TitulinoNetService.upsertStudentKnowMeProfileImage(
+    resolvedContext.token,
+    fileToUpload,
+    "ensureEnrollmentProfilePicture"
+  );
+
+  const profileUrl = getProfilePictureUrl(uploaded);
+
+  const result = {
+    wasUploaded: !!profileUrl,
+    profileUrl,
+    skipped: false,
+    contactInternalId: resolvedContext.contactInternalId
+  };
+  logEnrollmentProfilePictureDebug("ensureEnrollmentProfilePicture:completed", {
+    ...result,
+    hasUploadPayload: !!uploaded
+  });
+  return result;
+};
+
+export const submitAuthenticatedEnrollment = async ({
+  enrollees,
+  filesMap = {},
+  user,
+  recaptchaToken = null
+}) => {
+  const { submittedEnrollee, wasSuccessful, registrationToken } = await submitEnrollmentRecords(
+    enrollees,
+    "submitAuthenticatedEnrollment",
+    recaptchaToken
+  );
+
+  let uploadResult = null;
+
+  if (wasSuccessful && filesMap?.profilePictureUpload?.length > 0) {
+    const file = filesMap.profilePictureUpload[0];
+    const enrollee = Array.isArray(enrollees) && enrollees.length > 0 ? enrollees[0] : {};
+
+    uploadResult = await ensureEnrollmentProfilePicture({
+      file,
+      emailId: user?.emailId || enrollee?.emailAddress || enrollee?.emailId || null,
+      dobOrYob: user?.yearOfBirth || enrollee?.dateOfBirth || null,
+      contactInternalId: user?.contactInternalId || getSubmittedContactInternalId(submittedEnrollee) || null,
+      token: user?.innerToken || registrationToken || null,
+      submittedEnrollee
+    });
+  }
+
+  return {
+    submittedEnrollee,
+    wasSuccessful,
+    uploadResult
+  };
+};
+
+export const submitUnauthenticatedEnrollment = async ({
+  enrollees,
+  filesMap = {},
+  profilePictureContext = {},
+  recaptchaToken = null
+}) => {
+  const { submittedEnrollee, wasSuccessful, registrationToken } = await submitEnrollmentRecords(
+    enrollees,
+    "submitUnauthenticatedEnrollment",
+    recaptchaToken
+  );
+
+  let uploadResult = null;
+
+  if (wasSuccessful && filesMap?.profilePictureUpload?.length > 0) {
+    const file = filesMap.profilePictureUpload[0];
+    const enrollee = Array.isArray(enrollees) && enrollees.length > 0 ? enrollees[0] : {};
+
+    uploadResult = await ensureEnrollmentProfilePicture({
+      file,
+      emailId: profilePictureContext?.emailId || enrollee?.emailAddress || enrollee?.emailId || null,
+      dobOrYob: profilePictureContext?.dobOrYob || enrollee?.dateOfBirth || null,
+      contactInternalId: profilePictureContext?.contactInternalId || getSubmittedContactInternalId(submittedEnrollee) || null,
+      token: profilePictureContext?.token || registrationToken || null,
+      submittedEnrollee
+    });
+  }
+
+  return {
+    submittedEnrollee,
+    wasSuccessful,
+    uploadResult
+  };
+};
+
 
 
 export const upsertUserKnowMeProgress = async (
@@ -337,6 +754,10 @@ const LrnManager = {
   getUserEBookChapterUrl,
   upsertUserKnowMeProgress,
   upsertKnowMeProfilePicture,
+  getEnrollmentProfilePictureRequirement,
+  ensureEnrollmentProfilePicture,
+  submitAuthenticatedEnrollment,
+  submitUnauthenticatedEnrollment,
   buildStudentKnowMeFileName,
   resolveFacilitadorCourseCodeId
 };

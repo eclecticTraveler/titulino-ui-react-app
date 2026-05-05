@@ -84,7 +84,7 @@ const configureMenuItems = (user, token) => {
         title: setLocale(locale,"profile.enroll"),
         icon: UsergroupAddOutlined ,
         path: "enroll",
-        isAuth: false
+        isAuth: !!token
       }
     )
   }

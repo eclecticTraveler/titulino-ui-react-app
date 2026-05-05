@@ -11,7 +11,11 @@ export class AbstractTable extends Component {
                           isAllowedToEditTableData={this.props.isAllowedToEditTableData}
                           selectionToRenderInModal={this.props.selectionToRenderInModal}
                           isToRenderActionButton={this.props.isToRenderActionButton}
-                          isToMakeRowsSelectable={this.props.isToMakeRowsSelectable}/>
+                          isToMakeRowsSelectable={this.props.isToMakeRowsSelectable}
+                          rowSelection={this.props.rowSelection}
+                          rowKey={this.props.rowKey}
+                          loading={this.props.loading}
+                          onChange={this.props.onChange}/>
     )
   }
 }

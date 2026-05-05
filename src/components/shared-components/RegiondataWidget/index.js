@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { Card, Row, Col, Badge, Grid } from "antd";
+import React, { useMemo, useRef, useState } from "react";
+import { Card, Row, Col, Badge, Grid, Button } from "antd";
 import PropTypes from "prop-types";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature as topojsonFeature } from "topojson-client";
@@ -15,44 +15,148 @@ const hoverPercentage = -10;
 const mapHeight = 580;
 const mapWidth = 1000;
 const worldVerticalOffset = 62;
+const minZoom = 1;
+const maxZoom = 4;
+const zoomStep = 0.5;
 
-const getHighlightedRegion = (name, data) => {
-  if (data.length > 0 || name) {
-    for (let i = 0; i < data.length; i++) {
-      const elm = data[i];
-      if (
-        name === elm.name ||
-        name === elm.nativeName ||
-        name === elm.name?.replaceAll(" ", "") ||
-        name === elm.nativeName?.replaceAll(" ", "")
-      ) {
-        return elm.color;
-      }
-    }
-    return mapColor;
+const defaultMapTransform = { scale: 1, x: 0, y: 0 };
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const constrainMapTransform = (transform) => {
+  const scale = clamp(transform.scale, minZoom, maxZoom);
+
+  if (scale <= minZoom) {
+    return defaultMapTransform;
   }
-  return mapColor;
+
+  return {
+    scale,
+    x: clamp(transform.x, mapWidth * (1 - scale), 0),
+    y: clamp(transform.y, mapHeight * (1 - scale), 0)
+  };
 };
 
-const getRegionHoverColor = (name, data) => {
-  if (data.length > 0 || name) {
-    for (let i = 0; i < data.length; i++) {
-      const elm = data[i];
-      if (
-        name === elm.name ||
-        name === elm.nativeName ||
-        name === elm.name?.replaceAll(" ", "") ||
-        name === elm.nativeName?.replaceAll(" ", "")
-      ) {
-        return utils.shadeColor(elm.color, hoverPercentage);
-      }
-    }
-    return utils.shadeColor(mapColor, hoverPercentage);
-  }
-  return utils.shadeColor(mapColor, hoverPercentage);
+const zoomMapAtPoint = (transform, nextScale, point = { x: mapWidth / 2, y: mapHeight / 2 }) => {
+  const scale = clamp(nextScale, minZoom, maxZoom);
+  const ratio = scale / transform.scale;
+
+  return constrainMapTransform({
+    scale,
+    x: point.x - (point.x - transform.x) * ratio,
+    y: point.y - (point.y - transform.y) * ratio
+  });
 };
 
-const getRegionValue = (name, data) => {
+const normalizeRegionName = (value) => {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]/g, "");
+};
+
+const getNameVariants = (value) => {
+  if (value === null || value === undefined) return [];
+  const baseValue = String(value).trim();
+  if (!baseValue) return [];
+
+  const variants = [baseValue];
+  const withoutParenthetical = baseValue.replace(/\s*\([^)]*\)\s*/g, " ").trim();
+  if (withoutParenthetical && withoutParenthetical !== baseValue) {
+    variants.push(withoutParenthetical);
+  }
+
+  baseValue
+    .split(/[|,;/]/)
+    .map(item => item.trim())
+    .filter(Boolean)
+    .forEach(item => variants.push(item));
+
+  return Array.from(new Set(variants));
+};
+
+const addNormalizedAliases = (aliases, value) => {
+  getNameVariants(value).forEach((variant) => {
+    const normalized = normalizeRegionName(variant);
+    if (normalized) aliases.add(normalized);
+  });
+};
+
+const getDataRegionAliases = (item) => {
+  const aliases = new Set();
+  [
+    item?.name,
+    item?.nativeName,
+    item?.regionName,
+    item?.divisionName,
+    item?.divisionNativeName,
+    item?.countryDivisionName,
+    item?.countryDivisionNativeName
+  ].forEach(value => addNormalizedAliases(aliases, value));
+  return aliases;
+};
+
+const getFeatureRegionAliases = (geoFeature, mapType) => {
+  const props = geoFeature?.properties || {};
+  const keys = mapType === "world"
+    ? ["name", "NAME", "NAME_0", "ADMIN"]
+    : ["NAME_1", "VARNAME_1", "NL_NAME_1", "NAME_2", "VARNAME_2", "NL_NAME_2", "name", "NAME"];
+
+  const aliases = new Set();
+  keys.forEach(key => addNormalizedAliases(aliases, props[key]));
+  return aliases;
+};
+
+const buildRegionDataLookup = (data = []) => {
+  const lookup = new Map();
+  data.forEach((item) => {
+    getDataRegionAliases(item).forEach((alias) => {
+      if (!lookup.has(alias)) {
+        lookup.set(alias, item);
+      }
+    });
+  });
+  return lookup;
+};
+
+const findRegionData = (geoFeature, mapType, dataLookup) => {
+  if (!dataLookup || dataLookup.size === 0) return null;
+  const aliases = getFeatureRegionAliases(geoFeature, mapType);
+  for (const alias of aliases) {
+    if (dataLookup.has(alias)) {
+      return dataLookup.get(alias);
+    }
+  }
+  return null;
+};
+
+const getRegionDisplayName = (item, mapType) => {
+  if (!item) return "";
+  if (item.regionName) return item.regionName;
+  if (item.divisionName) return item.divisionName;
+  if (item.countryDivisionName) return item.countryDivisionName;
+  if (mapType !== "world" && !item.divisionId && item.name) {
+    return item.nativeName && normalizeRegionName(item.nativeName) !== normalizeRegionName(item.name)
+      ? `${item.nativeName} - ${item.name}`
+      : item.name;
+  }
+  return item.nativeName || item.name || "";
+};
+
+const getHighlightedRegion = (geoFeature, mapType, dataLookup) => {
+  return findRegionData(geoFeature, mapType, dataLookup)?.color || mapColor;
+};
+
+const getRegionHoverColor = (geoFeature, mapType, dataLookup) => {
+  const region = findRegionData(geoFeature, mapType, dataLookup);
+  return utils.shadeColor(region?.color || mapColor, hoverPercentage);
+};
+
+// eslint-disable-next-line no-unused-vars
+const getRegionValueByName = (name, data) => {
   if (data.length > 0 || name) {
     for (let i = 0; i < data.length; i++) {
       const elm = data[i];
@@ -73,6 +177,51 @@ const getRegionValue = (name, data) => {
     return "";
   }
   return "";
+};
+
+const getFeatureCountryCode = (geoFeature, mapType) => {
+  const props = geoFeature?.properties || {};
+  if (mapType !== "world") return mapType;
+  return props.ISO_A2 || props.ISO2 || props.iso_a2 || props.ADM0_A3 || props.ISO_A3 || "";
+};
+
+const getFeatureTooltipName = (geoFeature, mapType) => {
+  const props = geoFeature?.properties || {};
+  const regionName = getFeatureRegionName(geoFeature, mapType);
+
+  if (mapType === "world") {
+    return regionName;
+  }
+
+  const countryName = props.COUNTRY || props.NAME_0 || "";
+  return countryName && regionName && normalizeRegionName(countryName) !== normalizeRegionName(regionName)
+    ? `${countryName} - ${regionName}`
+    : regionName || countryName;
+};
+
+const getRegionValue = (geoFeature, mapType, dataLookup) => {
+  const region = findRegionData(geoFeature, mapType, dataLookup);
+  if (!region) {
+    return (
+      <>
+        <Flag code={getFeatureCountryCode(geoFeature, mapType)} style={{ width: 20, marginRight: 10 }} />
+        {`${getFeatureTooltipName(geoFeature, mapType)} - 0`}
+      </>
+    );
+  }
+
+  const value = region.count ?? region.value;
+  const displayName = getRegionDisplayName(region, mapType);
+  const tooltipText = value !== undefined && value !== null && value !== ""
+    ? `${displayName} - ${value}`
+    : displayName;
+
+  return (
+    <>
+      <Flag code={region?.countryId} style={{ width: 20, marginRight: 10 }} />
+      {tooltipText}
+    </>
+  );
 };
 
 const getProjectionConfig = (mapType) => {
@@ -109,6 +258,8 @@ const getProjectionConfig = (mapType) => {
       return { scale: 8000, center: [-90.2, 15.3] };
     case "DO":
       return { scale: 10000, center: [-70.1, 18.7] };
+    case "PR":
+      return { scale: 19000, center: [-66.5, 18.3] };
     case "EC":
       return { scale: 4000, center: [-78, -2] };
     case "SV":
@@ -183,13 +334,17 @@ const getFeatureRegionName = (geoFeature, mapType) => {
   const props = geoFeature?.properties;
   if (!props) return "";
   if (mapType === "world") return props.name || "";
-  return props.NAME_1 || props.name || "";
+  return props.NAME_1 || props.VARNAME_1 || props.name || "";
 };
 
 const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
-  const [hoveredRegionName, setHoveredRegionName] = useState("");
-  const projectionConfig = getProjectionConfig(mapType);
+  const [hoveredRegionKey, setHoveredRegionKey] = useState("");
+  const [mapTransform, setMapTransform] = useState(defaultMapTransform);
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef(null);
+  const projectionConfig = useMemo(() => getProjectionConfig(mapType), [mapType]);
   const features = useMemo(() => getMapFeatures(mapSource, mapType), [mapSource, mapType]);
+  const dataLookup = useMemo(() => buildRegionDataLookup(data), [data]);
 
   const pathGenerator = useMemo(() => {
     const projection = geoMercator()
@@ -200,53 +355,166 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
     return geoPath().projection(projection);
   }, [projectionConfig]);
 
+  const getSvgPoint = (event) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    return {
+      x: ((event.clientX - bounds.left) / bounds.width) * mapWidth,
+      y: ((event.clientY - bounds.top) / bounds.height) * mapHeight
+    };
+  };
+
+  const handleZoom = (direction) => {
+    setMapTransform((currentTransform) => (
+      zoomMapAtPoint(currentTransform, currentTransform.scale + direction * zoomStep)
+    ));
+  };
+
+  const handleResetZoom = () => {
+    setMapTransform(defaultMapTransform);
+    setIsPanning(false);
+    panStartRef.current = null;
+  };
+
+  const handleWheel = (event) => {
+    event.preventDefault();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    const point = getSvgPoint(event);
+    setMapTransform((currentTransform) => (
+      zoomMapAtPoint(currentTransform, currentTransform.scale + direction * zoomStep, point)
+    ));
+  };
+
+  const handlePointerDown = (event) => {
+    if (mapTransform.scale <= minZoom) return;
+
+    const bounds = event.currentTarget.getBoundingClientRect();
+    panStartRef.current = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      x: mapTransform.x,
+      y: mapTransform.y,
+      svgUnitX: mapWidth / bounds.width,
+      svgUnitY: mapHeight / bounds.height
+    };
+    setIsPanning(true);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handlePointerMove = (event) => {
+    const panStart = panStartRef.current;
+    if (!panStart) return;
+
+    const deltaX = (event.clientX - panStart.clientX) * panStart.svgUnitX;
+    const deltaY = (event.clientY - panStart.clientY) * panStart.svgUnitY;
+    setMapTransform((currentTransform) => (
+      constrainMapTransform({
+        ...currentTransform,
+        x: panStart.x + deltaX,
+        y: panStart.y + deltaY
+      })
+    ));
+  };
+
+  const handlePointerUp = (event) => {
+    panStartRef.current = null;
+    setIsPanning(false);
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
   return (
-    <div style={{ transform: mapType === "world" ? `translateY(${worldVerticalOffset}px)` : "none" }}>
+    <div
+      style={{
+        position: "relative",
+        transform: mapType === "world" ? `translateY(${worldVerticalOffset}px)` : "none"
+      }}
+    >
+      <div
+        className="d-flex align-items-center"
+        style={{
+          position: "absolute",
+          top: 12,
+          right: 12,
+          zIndex: 2,
+          gap: 4,
+          padding: 4,
+          border: "1px solid #E6E8EE",
+          borderRadius: 6,
+          background: "rgba(255, 255, 255, 0.92)",
+          boxShadow: "0 6px 18px rgba(15, 23, 42, 0.08)"
+        }}
+      >
+        <Button size="small" title="Zoom out" aria-label="Zoom out" disabled={mapTransform.scale <= minZoom} onClick={() => handleZoom(-1)}>
+          -
+        </Button>
+        <Button size="small" title="Reset zoom" aria-label="Reset zoom" disabled={mapTransform.scale <= minZoom} onClick={handleResetZoom}>
+          1x
+        </Button>
+        <Button size="small" title="Zoom in" aria-label="Zoom in" disabled={mapTransform.scale >= maxZoom} onClick={() => handleZoom(1)}>
+          +
+        </Button>
+      </div>
       <svg
         data-tip=""
         width="100%"
         height={mapHeight}
         viewBox={`0 0 ${mapWidth} ${mapHeight}`}
         preserveAspectRatio="xMidYMid meet"
+        onWheel={handleWheel}
+        onDoubleClick={() => handleZoom(1)}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+        style={{
+          cursor: mapTransform.scale > minZoom ? (isPanning ? "grabbing" : "grab") : "default",
+          touchAction: "none"
+        }}
       >
-        {features.map((geoFeature, index) => {
-          const geoName = getFeatureRegionName(geoFeature, mapType);
-          const pathData = pathGenerator(geoFeature);
+        <g transform={`translate(${mapTransform.x} ${mapTransform.y}) scale(${mapTransform.scale})`}>
+          {features.map((geoFeature, index) => {
+            const geoName = getFeatureRegionName(geoFeature, mapType);
+            const pathData = pathGenerator(geoFeature);
 
-          if (!pathData) {
-            return null;
-          }
+            if (!pathData) {
+              return null;
+            }
 
-          const isHovered = hoveredRegionName === geoName;
-          const fill = isHovered
-            ? getRegionHoverColor(geoName, data)
-            : getHighlightedRegion(geoName, data);
+            const regionKey = `${geoFeature?.id ?? geoName}-${index}`;
+            const isHovered = hoveredRegionKey === regionKey;
+            const fill = isHovered
+              ? getRegionHoverColor(geoFeature, mapType, dataLookup)
+              : getHighlightedRegion(geoFeature, mapType, dataLookup);
 
-          return (
-            <path
-              key={`${geoFeature?.id ?? geoName}-${index}`}
-              d={pathData}
-              fill={fill}
-              stroke="#D6D6DA"
-              strokeWidth={0.75}
-              onMouseEnter={() => {
-                setHoveredRegionName(geoName);
-                setTooltipContent(getRegionValue(geoName, data));
-              }}
-              onMouseLeave={() => {
-                setHoveredRegionName("");
-                setTooltipContent("");
-              }}
-              style={{ cursor: "pointer", transition: "fill 120ms ease-in-out" }}
-            />
-          );
-        })}
+            return (
+              <path
+                key={regionKey}
+                d={pathData}
+                fill={fill}
+                stroke="#D6D6DA"
+                strokeWidth={0.75}
+                vectorEffect="non-scaling-stroke"
+                onMouseEnter={() => {
+                  setHoveredRegionKey(regionKey);
+                  setTooltipContent(getRegionValue(geoFeature, mapType, dataLookup));
+                }}
+                onMouseLeave={() => {
+                  setHoveredRegionKey("");
+                  setTooltipContent("");
+                }}
+                style={{ cursor: "pointer", transition: "fill 120ms ease-in-out" }}
+              />
+            );
+          })}
+        </g>
       </svg>
     </div>
   );
 };
 
-const Map = (props) => {
+const RegionMap = (props) => {
   const { data, mapSource, mapType } = props;
   const [content, setContent] = useState("");
   return (
@@ -257,17 +525,20 @@ const Map = (props) => {
   );
 };
 
-const renderDataList = (data) => {
-  const list = data?.map((elm) => (
-    <div className="d-flex align-items-center justify-content-between mb-3" key={elm?.name}>
-      <div className="d-flex align-items-center">
-        <Badge color={elm?.color} style={{ marginRight: 10 }} />
-        <Flag code={elm?.countryId} style={{ width: 20, marginRight: 10 }} />
-        <span className="text-gray-light">{elm?.nativeName}</span>
+const renderDataList = (data, mapType) => {
+  const list = data?.map((elm) => {
+    const displayName = getRegionDisplayName(elm, mapType);
+    return (
+      <div className="d-flex align-items-center justify-content-between mb-3" key={`${elm?.countryId || ""}-${elm?.name || displayName}`}>
+        <div className="d-flex align-items-center">
+          <Badge color={elm?.color} style={{ marginRight: 10 }} />
+          <Flag code={elm?.countryId} style={{ width: 20, marginRight: 10 }} />
+          <span className="text-gray-light">{displayName}</span>
+        </div>
+        <span className="font-weight-bold text-dark">{elm?.value}</span>
       </div>
-      <span className="font-weight-bold text-dark">{elm?.value}</span>
-    </div>
-  ));
+    );
+  });
   return list;
 };
 
@@ -281,13 +552,13 @@ export const RegiondataWidget = (props) => {
           <div className="d-flex flex-column p-3 justify-content-between">
             <div>{title && <h4 className="font-weight-bold">{title}</h4>}</div>
             <div>{content}</div>
-            <div>{list ? list : renderDataList(data)}</div>
+            <div>{list ? list : renderDataList(data, mapType)}</div>
           </div>
         </Col>
         <Col xs={24} sm={24} md={24} lg={17}>
           <div className="d-flex flex-column justify-content-center" style={{ minHeight: isMobile ? 200 : 435 }}>
             <div className="p-3 w-100">
-              <Map data={data} mapSource={mapSource} mapType={mapType} />
+              <RegionMap data={data} mapSource={mapSource} mapType={mapType} />
             </div>
           </div>
         </Col>

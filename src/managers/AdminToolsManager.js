@@ -1,9 +1,16 @@
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoAuthService from "services/TitulinoAuthService";
+import TitulinoNetService from "services/TitulinoNetService";
 import LocalStorageService from "services/LocalStorageService";
+import { getGeoMapResource } from "services/GoogleService";
 import AdminInsights from "lob/AdminInsights";
 import StudentProgress from "lob/StudentProgress";
 import LoginFootprint from "lob/LoginFootprint";
+import KnowMeProfiles from "lob/KnowMeProfiles";
+import AdminTools from "lob/AdminTools";
+import ContactProfilesMonitoring from "lob/ContactProfilesMonitoring";
+import ContactProfileEditor from "lob/ContactProfileEditor";
+import LrnConfiguration from "lob/LrnConfiguration";
 import utils from 'utils';
 
 const getTokenFromEmail = async (emailId) => {
@@ -30,16 +37,171 @@ export const initAdminTools = async (emailId) => {
   return { allCourses, allRoles, allEnrollees, allRawCourses: rawCourses };
 };
 
-export const assignRoleToCourse = async (contactInternalId, courseCodeId, roleId, contactEmailId, adminEmailId) => {
+export const hydrateAdminToolAvatarUrls = async (
+  emailId,
+  allEnrollees = [],
+  contactInternalIds = [],
+  existingAvatarUrlMap = {}
+) => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) {
+    return {
+      avatarUrlMap: existingAvatarUrlMap || {},
+      allEnrollees
+    };
+  }
+
+  const contactIdSet = new Set(
+    KnowMeProfiles.extractContactInternalIds(contactInternalIds, value => value)
+  );
+
+  const targetItems = contactIdSet.size > 0
+    ? (allEnrollees || []).filter(item => contactIdSet.has(normalizeIdentifier(item?.ContactInternalId)))
+    : (allEnrollees || []);
+
+  const fetchedAvatarUrlMap = await KnowMeProfiles.getMissingKnowMeProfileUrlMap(
+    token,
+    targetItems,
+    existingAvatarUrlMap,
+    'hydrateAdminToolAvatarUrls',
+    {
+      avatarField: 'AvatarUrl'
+    }
+  );
+
+  const nextAvatarUrlMap = {
+    ...(existingAvatarUrlMap || {}),
+    ...fetchedAvatarUrlMap
+  };
+
+  return {
+    avatarUrlMap: nextAvatarUrlMap,
+    allEnrollees: KnowMeProfiles.mergeKnowMeProfileUrlsIntoItems(
+      allEnrollees,
+      nextAvatarUrlMap,
+      {
+        avatarField: 'AvatarUrl'
+      }
+    )
+  };
+};
+
+export const assignEnrolleeRoleToCourse = async (contactInternalId, courseCodeId, roleId, contactEmailId, adminEmailId) => {
   const token = await getTokenFromEmail(adminEmailId);
   if (!token) return false;
-  return TitulinoAuthService.assignRoleToCourse(contactInternalId, courseCodeId, roleId, contactEmailId, token, 'AdminToolsManager');
+  const payload = AdminTools.buildEnrollExistingContactToCoursePayload({
+    contactInternalId,
+    emailId: contactEmailId,
+    courseCodeId,
+    roleId
+  });
+  return TitulinoAuthService.assignEnrolleeRoleToCourse(payload, token, 'AdminToolsManager');
+};
+
+export const revokeCourseFacilitatorAccess = async (contactInternalId, courseCodeId, contactEmailId, adminEmailId, targetRoleId = 'titulino_user') => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+  const payload = AdminTools.buildUpsertUserRoleCoursePayload({
+    contactInternalId,
+    emailId: contactEmailId,
+    courseCodeId,
+    userRoleId: targetRoleId || 'titulino_user'
+  });
+  return TitulinoAuthService.upsertUserRoleCourse(payload, token, 'AdminToolsManager');
+};
+
+const getGlobalRoleIdFromItem = (item) => {
+  if (!item) return null;
+  if (typeof item === 'string') return item;
+  return item.role || item.Role || item.userRoleId || item.UserRoleId || item.UserRoleID || null;
+};
+
+const isGlobalRoleItem = (item) => {
+  if (!item || typeof item === 'string') return true;
+  if (item.isGlobal === false || item.IsGlobal === false) return false;
+  if (item.isGlobalAccessUserRole === false || item.IsGlobalAccessUserRole === false) return false;
+  return true;
+};
+
+const normalizeGlobalRoleRecord = (item) => {
+  const roleId = getGlobalRoleIdFromItem(item);
+  if (!roleId) return null;
+
+  return {
+    roleId,
+    isGlobalAccessUserRole: typeof item === 'string'
+      ? true
+      : item.isGlobalAccessUserRole ?? item.IsGlobalAccessUserRole ?? item.isGlobal ?? item.IsGlobal ?? true,
+    isActive: typeof item === 'string'
+      ? true
+      : item.isActive ?? item.IsActive ?? true,
+    endDate: typeof item === 'string'
+      ? null
+      : item.endDate || item.EndDate || null
+  };
+};
+
+const normalizeGlobalUserRoleResult = (result, contactInternalId) => {
+  const rawItems = Array.isArray(result)
+    ? result
+    : Array.isArray(result?.roles)
+      ? result.roles
+      : Array.isArray(result?.Roles)
+        ? result.Roles
+        : Array.isArray(result?.globalRoles)
+          ? result.globalRoles
+          : [result];
+
+  const roleRecords = rawItems
+    .filter(isGlobalRoleItem)
+    .map(normalizeGlobalRoleRecord)
+    .filter(Boolean);
+  const roles = Array.from(new Set(
+    roleRecords
+      .filter(record => record.isActive !== false)
+      .map(record => record.roleId)
+  ));
+  const allRoles = Array.from(new Set(roleRecords.map(record => record.roleId)));
+
+  return {
+    contactInternalId,
+    isGlobal: roles.length > 0,
+    role: roles[0] || allRoles[0] || null,
+    roles,
+    allRoles,
+    roleRecords
+  };
+};
+
+export const getGlobalUserRole = async (contactInternalId, adminEmailId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token || !contactInternalId) {
+    return { contactInternalId, isGlobal: false, role: null, roles: [], allRoles: [], roleRecords: [] };
+  }
+
+  const result = await TitulinoAuthService.getGlobalUserRole(contactInternalId, token, 'AdminToolsManager');
+
+  return normalizeGlobalUserRoleResult(result, contactInternalId);
+};
+
+export const upsertGlobalUserRole = async (contactInternalId, roleId, isActive, adminEmailId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+  const payload = AdminTools.buildUpsertUserRoleGlobalPayload({
+    contactInternalId,
+    userRoleId: roleId,
+    isActive
+  });
+  return TitulinoAuthService.upsertUserRoleGlobal(payload, token, 'AdminToolsManager');
 };
 
 export const assignGlobalRole = async (contactInternalId, roleId, adminEmailId) => {
-  const token = await getTokenFromEmail(adminEmailId);
-  if (!token) return false;
-  return TitulinoAuthService.assignGlobalRole(contactInternalId, roleId, token, 'AdminToolsManager');
+  return upsertGlobalUserRole(contactInternalId, roleId, true, adminEmailId);
+};
+
+export const revokeGlobalRole = async (contactInternalId, roleId, adminEmailId) => {
+  return upsertGlobalUserRole(contactInternalId, roleId, false, adminEmailId);
 };
 
 export const upsertCourse = async (courseData, adminEmailId) => {
@@ -148,14 +310,281 @@ export const getAllUserLoginFootprint = async (emailId) => {
   };
 };
 
+export const getContactProfileMonitoring = async (emailId) => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) {
+    return {
+      emailId,
+      optedOutActiveContactProfiles: [],
+      inactiveContactProfiles: [],
+      optedOutActiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel([]),
+      inactiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel([])
+    };
+  }
+
+  const [optedOutActiveContactProfiles, inactiveContactProfiles] = await Promise.all([
+    TitulinoAuthService.getOptedOutActiveContactProfiles(
+      token,
+      'getContactProfileMonitoring'
+    ),
+    TitulinoAuthService.getInactiveContactProfiles(
+      token,
+      'getContactProfileMonitoring'
+    )
+  ]);
+
+  return {
+    emailId,
+    optedOutActiveContactProfiles,
+    inactiveContactProfiles,
+    optedOutActiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel(
+      optedOutActiveContactProfiles
+    ),
+    inactiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel(
+      inactiveContactProfiles
+    )
+  };
+};
+
+const isToggleApiResultSuccessful = (result) => {
+  if (result === true) return true;
+  if (!result) return false;
+  if (Array.isArray(result)) return true;
+  if (result?.success === false || result?.Success === false) return false;
+  return result?.success === true || result?.Success === true || typeof result === 'object' || typeof result === 'string';
+};
+
+const isUpsertApiResultSuccessful = (result) => {
+  if (result === true) return true;
+  if (!result) return false;
+  if (Array.isArray(result)) return result.length > 0;
+  if (result?.success === false || result?.Success === false) return false;
+  return result?.success === true || result?.Success === true || typeof result === 'object' || typeof result === 'string';
+};
+
+const buildToggleMutationResult = (apiResult, payload = [], mutationPatches = {}) => ({
+  success: isToggleApiResultSuccessful(apiResult),
+  apiResult,
+  payload,
+  ...mutationPatches
+});
+
+export const toggleContactEmailOptOut = async (selectedRows, adminEmailId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+
+  const payload = ContactProfilesMonitoring.buildToggleContactEmailOptOutPayload(selectedRows);
+  if (!payload.length) return false;
+
+  const apiResult = await TitulinoAuthService.toggleContactEmailOptOut(
+    payload,
+    token,
+    'AdminToolsManager'
+  );
+
+  return buildToggleMutationResult(apiResult, payload, {
+    contactEmailOptOutPatches: payload.map(item => ({
+      ...item,
+      hasOptedOutOfCommunication: false
+    }))
+  });
+};
+
+export const toggleContactEmailOptOutByContact = async (
+  contactInternalId,
+  emailId,
+  adminEmailId,
+  nextHasOptedOutOfCommunication
+) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+
+  const payload = ContactProfilesMonitoring.buildContactEmailOptOutPayload(contactInternalId, emailId);
+  if (!payload.length) return false;
+
+  const apiResult = await TitulinoAuthService.toggleContactEmailOptOut(
+    payload,
+    token,
+    'AdminToolsManager'
+  );
+
+  return buildToggleMutationResult(apiResult, payload, {
+    contactEmailOptOutPatches: payload.map(item => ({
+      ...item,
+      hasOptedOutOfCommunication: nextHasOptedOutOfCommunication === undefined
+        ? true
+        : nextHasOptedOutOfCommunication
+    }))
+  });
+};
+
+export const toggleContactActive = async (selectedRows, adminEmailId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+
+  const payload = ContactProfilesMonitoring.buildToggleContactActivePayload(selectedRows);
+  if (!payload.length) return false;
+
+  const apiResult = await TitulinoAuthService.toggleContactActive(
+    payload,
+    token,
+    'AdminToolsManager'
+  );
+
+  return buildToggleMutationResult(apiResult, payload, {
+    contactActivePatches: payload.map(item => ({
+      ...item,
+      isActive: true
+    }))
+  });
+};
+
+export const toggleContactActiveByContact = async (contactInternalId, adminEmailId, nextIsActive = false) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) return false;
+
+  const payload = ContactProfilesMonitoring.buildContactActivePayload(contactInternalId);
+  if (!payload.length) return false;
+
+  const apiResult = await TitulinoAuthService.toggleContactActive(
+    payload,
+    token,
+    'AdminToolsManager'
+  );
+
+  return buildToggleMutationResult(apiResult, payload, {
+    contactActivePatches: payload.map(item => ({
+      ...item,
+      isActive: nextIsActive
+    }))
+  });
+};
+
+export const upsertSelectedContactProfile = async (profileUpdate, adminEmailId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token || !profileUpdate?.payload?.length) {
+    return {
+      success: false,
+      submittedEnrollee: null,
+      contactProfilePatch: null,
+      uploadedProfilePicture: null
+    };
+  }
+
+  const submittedEnrollee = await TitulinoAuthService.upsertEnrolleeList(
+    profileUpdate.payload,
+    token,
+    'AdminToolsManager.upsertSelectedContactProfile'
+  );
+  const success = isUpsertApiResultSuccessful(submittedEnrollee);
+  let uploadedProfilePicture = null;
+  let contactProfilePatch = profileUpdate.patch || null;
+
+  const rawProfileFile = profileUpdate?.filesMap?.profilePictureUpload?.[0]?.originFileObj ||
+    profileUpdate?.filesMap?.profilePictureUpload?.[0] ||
+    null;
+
+  if (success && rawProfileFile && contactProfilePatch?.ContactInternalId) {
+    const emailId = profileUpdate?.payload?.[0]?.emailAddress || ContactProfileEditor.getPrimaryContactEmail(contactProfilePatch);
+    const fileToUpload = await LrnConfiguration.buildStudentKnowMeFileName(
+      rawProfileFile,
+      contactProfilePatch.ContactInternalId,
+      emailId,
+      0
+    );
+
+    uploadedProfilePicture = await TitulinoNetService.upsertStudentKnowMeProfileImage(
+      token,
+      fileToUpload,
+      'AdminToolsManager.upsertSelectedContactProfile'
+    );
+
+    const profileUrl = uploadedProfilePicture?.profileUrl || uploadedProfilePicture?.ProfileUrl || null;
+    if (profileUrl) {
+      contactProfilePatch = {
+        ...contactProfilePatch,
+        AvatarUrl: profileUrl,
+        avatarUrl: profileUrl
+      };
+    }
+  }
+
+  return {
+    success,
+    submittedEnrollee,
+    contactProfilePatch,
+    uploadedProfilePicture
+  };
+};
+
+export const uploadCourseCoverImage = async (adminEmailId, file, courseCodeId) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) {
+    return { success: false, imageUrl: null, errorMessage: 'Missing admin token.' };
+  }
+  if (!file) {
+    return { success: false, imageUrl: null, errorMessage: 'No file provided.' };
+  }
+  if (!courseCodeId) {
+    return { success: false, imageUrl: null, errorMessage: 'Missing course code ID.' };
+  }
+  const apiResult = await TitulinoNetService.uploadCourseCoverImage(token, file, courseCodeId, 'AdminToolsManager');
+  if (!apiResult) {
+    return { success: false, imageUrl: null, errorMessage: 'Course cover upload failed.' };
+  }
+  const imageUrl = AdminTools.extractUploadedCoverImageUrl(apiResult);
+  if (!imageUrl) {
+    return { success: false, imageUrl: null, errorMessage: 'Upload response did not include a public image URL.' };
+  }
+  return { success: true, imageUrl, errorMessage: null };
+};
+
+export const getContactGeoMaps = async (selectedContact) => {
+  const bCode = selectedContact?.Location?.BirthLocation?.CountryOfBirth;
+  const bRegion = selectedContact?.Location?.BirthLocation?.CountryDivisionBirthName;
+  const rCode = selectedContact?.Location?.ResidencyLocation?.CountryOfResidency;
+  const rRegion = selectedContact?.Location?.ResidencyLocation?.CountryDivisionResidencyName;
+
+  const birthPromise = (bCode && bRegion)
+    ? getGeoMapResource(bCode, 'AdminTools-Birth').catch(() => null)
+    : Promise.resolve(null);
+  const residencyPromise = (rCode && rRegion)
+    ? (rCode === bCode && bRegion ? birthPromise : getGeoMapResource(rCode, 'AdminTools-Residency').catch(() => null))
+    : Promise.resolve(null);
+
+  const [birth, residency] = await Promise.all([birthPromise, residencyPromise]);
+  return { birth, residency };
+};
+
 const AdminToolsManager = {
   initAdminTools,
-  assignRoleToCourse,
+  assignEnrolleeRoleToCourse,
+  revokeCourseFacilitatorAccess,
+  getGlobalUserRole,
+  upsertGlobalUserRole,
   assignGlobalRole,
+  revokeGlobalRole,
   upsertCourse,
   getContactCourseProgressActivity,
   getContactLoginFootprint,
-  getAllUserLoginFootprint
+  getAllUserLoginFootprint,
+  getContactProfileMonitoring,
+  toggleContactEmailOptOut,
+  toggleContactEmailOptOutByContact,
+  toggleContactActive,
+  toggleContactActiveByContact,
+  upsertSelectedContactProfile,
+  hydrateAdminToolAvatarUrls,
+  getContactGeoMaps,
+  uploadCourseCoverImage,
+  generateCourseCodeId: AdminTools.generateCourseCodeId,
+  buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
+  buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,
+  buildUpsertUserRoleCoursePayload: AdminTools.buildUpsertUserRoleCoursePayload,
+  buildUpsertUserRoleGlobalPayload: AdminTools.buildUpsertUserRoleGlobalPayload,
+  prefillFromTemplate: AdminTools.prefillFromTemplate,
+  isValidHttpUrl: AdminTools.isValidHttpUrl
 };
 
 export default AdminToolsManager;

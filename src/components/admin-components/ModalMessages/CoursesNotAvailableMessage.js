@@ -15,7 +15,7 @@ const CoursesNotAvailableMessage = () => {
       <h2 className="text-2xl font-bold mb-4 text-center">Titulino Languages</h2>
 
       <Alert
-        message={setLocale(locale, "enrollment.coursesNotAvailable")}
+        title={setLocale(locale, "enrollment.coursesNotAvailable")}
         description={
           <>
             <p className="mb-2">

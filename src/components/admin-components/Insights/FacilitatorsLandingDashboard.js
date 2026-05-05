@@ -1,14 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { Row, Col, Card, Tabs, Input, Select, message } from 'antd';
+import { App, Row, Col, Card, Tabs, Input, Select } from 'antd';
 import { useIntl } from 'react-intl';
 import IntlMessage from 'components/util-components/IntlMessage';
 import { faPieChart, faMapPin, faPersonHiking, faListCheck, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { faBook } from '@fortawesome/free-solid-svg-icons';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
-import { onLoadingFacilitadorDashboardContents, onSubmittingAdminEnrolleeProgress, onLoadingFacilitadorDrillDownDemographics } from "redux/actions/Analytics";
+import {
+  onLoadingFacilitadorDashboardContents,
+  onSubmittingAdminEnrolleeProgress,
+  onLoadingFacilitadorDrillDownDemographics,
+  onHydratingAnalyticsAvatars,
+  onLoadingFacilitadorOverviewCardOrder,
+  onSavingFacilitadorOverviewCardOrder
+} from "redux/actions/Analytics";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
 import DoubleCounterDisplayV2 from 'components/layout-components/DoubleCounterDisplayV2';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
@@ -21,9 +28,31 @@ import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTren
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
+import DraggableDashboardGrid from 'components/shared-components/DraggableDashboardGrid';
 import Flag from 'react-world-flags';
 
+const normalizeContactInternalId = (value) => (
+  value == null ? '' : String(value).trim().toLowerCase()
+);
+
+const hasAvatarResolution = (avatarUrlMap = {}, contactInternalId) => (
+  Object.prototype.hasOwnProperty.call(avatarUrlMap || {}, normalizeContactInternalId(contactInternalId))
+);
+
+const tableModelHasMissingAvatarResolutions = (tableModel, avatarUrlMap = {}) => (
+  (tableModel?.tableData || []).some(row => (
+    row?.contactInternalId && !hasAvatarResolution(avatarUrlMap, row.contactInternalId)
+  ))
+);
+
 const coverUrl = 'https://images.unsplash.com/photo-1561089489-f13d5e730d72?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+const defaultOverviewCardOrder = [
+  'enrolledVsProgressing',
+  'genderPercentages',
+  'averageAge',
+  'languageProficiency',
+  'enrolleeType'
+];
 
 const FacilitatorsLandingDashboard = (props) => {
   const {
@@ -41,16 +70,23 @@ const FacilitatorsLandingDashboard = (props) => {
     drillDownDemographicData,
     facilitadorEnrolleeData,
     selectedCourseCodeId,
-    user
+    user,
+    onHydratingAnalyticsAvatars,
+    avatarUrlMap,
+    facilitadorOverviewCardOrder,
+    onLoadingFacilitadorOverviewCardOrder,
+    onSavingFacilitadorOverviewCardOrder
   } = props;
 
   const intl = useIntl();
+  const { message: messageApi } = App.useApp();
   const t = (id) => intl.formatMessage({ id });
   const [activeTabKey, setActiveTabKey] = useState('overview');
   const [loading, setLoading] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [filteredData, setFilteredData] = useState([]);
   const [selectedDemoCountry, setSelectedDemoCountry] = useState(null);
+  const [localOverviewCardOrder, setLocalOverviewCardOrder] = useState(defaultOverviewCardOrder);
 
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
@@ -67,12 +103,46 @@ const FacilitatorsLandingDashboard = (props) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseCodeId, user?.emailId]);
 
+  useEffect(() => {
+    setLocalOverviewCardOrder(defaultOverviewCardOrder);
+
+    if (!courseCodeId || !user?.emailId) {
+      return;
+    }
+
+    onLoadingFacilitadorOverviewCardOrder(
+      user.emailId,
+      courseCodeId,
+      defaultOverviewCardOrder
+    )?.catch((error) => console.error("Error loading facilitador overview card order:", error));
+  }, [courseCodeId, user?.emailId, onLoadingFacilitadorOverviewCardOrder]);
+
+  useEffect(() => {
+    if (facilitadorOverviewCardOrder?.length) {
+      setLocalOverviewCardOrder(facilitadorOverviewCardOrder);
+    }
+  }, [facilitadorOverviewCardOrder]);
+
   // Sync combined table when data changes
   useEffect(() => {    
     if (facilitadorEnrolleeData?.tableData) {
       setFilteredData(facilitadorEnrolleeData.tableData);
     }
   }, [facilitadorEnrolleeData]);
+
+  useEffect(() => {
+    if (
+      activeTabKey !== 'enrollees' ||
+      !user?.emailId ||
+      !tableModelHasMissingAvatarResolutions(facilitadorEnrolleeData, avatarUrlMap)
+    ) {
+      return;
+    }
+
+    onHydratingAnalyticsAvatars(user.emailId, avatarUrlMap, {
+      facilitadorEnrolleeData
+    });
+  }, [activeTabKey, facilitadorEnrolleeData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars]);
 
   // Merged demographics: general in consistent color, progress in distinct colors
   const mergedDemographicData = useMemo(() => {
@@ -121,7 +191,7 @@ const FacilitatorsLandingDashboard = (props) => {
   const handleAdminProgressSubmit = async (formattedData) => {
     try {
       await onSubmittingAdminEnrolleeProgress(formattedData, selectedCourseCodeId, user?.emailId);
-      message.success(t('admin.progressEditable.saveProgress'));
+      messageApi.success(t('admin.progressEditable.saveProgress'));
       if (courseCodeId && user?.emailId) {
         setLoading(true);
         onLoadingFacilitadorDashboardContents(courseCodeId, user.emailId)
@@ -129,7 +199,7 @@ const FacilitatorsLandingDashboard = (props) => {
       }
     } catch (error) {
       console.error("Error submitting progress:", error);
-      message.error("Error saving progress.");
+      messageApi.error("Error saving progress.");
     }
   };
 
@@ -147,6 +217,17 @@ const FacilitatorsLandingDashboard = (props) => {
     }));
   };
 
+  const handleOverviewCardOrderChange = (nextCardOrder) => {
+    setLocalOverviewCardOrder(nextCardOrder);
+
+    onSavingFacilitadorOverviewCardOrder(
+      user?.emailId,
+      courseCodeId,
+      nextCardOrder,
+      defaultOverviewCardOrder
+    )?.catch((error) => console.error("Error saving facilitador overview card order:", error));
+  };
+
     if (user?.emailId && !user?.yearOfBirth) {
       return (
         <div id="unathenticated-landing-page-margin">
@@ -159,9 +240,10 @@ const FacilitatorsLandingDashboard = (props) => {
   const renderOverview = () => {
     const generalData = overviewDashboardData;
     const progressData = overviewProgressDashboardData;
-    return (
-      <Row gutter={[16, 16]}>
-        <Col xs={24} sm={24} md={24} lg={8}>
+    const overviewCards = [
+      {
+        key: 'enrolledVsProgressing',
+        content: (
           <DoubleCounterDisplayV2
             localizedTitle={"facilitador.dashboard.enrolledVsProgressing"}
             firstCount={generalData?.totalEnrollees}
@@ -169,20 +251,41 @@ const FacilitatorsLandingDashboard = (props) => {
             firstLabelKey={"facilitador.dashboard.totalEnrolled"}
             secondLabelKey={"facilitador.dashboard.totalWithProgress"}
           />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8}>
+        )
+      },
+      {
+        key: 'genderPercentages',
+        content: (
           <PieGraph localizedTitle={"admin.dashboard.insights.overview.genderPercentages"} graphData={generalData?.genderPercentages} passedValue={"percentage"} passedType={"sex"} />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8}>
+        )
+      },
+      {
+        key: 'averageAge',
+        content: (
           <CounterDisplay localizedTitle={"admin.dashboard.insights.overview.averageAge"} count={generalData?.averageGeneralAge} />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8}>
+        )
+      },
+      {
+        key: 'languageProficiency',
+        content: (
           <ColumnBar localizedTitle={"admin.dashboard.insights.overview.languageProficiency"} graphData={generalData?.enrolleeProficiencyGroups} passedValue={"count"} passedType={"type"} symbol={""} />
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={8}>
+        )
+      },
+      {
+        key: 'enrolleeType',
+        content: (
           <BarGraph localizedTitle={"admin.dashboard.insights.overview.enrolleeType"} graphData={generalData?.enrolleeTypes} passedValue={"percentage"} passedType={"type"} symbol={"%"} />
-        </Col>
-      </Row>
+        )
+      }
+    ];
+    return (
+      <DraggableDashboardGrid
+        cards={overviewCards}
+        cardOrder={localOverviewCardOrder}
+        onCardOrderChange={handleOverviewCardOrderChange}
+        gutter={[16, 16]}
+        colProps={{ xs: 24, sm: 24, md: 24, lg: 8 }}
+      />
     );
   };
 
@@ -370,7 +473,10 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({
     onLoadingFacilitadorDashboardContents,
     onSubmittingAdminEnrolleeProgress,
-    onLoadingFacilitadorDrillDownDemographics
+    onLoadingFacilitadorDrillDownDemographics,
+    onHydratingAnalyticsAvatars,
+    onLoadingFacilitadorOverviewCardOrder,
+    onSavingFacilitadorOverviewCardOrder
   }, dispatch);
 }
 
@@ -385,7 +491,9 @@ const mapStateToProps = ({ analytics, grant }) => {
     drillDownMapJson,
     drillDownDemographicData,
     enrolleDashboardData,
-    facilitadorEnrolleeData
+    facilitadorEnrolleeData,
+    avatarUrlMap,
+    facilitadorOverviewCardOrder
   } = analytics;
   return {
     selectedCourseCodeId,
@@ -397,6 +505,8 @@ const mapStateToProps = ({ analytics, grant }) => {
     drillDownDemographicData,
     enrolleDashboardData,
     facilitadorEnrolleeData,
+    avatarUrlMap,
+    facilitadorOverviewCardOrder,
     user
   };
 };

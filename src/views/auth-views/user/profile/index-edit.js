@@ -24,7 +24,7 @@ import {
 	SettingOutlined,
 	LoadingOutlined
   } from '@ant-design/icons'; 
-import { Input, Row, Col, Card, Form, Upload, InputNumber, message, Select } from 'antd';
+import { App, Input, Row, Col, Card, Form, Upload, InputNumber, Select } from 'antd';
 import AvatarStatus from '../../../../components/shared-components/AvatarStatus';
 const { Dragger } = Upload;
 const { Option } = Select;
@@ -56,11 +56,11 @@ class Profile extends Component {
 		  const beforeUpload = file => {
 			const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
 			if (!isJpgOrPng) {
-			  message.error('You can only upload JPG/PNG file!');
+			  this.props.messageApi?.error('You can only upload JPG/PNG file!');
 			}
 			const isLt2M = file.size / 1024 / 1024 < 2;
 			if (!isLt2M) {
-			  message.error('Image must smaller than 2MB!');
+			  this.props.messageApi?.error('Image must smaller than 2MB!');
 			}
 			return isJpgOrPng && isLt2M;
 		  }
@@ -268,4 +268,11 @@ const mapStateToProps = ({lrn}) => {
 	return {languageOptions, baseLanguage} 
 };
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Profile));
+const ConnectedProfile = withRouter(connect(mapStateToProps, mapDispatchToProps)(Profile));
+
+const ProfileWithApp = (props) => {
+	const { message } = App.useApp();
+	return <ConnectedProfile {...props} messageApi={message} />;
+};
+
+export default ProfileWithApp;

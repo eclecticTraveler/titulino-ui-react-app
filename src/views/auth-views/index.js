@@ -21,6 +21,7 @@ const AuthSpeaking = lazy(() => retry(() => import(`./course-level/chapter/speak
 const AuthPdfRender = lazy(() => retry(() => import(`./course-level/chapter/pdf-render`)));
 const SharedCourseLevelPractice = lazy(() => retry(() => import(`../shared-views/course-level/chapter/practice`)));
 const ShopWindow = lazy(() => retry(() => import(`./shop-window`)));
+const Enrollment = lazy(() => import(`../app-views/user/enrollment`));
 const Login2 = lazy(() => import(`./authentication/login-2`));
 const Register1 = lazy(() => import(`./authentication/register-1`));
 const Register2 = lazy(() => import(`./authentication/register-2`));
@@ -47,6 +48,7 @@ export const AuthViews = (props) => {
         <Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelPractice} />} />
         <Route path={`terms-conditions`} element={<TermsConditionsCancelSubscription />} />
         <Route path={`shopping`} element={<RouteElement component={ShopWindow} />} />
+        <Route path={`enroll`} element={<RouteElement component={Enrollment} />} />
         {/* <Route path={`profile/edit-profile`} element={<RouteElement component={...} />} /> */}
         {/* <Route path={`login`} element={<Login />} /> */}
         <Route path={`login-2`} element={<RouteElement component={Login2} />} />
@@ -79,4 +81,3 @@ const mapStateToProps = ({ theme, auth, grant }) => {
 };
 
 export default React.memo(connect(mapStateToProps)(AuthViews));
-

@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee, onSelectingEnrollmentCourses } from "redux/actions/Lrn";
-import { Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs  } from "antd";
+import { App, Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs } from "antd";
 import dayjs from "dayjs";
 import Flag from "react-world-flags";
 import CourseDetails from "./CourseDetails";
 import ContactEnrollment from './ContactEnrollment';
+import EnrollmentProfilePictureField, { PROFILE_PICTURE_FIELD_NAME } from "./EnrollmentProfilePictureField";
 import { useIntl } from 'react-intl';
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
 import EnrollmentModal from "./EnrollmentModal";
-import { useHistory } from 'utils/routerCompat';
-
-const { Option } = Select;
 
 export const QuickToFullEnrollment = (props) => {
   const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, baseLanguage, passedEmail, passedDateOfBirth, passedSubmitBtnEnabled,
          onSubmittingEnrollee, selfLanguageLevel, countries, isToDoFullEnrollment, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
   const [form] = Form.useForm();
+  const { message } = App.useApp();
   const [isEmailVisible, setEmailVisible] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(true);
   const [, setEmail] = useState(passedEmail || "");
@@ -40,11 +40,49 @@ export const QuickToFullEnrollment = (props) => {
   const [, setEnrolleeBirthDivision] = useState("");
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
-  const [submittedRecords, setSubmittingRecords] = useState([]);
-  const history = useHistory();
+  const [pendingSubmission, setPendingSubmission] = useState(null);
+  const { executeRecaptcha } = useGoogleReCaptcha();
     console.log("passedEmail ", passedEmail, passedDateOfBirth);
   const intl = useIntl();
   const locale = true;
+  const shouldSkipExistingProfilePictureLookup = (
+    isToProceedToFullEnrollment &&
+    isFindMeSubmitted &&
+    !returningEnrolleeCountryDivisionInfo?.personalCommunicationName
+  );
+
+  const removeEmptyEnrollmentValues = (value) => {
+    if (Array.isArray(value)) {
+      return value
+        .map(removeEmptyEnrollmentValues)
+        .filter((item) => item !== undefined);
+    }
+
+    if (value && typeof value === "object") {
+      const cleanedEntries = Object.entries(value).reduce((accumulator, [key, currentValue]) => {
+        const cleanedValue = removeEmptyEnrollmentValues(currentValue);
+
+        if (
+          cleanedValue === undefined ||
+          cleanedValue === null ||
+          cleanedValue === ""
+        ) {
+          return accumulator;
+        }
+
+        if (Array.isArray(cleanedValue) && cleanedValue.length === 0) {
+          return accumulator;
+        }
+
+        accumulator[key] = cleanedValue;
+        return accumulator;
+      }, {});
+
+      return Object.keys(cleanedEntries).length > 0 ? cleanedEntries : undefined;
+    }
+
+    return value;
+  };
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
     };
@@ -54,25 +92,81 @@ export const QuickToFullEnrollment = (props) => {
         ? getLocaleText(localeKey, defaultMessage) // Uses the new function
         : localeKey.toString(); // Falls back to the key if localization is off
     };  
+
+    const filterOption = (input, option) => (
+      (option?.searchText || "").toLowerCase().includes(input.toLowerCase())
+    );
+
+    const countryOptions = useMemo(() => (
+      (countries || []).map((country) => ({
+        value: country.CountryId,
+        searchText: `${country?.NativeCountryName} | ${country?.CountryName}`,
+        label: (
+          <>
+            <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
+            {`${country?.NativeCountryName} | ${country?.CountryName}`}
+          </>
+        )
+      }))
+    ), [countries]);
+
+    const residencyDivisionOptions = useMemo(() => (
+      (residencyDivisions || []).map((division) => ({
+        value: division?.CountryDivisionId,
+        searchText: division?.CountryDivisionName || "",
+        label: (
+          <>
+            <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
+            {division?.CountryDivisionName}
+          </>
+        )
+      }))
+    ), [residencyDivisions]);
+
+    const birthDivisionOptions = useMemo(() => (
+      (birthDivisions || []).map((division) => ({
+        value: division?.CountryDivisionId,
+        searchText: division?.CountryDivisionName || "",
+        label: (
+          <>
+            <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
+            {division?.CountryDivisionName}
+          </>
+        )
+      }))
+    ), [birthDivisions]);
     
     useEffect(() => {
-      if (submittedRecords?.length > 0) {
-        
-        const upsertFormattedData = async () => {
-          // onSubmittingEnrollee(formattedDatatoSubmit, isToProceedToFullEnrollment);
-          const upsertedRecords = await onSubmittingEnrollee(submittedRecords, null);
-          const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
-          if (wasSuccessful === true) {
-            setIsEnrollmentModalVisible(true);
-          } else if (wasSuccessful === false) {
-            console.log("wasSuccessful", wasSuccessful);
-            setIsEnrollmentModalVisible(false);
+      if (!pendingSubmission?.records?.length) return;
+
+      const upsertFormattedData = async () => {
+        const { records, filesMap, profilePictureContext, recaptchaToken } = pendingSubmission;
+        const upsertedRecords = await onSubmittingEnrollee(
+          records,
+          null,
+          filesMap,
+          profilePictureContext,
+          recaptchaToken
+        );
+        const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
+
+        if (wasSuccessful === true) {
+          if (
+            filesMap?.profilePictureUpload?.length > 0 &&
+            !upsertedRecords?.uploadedProfilePicture?.wasUploaded
+          ) {
+            message.warning(setLocaleString(locale, "enrollment.form.profilePictureUploadFailed"));
           }
-        };
-        upsertFormattedData();
-      }
+          setIsEnrollmentModalVisible(true);
+        } else if (wasSuccessful === false) {
+          console.log("wasSuccessful", wasSuccessful);
+          setIsEnrollmentModalVisible(false);
+        }
+        setSubmittingLoading(false);
+      };
+      upsertFormattedData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [submittedRecords]);
+    }, [pendingSubmission]);
     
   
     const handleCloseModal = () => {
@@ -297,7 +391,7 @@ useEffect(() => {
       countryOfBirth: birthCountryName ?? (matchedInfo.countryOfBirthName || null),
       countryDivisionOfBirth: countryDivisionOfBirth ?? (matchedInfo.countryDivisionIdBirth || null),
       
-      termsVersion: termsAndConditionsVersion || "1.0", // Default version
+      termsVersion: termsAndConditionsVersion || "2.1",
       coursesCodeIds: selectedCourseCodeIds.map(id => ({
         courseCodeId: id,
       })),
@@ -329,8 +423,45 @@ useEffect(() => {
         returningEnrolleeCountryDivisionInfo
       );
 
+      const filesMap = {};
+      const profilePicList = values?.[PROFILE_PICTURE_FIELD_NAME];
+      if (Array.isArray(profilePicList) && profilePicList[0]?.originFileObj) {
+        filesMap[PROFILE_PICTURE_FIELD_NAME] = [profilePicList[0].originFileObj];
+      }
+
+      const profilePictureContext = {
+        emailId:
+          values?.emailAddress ||
+          passedEmail ||
+          returningEnrolleeCountryDivisionInfo?.email ||
+          null,
+        dobOrYob:
+          (isToProceedToFullEnrollment
+            ? (passedDateOfBirth || values?.dateOfBirth?.format?.("YYYY-MM-DD"))
+            : (returningEnrolleeCountryDivisionInfo?.dateOfBirth || values?.yearOfBirth?.format?.("YYYY"))) ||
+          passedDateOfBirth ||
+          null,
+        contactInternalId: returningEnrolleeCountryDivisionInfo?.contactInternalId || null
+      };
+      console.log("profilePictureContext", profilePictureContext, returningEnrolleeCountryDivisionInfo);
+
+      if (!executeRecaptcha) {
+        message.error(setLocaleString(locale, "enrollment.form.recaptchaNotReady", "reCAPTCHA not ready. Please try again."));
+        return;
+      }
+      const recaptchaToken = await executeRecaptcha("enrollment_submit");
+      if (!recaptchaToken) {
+        message.error(setLocaleString(locale, "enrollment.form.recaptchaFailed", "Could not verify reCAPTCHA. Please try again."));
+        return;
+      }
+
       setSubmittingLoading(true);
-      setSubmittingRecords(formattedDatatoSubmit);
+      setPendingSubmission({
+        records: formattedDatatoSubmit,
+        filesMap,
+        profilePictureContext,
+        recaptchaToken
+      });
       console.log("formattedDatatoSubmit", formattedDatatoSubmit);
 
     } catch (error) {
@@ -365,9 +496,8 @@ useEffect(() => {
     setResetChildStates(null);
     onResetSubmittingEnrollee(undefined);
     setSubmittingLoading(false);
-    setSubmittingRecords([]); 
+    setPendingSubmission(null);
     onSelectingEnrollmentCourses([]);
-    history.push("/");
   };
   
 
@@ -428,6 +558,7 @@ useEffect(() => {
 
   const converUrl = "https://images.unsplash.com/photo-1519406596751-0a3ccc4937fe?q=80&w=3870&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
   const enrollmentVersion = "v2.0";
+  const termsVersionLabel = "v3.1";
  
   return (
     <div className="container customerName">
@@ -632,7 +763,7 @@ useEffect(() => {
                   initialValue={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId ?? undefined}               
                   >
                   <Select
-                    showSearch={{ optionFilterProp: "label" }}
+                    showSearch={{ optionFilterProp: "searchText", filterOption }}
                     placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
                     size="large"
                     onChange={(value) => {
@@ -640,14 +771,8 @@ useEffect(() => {
                       setDivisions([]); // Reset divisions for residence
                       form.setFieldsValue({ countryDivisionOfResidence: null }); // Clear form division value
                     }}
-                  >
-                    {props.countries?.map((country) => (
-                      <Option key={country.CountryId} value={country.CountryId} label={`${country?.NativeCountryName} | ${country?.CountryName}`}>
-                        <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
-                        {`${country?.NativeCountryName} | ${country?.CountryName}`}
-                      </Option>
-                    ))}
-                  </Select>
+                    options={countryOptions}
+                  />
                 </Form.Item>
 
                 {selectedCountryOfResidence && residencyDivisions?.length > 0 && (
@@ -657,20 +782,14 @@ useEffect(() => {
                   
                   >
                     <Select
-                      showSearch={{ optionFilterProp: "label" }}
+                      showSearch={{ optionFilterProp: "searchText", filterOption }}
                       placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegion" })}
                       size="large"
                       onChange={(value) => {
                         setEnrolleeResidencyDivision(value);
                       }}
-                    >
-                      {residencyDivisions?.map((division) => (
-                        <Option key={division?.CountryDivisionId} value={division?.CountryDivisionId} label={division?.CountryDivisionName}>
-                          <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
-                          {division?.CountryDivisionName}
-                        </Option>
-                      ))}
-                    </Select>
+                      options={residencyDivisionOptions}
+                    />
                   </Form.Item>
                 )}
 
@@ -687,21 +806,15 @@ useEffect(() => {
                 initialValue={returningEnrolleeCountryDivisionInfo?.countryOfBirthId ?? undefined}
               >
                 <Select
-                  showSearch={{ optionFilterProp: "label" }}
+                  showSearch={{ optionFilterProp: "searchText", filterOption }}
                   placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
                   onChange={(value) => {
                     setSelectedBirthCountry(value);
                     setBirthDivisions([]);
                     form.setFieldsValue({ countryDivisionOfBirth: null });
                   }}
-                >
-                  {props.countries?.map((country) => (
-                    <Option key={country.CountryId} value={country.CountryId} label={`${country.NativeCountryName} | ${country.CountryName}`}>
-                      <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
-                      {`${country.NativeCountryName} | ${country.CountryName}`}
-                    </Option>
-                  ))}
-                </Select>
+                  options={countryOptions}
+                />
               </Form.Item>
 
             {selectedBirthCountry && birthDivisions?.length > 0 && (
@@ -712,19 +825,13 @@ useEffect(() => {
                 initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth ?? undefined}
               >
                 <Select
-                  showSearch={{ optionFilterProp: "label" }}
+                  showSearch={{ optionFilterProp: "searchText", filterOption }}
                   placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegionOfBirth" })}
                   onChange={(value) => {
                     setEnrolleeBirthDivision(value);
                   }}
-                >
-                  {birthDivisions?.map((division) => (
-                    <Option key={division.CountryDivisionId} value={division.CountryDivisionId} label={division.CountryDivisionName}>
-                      <Flag code={division.CountryId} style={{ width: 20, marginRight: 10 }} />
-                      {division.CountryDivisionName}
-                    </Option>
-                  ))}
-                </Select>
+                  options={birthDivisionOptions}
+                />
               </Form.Item>
             )}
           </>
@@ -798,6 +905,17 @@ useEffect(() => {
           );
         })()}
 
+          {!isToProceedToFullEnrollment && isSubmitEnabled && (
+            <EnrollmentProfilePictureField
+              isEnabled={true}
+              emailId={form.getFieldValue("emailAddress") || passedEmail}
+              dobOrYob={form.getFieldValue("yearOfBirth")?.format?.("YYYY")}
+              contactInternalId={returningEnrolleeCountryDivisionInfo?.contactInternalId || null}
+              enrollmentStyle={quickEnrollmentStyle}
+              submittingLoading={submittingLoading}
+            />
+          )}
+
 
           { isToProceedToFullEnrollment && (                         
               <ContactEnrollment 
@@ -810,6 +928,9 @@ useEffect(() => {
                 enrollmentStyle={quickEnrollmentStyle}
                 submittingLoading={submittingLoading}
                 selectedDateOfBirth={passedDateOfBirth}
+                isProfilePictureRequirementEnabled={true}
+                profilePictureContactInternalId={returningEnrolleeCountryDivisionInfo?.contactInternalId || null}
+                skipExistingProfilePictureLookup={shouldSkipExistingProfilePictureLookup}
                 />
 
             )
@@ -817,7 +938,7 @@ useEffect(() => {
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined">
               <p>
-                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {enrollmentVersion} - 
+                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {termsVersionLabel} -
                 <TermsModal />{" "}
                 - {setLocale(locale, "enrollment.form.ofUseAndPrivacyPolicy")}
               </p>

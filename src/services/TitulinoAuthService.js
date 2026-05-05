@@ -321,18 +321,120 @@ export const getUserRoles = async (token, whoCalledMe = 'getUserRoles') => {
   }
 };
 
-export const assignRoleToCourse = async (contactInternalId, courseCodeId, roleId, emailId, token, whoCalledMe = 'assignRoleToCourse') => {
-  if (!token || !contactInternalId || !courseCodeId || !roleId) {
+export const assignEnrolleeRoleToCourse = async (payload, token, whoCalledMe = 'assignEnrolleeRoleToCourse') => {
+  if (!token || !Array.isArray(payload) || payload.length === 0) {
     console.warn(`[${whoCalledMe}] Missing required params`);
     return false;
   }
-  const url = `${SupabaseConfig.baseApiUrl}/AssignRoleToCourse`;
+  const url = `${SupabaseConfig.baseApiUrl}/EnrollExistingContactToCourse`;
+  const requestBody = { p_payload: payload };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] assignEnrolleeRoleToCourse endpoint:`, url);
+    console.log(`[${whoCalledMe}] assignEnrolleeRoleToCourse payload:`, requestBody);
+  }
+
   const requestOptions = {
     method: 'POST',
     headers: getHeaders(token),
-    body: JSON.stringify({ p_contact_internal_id: contactInternalId, p_course_code_id: courseCodeId, p_role_id: roleId, p_email: emailId }),
+    body: JSON.stringify(requestBody),
     redirect: 'follow',
   };
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    return (await response.json()) ?? false;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
+export const upsertUserRoleCourse = async (payload, token, whoCalledMe = 'upsertUserRoleCourse') => {
+  if (!token || !Array.isArray(payload) || payload.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+  const url = `${SupabaseConfig.baseApiUrl}/UpsertUserRoleCourse`;
+  const requestBody = { p_payload: payload };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] upsertUserRoleCourse endpoint:`, url);
+    console.log(`[${whoCalledMe}] upsertUserRoleCourse payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    return (await response.json()) ?? false;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
+export const getGlobalUserRole = async (contactInternalId, token, whoCalledMe = 'getGlobalUserRole') => {
+  if (!token || !contactInternalId) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return { isGlobal: false, role: null };
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/GetGlobalUserRole`;
+  const requestBody = { p_contact_id: contactInternalId };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] getGlobalUserRole endpoint:`, url);
+    console.log(`[${whoCalledMe}] getGlobalUserRole payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return { isGlobal: false, role: null };
+    const apiResult = await response.json();
+    if (env.ENVIROMENT !== 'prod') {
+      console.log(`[${whoCalledMe}] getGlobalUserRole response:`, apiResult);
+    }
+    return apiResult || { isGlobal: false, role: null };
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return { isGlobal: false, role: null };
+  }
+};
+
+export const upsertUserRoleGlobal = async (payload, token, whoCalledMe = 'upsertUserRoleGlobal') => {
+  if (!token || !Array.isArray(payload) || payload.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/UpsertUserRoleGlobal`;
+  const requestBody = { p_payload: payload };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] upsertUserRoleGlobal endpoint:`, url);
+    console.log(`[${whoCalledMe}] upsertUserRoleGlobal payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+
   try {
     const response = await fetch(url, requestOptions);
     if (!response.ok) return false;
@@ -366,21 +468,66 @@ export const assignGlobalRole = async (contactInternalId, roleId, token, whoCall
 };
 
 export const upsertCourse = async (courseData, token, whoCalledMe = 'upsertCourse') => {
-  if (!token || !courseData) return false;
+  if (!token || !courseData) {
+    return {
+      success: false,
+      data: null,
+      status: null,
+      errorMessage: 'Missing token or course data.',
+    };
+  }
   const url = `${SupabaseConfig.baseApiUrl}/UpsertCourse`;
   const requestOptions = {
     method: 'POST',
     headers: getHeaders(token),
-    body: JSON.stringify({ course_data: courseData }),
+    body: JSON.stringify({ p_courses_json: courseData }),
     redirect: 'follow',
   };
   try {
     const response = await fetch(url, requestOptions);
-    if (!response.ok) return false;
-    return (await response.json()) ?? false;
+    const responseText = await response.text();
+    let parsedResult = null;
+
+    if (responseText) {
+      try {
+        parsedResult = JSON.parse(responseText);
+      } catch (parseError) {
+        parsedResult = responseText;
+      }
+    }
+
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') {
+        console.warn(`[${whoCalledMe}] upsertCourse failed with status ${response.status}`);
+        console.warn(`[${whoCalledMe}] upsertCourse response body:`, parsedResult);
+      }
+
+      return {
+        success: false,
+        data: parsedResult,
+        status: response.status,
+        errorMessage:
+          parsedResult?.message ||
+          parsedResult?.Message ||
+          response.statusText ||
+          'Course upsert failed.',
+      };
+    }
+
+    return {
+      success: true,
+      data: parsedResult,
+      status: response.status,
+      errorMessage: null,
+    };
   } catch (error) {
     console.error(`[${whoCalledMe}] Exception:`, error);
-    return false;
+    return {
+      success: false,
+      data: null,
+      status: null,
+      errorMessage: error?.message || 'Course upsert failed.',
+    };
   }
 };
 
@@ -405,8 +552,7 @@ export const getAllUserLoginFootprint = async (token, whoCalledMe = 'getAllUserL
       return _results;
     }
 
-    const apiResult = await response.json();
-    console.log("getAllUserLoginFootprint apiResult", apiResult);
+    const apiResult = await response.json();    
     return Array.isArray(apiResult) ? apiResult : _results;
   } catch (error) {
     console.error(`[${whoCalledMe}] Exception:`, error);
@@ -444,6 +590,176 @@ export const getUserLoginFootprintByContact = async (contactInternalId, token, w
   }
 };
 
+export const getOptedOutActiveContactProfiles = async (token, whoCalledMe = 'getOptedOutActiveContactProfiles') => {
+  if (!token) {
+    console.warn(`[${whoCalledMe}] Missing token`);
+    return _results;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/GetOptedOutActiveContactProfiles`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({}),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') console.warn(`[${whoCalledMe}] status ${response.status}`);
+      return _results;
+    }
+
+    const apiResult = await response.json();
+    return Array.isArray(apiResult) ? apiResult : _results;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return _results;
+  }
+};
+
+export const getInactiveContactProfiles = async (token, whoCalledMe = 'getInactiveContactProfiles') => {
+  if (!token) {
+    console.warn(`[${whoCalledMe}] Missing token`);
+    return _results;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/GetInactiveContactProfiles`;
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify({}),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') console.warn(`[${whoCalledMe}] status ${response.status}`);
+      return _results;
+    }
+
+    const apiResult = await response.json();
+    return Array.isArray(apiResult) ? apiResult : _results;
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return _results;
+  }
+};
+
+export const toggleContactEmailOptOut = async (payload, token, whoCalledMe = 'toggleContactEmailOptOut') => {
+  if (!token || !Array.isArray(payload) || payload.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/ToggleContactEmailOptOut`;
+  const requestBody = { p_payload: payload };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] toggleContactEmailOptOut endpoint:`, url);
+    console.log(`[${whoCalledMe}] toggleContactEmailOptOut payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    const responseText = await response.text();
+    if (!responseText) return true;
+    try {
+      return JSON.parse(responseText);
+    } catch {
+      return responseText;
+    }
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
+export const toggleContactActive = async (payload, token, whoCalledMe = 'toggleContactActive') => {
+  if (!token || !Array.isArray(payload) || payload.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/ToggleContactActive`;
+  const requestBody = { p_payload: payload };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] toggleContactActive endpoint:`, url);
+    console.log(`[${whoCalledMe}] toggleContactActive payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    const responseText = await response.text();
+    if (!responseText) return true;
+    try {
+      return JSON.parse(responseText);
+    } catch {
+      return responseText;
+    }
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
+export const upsertEnrolleeList = async (enrollees, token, whoCalledMe = 'upsertEnrolleeList') => {
+  const recordsToSubmit = Array.isArray(enrollees) ? enrollees : [];
+  if (!token || recordsToSubmit.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing required params`);
+    return false;
+  }
+
+  const url = `${SupabaseConfig.baseApiUrl}/UpsertEnrolleeList`;
+  const requestBody = { enrollees: recordsToSubmit };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] upsertEnrolleeList endpoint:`, url);
+    console.log(`[${whoCalledMe}] upsertEnrolleeList payload:`, requestBody);
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: JSON.stringify(requestBody),
+    redirect: 'follow',
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return false;
+    const responseText = await response.text();
+    if (!responseText) return true;
+    try {
+      return JSON.parse(responseText);
+    } catch {
+      return responseText;
+    }
+  } catch (error) {
+    console.error(`[${whoCalledMe}] Exception:`, error);
+    return false;
+  }
+};
+
 
 const TitulinoAuthService = {
   getCourseProgress,
@@ -454,11 +770,19 @@ const TitulinoAuthService = {
   upsertUserKnowMeSubmission,
   getAllEnrollees,
   getUserRoles,
-  assignRoleToCourse,
+  assignEnrolleeRoleToCourse,
+  upsertUserRoleCourse,
+  getGlobalUserRole,
+  upsertUserRoleGlobal,
   assignGlobalRole,
   upsertCourse,
   getAllUserLoginFootprint,
-  getUserLoginFootprintByContact
+  getUserLoginFootprintByContact,
+  getOptedOutActiveContactProfiles,
+  getInactiveContactProfiles,
+  toggleContactEmailOptOut,
+  toggleContactActive,
+  upsertEnrolleeList
 };
 
 export default TitulinoAuthService;

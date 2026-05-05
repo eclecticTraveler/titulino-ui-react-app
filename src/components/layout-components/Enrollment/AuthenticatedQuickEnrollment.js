@@ -1,171 +1,267 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
-import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee, onSelectingEnrollmentCourses } from "redux/actions/Lrn";
-import { Form, Select, Button, Card, Row, Col, Radio, Space, Tabs  } from "antd";
+import {
+  onRenderingCourseRegistration,
+  onSearchingForAlreadyEnrolledContact,
+  onRequestingGeographicalDivision,
+  onSubmittingAuthenticatedEnrollee,
+  onResetSubmittingEnrollee,
+  onSelectingEnrollmentCourses
+} from "redux/actions/Lrn";
+import { Form, Select, Button, Card, Row, Col, Radio, Space, Tabs } from "antd";
 import Flag from "react-world-flags";
 import CourseDetails from "./CourseDetails";
-import { useIntl } from 'react-intl';
+import EnrollmentProfilePictureField, { PROFILE_PICTURE_FIELD_NAME } from "./EnrollmentProfilePictureField";
+import { useIntl } from "react-intl";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import IntlMessage from "components/util-components/IntlMessage";
 import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
 import EnrollmentModal from "./EnrollmentModal";
-import { useHistory } from 'utils/routerCompat';
-
-const { Option } = Select;
+import { env } from "configs/EnvironmentConfig";
+import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
 
 export const AuthenticatedQuickEnrollment = (props) => {
-  const { availableCourses, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, baseLanguage, passedSubmitBtnEnabled,
-         onSubmittingEnrollee, selfLanguageLevel, countries, user, token, selectedCoursesToEnroll, onSelectingEnrollmentCourses } = props;
+  const {
+    availableCourses,
+    onSearchingForAlreadyEnrolledContact,
+    onRequestingGeographicalDivision,
+    baseLanguage,
+    passedSubmitBtnEnabled,
+    onSubmittingAuthenticatedEnrollee,
+    selfLanguageLevel,
+    countries,
+    user,
+    token,
+    selectedCoursesToEnroll,
+    onSelectingEnrollmentCourses
+  } = props;
   const [form] = Form.useForm();
-  const [isConfirmVisible, setConfirmVisible] = useState(false);
+  const [, setConfirmVisible] = useState(false);
   const [isGeographyInfoVisible, setGeographyInfoVisible] = useState(false);
   const [selectedCountryOfResidence, setSelectedCountryOfResidence] = useState(null);
   const [selectedBirthCountry, setSelectedBirthCountry] = useState(null);
-  const [residencyDivisions, setDivisions] = useState([]); // Load divisions based on selected country
+  const [residencyDivisions, setDivisions] = useState([]);
   const [birthDivisions, setBirthDivisions] = useState([]);
   const [isSubmitEnabled, setSubmitEnabled] = useState(passedSubmitBtnEnabled ?? false);
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [returningEnrolleeCountryDivisionInfo, setReturningEnrolleeCountryDivisionInfo] = useState(null);
-  const [enrolleeResidencyDivision, setEnrolleeResidencyDivision] = useState("");
-  const [enrolleeBirthDivision, setEnrolleeBirthDivision] = useState("");
+  const [, setEnrolleeResidencyDivision] = useState("");
+  const [, setEnrolleeBirthDivision] = useState("");
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
-  const [submittedRecords, setSubmittingRecords] = useState([]);
-  const history = useHistory();
+  const [pendingSubmission, setPendingSubmission] = useState(null);
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const intl = useIntl();
   const locale = true;
+  const termsVersionLabel = "v2.1";
+  const hasAuthenticatedEnrollmentProfile = !!user?.contactId && !!user?.emailId;
+  const profilePictureToken = user?.innerToken || null;
+  const profilePictureContactInternalId = user?.contactInternalId || returningEnrolleeCountryDivisionInfo?.contactInternalId || null;
 
+  const setLocale = (isLocaleOn, localeKey) => (
+    isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString()
+  );
 
-    const setLocale = (isLocaleOn, localeKey) => {
-      return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-    };
+  const setLocaleString = (isLocaleOn, localeKey, defaultMessage = "") => (
+    isLocaleOn
+      ? getLocaleText(localeKey, defaultMessage)
+      : localeKey.toString()
+  );
 
-    const setLocaleString = (isLocaleOn, localeKey, defaultMessage = "") => {
-      return isLocaleOn
-        ? getLocaleText(localeKey, defaultMessage) // Uses the new function
-        : localeKey.toString(); // Falls back to the key if localization is off
-    };  
-    
-    useEffect(() => {
-      if (submittedRecords?.length > 0) {    
-        const upsertFormattedData = async () => {
-          const upsertedRecords = await onSubmittingEnrollee(submittedRecords, null);
-          const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
-          if (wasSuccessful === true) {
-            setIsEnrollmentModalVisible(true);
-          } else if (wasSuccessful === false) {
-            console.log("wasSuccessful", wasSuccessful);
-            setIsEnrollmentModalVisible(false);
-          }
-        };
-        upsertFormattedData();
+  const filterOption = (input, option) => (
+    (option?.searchText || "").toLowerCase().includes(input.toLowerCase())
+  );
+
+  const countryOptions = useMemo(() => (
+    (countries || []).map((country) => ({
+      value: country.CountryId,
+      searchText: `${country?.NativeCountryName} | ${country?.CountryName}`,
+      label: (
+        <>
+          <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
+          {`${country?.NativeCountryName} | ${country?.CountryName}`}
+        </>
+      )
+    }))
+  ), [countries]);
+
+  const residencyDivisionOptions = useMemo(() => (
+    (residencyDivisions || []).map((division) => ({
+      value: division?.CountryDivisionId,
+      searchText: division?.CountryDivisionName || "",
+      label: (
+        <>
+          <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
+          {division?.CountryDivisionName}
+        </>
+      )
+    }))
+  ), [residencyDivisions]);
+
+  const birthDivisionOptions = useMemo(() => (
+    (birthDivisions || []).map((division) => ({
+      value: division?.CountryDivisionId,
+      searchText: division?.CountryDivisionName || "",
+      label: (
+        <>
+          <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
+          {division?.CountryDivisionName}
+        </>
+      )
+    }))
+  ), [birthDivisions]);
+
+  useEffect(() => {
+    if (!pendingSubmission?.records?.length) return;
+
+    const upsertFormattedData = async () => {
+      const { records, filesMap, recaptchaToken } = pendingSubmission;
+      const upsertedRecords = await onSubmittingAuthenticatedEnrollee(records, filesMap, user, recaptchaToken);
+      const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
+
+      if (wasSuccessful === true) {
+        setIsEnrollmentModalVisible(true);
+      } else if (wasSuccessful === false) {
+        console.log("wasSuccessful", wasSuccessful);
+        setIsEnrollmentModalVisible(false);
       }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [submittedRecords]);
-    
-  
-    const handleCloseModal = () => {
-      setIsEnrollmentModalVisible(false); // Close modal when user clicks close button
-      resetQuickEnrollmentInputValues();
+
+      setSubmittingLoading(false);
     };
+
+    upsertFormattedData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSubmission]);
+
+  const handleCloseModal = () => {
+    setIsEnrollmentModalVisible(false);
+    resetQuickEnrollmentInputValues();
+  };
 
   useEffect(() => {
     const checkFormValidity = async () => {
       try {
-        await form.validateFields(); // Trigger validation for all fields
-        //setSubmitEnabled(true); 
+        await form.validateFields();
       } catch (error) {
         console.log("Form invalid", error);
       }
     };
 
-    checkFormValidity(); // Run validation on form change
+    checkFormValidity();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form]);
 
   useEffect(() => {
-    if(returningEnrolleeCountryDivisionInfo?.countryOfResidencyId){
-      setSelectedCountryOfResidence(returningEnrolleeCountryDivisionInfo?.countryOfResidencyId)
+    if (returningEnrolleeCountryDivisionInfo?.countryOfResidencyId) {
+      setSelectedCountryOfResidence(returningEnrolleeCountryDivisionInfo?.countryOfResidencyId);
     }
 
-    if(returningEnrolleeCountryDivisionInfo?.countryOfBirthId){
-      setSelectedBirthCountry(returningEnrolleeCountryDivisionInfo?.countryOfBirthId)
+    if (returningEnrolleeCountryDivisionInfo?.countryOfBirthId) {
+      setSelectedBirthCountry(returningEnrolleeCountryDivisionInfo?.countryOfBirthId);
     }
 
     setConfirmVisible(true);
   }, [returningEnrolleeCountryDivisionInfo]);
 
+  useEffect(() => {
+    if (selectedCountryOfResidence) {
+      const fetchDivisions = async () => {
+        const divisions = await onRequestingGeographicalDivision(selectedCountryOfResidence);
+        const divisionList = Array.isArray(divisions?.countryDivisions) ? divisions?.countryDivisions : [];
+        setDivisions(divisionList);
 
-useEffect(() => {
-  if (selectedCountryOfResidence) {
-    const fetchDivisions = async () => {
-      const divisions = await onRequestingGeographicalDivision(selectedCountryOfResidence);
-      const divisionList = Array.isArray(divisions?.countryDivisions) ? divisions?.countryDivisions : [];
-      setDivisions(divisionList);
-      
-      // Clear the field if no divisions are available
-      if (divisionList?.length === 0) {
-        form.setFieldsValue({ countryDivisionOfResidence: null });
-      }
-    };
-    fetchDivisions();
-  } else {
-    setDivisions([]); // Reset if no country is selected
-  }
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [selectedCountryOfResidence]);
-
-useEffect(() => {
-  if (selectedBirthCountry) {
-    const fetchBirthDivisions = async () => {
-      const birthDivisions = await onRequestingGeographicalDivision(selectedBirthCountry);
-      const divisionList = Array.isArray(birthDivisions?.countryDivisions) ? birthDivisions?.countryDivisions : [];
-      setBirthDivisions(divisionList);
-
-      // Clear the field if no divisions are available
-      if (divisionList?.length === 0) {
-        form.setFieldsValue({ countryDivisionOfBirth: null });
-      }
-    };
-    fetchBirthDivisions();
-  } else {
-    setBirthDivisions([]); // Reset if no country is selected
-  }
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [selectedBirthCountry]);
-
-useEffect(() => {
-
-  if (token && user?.contactId) {
-    const onFindMe = async () => {
-      setSubmitEnabled(false);
-      setLoading(true); // Start loading
-      const year = user?.yearOfBirth;
-      const email = user?.emailId;
-      if (year && email) {
-        try {
-          const enrolleeInformation = await onSearchingForAlreadyEnrolledContact(email, year);
-          setReturningEnrolleeCountryDivisionInfo(enrolleeInformation?.returningEnrollee ?? null);          
-          if(enrolleeInformation?.returningEnrollee?.contactExternalId){
-            setGeographyInfoVisible(true);
-            setSubmitEnabled(true);
-          }
-        } catch (error) {
-          console.error("Error searching for enrollee:", error);
-          setReturningEnrolleeCountryDivisionInfo(null); // Handle errors gracefully
+        if (divisionList?.length === 0) {
+          form.setFieldsValue({ countryDivisionOfResidence: null });
         }
-      } 
-      setLoading(false); // Stop loading
-    };
+      };
+      fetchDivisions();
+    } else {
+      setDivisions([]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCountryOfResidence]);
 
-    onFindMe();
-  }
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [token, user?.contactId]);
+  useEffect(() => {
+    if (selectedBirthCountry) {
+      const fetchBirthDivisions = async () => {
+        const birthCountryDivisions = await onRequestingGeographicalDivision(selectedBirthCountry);
+        const divisionList = Array.isArray(birthCountryDivisions?.countryDivisions) ? birthCountryDivisions?.countryDivisions : [];
+        setBirthDivisions(divisionList);
 
- 
-const formatSubmissionData = (
+        if (divisionList?.length === 0) {
+          form.setFieldsValue({ countryDivisionOfBirth: null });
+        }
+      };
+      fetchBirthDivisions();
+    } else {
+      setBirthDivisions([]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBirthCountry]);
+
+  useEffect(() => {
+    if (token && user?.contactId) {
+      const onFindMe = async () => {
+        setSubmitEnabled(false);
+        setLoading(true);
+        const year = user?.yearOfBirth;
+        const email = user?.emailId;
+
+        if (year && email) {
+          try {
+            const enrolleeInformation = await onSearchingForAlreadyEnrolledContact(email, year);
+            setReturningEnrolleeCountryDivisionInfo(enrolleeInformation?.returningEnrollee ?? null);
+
+            if (enrolleeInformation?.returningEnrollee?.contactExternalId) {
+              setGeographyInfoVisible(true);
+              setSubmitEnabled(true);
+            } else if (hasAuthenticatedEnrollmentProfile) {
+              setGeographyInfoVisible(true);
+              setSubmitEnabled(true);
+            }
+          } catch (error) {
+            console.error("Error searching for enrollee:", error);
+            setReturningEnrolleeCountryDivisionInfo(null);
+            if (hasAuthenticatedEnrollmentProfile) {
+              setGeographyInfoVisible(true);
+              setSubmitEnabled(true);
+            }
+          }
+        }
+
+        setLoading(false);
+      };
+
+      onFindMe();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, user?.contactId, hasAuthenticatedEnrollmentProfile]);
+
+  useEffect(() => {
+    if (env.ENVIROMENT !== "prod" && isGeographyInfoVisible && isSubmitEnabled) {
+      console.log("[AuthenticatedQuickEnrollment] profilePictureContext", {
+        emailId: user?.emailId || null,
+        yearOfBirth: user?.yearOfBirth || null,
+        contactInternalId: profilePictureContactInternalId,
+        hasUserInnerToken: !!user?.innerToken,
+        hasAuthToken: !!token,
+        isUsingProfilePictureToken: !!profilePictureToken
+      });
+    }
+  }, [
+    isGeographyInfoVisible,
+    isSubmitEnabled,
+    user?.emailId,
+    user?.yearOfBirth,
+    user?.innerToken,
+    token,
+    profilePictureContactInternalId,
+    profilePictureToken
+  ]);
+
+  const formatSubmissionData = (
     values,
     {
       baseLanguage,
@@ -173,9 +269,8 @@ const formatSubmissionData = (
       countries
     },
     matchedEnrolleeInfo,
-    user
+    userInfo
   ) => {
-  
     const {
       lastNames,
       names,
@@ -187,174 +282,184 @@ const formatSubmissionData = (
       countryDivisionOfBirth,
       termsAndConditionsVersion
     } = values;
-    
-    // Extract properties from matchedEnrolleeInfo
+
     const matchedInfo = matchedEnrolleeInfo || {};
 
-    // Unfortunate temp fix until I refactor taking ids instead of Alpha3s
     const birthCountryName = countries
-    ?.find(country => country.CountryId === countryOfBirth)
-    ?.CountryName || null;
-    
-    const residencyCountryName = countries
-      ?.find(country => country.CountryId === countryOfResidence)
+      ?.find((country) => country.CountryId === countryOfBirth)
       ?.CountryName || null;
- 
+
+    const residencyCountryName = countries
+      ?.find((country) => country.CountryId === countryOfResidence)
+      ?.CountryName || null;
+
     let enrolleeDob;
-    // Convert dateOfBirth to year if it's a Moment object
-    const submittedYear = user?.yearOfBirth ? user?.yearOfBirth : null;
-    const matchedYearOfBirth = matchedInfo?.dateOfBirth 
-    ? new Date(matchedInfo.dateOfBirth).getUTCFullYear()
-    : null;
-    if(submittedYear === matchedYearOfBirth){
-      enrolleeDob = matchedInfo?.dateOfBirth
+    const submittedYear = userInfo?.yearOfBirth || null;
+    const matchedYearOfBirth = matchedInfo?.dateOfBirth
+      ? new Date(matchedInfo.dateOfBirth).getUTCFullYear()
+      : null;
+    if (submittedYear === matchedYearOfBirth) {
+      enrolleeDob = matchedInfo?.dateOfBirth;
     }
 
-    const selectedCourseCodeIds = (enrolledCourses || []).map(c => c?.CourseCodeId);
+    const selectedCourseCodeIds = (enrolledCourses || []).map((course) => course?.CourseCodeId);
 
     const selectedCourseObjects = enrolledCourses || [];
-  
+
     const distinctLanguageTargets = new Set(
       selectedCourseObjects
-        ?.map(course => course?.TargetLanguageId)
+        ?.map((course) => course?.TargetLanguageId)
         .filter(Boolean)
     );
-    
+
     const languageProficiencies = [
       {
-        languageId: baseLanguage?.localeCode || 'na',
-        languageLevelAbbreviation: 'na',
+        languageId: baseLanguage?.localeCode || "na",
+        languageLevelAbbreviation: "na"
       },
-      ...Array.from(distinctLanguageTargets).map(languageId => {
+      ...Array.from(distinctLanguageTargets).map((languageId) => {
         const formKey =
           distinctLanguageTargets.size === 1
-            ? 'languageLevelAbbreviation'
+            ? "languageLevelAbbreviation"
             : `languageLevelAbbreviation_${languageId}`;
-    
+
         return {
           languageId,
-          languageLevelAbbreviation: values[formKey] || 'ba',
+          languageLevelAbbreviation: values[formKey] || "ba"
         };
-      }),
+      })
     ];
-        
-    
-    // Define the base object
+
     const formattedData = {
-      contactExternalId: user?.contactId ?? matchedInfo?.contactExternalId ?? null,
-      emailAddress: user?.emailId ?? (matchedInfo?.email || null),
+      contactExternalId: userInfo?.contactId ?? matchedInfo?.contactExternalId ?? null,
+      emailAddress: userInfo?.emailId ?? (matchedInfo?.email || null),
       lastNames: lastNames ?? (matchedInfo?.lastNames || null),
       names: names ?? (matchedInfo?.names || null),
       sex: sex ?? (matchedInfo?.sex || null),
       dateOfBirth: enrolleeDob || null,
-
       countryOfResidence: residencyCountryName ?? (matchedInfo.countryOfResidencyName || null),
       countryDivisionOfResidence: countryDivisionOfResidence ?? (matchedInfo.countryDivisionIdResidency || null),
       countryOfBirth: birthCountryName ?? (matchedInfo.countryOfBirthName || null),
       countryDivisionOfBirth: countryDivisionOfBirth ?? (matchedInfo.countryDivisionIdBirth || null),
-      
-      termsVersion: termsAndConditionsVersion || "1.0", // Default version
-      coursesCodeIds: selectedCourseCodeIds.map(id => ({
-        courseCodeId: id,
+      termsVersion: termsAndConditionsVersion || "2.1",
+      coursesCodeIds: selectedCourseCodeIds.map((id) => ({
+        courseCodeId: id
       })),
       languageProficiencies: languageProficiencies
     };
-  
+
     const recordsToSubmit = formattedData ? [formattedData] : [];
-    console.log("recordsToSubmit", recordsToSubmit)
+    console.log("recordsToSubmit", recordsToSubmit);
     return recordsToSubmit;
-    
   };
-  
+
   const onFormSubmit = async (values) => {
     try {
-      // Trigger validation for the form during submit
-      await form.validateFields(); // Ensure all fields are valid before proceeding
+      await form.validateFields();
       const enrolledCourses = selectedCoursesToEnroll?.length > 0
-      ? availableCourses?.filter(course => selectedCoursesToEnroll?.includes(course?.CourseCodeId))
-      : availableCourses;
+        ? availableCourses?.filter((course) => selectedCoursesToEnroll?.includes(course?.CourseCodeId))
+        : availableCourses;
 
       const formattedDatatoSubmit = formatSubmissionData(
         values,
         {
           baseLanguage,
-          enrolledCourses, // full course objects
+          enrolledCourses,
           countries
         },
         returningEnrolleeCountryDivisionInfo,
         user
       );
 
-      setSubmittingLoading(true);
-      setSubmittingRecords(formattedDatatoSubmit);
-      console.log("formattedDatatoSubmit", formattedDatatoSubmit);
+      const filesMap = {};
+      const profilePicList = values?.[PROFILE_PICTURE_FIELD_NAME];
+      if (Array.isArray(profilePicList) && profilePicList[0]?.originFileObj) {
+        filesMap[PROFILE_PICTURE_FIELD_NAME] = [profilePicList[0].originFileObj];
+      }
 
+      setSubmittingLoading(true);
+      if (!executeRecaptcha) {
+        console.warn("reCAPTCHA not ready");
+        setSubmittingLoading(false);
+        alert("reCAPTCHA not ready. Please try again.");
+        return;
+      }
+      const recaptchaToken = await executeRecaptcha("enrollment_submit");
+      if (!recaptchaToken) {
+        setSubmittingLoading(false);
+        alert("Could not verify reCAPTCHA. Please try again.");
+        return;
+      }
+      setPendingSubmission({
+        records: formattedDatatoSubmit,
+        filesMap,
+        recaptchaToken
+      });
+      console.log("formattedDatatoSubmit", formattedDatatoSubmit);
     } catch (error) {
-      // Handle validation failure
       console.log("Form invalid", error);
       alert("Form is invalid. Please check the fields.");
     }
   };
 
   const resetQuickEnrollmentInputValues = async () => {
-    // Clear the form fields
     form?.resetFields();
-  
-    // Reset all the states
     setConfirmVisible(false);
     setGeographyInfoVisible(false);
     setSelectedCountryOfResidence(null);
     setSelectedBirthCountry(null);
-    setDivisions([]); // Reset residency divisions
-    setBirthDivisions([]); // Reset birth divisions
-    setSubmitEnabled(false); // Disable submit button
-    setLoading(false); // Reset loading state
-    setReturningEnrolleeCountryDivisionInfo(null); // Clear returning enrollee info
+    setDivisions([]);
+    setBirthDivisions([]);
+    setSubmitEnabled(false);
+    setLoading(false);
+    setReturningEnrolleeCountryDivisionInfo(null);
     setEnrolleeResidencyDivision("");
     setEnrolleeBirthDivision("");
     onResetSubmittingEnrollee(undefined);
     setSubmittingLoading(false);
-    setSubmittingRecords([]); 
+    setPendingSubmission(null);
     onSelectingEnrollmentCourses([]);
-    history.push("/");
   };
-  
 
   const handleGoBackSelection = () => {
-    // go back by resetting array
     onSelectingEnrollmentCourses([]);
-    
-  }; 
+  };
 
   const getLanguageName = (id) => {
     const map = {
       en: "English",
-      es: "Español",
-      pt: "Português"
-      // add more if needed
+      es: "EspaÃ±ol",
+      pt: "PortuguÃªs"
     };
     return map[id] || id;
   };
-  
 
   const quickEnrollmentStyle = {
     maxWidth: 600,
     margin: "0 auto",
-    padding: "20px",
-  }
+    padding: "20px"
+  };
 
   const coursesToDisplay =
-  availableCourses?.length === 1
-    ? availableCourses
-    : availableCourses?.filter(course =>
-        selectedCoursesToEnroll?.includes(course.CourseCodeId)
-      );
+    availableCourses?.length === 1
+      ? availableCourses
+      : availableCourses?.filter((course) =>
+          selectedCoursesToEnroll?.includes(course.CourseCodeId)
+        );
 
   console.log("coursesToDisplay", coursesToDisplay, availableCourses, selectedCoursesToEnroll);
   const titleOfEnrollment = setLocale(locale, "enrollment.quickEnrollment");
   const converUrl = "https://images.unsplash.com/photo-1655800466797-8ab2598b4274?q=80&w=1690&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
   const enrollmentVersion = "v3.0";
- 
+
+  if (user?.emailId && !user?.yearOfBirth) {
+    return (
+      <div id="unathenticated-landing-page-margin">
+        <EmailYearSearchForm />
+      </div>
+    );
+  }
+
   return (
     <div className="container customerName">
       {isEnrollmentModalVisible && (
@@ -366,20 +471,20 @@ const formatSubmissionData = (
       )}
 
       <Form
-          form={form}
-          onFinish={onFormSubmit}
-          layout="vertical"
-        >
+        form={form}
+        onFinish={onFormSubmit}
+        layout="vertical"
+      >
         <Row gutter={24}>
           <Col lg={24}>
             <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined"
-              cover={
+              cover={(
                 <img
-                alt={titleOfEnrollment}
-                src={converUrl}
-                style={{ height: 100, objectFit: 'cover' }}
-              />
-              }
+                  alt={titleOfEnrollment}
+                  src={converUrl}
+                  style={{ height: 100, objectFit: "cover" }}
+                />
+              )}
             >
               <h1 style={{ marginBottom: "10px", textAlign: "left" }}>
                 {titleOfEnrollment} - {user?.communicationName} - ({enrollmentVersion})
@@ -415,7 +520,7 @@ const formatSubmissionData = (
                               width: 200,
                               height: 200,
                               borderRadius: "5%",
-                              marginBottom: "10px",
+                              marginBottom: "10px"
                             }}
                           />
                         </Col>
@@ -423,7 +528,7 @@ const formatSubmissionData = (
                           <CourseDetails course={course} />
                         </Col>
                       </Row>
-                    ),
+                    )
                   }))}
                 />
 
@@ -460,7 +565,7 @@ const formatSubmissionData = (
                           width: 200,
                           height: 200,
                           borderRadius: "5%",
-                          marginBottom: "10px",
+                          marginBottom: "10px"
                         }}
                       />
                     </Col>
@@ -484,184 +589,166 @@ const formatSubmissionData = (
               ))
             )}
 
-          
-
-          { user?.contactId && returningEnrolleeCountryDivisionInfo?.personalCommunicationName && (
-            <>
-            {isGeographyInfoVisible && (
-              <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} loading={submittingLoading} variant="outlined">
-                <Form.Item name="countryOfResidence" label={setLocale(locale, "enrollment.form.countryOfResidency")} 
-                  rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}
-                  initialValue={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId ?? undefined}               
-                  >
-                  <Select
-                    showSearch={{ optionFilterProp: "label" }}
-                    placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
-                    onChange={(value) => {
-                      setSelectedCountryOfResidence(value); // Update selected country
-                      setDivisions([]); // Reset divisions for residence
-                      form.setFieldsValue({ countryDivisionOfResidence: null }); // Clear form division value
-                    }}
-                  >
-                    {props.countries?.map((country) => (
-                      <Option key={country.CountryId} value={country.CountryId} label={`${country?.NativeCountryName} | ${country?.CountryName}`}>
-                        <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
-                        {`${country?.NativeCountryName} | ${country?.CountryName}`}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                {selectedCountryOfResidence && residencyDivisions?.length > 0 && (
-                  <Form.Item name="countryDivisionOfResidence" label={setLocale(locale, "enrollment.form.stateOrRegion")} 
-                  rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegion") }]}
-                  initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdResidency ?? undefined}
-                  
-                  >
-                    <Select
-                      showSearch={{ optionFilterProp: "label" }}
-                      placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegion" })}
-                      onChange={(value) => {
-                        setEnrolleeResidencyDivision(value);
-                      }}
+            {user?.contactId && returningEnrolleeCountryDivisionInfo?.personalCommunicationName && (
+              <>
+                {isGeographyInfoVisible && (
+                  <Card style={quickEnrollmentStyle} title={setLocale(locale, "enrollment.form.confirmProfileGeography")} loading={submittingLoading} variant="outlined">
+                    <Form.Item
+                      name="countryOfResidence"
+                      label={setLocale(locale, "enrollment.form.countryOfResidency")}
+                      rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfResidence") }]}
+                      initialValue={returningEnrolleeCountryDivisionInfo?.countryOfResidencyId ?? undefined}
                     >
-                      {residencyDivisions?.map((division) => (
-                        <Option key={division?.CountryDivisionId} value={division?.CountryDivisionId} label={division?.CountryDivisionName}>
-                          <Flag code={division?.CountryId} style={{ width: 20, marginRight: 10 }} />
-                          {division?.CountryDivisionName}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
+                      <Select
+                        showSearch={{ optionFilterProp: "searchText", filterOption }}
+                        placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfResidence" })}
+                        onChange={(value) => {
+                          setSelectedCountryOfResidence(value);
+                          setDivisions([]);
+                          form.setFieldsValue({ countryDivisionOfResidence: null });
+                        }}
+                        options={countryOptions}
+                      />
+                    </Form.Item>
+
+                    {selectedCountryOfResidence && residencyDivisions?.length > 0 && (
+                      <Form.Item
+                        name="countryDivisionOfResidence"
+                        label={setLocale(locale, "enrollment.form.stateOrRegion")}
+                        rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegion") }]}
+                        initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdResidency ?? undefined}
+                      >
+                        <Select
+                          showSearch={{ optionFilterProp: "searchText", filterOption }}
+                          placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegion" })}
+                          onChange={(value) => {
+                            setEnrolleeResidencyDivision(value);
+                          }}
+                          options={residencyDivisionOptions}
+                        />
+                      </Form.Item>
+                    )}
+
+                    {(
+                      !returningEnrolleeCountryDivisionInfo?.countryOfBirthId ||
+                      !returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth
+                    ) && (
+                      <>
+                        <Form.Item
+                          name="countryOfBirth"
+                          label={setLocale(locale, "enrollment.form.countryOfNationalityOfBirth")}
+                          rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfBirth") }]}
+                          initialValue={returningEnrolleeCountryDivisionInfo?.countryOfBirthId ?? undefined}
+                        >
+                          <Select
+                            showSearch={{ optionFilterProp: "searchText", filterOption }}
+                            placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
+                            onChange={(value) => {
+                              setSelectedBirthCountry(value);
+                              setBirthDivisions([]);
+                              form.setFieldsValue({ countryDivisionOfBirth: null });
+                            }}
+                            options={countryOptions}
+                          />
+                        </Form.Item>
+
+                        {selectedBirthCountry && birthDivisions?.length > 0 && (
+                          <Form.Item
+                            name="countryDivisionOfBirth"
+                            label={setLocale(locale, "enrollment.form.stateOrRegionOfBirth")}
+                            rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegionOfBirth") }]}
+                            initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth ?? undefined}
+                          >
+                            <Select
+                              showSearch={{ optionFilterProp: "searchText", filterOption }}
+                              placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegionOfBirth" })}
+                              onChange={(value) => {
+                                setEnrolleeBirthDivision(value);
+                              }}
+                              options={birthDivisionOptions}
+                            />
+                          </Form.Item>
+                        )}
+                      </>
+                    )}
+                  </Card>
                 )}
-
-
-          {( 
-            !returningEnrolleeCountryDivisionInfo?.countryOfBirthId ||
-            !returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth
-          ) && (
-          <>
-            <Form.Item
-                name="countryOfBirth"
-                label={setLocale(locale, "enrollment.form.countryOfNationalityOfBirth")}
-                rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectCountryOfBirth") }]}
-                initialValue={returningEnrolleeCountryDivisionInfo?.countryOfBirthId ?? undefined}
-              >
-                <Select
-                  showSearch={{ optionFilterProp: "label" }}
-                  placeholder={intl.formatMessage({ id: "enrollment.form.selectCountryOfBirth" })}
-                  onChange={(value) => {
-                    setSelectedBirthCountry(value);
-                    setBirthDivisions([]);
-                    form.setFieldsValue({ countryDivisionOfBirth: null });
-                  }}
-                >
-                  {props.countries?.map((country) => (
-                    <Option key={country.CountryId} value={country.CountryId} label={`${country.NativeCountryName} | ${country.CountryName}`}>
-                      <Flag code={country.CountryId} style={{ width: 20, marginRight: 10 }} />
-                      {`${country.NativeCountryName} | ${country.CountryName}`}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-
-            {selectedBirthCountry && birthDivisions?.length > 0 && (
-              <Form.Item
-                name="countryDivisionOfBirth"
-                label={setLocale(locale, "enrollment.form.stateOrRegionOfBirth")}
-                rules={[{ required: true, message: setLocaleString(locale, "enrollment.form.selectStateOrRegionOfBirth") }]}
-                initialValue={returningEnrolleeCountryDivisionInfo?.countryDivisionIdBirth ?? undefined}
-              >
-                <Select
-                  showSearch={{ optionFilterProp: "label" }}
-                  placeholder={intl.formatMessage({ id: "enrollment.form.selectStateOrRegionOfBirth" })}
-                  onChange={(value) => {
-                    setEnrolleeBirthDivision(value);
-                  }}
-                >
-                  {birthDivisions?.map((division) => (
-                    <Option key={division.CountryDivisionId} value={division.CountryDivisionId} label={division.CountryDivisionName}>
-                      <Flag code={division.CountryId} style={{ width: 20, marginRight: 10 }} />
-                      {division.CountryDivisionName}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
+              </>
             )}
-          </>
-        )}
-        </Card>
-      )}
-      </>
-    )
-    }
 
-        {(() => {
-          const distinctTargetLanguages = Array.from(
-            new Set(
-              (selectedCoursesToEnroll?.length > 0
-                ? availableCourses.filter(course =>
-                    selectedCoursesToEnroll?.includes(course.CourseCodeId)
-                  )
-                : availableCourses)?.map(course => course?.TargetLanguageId).filter(Boolean)
-            )
-          );
+            {(() => {
+              const distinctTargetLanguages = Array.from(
+                new Set(
+                  (selectedCoursesToEnroll?.length > 0
+                    ? availableCourses.filter((course) =>
+                        selectedCoursesToEnroll?.includes(course.CourseCodeId)
+                      )
+                    : availableCourses)?.map((course) => course?.TargetLanguageId).filter(Boolean)
+                )
+              );
 
-          // Handle 1 or more language levels in a unified way
-          if (
-            !returningEnrolleeCountryDivisionInfo?.personalCommunicationName ||
-            !isGeographyInfoVisible
-          ) {
-            return null;
-          }
+              if (!hasAuthenticatedEnrollmentProfile || !isGeographyInfoVisible) {
+                return null;
+              }
 
-          return (
-            <>
-              {distinctTargetLanguages?.map((langId) => (
-                <Card
-                  key={langId}
-                  style={quickEnrollmentStyle}
-                  title={
-                    distinctTargetLanguages?.length > 1
-                      ? <p>{setLocale(locale, "enrollment.form.languageLevelForCourseIn")} {getLanguageName(langId)}?</p>
-                      : setLocale(locale, "enrollment.form.languageLevelForCourse")
-                  }
-                  loading={submittingLoading}
-                  variant="outlined"
-                >
-                  <Form.Item
-                    name={
-                      distinctTargetLanguages?.length === 1
-                        ? "languageLevelAbbreviation"
-                        : `languageLevelAbbreviation_${langId}`
-                    }
-                    rules={[
-                      {
-                        required: true,
-                        message: setLocaleString(locale, "enrollment.form.selectLanguageLevelForCourse")
-                      },
-                    ]}
-                  >
-                    <Radio.Group>
-                      <Space direction="vertical">
-                        {selfLanguageLevel?.map((level) => (
-                          <Radio key={level?.LevelAbbreviation} value={level?.LevelAbbreviation}>
-                            {setLocale(locale, level.LocalizationKey)}
-                          </Radio>
-                        ))}
-                      </Space>
-                    </Radio.Group>
-                  </Form.Item>
-                </Card>
-              ))}
-            </>
-          );
-        })()}
+              return (
+                <>
+                  {distinctTargetLanguages?.map((langId) => (
+                    <Card
+                      key={langId}
+                      style={quickEnrollmentStyle}
+                      title={
+                        distinctTargetLanguages?.length > 1
+                          ? <p>{setLocale(locale, "enrollment.form.languageLevelForCourseIn")} {getLanguageName(langId)}?</p>
+                          : setLocale(locale, "enrollment.form.languageLevelForCourse")
+                      }
+                      loading={submittingLoading}
+                      variant="outlined"
+                    >
+                      <Form.Item
+                        name={
+                          distinctTargetLanguages?.length === 1
+                            ? "languageLevelAbbreviation"
+                            : `languageLevelAbbreviation_${langId}`
+                        }
+                        rules={[
+                          {
+                            required: true,
+                            message: setLocaleString(locale, "enrollment.form.selectLanguageLevelForCourse")
+                          }
+                        ]}
+                      >
+                        <Radio.Group>
+                          <Space direction="vertical">
+                            {selfLanguageLevel?.map((level) => (
+                              <Radio key={level?.LevelAbbreviation} value={level?.LevelAbbreviation}>
+                                {setLocale(locale, level.LocalizationKey)}
+                              </Radio>
+                            ))}
+                          </Space>
+                        </Radio.Group>
+                      </Form.Item>
+                    </Card>
+                  ))}
+                </>
+              );
+            })()}
 
+            {isGeographyInfoVisible && isSubmitEnabled && (
+              <EnrollmentProfilePictureField
+                isEnabled={!!user?.emailId}
+                emailId={user?.emailId}
+                dobOrYob={user?.yearOfBirth}
+                contactInternalId={profilePictureContactInternalId}
+                token={profilePictureToken}
+                enrollmentStyle={quickEnrollmentStyle}
+                submittingLoading={submittingLoading}
+              />
+            )}
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined">
               <p>
-                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {enrollmentVersion} - 
+                {setLocale(locale, "enrollment.form.byProceedingTermsAndConditions")} - {termsVersionLabel} -
                 <TermsModal />{" "}
                 - {setLocale(locale, "enrollment.form.ofUseAndPrivacyPolicy")}
               </p>
@@ -686,7 +773,7 @@ function mapDispatchToProps(dispatch) {
     onRenderingCourseRegistration,
     onSearchingForAlreadyEnrolledContact,
     onRequestingGeographicalDivision,
-    onSubmittingEnrollee,
+    onSubmittingAuthenticatedEnrollee,
     onResetSubmittingEnrollee,
     onSelectingEnrollmentCourses
   }, dispatch);

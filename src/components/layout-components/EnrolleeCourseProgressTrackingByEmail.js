@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Checkbox, Select, Button, Row, Col, Input, message } from 'antd';
+import { App, Card, Checkbox, Select, Button, Row, Col, Input } from 'antd';
 import {
   FacebookOutlined,
   YoutubeOutlined,
@@ -103,6 +103,7 @@ const categories = [
 
 const EnrolleeCourseProgressTrackingByEmail = (props) => {
   const { onRequestingCourseProgressStructure, baseLanguage, contentLanguage, location } = props;
+  const { message } = App.useApp();
   const [selectedClasses, setSelectedClasses] = useState({});
   const [email, setEmail] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(true);
@@ -486,4 +487,3 @@ const mapStateToProps = ({ lrn, theme }) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(EnrolleeCourseProgressTrackingByEmail));
-
