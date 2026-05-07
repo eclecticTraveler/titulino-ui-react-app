@@ -300,17 +300,22 @@ const ContactProfileEditor = ({
     {
       title: t('admin.tools.profileEditor.field'),
       dataIndex: 'label',
-      key: 'label'
+      key: 'label',
+      width: '20%'
     },
     {
       title: t('admin.tools.profileEditor.before'),
       dataIndex: 'before',
-      key: 'before'
+      key: 'before',
+      width: '40%',
+      render: value => <span className="contact-profile-review-value">{value}</span>
     },
     {
       title: t('admin.tools.profileEditor.after'),
       dataIndex: 'after',
-      key: 'after'
+      key: 'after',
+      width: '40%',
+      render: value => <span className="contact-profile-review-value">{value}</span>
     }
   ];
 
@@ -506,6 +511,8 @@ const ContactProfileEditor = ({
       <Modal
         title={<IntlMessage id="admin.tools.profileEditor.reviewTitle" />}
         open={reviewOpen}
+        rootClassName="contact-profile-review-modal"
+        width={pendingUpdate?.changeSummary?.length > 0 ? 820 : 560}
         okText={t('admin.tools.confirmYes')}
         cancelText={t('admin.tools.confirmNo')}
         confirmLoading={submitting}
@@ -519,7 +526,9 @@ const ContactProfileEditor = ({
           style={{ marginBottom: 12 }}
         />
         <Table
+          className="contact-profile-review-table"
           size="small"
+          tableLayout="fixed"
           pagination={false}
           columns={reviewColumns}
           dataSource={pendingUpdate?.changeSummary || []}
