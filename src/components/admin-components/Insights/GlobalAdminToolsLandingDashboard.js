@@ -47,7 +47,8 @@ import {
   onUpsertingSelectedContactProfile,
   onLoadingShopRevenueDashboard,
   onUpsertingShopProductCourseTier,
-  onTogglingShopProductActive,
+  onUpsertingShopTiers,
+  onUpsertingShopPaymentProviders,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -119,7 +120,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onUpsertingSelectedContactProfile,
     onLoadingShopRevenueDashboard,
     onUpsertingShopProductCourseTier,
-    onTogglingShopProductActive,
+    onUpsertingShopTiers,
+    onUpsertingShopPaymentProviders,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     onRenderingCourseRegistration,
@@ -178,13 +180,28 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     tierId: 'Gold',
     isActive: true
   });
+  const [revenueCatalogSubmitting, setRevenueCatalogSubmitting] = useState({
+    tiers: false,
+    providers: false
+  });
+  const [revenueTierFormValues, setRevenueTierFormValues] = useState({
+    selectedTierId: null,
+    tierId: '',
+    localizationKey: '',
+    displayOrder: 0
+  });
+  const [revenuePaymentProviderFormValues, setRevenuePaymentProviderFormValues] = useState({
+    selectedProviderId: null,
+    providerId: '',
+    isEnabled: true
+  });
   const [revenueFilters, setRevenueFilters] = useState({
     courseCodeId: 'all',
     tierId: 'all',
     days: 30,
     limit: 100,
     searchText: '',
-    dateRange: [dayjs().subtract(30, 'day'), dayjs()]
+    dateRange: []
   });
   const [isContactProfileEditorOpen, setContactProfileEditorOpen] = useState(false);
   const [contactProfileEditorSubmitting, setContactProfileEditorSubmitting] = useState(false);
@@ -227,12 +244,36 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     )
   ), [shopCoursesWithPurchases, intl]);
 
-  const revenueTierOptions = [
-    { value: 'all', label: t('admin.tools.revenue.allTiers') },
-    { value: 'Gold', label: 'Gold' },
-    { value: 'Silver', label: 'Silver' },
-    { value: 'Free', label: 'Free' }
-  ];
+  const revenueShopTierRows = useMemo(() => (
+    shopRevenueDashboard?.raw?.shopTiers || []
+  ), [shopRevenueDashboard?.raw?.shopTiers]);
+  const revenuePaymentProviderRows = useMemo(() => (
+    shopRevenueDashboard?.raw?.shopPaymentProviders || []
+  ), [shopRevenueDashboard?.raw?.shopPaymentProviders]);
+  const revenueTierOptions = useMemo(() => {
+    const tierOptions = ShopAnalytics.buildShopTierSelectionOptions(revenueShopTierRows);
+    const fallbackTierOptions = [
+      { value: 'Gold', label: 'Gold', searchText: 'Gold' },
+      { value: 'Silver', label: 'Silver', searchText: 'Silver' },
+      { value: 'Free', label: 'Free', searchText: 'Free' }
+    ];
+
+    return [
+      { value: 'all', label: t('admin.tools.revenue.allTiers'), searchText: t('admin.tools.revenue.allTiers') },
+      ...(tierOptions.length > 0 ? tierOptions : fallbackTierOptions)
+    ];
+  }, [revenueShopTierRows, t]);
+
+  const revenuePaymentProviderOptions = useMemo(() => (
+    (revenuePaymentProviderRows || []).map((provider) => {
+      const providerId = getProductManagementValue(provider, ['ProviderId', 'providerId']);
+      return {
+        value: providerId,
+        label: providerId,
+        searchText: providerId
+      };
+    }).filter(option => option.value)
+  ), [revenuePaymentProviderRows]);
 
   const revenueProductCourseOptions = useMemo(() => (
     (allRawCourses || []).map((course) => {
@@ -248,6 +289,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const revenueProductRows = useMemo(() => {
     const tableSources = [
+      shopRevenueDashboard?.raw?.productCourseTiers,
       shopRevenueDashboard?.tables?.activeProducts?.tableData,
       shopRevenueDashboard?.tables?.productsByCourse?.tableData,
       shopRevenueDashboard?.tables?.productsByTier?.tableData
@@ -288,6 +330,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       label: `${product.paymentProviderPriceId} - ${product.courseName || product.courseCodeId || product.tierId}`
     }))
   ), [revenueProductRows]);
+
+  const revenueShopCustomersTable = useMemo(() => (
+    ShopAnalytics.buildShopCustomersTableModel(
+      shopRevenueDashboard?.raw?.shopCustomers || [],
+      revenueFilters.searchText || ''
+    )
+  ), [shopRevenueDashboard?.raw?.shopCustomers, revenueFilters.searchText]);
 
   const loadShopRevenueDashboard = useCallback((nextFilters = revenueFilters) => {
     if (!emailId || !onLoadingShopRevenueDashboard) return Promise.resolve();
@@ -339,6 +388,48 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     });
   }, []);
 
+  const handleSelectRevenueTier = useCallback((tierId) => {
+    const tier = (revenueShopTierRows || []).find(item => (
+      getProductManagementValue(item, ['TierId', 'tierId']) === tierId
+    ));
+
+    setRevenueTierFormValues({
+      selectedTierId: tierId || null,
+      tierId: getProductManagementValue(tier, ['TierId', 'tierId']) || '',
+      localizationKey: getProductManagementValue(tier, ['LocalizationKey', 'localizationKey']) || '',
+      displayOrder: getProductManagementValue(tier, ['DisplayOrder', 'displayOrder']) ?? 0
+    });
+  }, [revenueShopTierRows]);
+
+  const handleResetRevenueTierForm = useCallback(() => {
+    setRevenueTierFormValues({
+      selectedTierId: null,
+      tierId: '',
+      localizationKey: '',
+      displayOrder: 0
+    });
+  }, []);
+
+  const handleSelectRevenuePaymentProvider = useCallback((providerId) => {
+    const provider = (revenuePaymentProviderRows || []).find(item => (
+      getProductManagementValue(item, ['ProviderId', 'providerId']) === providerId
+    ));
+
+    setRevenuePaymentProviderFormValues({
+      selectedProviderId: providerId || null,
+      providerId: getProductManagementValue(provider, ['ProviderId', 'providerId']) || '',
+      isEnabled: normalizeBooleanValue(getProductManagementValue(provider, ['IsEnabled', 'isEnabled']), true)
+    });
+  }, [revenuePaymentProviderRows]);
+
+  const handleResetRevenuePaymentProviderForm = useCallback(() => {
+    setRevenuePaymentProviderFormValues({
+      selectedProviderId: null,
+      providerId: '',
+      isEnabled: true
+    });
+  }, []);
+
   const handleUpsertRevenueProduct = useCallback(async () => {
     if (!emailId) return;
     if (
@@ -358,6 +449,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
       messageApi.success(t('admin.tools.revenue.product.upsertSuccess'));
       await loadShopRevenueDashboard();
+      handleResetRevenueProductForm();
     } catch (error) {
       console.error(error);
       messageApi.error(t('admin.tools.revenue.product.upsertError'));
@@ -369,41 +461,72 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     loadShopRevenueDashboard,
     messageApi,
     onUpsertingShopProductCourseTier,
+    handleResetRevenueProductForm,
     revenueProductFormValues,
     t
   ]);
 
-  const handleDisableRevenueProduct = useCallback(async () => {
-    if (!emailId || !revenueProductFormValues.paymentProviderPriceId) return;
+  const handleUpsertRevenueTier = useCallback(async () => {
+    if (!emailId) return;
+    if (!revenueTierFormValues.tierId || !revenueTierFormValues.localizationKey) {
+      messageApi.warning(t('admin.tools.revenue.tier.required'));
+      return;
+    }
 
-    setRevenueProductSubmitting(true);
+    setRevenueCatalogSubmitting(previous => ({ ...previous, tiers: true }));
     try {
-      const actionResult = await onTogglingShopProductActive(
-        emailId,
-        revenueProductFormValues.paymentProviderPriceId,
-        false
-      );
-      const result = actionResult?.toggleResult || actionResult;
-      if (!result?.success) throw new Error(result?.errorMessage || 'Product disable failed.');
+      const actionResult = await onUpsertingShopTiers(emailId, [revenueTierFormValues]);
+      const result = actionResult?.upsertResult || actionResult;
+      if (!result?.success) throw new Error(result?.errorMessage || 'Tier upsert failed.');
 
-      messageApi.success(t('admin.tools.revenue.product.disableSuccess'));
-      setRevenueProductFormValues(previousValues => ({
-        ...previousValues,
-        isActive: false
-      }));
+      messageApi.success(t('admin.tools.revenue.tier.upsertSuccess'));
       await loadShopRevenueDashboard();
+      handleResetRevenueTierForm();
     } catch (error) {
       console.error(error);
-      messageApi.error(t('admin.tools.revenue.product.disableError'));
+      messageApi.error(t('admin.tools.revenue.tier.upsertError'));
     } finally {
-      setRevenueProductSubmitting(false);
+      setRevenueCatalogSubmitting(previous => ({ ...previous, tiers: false }));
     }
   }, [
     emailId,
     loadShopRevenueDashboard,
     messageApi,
-    onTogglingShopProductActive,
-    revenueProductFormValues.paymentProviderPriceId,
+    onUpsertingShopTiers,
+    handleResetRevenueTierForm,
+    revenueTierFormValues,
+    t
+  ]);
+
+  const handleUpsertRevenuePaymentProvider = useCallback(async () => {
+    if (!emailId) return;
+    if (!revenuePaymentProviderFormValues.providerId) {
+      messageApi.warning(t('admin.tools.revenue.provider.required'));
+      return;
+    }
+
+    setRevenueCatalogSubmitting(previous => ({ ...previous, providers: true }));
+    try {
+      const actionResult = await onUpsertingShopPaymentProviders(emailId, [revenuePaymentProviderFormValues]);
+      const result = actionResult?.upsertResult || actionResult;
+      if (!result?.success) throw new Error(result?.errorMessage || 'Payment provider upsert failed.');
+
+      messageApi.success(t('admin.tools.revenue.provider.upsertSuccess'));
+      await loadShopRevenueDashboard();
+      handleResetRevenuePaymentProviderForm();
+    } catch (error) {
+      console.error(error);
+      messageApi.error(t('admin.tools.revenue.provider.upsertError'));
+    } finally {
+      setRevenueCatalogSubmitting(previous => ({ ...previous, providers: false }));
+    }
+  }, [
+    emailId,
+    loadShopRevenueDashboard,
+    messageApi,
+    onUpsertingShopPaymentProviders,
+    handleResetRevenuePaymentProviderForm,
+    revenuePaymentProviderFormValues,
     t
   ]);
 
@@ -3636,6 +3759,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     <>
       {renderRevenueDivider('admin.tools.revenue.topCustomers', <UserOutlined />)}
       {renderRevenueTable(shopRevenueDashboard?.tables?.topCustomers)}
+      {renderRevenueDivider('admin.tools.revenue.allCustomers', <UserOutlined />)}
+      {renderRevenueTable(revenueShopCustomersTable)}
       {renderRevenueDivider('admin.tools.revenue.recentCustomers', <LoginOutlined />)}
       {renderRevenueTable(shopRevenueDashboard?.tables?.recentlyActiveCustomers)}
       {renderRevenueDivider('admin.tools.revenue.customerCohorts', <LineChartOutlined />)}
@@ -3656,6 +3781,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const renderRevenueProductManagement = () => (
     <>
+      {renderRevenueDivider('admin.tools.revenue.product.mappingTitle', <ShoppingCartOutlined />)}
       <Alert
         type="info"
         showIcon
@@ -3663,7 +3789,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         style={{ marginBottom: 16 }}
       />
       <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
-        <Col xs={24} md={10}>
+        <Col xs={24} md={12}>
           <div style={{ marginBottom: 4 }}>
             <strong>{setLocale(locale, 'admin.tools.revenue.product.selectExisting')}</strong>
           </div>
@@ -3679,11 +3805,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             placeholder={t('admin.tools.revenue.product.selectExisting')}
             style={{ width: '100%' }}
           />
-        </Col>
-        <Col xs={24} md={14} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-          <Button onClick={handleResetRevenueProductForm}>
-            {setLocale(locale, 'admin.tools.revenue.product.newMapping')}
-          </Button>
         </Col>
       </Row>
 
@@ -3745,24 +3866,132 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           >
             {setLocale(locale, 'admin.tools.revenue.product.save')}
           </Button>
-          <Popconfirm
-            title={t('admin.tools.revenue.product.disableConfirm')}
-            okText={t('admin.tools.confirmYes')}
-            cancelText={t('admin.tools.confirmNo')}
-            disabled={!revenueProductFormValues.paymentProviderPriceId}
-            onConfirm={handleDisableRevenueProduct}
-          >
-            <Button
-              danger
-              icon={<CloseCircleOutlined />}
-              loading={revenueProductSubmitting}
-              disabled={!revenueProductFormValues.paymentProviderPriceId}
-            >
-              {setLocale(locale, 'admin.tools.revenue.product.disable')}
-            </Button>
-          </Popconfirm>
+          <Button onClick={handleResetRevenueProductForm}>
+            {setLocale(locale, 'admin.tools.revenue.product.clear')}
+          </Button>
         </Col>
       </Row>
+    </>
+  );
+
+  const renderRevenueCatalogManagement = () => (
+    <>
+      {renderRevenueDivider('admin.tools.revenue.tiers', <DollarOutlined />)}
+      <Row gutter={[12, 12]} style={{ marginBottom: 12 }}>
+        <Col xs={24} md={12}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'admin.tools.revenue.tier.selectExisting')}</strong>
+          </div>
+          <Select
+            allowClear
+            showSearch
+            optionFilterProp="searchText"
+            value={revenueTierFormValues.selectedTierId}
+            options={revenueTierOptions.filter(option => option.value !== 'all')}
+            onChange={handleSelectRevenueTier}
+            style={{ width: '100%' }}
+          />
+        </Col>
+        <Col xs={24} md={12}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'shop.analytics.table.column.tier')} *</strong>
+          </div>
+          <Input
+            value={revenueTierFormValues.tierId}
+            onChange={(event) => setRevenueTierFormValues(previous => ({ ...previous, tierId: event.target.value }))}
+            placeholder="Bronze"
+          />
+        </Col>
+        <Col xs={24} md={12}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'shop.analytics.table.column.localizationKey')} *</strong>
+          </div>
+          <Input
+            value={revenueTierFormValues.localizationKey}
+            onChange={(event) => setRevenueTierFormValues(previous => ({ ...previous, localizationKey: event.target.value }))}
+            placeholder="shop.feature.bronzeCost"
+          />
+        </Col>
+        <Col xs={24} md={6}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'shop.analytics.table.column.displayOrder')}</strong>
+          </div>
+          <InputNumber
+            min={0}
+            value={revenueTierFormValues.displayOrder}
+            onChange={(value) => setRevenueTierFormValues(previous => ({ ...previous, displayOrder: value ?? 0 }))}
+            style={{ width: '100%' }}
+          />
+        </Col>
+        <Col xs={24} md={6} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+          <Button
+            type="primary"
+            icon={<SaveOutlined />}
+            loading={revenueCatalogSubmitting.tiers}
+            onClick={handleUpsertRevenueTier}
+          >
+            {setLocale(locale, 'admin.tools.revenue.tier.save')}
+          </Button>
+          <Button onClick={handleResetRevenueTierForm}>
+            {setLocale(locale, 'admin.tools.revenue.product.clear')}
+          </Button>
+        </Col>
+      </Row>
+      {renderRevenueTable(shopRevenueDashboard?.tables?.shopTiers)}
+
+      {renderRevenueDivider('admin.tools.revenue.paymentProviders', <SafetyCertificateOutlined />)}
+      <Row gutter={[12, 12]} style={{ marginBottom: 12 }}>
+        <Col xs={24} md={12}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'admin.tools.revenue.provider.selectExisting')}</strong>
+          </div>
+          <Select
+            allowClear
+            showSearch
+            optionFilterProp="searchText"
+            value={revenuePaymentProviderFormValues.selectedProviderId}
+            options={revenuePaymentProviderOptions}
+            onChange={handleSelectRevenuePaymentProvider}
+            style={{ width: '100%' }}
+          />
+        </Col>
+        <Col xs={24} md={12}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'shop.analytics.table.column.paymentProvider')} *</strong>
+          </div>
+          <Input
+            value={revenuePaymentProviderFormValues.providerId}
+            onChange={(event) => setRevenuePaymentProviderFormValues(previous => ({ ...previous, providerId: event.target.value }))}
+            placeholder="PayPal"
+          />
+        </Col>
+        <Col xs={24} md={12}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'shop.analytics.table.column.enabled')}</strong>
+          </div>
+          <Radio.Group
+            value={revenuePaymentProviderFormValues.isEnabled}
+            onChange={(event) => setRevenuePaymentProviderFormValues(previous => ({ ...previous, isEnabled: event.target.value }))}
+          >
+            <Radio.Button value>{setLocale(locale, 'admin.tools.revenue.provider.enabled')}</Radio.Button>
+            <Radio.Button value={false}>{setLocale(locale, 'admin.tools.revenue.provider.disabled')}</Radio.Button>
+          </Radio.Group>
+        </Col>
+        <Col xs={24} md={12} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+          <Button
+            type="primary"
+            icon={<SaveOutlined />}
+            loading={revenueCatalogSubmitting.providers}
+            onClick={handleUpsertRevenuePaymentProvider}
+          >
+            {setLocale(locale, 'admin.tools.revenue.provider.save')}
+          </Button>
+          <Button onClick={handleResetRevenuePaymentProviderForm}>
+            {setLocale(locale, 'admin.tools.revenue.product.clear')}
+          </Button>
+        </Col>
+      </Row>
+      {renderRevenueTable(shopRevenueDashboard?.tables?.shopPaymentProviders)}
     </>
   );
 
@@ -3781,12 +4010,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <EditOutlined style={{ marginRight: 4 }} />
           {setLocale(locale, 'admin.tools.revenue.product.manage')}
         </Radio.Button>
+        <Radio.Button value="catalog">
+          <SafetyCertificateOutlined style={{ marginRight: 4 }} />
+          {setLocale(locale, 'admin.tools.revenue.product.catalog')}
+        </Radio.Button>
       </Radio.Group>
 
-      {revenueProductTabKey === 'manage'
-        ? renderRevenueProductManagement()
-        : renderRevenueProductDisplay()
-      }
+      {revenueProductTabKey === 'manage' && renderRevenueProductManagement()}
+      {revenueProductTabKey === 'catalog' && renderRevenueCatalogManagement()}
+      {revenueProductTabKey === 'display' && renderRevenueProductDisplay()}
     </>
   );
 
@@ -3868,7 +4100,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <Col xs={24} md={6}>
             <DatePicker.RangePicker
               style={{ width: '100%' }}
-              value={revenueFilters.dateRange}
+              value={revenueFilters.dateRange?.length === 2 ? revenueFilters.dateRange : null}
               onChange={(value) => updateRevenueFilters({ dateRange: value || [] }, true)}
             />
           </Col>
@@ -3962,7 +4194,8 @@ function mapDispatchToProps(dispatch) {
     onUpsertingSelectedContactProfile,
     onLoadingShopRevenueDashboard,
     onUpsertingShopProductCourseTier,
-    onTogglingShopProductActive,
+    onUpsertingShopTiers,
+    onUpsertingShopPaymentProviders,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   }, dispatch);

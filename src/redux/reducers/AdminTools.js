@@ -22,6 +22,8 @@ import {
   ON_UPSERTING_SELECTED_CONTACT_PROFILE,
   ON_LOADING_SHOP_REVENUE_DASHBOARD,
   ON_UPSERTING_SHOP_PRODUCT_COURSE_TIER,
+  ON_UPSERTING_SHOP_TIERS,
+  ON_UPSERTING_SHOP_PAYMENT_PROVIDERS,
   ON_TOGGLING_SHOP_PRODUCT_ACTIVE
 } from '../constants/AdminTools';
 
@@ -192,6 +194,10 @@ const adminTools = (state = initState, action) => {
       };
     case ON_UPSERTING_SHOP_PRODUCT_COURSE_TIER:
       return { ...state, lastShopProductCourseTierUpsertResult: action.upsertResult };
+    case ON_UPSERTING_SHOP_TIERS:
+      return { ...state, lastShopTiersUpsertResult: action.upsertResult };
+    case ON_UPSERTING_SHOP_PAYMENT_PROVIDERS:
+      return { ...state, lastShopPaymentProvidersUpsertResult: action.upsertResult };
     case ON_TOGGLING_SHOP_PRODUCT_ACTIVE:
       return { ...state, lastShopProductActiveToggleResult: action.toggleResult };
     case ON_CLEAR_SELECTED_CONTACT:

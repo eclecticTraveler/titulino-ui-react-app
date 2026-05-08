@@ -21,6 +21,8 @@ import {
   ON_UPSERTING_SELECTED_CONTACT_PROFILE,
   ON_LOADING_SHOP_REVENUE_DASHBOARD,
   ON_UPSERTING_SHOP_PRODUCT_COURSE_TIER,
+  ON_UPSERTING_SHOP_TIERS,
+  ON_UPSERTING_SHOP_PAYMENT_PROVIDERS,
   ON_TOGGLING_SHOP_PRODUCT_ACTIVE
 } from '../constants/AdminTools';
 
@@ -195,6 +197,22 @@ export const onUpsertingShopProductCourseTier = async (adminEmailId, productCour
   const result = await AdminToolsManager.upsertShopProductCourseTier(adminEmailId, productCourseTier);
   return {
     type: ON_UPSERTING_SHOP_PRODUCT_COURSE_TIER,
+    upsertResult: result
+  };
+};
+
+export const onUpsertingShopTiers = async (adminEmailId, tiers) => {
+  const result = await AdminToolsManager.upsertShopTiers(adminEmailId, tiers);
+  return {
+    type: ON_UPSERTING_SHOP_TIERS,
+    upsertResult: result
+  };
+};
+
+export const onUpsertingShopPaymentProviders = async (adminEmailId, paymentProviders) => {
+  const result = await AdminToolsManager.upsertShopPaymentProviders(adminEmailId, paymentProviders);
+  return {
+    type: ON_UPSERTING_SHOP_PAYMENT_PROVIDERS,
     upsertResult: result
   };
 };

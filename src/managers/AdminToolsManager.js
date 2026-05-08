@@ -422,10 +422,12 @@ export const getShopRevenueDashboard = async (emailId, filters = {}) => {
     repeatCustomers,
     recentlyActiveCustomers,
     customerCohorts,
+    shopCustomers,
     purchaseRows,
-    productsByCourse,
-    productsByTier,
+    productCourseTiers,
     activeProducts,
+    shopTiers,
+    shopPaymentProviders,
     languagePairSales,
     exportSalesReport
   ] = await Promise.all([
@@ -439,17 +441,18 @@ export const getShopRevenueDashboard = async (emailId, filters = {}) => {
     TitulinoShopAuthService.getAdminDashboardShopRefundAnalytics(token, courseCodeId, startDate, endDate, 'AdminToolsManager.getShopRevenueDashboard'),
     TitulinoShopAuthService.getAdminDashboardShopConversionMetrics(token, courseCodeId, startDate, endDate, 'AdminToolsManager.getShopRevenueDashboard'),
     TitulinoShopAuthService.getAdminDashboardCustomerLifetimeValue(25, token, 'AdminToolsManager.getShopRevenueDashboard'),
-    TitulinoShopAuthService.getAdminDashboardShopRepeatCustomers(days, token, 'AdminToolsManager.getShopRevenueDashboard'),
+    TitulinoShopAuthService.getAdminDashboardShopRepeatCustomers(courseCodeId, token, 'AdminToolsManager.getShopRevenueDashboard'),
     TitulinoShopAuthService.getAdminDashboardRecentlyActiveCustomers(days, 25, token, 'AdminToolsManager.getShopRevenueDashboard'),
     TitulinoShopAuthService.getAdminDashboardCustomerCohorts(token, 'AdminToolsManager.getShopRevenueDashboard'),
+    TitulinoShopAuthService.getShopCustomers(token, courseCodeId, startDate, endDate, 'AdminToolsManager.getShopRevenueDashboard'),
     TitulinoShopAuthService.searchShopPurchases(filters.searchText || '', limit, token, 'AdminToolsManager.getShopRevenueDashboard'),
-    courseCodeId
-      ? TitulinoShopAuthService.getShopProductsByCourse(courseCodeId, token, 'AdminToolsManager.getShopRevenueDashboard')
-      : Promise.resolve([]),
-    tierId
-      ? TitulinoShopAuthService.getShopProductsByTier(tierId, token, 'AdminToolsManager.getShopRevenueDashboard')
-      : Promise.resolve([]),
+    TitulinoShopAuthService.getProductCourseTiers(token, {
+      courseCodeId,
+      tierId
+    }, 'AdminToolsManager.getShopRevenueDashboard'),
     TitulinoShopAuthService.getAdminDashboardShopActiveProducts(token, 'AdminToolsManager.getShopRevenueDashboard'),
+    TitulinoShopAuthService.getTiers(token, 'AdminToolsManager.getShopRevenueDashboard'),
+    TitulinoShopAuthService.getPaymentProviders(token, 'AdminToolsManager.getShopRevenueDashboard'),
     TitulinoShopAuthService.getAdminDashboardShopSalesByLanguagePair(token, 'AdminToolsManager.getShopRevenueDashboard'),
     TitulinoShopAuthService.getExportSalesReport(startDate, endDate, token, 'AdminToolsManager.getShopRevenueDashboard')
   ]);
@@ -468,11 +471,15 @@ export const getShopRevenueDashboard = async (emailId, filters = {}) => {
     repeatCustomers,
     recentlyActiveCustomers,
     customerCohorts,
+    shopCustomers,
     purchaseRows,
     courseLeaderboard: shopCoursesWithPurchases,
-    productsByCourse,
-    productsByTier,
+    productCourseTiers,
+    productsByCourse: productCourseTiers,
+    productsByTier: productCourseTiers,
     activeProducts,
+    shopTiers,
+    shopPaymentProviders,
     languagePairSales,
     exportSalesReport
   });
@@ -501,6 +508,60 @@ export const upsertShopProductCourseTier = async (adminEmailId, productCourseTie
     payload,
     token,
     'upsertShopProductCourseTier'
+  );
+
+  return {
+    success: isShopApiMutationSuccessful(apiResult),
+    apiResult,
+    payload
+  };
+};
+
+export const upsertShopTiers = async (adminEmailId, tiers = []) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) {
+    return { success: false, errorMessage: 'Missing admin token.' };
+  }
+
+  const payload = (Array.isArray(tiers) ? tiers : [tiers])
+    .map(tier => ShopAnalytics.buildShopTierPayload(tier))
+    .filter(tier => tier.TierId && tier.LocalizationKey);
+
+  if (payload.length === 0) {
+    return { success: false, errorMessage: 'Missing required tier fields.', payload };
+  }
+
+  const apiResult = await TitulinoShopAuthService.upsertTiers(
+    payload,
+    token,
+    'upsertShopTiers'
+  );
+
+  return {
+    success: isShopApiMutationSuccessful(apiResult),
+    apiResult,
+    payload
+  };
+};
+
+export const upsertShopPaymentProviders = async (adminEmailId, paymentProviders = []) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) {
+    return { success: false, errorMessage: 'Missing admin token.' };
+  }
+
+  const payload = (Array.isArray(paymentProviders) ? paymentProviders : [paymentProviders])
+    .map(provider => ShopAnalytics.buildShopPaymentProviderPayload(provider))
+    .filter(provider => provider.ProviderId);
+
+  if (payload.length === 0) {
+    return { success: false, errorMessage: 'Missing required payment provider fields.', payload };
+  }
+
+  const apiResult = await TitulinoShopAuthService.upsertPaymentProviders(
+    payload,
+    token,
+    'upsertShopPaymentProviders'
   );
 
   return {
@@ -760,6 +821,8 @@ const AdminToolsManager = {
   getContactProfileMonitoring,
   getShopRevenueDashboard,
   upsertShopProductCourseTier,
+  upsertShopTiers,
+  upsertShopPaymentProviders,
   toggleShopProductActive,
   toggleContactEmailOptOut,
   toggleContactEmailOptOutByContact,

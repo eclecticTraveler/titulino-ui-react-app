@@ -80,6 +80,22 @@ const buildShopDashboardFilterPayload = (courseCodeId, startDate = null, endDate
   p_enddate: normalizeShopDate(endDate)
 });
 
+const removeNullPayloadValues = (payload = {}) => (
+  Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== null && value !== undefined && value !== ''))
+);
+
+const unwrapArrayEndpointResult = (result, endpointName) => {
+  if (Array.isArray(result)) return result;
+  if (!result || typeof result !== 'object') return result;
+
+  const normalizedEndpointName = endpointName.toLowerCase();
+  const arrayValue = Object.entries(result).find(([key, value]) => (
+    key.toLowerCase() === normalizedEndpointName && Array.isArray(value)
+  ))?.[1];
+
+  return arrayValue || result;
+};
+
 export const getShopCoursesWithPurchases = async (token, whoCalledMe = 'getShopCoursesWithPurchases') => (
   postJsonEndpoint('GetShopCoursesWithPurchases', {}, token, whoCalledMe)
 );
@@ -165,10 +181,10 @@ export const getAdminDashboardCustomerLifetimeValue = async (limit = 25, token, 
   }, token, whoCalledMe)
 );
 
-export const getAdminDashboardShopRepeatCustomers = async (days = null, token, whoCalledMe = 'getAdminDashboardShopRepeatCustomers') => (
-  postJsonEndpoint('GetAdminDashboardShopRepeatCustomers', {
-    p_days: days
-  }, token, whoCalledMe)
+export const getAdminDashboardShopRepeatCustomers = async (courseCodeId = null, token, whoCalledMe = 'getAdminDashboardShopRepeatCustomers') => (
+  postJsonEndpoint('GetAdminDashboardShopRepeatCustomers', removeNullPayloadValues({
+    p_coursecodeid: normalizeShopCourseCodeId(courseCodeId)
+  }), token, whoCalledMe)
 );
 
 export const getAdminDashboardRecentlyActiveCustomers = async (days = 30, limit = 25, token, whoCalledMe = 'getAdminDashboardRecentlyActiveCustomers') => (
@@ -181,6 +197,18 @@ export const getAdminDashboardRecentlyActiveCustomers = async (days = 30, limit 
 export const getAdminDashboardCustomerCohorts = async (token, whoCalledMe = 'getAdminDashboardCustomerCohorts') => (
   postJsonEndpoint('GetAdminDashboardCustomerCohorts', {}, token, whoCalledMe)
 );
+
+export const getShopCustomers = async (
+  token,
+  courseCodeId = null,
+  startDate = null,
+  endDate = null,
+  whoCalledMe = 'getShopCustomers'
+) => {
+  const payload = removeNullPayloadValues(buildShopDashboardFilterPayload(courseCodeId, startDate, endDate));
+  const result = await postJsonEndpoint('GetShopCustomers', payload, token, whoCalledMe);
+  return unwrapArrayEndpointResult(result, 'GetShopCustomers');
+};
 
 export const searchShopPurchases = async (searchText = '', limit = 100, token, whoCalledMe = 'searchShopPurchases') => (
   postJsonEndpoint('SearchShopPurchases', {
@@ -195,15 +223,47 @@ export const getAdminDashboardCoursePerformanceLeaderboard = async (limit = 10, 
   }, token, whoCalledMe)
 );
 
-export const getShopProductsByCourse = async (courseCodeId, token, whoCalledMe = 'getShopProductsByCourse') => (
-  postJsonEndpoint('GetShopProductsByCourse', buildShopCoursePayload(courseCodeId), token, whoCalledMe)
-);
+export const getShopProductsByCourse = async (courseCodeId, token, whoCalledMe = 'getShopProductsByCourse') => {
+  const result = await postJsonEndpoint('GetShopProductsByCourse', buildShopCoursePayload(courseCodeId), token, whoCalledMe);
+  return unwrapArrayEndpointResult(result, 'GetShopProductsByCourse');
+};
 
-export const getShopProductsByTier = async (tierId, token, whoCalledMe = 'getShopProductsByTier') => (
-  postJsonEndpoint('GetShopProductsByTier', {
+export const getShopProductsByTier = async (tierId, token, whoCalledMe = 'getShopProductsByTier') => {
+  const result = await postJsonEndpoint('GetShopProductsByTier', {
     p_tierid: tierId
-  }, token, whoCalledMe)
-);
+  }, token, whoCalledMe);
+  return unwrapArrayEndpointResult(result, 'GetShopProductsByTier');
+};
+
+export const getProductCourseTiers = async (
+  token,
+  {
+    courseCodeId = null,
+    tierId = null,
+    isActive = null,
+    paymentProviderPriceId = null
+  } = {},
+  whoCalledMe = 'getProductCourseTiers'
+) => {
+  const payload = removeNullPayloadValues({
+    p_coursecodeid: normalizeShopCourseCodeId(courseCodeId),
+    p_tierid: tierId,
+    p_isactive: isActive,
+    p_paymentproviderpriceid: paymentProviderPriceId
+  });
+  const result = await postJsonEndpoint('GetProductCourseTiers', payload, token, whoCalledMe);
+  return unwrapArrayEndpointResult(result, 'GetProductCourseTiers');
+};
+
+export const getTiers = async (token, whoCalledMe = 'getTiers') => {
+  const result = await postJsonEndpoint('GetTiers', {}, token, whoCalledMe);
+  return unwrapArrayEndpointResult(result, 'GetTiers');
+};
+
+export const getPaymentProviders = async (token, whoCalledMe = 'getPaymentProviders') => {
+  const result = await postJsonEndpoint('GetPaymentProviders', {}, token, whoCalledMe);
+  return unwrapArrayEndpointResult(result, 'GetPaymentProviders');
+};
 
 export const getAdminDashboardShopActiveProducts = async (token, whoCalledMe = 'getAdminDashboardShopActiveProducts') => (
   postJsonEndpoint('GetAdminDashboardShopActiveProducts', {}, token, whoCalledMe)
@@ -304,11 +364,60 @@ export const getExportSalesReport = async (startDate, endDate, token, whoCalledM
   }, token, whoCalledMe)
 );
 
-export const upsertProductCourseTier = async (payload, token, whoCalledMe = 'upsertProductCourseTier') => (
-  postJsonEndpoint('UpsertProductCourseTier', {
-    p_payload: payload
-  }, token, whoCalledMe)
-);
+export const upsertProductCourseTier = async (payload, token, whoCalledMe = 'upsertProductCourseTier') => {
+  const requestPayload = {
+    p_product: payload
+  };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] UpsertProductCourseTier raw payload:`, payload);
+    console.log(`[${whoCalledMe}] UpsertProductCourseTier request payload:`, requestPayload);
+  }
+
+  const result = await postJsonEndpoint('UpsertProductCourseTier', requestPayload, token, whoCalledMe);
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] UpsertProductCourseTier result:`, result);
+  }
+
+  return result;
+};
+
+export const upsertTiers = async (tiers = [], token, whoCalledMe = 'upsertTiers') => {
+  const requestPayload = {
+    p_tiers: Array.isArray(tiers) ? tiers : [tiers]
+  };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] UpsertTiers request payload:`, requestPayload);
+  }
+
+  const result = await postJsonEndpoint('UpsertTiers', requestPayload, token, whoCalledMe);
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] UpsertTiers result:`, result);
+  }
+
+  return result;
+};
+
+export const upsertPaymentProviders = async (paymentProviders = [], token, whoCalledMe = 'upsertPaymentProviders') => {
+  const requestPayload = {
+    p_paymentproviders: Array.isArray(paymentProviders) ? paymentProviders : [paymentProviders]
+  };
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] UpsertPaymentProviders request payload:`, requestPayload);
+  }
+
+  const result = await postJsonEndpoint('UpsertPaymentProviders', requestPayload, token, whoCalledMe);
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log(`[${whoCalledMe}] UpsertPaymentProviders result:`, result);
+  }
+
+  return result;
+};
 
 export const toggleShopProductActive = async (paymentProviderPriceId, isActive, token, whoCalledMe = 'toggleShopProductActive') => (
   postJsonEndpoint('ToggleShopProductActive', {
@@ -331,10 +440,14 @@ const TitulinoShopAuthService = {
   getAdminDashboardShopRepeatCustomers,
   getAdminDashboardRecentlyActiveCustomers,
   getAdminDashboardCustomerCohorts,
+  getShopCustomers,
   searchShopPurchases,
   getAdminDashboardCoursePerformanceLeaderboard,
   getShopProductsByCourse,
   getShopProductsByTier,
+  getProductCourseTiers,
+  getTiers,
+  getPaymentProviders,
   getAdminDashboardShopActiveProducts,
   getAdminDashboardShopSalesByLanguagePair,
   getAdminDashboardShopPurchaserOverview,
@@ -345,6 +458,8 @@ const TitulinoShopAuthService = {
   getShopPurchaseHistoryByContacts,
   getExportSalesReport,
   upsertProductCourseTier,
+  upsertTiers,
+  upsertPaymentProviders,
   toggleShopProductActive
 };
 

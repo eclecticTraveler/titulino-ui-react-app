@@ -82,6 +82,12 @@ const revenueColumnTitles = {
   paymentproviderpriceid: ['shop.analytics.table.column.paymentProviderPriceId', 'Payment Provider Price Id'],
   paymentproviderproductid: ['shop.analytics.table.column.paymentProviderProductId', 'Payment Provider Product Id'],
   paymentprovidersessionid: ['shop.analytics.table.column.paymentProviderSessionId', 'Payment Provider Session Id'],
+  paymentproviderid: ['shop.analytics.table.column.paymentProvider', 'Payment Provider'],
+  contactpaymentproviderid: ['shop.analytics.table.column.contactPaymentProviderId', 'Contact Payment Provider Id'],
+  transactionid: ['shop.analytics.table.column.transactionId', 'Transaction Id'],
+  paymentprovidertransactionid: ['shop.analytics.table.column.transactionId', 'Transaction Id'],
+  paymentproviderpaymentid: ['shop.analytics.table.column.transactionId', 'Transaction Id'],
+  paymentintentid: ['shop.analytics.table.column.transactionId', 'Transaction Id'],
   tierid: ['shop.analytics.table.column.tier', 'Tier'],
   tierlocalizationkey: ['shop.analytics.table.column.tier', 'Tier'],
   isproductactive: ['shop.analytics.table.column.active', 'Active'],
@@ -437,7 +443,11 @@ const isCopyableProviderKey = (key = '') => {
   return [
     'paymentproviderpriceid',
     'paymentproviderproductid',
-    'paymentprovidersessionid'
+    'paymentprovidersessionid',
+    'transactionid',
+    'paymentprovidertransactionid',
+    'paymentproviderpaymentid',
+    'paymentintentid'
   ].includes(normalizedKey);
 };
 
@@ -949,6 +959,22 @@ const buildShopPurchaseRow = (item = {}, purchase = {}, rowKey) => {
     'PaymentProviderSessionId',
     'paymentProviderSessionId'
   ]);
+  const transactionId = getValue(purchase, [
+    'TransactionId',
+    'transactionId',
+    'PaymentProviderTransactionId',
+    'paymentProviderTransactionId',
+    'PaymentProviderPaymentId',
+    'paymentProviderPaymentId',
+    'PaymentIntentId',
+    'paymentIntentId',
+    'PaymentProviderChargeId',
+    'paymentProviderChargeId',
+    'CheckoutSessionId',
+    'checkoutSessionId',
+    'PaymentProviderSessionId',
+    'paymentProviderSessionId'
+  ]);
   const amount = toNumber(getRevenueValue(purchase));
   const currency = normalizeCurrencyCode(getValue(purchase, ['Currency', 'currency']));
   const transactionDate = getValue(purchase, [
@@ -968,6 +994,7 @@ const buildShopPurchaseRow = (item = {}, purchase = {}, rowKey) => {
   return {
     key: `${purchaseId || contactInternalId || rowKey}-${rowKey}`,
     purchaseId: purchaseId || '-',
+    transactionId: transactionId || '-',
     transactionDate,
     transactionDateLabel: formatDate(transactionDate),
     transactionTimestamp: toDateTimestamp(transactionDate),
@@ -987,6 +1014,7 @@ const buildShopPurchaseRow = (item = {}, purchase = {}, rowKey) => {
     emails,
     searchText: [
       purchaseId,
+      transactionId,
       courseName,
       courseCodeId,
       tierId,
@@ -1057,6 +1085,15 @@ const getShopPurchaseColumns = (rows = []) => ([
         render: wasRefunded => wasRefunded
           ? <Tag color="red">Refunded</Tag>
           : <Tag color="green">Completed</Tag>
+      },
+      {
+        title: localizedColumnTitle('transactionId', 'Transaction Id'),
+        dataIndex: 'transactionId',
+        width: 300,
+        filterSearch: true,
+        filters: buildFilterOptions(rows, 'transactionId'),
+        onFilter: (value, record) => record.transactionId === value,
+        render: value => renderCopyableText(value, 'Copy transaction id')
       }
     ]
   },
@@ -1518,6 +1555,343 @@ export const buildShopTopCustomersTableModel = (rows = []) => {
   };
 };
 
+const getResidencyLocation = (item = {}) => (
+  item?.Location?.ResidencyLocation ||
+  item?.location?.residencyLocation ||
+  item?.location?.ResidencyLocation ||
+  {}
+);
+
+const normalizeContactPayments = (item = {}) => {
+  const nestedPayments = toArray(getValue(item, ['ContactPayments', 'contactPayments', 'Payments', 'payments']));
+  const paymentRows = nestedPayments.length > 0 ||
+    !getValue(item, ['ContactPaymentProviderId', 'contactPaymentProviderId', 'PaymentProviderId', 'paymentProviderId'])
+    ? nestedPayments
+    : [item];
+
+  return paymentRows
+    .map((payment, index) => {
+      const contactPaymentProviderId = getValue(payment, [
+        'ContactPaymentProviderId',
+        'contactPaymentProviderId',
+        'CustomerPaymentProviderId',
+        'customerPaymentProviderId'
+      ]);
+      const paymentProviderId = getValue(payment, ['PaymentProviderId', 'paymentProviderId', 'Provider', 'provider']);
+      const contactPaymentId = getValue(payment, ['ContactPaymentId', 'contactPaymentId', 'PaymentId', 'paymentId']);
+      const createdAt = getValue(payment, ['CreatedAt', 'createdAt', 'CreationDate', 'creationDate']);
+
+      return {
+        key: contactPaymentId || contactPaymentProviderId || `${paymentProviderId || 'payment'}-${index}`,
+        contactPaymentId,
+        contactPaymentProviderId,
+        paymentProviderId,
+        createdAt
+      };
+    })
+    .filter(payment => payment.contactPaymentProviderId || payment.paymentProviderId || payment.contactPaymentId);
+};
+
+const getCustomerSinceDate = (item = {}, payments = [], purchaseRows = []) => {
+  const explicitCustomerSince = getValue(item, ['CustomerSince', 'customerSince', 'CreatedAt', 'createdAt']);
+  if (isMeaningfulDate(explicitCustomerSince)) return explicitCustomerSince;
+
+  const paymentDates = payments
+    .map(payment => payment.createdAt)
+    .filter(isMeaningfulDate)
+    .sort((left, right) => toDateTimestamp(left) - toDateTimestamp(right));
+  if (paymentDates.length > 0) return paymentDates[0];
+
+  const purchaseDates = purchaseRows
+    .map(purchase => purchase.transactionDate)
+    .filter(isMeaningfulDate)
+    .sort((left, right) => toDateTimestamp(left) - toDateTimestamp(right));
+  return purchaseDates[0] || null;
+};
+
+const renderPaymentIdentityList = (payments = []) => {
+  const normalizedPayments = toArray(payments).filter(payment => (
+    payment?.paymentProviderId || payment?.contactPaymentProviderId
+  ));
+
+  if (normalizedPayments.length === 0) return <Tag>None</Tag>;
+
+  return (
+    <div style={{ display: 'grid', gap: 6, minWidth: 360 }}>
+      {normalizedPayments.map((payment, index) => {
+        const provider = payment.paymentProviderId || 'Payment';
+        const providerId = payment.contactPaymentProviderId || '-';
+
+        return (
+          <div
+            key={`${provider}-${providerId}-${index}`}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '100px minmax(180px, 1fr)',
+              gap: 8,
+              alignItems: 'center'
+            }}
+          >
+            <Tag color="cyan" style={{ marginRight: 0, textAlign: 'center' }}>
+              {provider}
+            </Tag>
+            {providerId !== '-' ? (
+              <Tag
+                color="geekblue"
+                style={{ marginRight: 0, whiteSpace: 'normal', wordBreak: 'break-all' }}
+              >
+                {providerId}
+                <Tooltip title="Copy payment provider id">
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<CopyOutlined style={{ color: '#1890ff' }} />}
+                    style={{ paddingInline: 2, height: 16 }}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      copyText(providerId);
+                    }}
+                  />
+                </Tooltip>
+              </Tag>
+            ) : <Tag style={{ marginRight: 0 }}>None</Tag>}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+const buildShopCustomerRow = (item = {}, index) => {
+  const contactInternalId = getValue(item, ['ContactInternalId', 'contactInternalId']);
+  const fullName = getValue(item, ['FullName', 'fullName']) || [item?.Names, item?.LastNames].filter(Boolean).join(' ') || '-';
+  const emails = normalizeEmailList(
+    getValue(item, ['Emails', 'emails', 'EmailIds', 'emailIds', 'EmailList', 'emailList']),
+    getValue(item, ['PrimaryEmail', 'primaryEmail', 'EmailId', 'emailId', 'Email', 'email'])
+  );
+  const location = getResidencyLocation(item);
+  const countryCode = getValue(location, ['CountryOfResidency', 'countryOfResidency']);
+  const countryName = getValue(location, [
+    'CountryOfResidencyName',
+    'countryOfResidencyName',
+    'CountryOfResidencyNativeName',
+    'countryOfResidencyNativeName'
+  ]) || countryCode || '-';
+  const paymentProviders = normalizeContactPayments(item);
+  const paymentProviderNames = Array.from(new Set(paymentProviders.map(payment => payment.paymentProviderId).filter(Boolean)));
+  const contactPaymentProviderIds = Array.from(new Set(
+    paymentProviders
+      .map(payment => payment.contactPaymentProviderId)
+      .filter(Boolean)
+  ));
+  const paymentProviderIds = paymentProviders
+    .flatMap(payment => [payment.paymentProviderId, payment.contactPaymentProviderId, payment.contactPaymentId])
+    .filter(Boolean);
+  const purchaseHistoryRows = buildContactShopPurchaseHistoryRows([{
+    ContactInternalId: contactInternalId,
+    PurchasesHistory: toArray(getValue(item, ['PurchasesHistory', 'purchasesHistory', 'PurchaseHistory', 'purchaseHistory']))
+  }], contactInternalId);
+  const latestPurchaseDate = getValue(item, ['LatestPurchaseDate', 'latestPurchaseDate']) ||
+    [...purchaseHistoryRows]
+      .filter(purchase => purchase.transactionTimestamp > 0)
+      .sort((left, right) => right.transactionTimestamp - left.transactionTimestamp)[0]?.transactionDate;
+  const currency = normalizeCurrencyCode(purchaseHistoryRows[0]?.currency || getValue(item, ['Currency', 'currency']));
+  const totalPurchases = toNumber(getValue(item, ['TotalPurchases', 'totalPurchases']));
+  const totalRevenue = toNumber(getValue(item, ['TotalRevenue', 'totalRevenue']));
+  const refundCount = toNumber(getValue(item, ['RefundCount', 'refundCount', 'RefundedPurchases', 'refundedPurchases']));
+  const langLevel = getCurrentLanguageLevel(item);
+  const customerSince = getCustomerSinceDate(item, paymentProviders, purchaseHistoryRows);
+
+  return {
+    key: contactInternalId || index,
+    fullName,
+    contactInternalId,
+    emails,
+    countryCode,
+    countryName,
+    age: getValue(item, ['Age', 'age']),
+    sex: getValue(item, ['Sex', 'sex']),
+    langLevel,
+    totalPurchases,
+    totalRevenue,
+    totalRevenueLabel: formatCurrency(totalRevenue, currency),
+    refundCount,
+    latestPurchaseDate,
+    latestPurchaseDateLabel: formatDate(latestPurchaseDate),
+    latestPurchaseTimestamp: toDateTimestamp(latestPurchaseDate),
+    customerSince,
+    customerSinceLabel: formatDate(customerSince),
+    customerSinceTimestamp: toDateTimestamp(customerSince),
+    paymentProviders,
+    paymentProviderNames,
+    contactPaymentProviderIds,
+    paymentProviderIds,
+    purchaseHistoryRows,
+    searchText: [
+      fullName,
+      contactInternalId,
+      emails.join(' '),
+      countryCode,
+      countryName,
+      langLevel,
+      paymentProviderIds.join(' '),
+      purchaseHistoryRows.map(purchase => purchase.searchText).join(' ')
+    ].filter(Boolean).join(' ')
+  };
+};
+
+const getShopCustomerColumns = (rows = []) => ([
+  {
+    title: localizedColumnTitle('buyer', 'Buyer'),
+    children: [
+      {
+        title: localizedColumnTitle('fullName', 'Full Name'),
+        dataIndex: 'fullName',
+        width: 260,
+        filterSearch: true,
+        filters: buildFilterOptions(rows, 'fullName'),
+        onFilter: (value, record) => record.fullName === value,
+        sorter: (a, b) => String(a.fullName || '').localeCompare(String(b.fullName || ''))
+      },
+      {
+        title: localizedColumnTitle('level', 'Level'),
+        dataIndex: 'langLevel',
+        width: 130,
+        filterSearch: true,
+        filters: buildFilterOptions(rows, 'langLevel', renderProficiencyTag),
+        onFilter: (value, record) => record.langLevel === value,
+        sorter: (a, b) => String(a.langLevel || '').localeCompare(String(b.langLevel || '')),
+        render: renderProficiencyTag
+      },
+      {
+        title: localizedColumnTitle('country', 'Country'),
+        dataIndex: 'countryName',
+        width: 220,
+        filterSearch: true,
+        filters: buildFilterOptions(rows, 'countryName'),
+        onFilter: (value, record) => record.countryName === value,
+        sorter: (a, b) => String(a.countryName || '').localeCompare(String(b.countryName || '')),
+        render: (_value, record) => (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            {record.countryCode ? <Flag code={record.countryCode} style={{ width: 24 }} /> : null}
+            {record.countryName || '-'}
+          </span>
+        )
+      }
+    ]
+  },
+  {
+    title: localizedColumnTitle('payments', 'Payments'),
+    children: [
+      {
+        title: localizedColumnTitle('paymentIdentities', 'Payment Identities'),
+        dataIndex: 'paymentProviders',
+        width: 460,
+        filterSearch: true,
+        filters: buildArrayFilterOptions(rows, 'paymentProviderIds'),
+        onFilter: (value, record) => (record.paymentProviderIds || []).includes(value),
+        sorter: (a, b) => String((a.paymentProviderIds || []).join(' ')).localeCompare(String((b.paymentProviderIds || []).join(' '))),
+        render: renderPaymentIdentityList
+      },
+      {
+        title: localizedColumnTitle('customerSince', 'Customer Since'),
+        dataIndex: 'customerSinceLabel',
+        width: 160,
+        sorter: (a, b) => toNumber(a.customerSinceTimestamp) - toNumber(b.customerSinceTimestamp)
+      }
+    ]
+  },
+  {
+    title: localizedColumnTitle('purchases', 'Purchases'),
+    children: [
+      {
+        title: localizedColumnTitle('purchases', 'Purchases'),
+        dataIndex: 'totalPurchases',
+        width: 120,
+        sorter: (a, b) => toNumber(a.totalPurchases) - toNumber(b.totalPurchases),
+        render: value => renderNumberTag(value)
+      },
+      {
+        title: localizedColumnTitle('revenue', 'Revenue'),
+        dataIndex: 'totalRevenue',
+        width: 140,
+        sorter: (a, b) => toNumber(a.totalRevenue) - toNumber(b.totalRevenue),
+        render: (_value, record) => <Tag color="green">{record.totalRevenueLabel}</Tag>
+      },
+      {
+        title: localizedColumnTitle('refundCount', 'Refund Count'),
+        dataIndex: 'refundCount',
+        width: 130,
+        filters: [
+          { text: 'Has refunds', value: 'hasRefunds' },
+          { text: 'No refunds', value: 'noRefunds' }
+        ],
+        onFilter: (value, record) => (value === 'hasRefunds' ? record.refundCount > 0 : record.refundCount === 0),
+        sorter: (a, b) => toNumber(a.refundCount) - toNumber(b.refundCount),
+        render: value => <Tag color={value > 0 ? 'red' : 'green'}>{formatNumber(value)}</Tag>
+      },
+      {
+        title: localizedColumnTitle('latestPurchase', 'Latest Purchase'),
+        dataIndex: 'latestPurchaseDateLabel',
+        width: 160,
+        sorter: (a, b) => toNumber(a.latestPurchaseTimestamp) - toNumber(b.latestPurchaseTimestamp)
+      }
+    ]
+  },
+  {
+    title: localizedColumnTitle('contact', 'Contact'),
+    children: [
+      {
+        title: localizedColumnTitle('internalId', 'Internal Id'),
+        dataIndex: 'contactInternalId',
+        width: 320,
+        filterSearch: true,
+        filters: buildFilterOptions(rows, 'contactInternalId'),
+        onFilter: (value, record) => record.contactInternalId === value,
+        sorter: (a, b) => String(a.contactInternalId || '').localeCompare(String(b.contactInternalId || '')),
+        render: contactInternalId => renderCopyableText(contactInternalId, 'Copy internal id')
+      },
+      {
+        title: localizedColumnTitle('emails', 'Emails'),
+        dataIndex: 'emails',
+        width: 320,
+        filterSearch: true,
+        filters: buildArrayFilterOptions(rows, 'emails'),
+        onFilter: (value, record) => (record.emails || []).includes(value),
+        render: emails => renderTagList(emails)
+      }
+    ]
+  }
+]);
+
+const getShopCustomerExpandable = () => ({
+  expandedRowRender: (record) => (
+    <Table
+      columns={getContactShopPurchaseHistoryColumns(record?.purchaseHistoryRows || [])}
+      dataSource={record?.purchaseHistoryRows || []}
+      pagination={false}
+      size="small"
+      rowKey="key"
+    />
+  )
+});
+
+export const buildShopCustomersTableModel = (rows = [], searchText = '') => {
+  const normalizedSearchText = String(searchText || '').trim().toLowerCase();
+  const allRows = toArray(rows).map(buildShopCustomerRow);
+  const tableData = normalizedSearchText
+    ? allRows.filter(row => String(row.searchText || '').toLowerCase().includes(normalizedSearchText))
+    : allRows;
+
+  if (tableData.length === 0) return EMPTY_TABLE_MODEL;
+
+  return {
+    tableData,
+    columns: getShopCustomerColumns(tableData),
+    expandable: getShopCustomerExpandable()
+  };
+};
+
 const normalizeRevenueByTier = (rows = []) => (
   toArray(rows).map(item => ({
     type: normalizeTierId(getValue(item, ['TierId', 'tierId', 'TierName', 'tierName', 'Tier', 'tier']) || 'Unknown'),
@@ -1587,6 +1961,189 @@ export const buildProductCourseTierPayload = ({
   IsActive: Boolean(isActive)
 });
 
+export const buildShopTierPayload = ({
+  tierId,
+  TierId,
+  localizationKey,
+  LocalizationKey,
+  displayOrder,
+  DisplayOrder
+} = {}) => ({
+  TierId: String(TierId || tierId || '').trim(),
+  LocalizationKey: String(LocalizationKey || localizationKey || '').trim(),
+  DisplayOrder: toNumber(DisplayOrder ?? displayOrder, 0)
+});
+
+export const buildShopPaymentProviderPayload = ({
+  providerId,
+  ProviderId,
+  isEnabled = true,
+  IsEnabled
+} = {}) => ({
+  ProviderId: String(ProviderId || providerId || '').trim(),
+  IsEnabled: toBoolean(IsEnabled ?? isEnabled)
+});
+
+const buildShopTierRows = (rows = []) => (
+  toArray(rows)
+    .map((tier, index) => {
+      const tierId = getValue(tier, ['TierId', 'tierId']);
+      const localizationKey = getValue(tier, ['LocalizationKey', 'localizationKey', 'TierLocalizationKey', 'tierLocalizationKey']);
+      const displayOrder = toNumber(getValue(tier, ['DisplayOrder', 'displayOrder']), 0);
+      const createdAt = getValue(tier, ['CreatedAt', 'createdAt']);
+      const modifiedAt = getValue(tier, ['ModifiedAt', 'modifiedAt']);
+
+      return {
+        key: tierId || index,
+        tierId,
+        localizationKey,
+        displayOrder,
+        createdAt,
+        createdAtLabel: formatDate(createdAt),
+        createdAtTimestamp: toDateTimestamp(createdAt),
+        modifiedAt,
+        modifiedAtLabel: formatDate(modifiedAt),
+        modifiedAtTimestamp: toDateTimestamp(modifiedAt)
+      };
+    })
+    .filter(tier => tier.tierId)
+);
+
+const getShopTierColumns = (rows = []) => ([
+  {
+    title: localizedColumnTitle('tier', 'Tier'),
+    dataIndex: 'tierId',
+    width: 150,
+    filterSearch: true,
+    filters: buildFilterOptions(rows, 'tierId', renderTierTag),
+    onFilter: (value, record) => record.tierId === value,
+    sorter: (a, b) => String(a.tierId || '').localeCompare(String(b.tierId || '')),
+    render: (tierId, record) => renderTierTag(tierId, record.localizationKey)
+  },
+  {
+    title: localizedColumnTitle('localizationKey', 'Localization Key'),
+    dataIndex: 'localizationKey',
+    width: 260,
+    filterSearch: true,
+    filters: buildFilterOptions(rows, 'localizationKey'),
+    onFilter: (value, record) => record.localizationKey === value,
+    sorter: (a, b) => String(a.localizationKey || '').localeCompare(String(b.localizationKey || '')),
+    render: renderLocalizationKey
+  },
+  {
+    title: localizedColumnTitle('displayOrder', 'Display Order'),
+    dataIndex: 'displayOrder',
+    width: 140,
+    sorter: (a, b) => toNumber(a.displayOrder) - toNumber(b.displayOrder),
+    render: value => renderNumberTag(value)
+  },
+  {
+    title: localizedColumnTitle('createdAt', 'Created At'),
+    dataIndex: 'createdAtLabel',
+    width: 150,
+    sorter: (a, b) => toNumber(a.createdAtTimestamp) - toNumber(b.createdAtTimestamp)
+  },
+  {
+    title: localizedColumnTitle('modifiedAt', 'Modified At'),
+    dataIndex: 'modifiedAtLabel',
+    width: 150,
+    sorter: (a, b) => toNumber(a.modifiedAtTimestamp) - toNumber(b.modifiedAtTimestamp)
+  }
+]);
+
+export const buildShopTiersTableModel = (rows = []) => {
+  const tableData = buildShopTierRows(rows);
+  if (tableData.length === 0) return EMPTY_TABLE_MODEL;
+
+  return {
+    tableData,
+    columns: getShopTierColumns(tableData),
+    expandable: null
+  };
+};
+
+export const buildShopTierSelectionOptions = (tiers = []) => (
+  buildShopTierRows(tiers)
+    .sort((left, right) => toNumber(left.displayOrder) - toNumber(right.displayOrder))
+    .map(tier => ({
+      value: tier.tierId,
+      label: tier.localizationKey ? `${tier.tierId} - ${tier.localizationKey}` : tier.tierId,
+      searchText: [tier.tierId, tier.localizationKey, tier.displayOrder].filter(Boolean).join(' '),
+      ...tier
+    }))
+);
+
+const buildShopPaymentProviderRows = (rows = []) => (
+  toArray(rows)
+    .map((provider, index) => {
+      const providerId = getValue(provider, ['ProviderId', 'providerId']);
+      const isEnabled = toBoolean(getValue(provider, ['IsEnabled', 'isEnabled']));
+      const createdAt = getValue(provider, ['CreatedAt', 'createdAt']);
+      const modifiedAt = getValue(provider, ['ModifiedAt', 'modifiedAt']);
+
+      return {
+        key: providerId || index,
+        providerId,
+        isEnabled,
+        createdAt,
+        createdAtLabel: formatDate(createdAt),
+        createdAtTimestamp: toDateTimestamp(createdAt),
+        modifiedAt,
+        modifiedAtLabel: formatDate(modifiedAt),
+        modifiedAtTimestamp: toDateTimestamp(modifiedAt)
+      };
+    })
+    .filter(provider => provider.providerId)
+);
+
+const getShopPaymentProviderColumns = (rows = []) => ([
+  {
+    title: localizedColumnTitle('paymentProvider', 'Payment Provider'),
+    dataIndex: 'providerId',
+    width: 190,
+    filterSearch: true,
+    filters: buildFilterOptions(rows, 'providerId'),
+    onFilter: (value, record) => record.providerId === value,
+    sorter: (a, b) => String(a.providerId || '').localeCompare(String(b.providerId || '')),
+    render: providerId => <Tag color="cyan">{providerId}</Tag>
+  },
+  {
+    title: localizedColumnTitle('enabled', 'Enabled'),
+    dataIndex: 'isEnabled',
+    width: 130,
+    filters: [
+      { text: 'Enabled', value: true },
+      { text: 'Disabled', value: false }
+    ],
+    onFilter: (value, record) => record.isEnabled === value,
+    sorter: (a, b) => Number(a.isEnabled) - Number(b.isEnabled),
+    render: renderBooleanTag
+  },
+  {
+    title: localizedColumnTitle('createdAt', 'Created At'),
+    dataIndex: 'createdAtLabel',
+    width: 150,
+    sorter: (a, b) => toNumber(a.createdAtTimestamp) - toNumber(b.createdAtTimestamp)
+  },
+  {
+    title: localizedColumnTitle('modifiedAt', 'Modified At'),
+    dataIndex: 'modifiedAtLabel',
+    width: 150,
+    sorter: (a, b) => toNumber(a.modifiedAtTimestamp) - toNumber(b.modifiedAtTimestamp)
+  }
+]);
+
+export const buildShopPaymentProvidersTableModel = (rows = []) => {
+  const tableData = buildShopPaymentProviderRows(rows);
+  if (tableData.length === 0) return EMPTY_TABLE_MODEL;
+
+  return {
+    tableData,
+    columns: getShopPaymentProviderColumns(tableData),
+    expandable: null
+  };
+};
+
 const normalizeLanguagePairSales = (rows = []) => (
   toArray(rows).map(item => {
     const nativeLanguage = getValue(item, ['NativeLanguageId', 'nativeLanguageId', 'NativeLanguage', 'nativeLanguage']) || 'N/A';
@@ -1641,13 +2198,17 @@ export const buildShopAnalyticsDashboard = ({
   salesByDateRange = [],
   refundAnalytics: refundAnalyticsRows = {},
   purchaseRows = [],
+  productCourseTiers = [],
   activeProducts = [],
   productsByCourse = [],
   productsByTier = [],
+  shopTiers = [],
+  shopPaymentProviders = [],
   languagePairSales = [],
   courseLeaderboard = [],
   repeatCustomers = {},
   customerLifetimeValue = [],
+  shopCustomers = [],
   recentlyActiveCustomers = [],
   customerCohorts = [],
   conversionMetrics: conversionMetricsRows = {},
@@ -1693,9 +2254,13 @@ export const buildShopAnalyticsDashboard = ({
   const normalizedLanguagePairSales = normalizeLanguagePairSales(languagePairSales);
   const purchaseTable = buildShopPurchaseTableModel(purchaseRows);
   const activeProductsTable = buildTableModel(activeProducts);
-  const productsByCourseTable = buildTableModel(productsByCourse);
-  const productsByTierTable = buildTableModel(productsByTier);
+  const productCourseTierRows = firstNonEmptyArray(productCourseTiers, productsByCourse, productsByTier);
+  const productsByCourseTable = buildTableModel(firstNonEmptyArray(productsByCourse, productCourseTierRows));
+  const productsByTierTable = buildTableModel(firstNonEmptyArray(productsByTier, productCourseTierRows));
+  const shopTiersTable = buildShopTiersTableModel(shopTiers);
+  const shopPaymentProvidersTable = buildShopPaymentProvidersTableModel(shopPaymentProviders);
   const topCustomersTable = buildShopTopCustomersTableModel(customerLifetimeValue);
+  const shopCustomersTable = buildShopCustomersTableModel(shopCustomers);
   const recentlyActiveCustomersTable = buildTableModel(recentlyActiveCustomers);
   const customerCohortsTable = buildTableModel(customerCohorts);
   const salesByDateRangeTable = buildTableModel(salesByDateRange);
@@ -1761,7 +2326,10 @@ export const buildShopAnalyticsDashboard = ({
       activeProducts: activeProductsTable,
       productsByCourse: productsByCourseTable,
       productsByTier: productsByTierTable,
+      shopTiers: shopTiersTable,
+      shopPaymentProviders: shopPaymentProvidersTable,
       topCustomers: topCustomersTable,
+      shopCustomers: shopCustomersTable,
       recentlyActiveCustomers: recentlyActiveCustomersTable,
       customerCohorts: customerCohortsTable,
       salesByDateRange: salesByDateRangeTable,
@@ -1772,6 +2340,10 @@ export const buildShopAnalyticsDashboard = ({
       summary,
       health,
       shopCoursesWithPurchases,
+      productCourseTiers: productCourseTierRows,
+      shopCustomers,
+      shopTiers,
+      shopPaymentProviders,
       repeatCustomers,
       refundAnalytics,
       salesByDateRange,
@@ -1786,8 +2358,14 @@ const ShopAnalytics = {
   buildShopPurchaseTableModel,
   buildContactShopPurchaseHistoryTableModel,
   buildShopTopCustomersTableModel,
+  buildShopCustomersTableModel,
+  buildShopTiersTableModel,
+  buildShopPaymentProvidersTableModel,
   buildShopPurchasedCourseSelectionOptions,
-  buildProductCourseTierPayload
+  buildShopTierSelectionOptions,
+  buildProductCourseTierPayload,
+  buildShopTierPayload,
+  buildShopPaymentProviderPayload
 };
 
 export default ShopAnalytics;
