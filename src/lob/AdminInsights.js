@@ -1,6 +1,6 @@
 import Flag from "react-world-flags";
 import { Tag, Table, Progress, Avatar, Image } from 'antd';
-import { UserOutlined, CopyOutlined } from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
 import StudentProgress from "lob/StudentProgress";
 import AdminProgressEditable from "components/layout-components/AdminProgressEditable";
 import IntlMessage from "components/util-components/IntlMessage";
@@ -104,10 +104,12 @@ const getLatestProficiencyForCourse = (item, courseCodeId) => {
 }
 
 const getDaysUntilComingBirthday = async(birthday) => {
+  if (!birthday) return null;
+
   // Parse the provided birthday
   const targetDate = new Date(birthday);
   if (isNaN(targetDate)) {
-    throw new Error("Invalid date format");
+    return null;
   }
 
   // Get today's UTC date without time
@@ -381,7 +383,7 @@ export const handleEnrolleeListConvertor = async (data, locationType, courseCode
 
   const processData = async(item, i) => {
       const daysUntilBday = await getDaysUntilComingBirthday(item?.DateOfBirth);
-      const currentLevel = item.LanguageProficienciesHistory.find(entry => entry.EndDate === null)?.LanguageLevelAbbreviation;   
+      const currentLevel = (item?.LanguageProficienciesHistory || []).find(entry => entry.EndDate === null)?.LanguageLevelAbbreviation;   
       results.push({
         key: i,
         langLevel: currentLevel,

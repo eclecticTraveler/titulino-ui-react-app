@@ -10,6 +10,7 @@ import {
   ON_CLEAR_SELECTED_CONTACT,
   ON_UPSERTING_COURSE,
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
+  ON_LOADING_CONTACT_SHOP_PURCHASE_HISTORY,
   ON_LOADING_CONTACT_LOGIN_FOOTPRINT,
   ON_LOADING_ALL_USER_LOGIN_FOOTPRINT,
   ON_LOADING_CONTACT_PROFILE_MONITORING,
@@ -18,7 +19,10 @@ import {
   ON_HYDRATING_ADMIN_TOOLS_AVATARS,
   ON_LOADING_CONTACT_GEO_MAPS,
   ON_UPLOADING_COURSE_COVER_IMAGE,
-  ON_UPSERTING_SELECTED_CONTACT_PROFILE
+  ON_UPSERTING_SELECTED_CONTACT_PROFILE,
+  ON_LOADING_SHOP_REVENUE_DASHBOARD,
+  ON_UPSERTING_SHOP_PRODUCT_COURSE_TIER,
+  ON_TOGGLING_SHOP_PRODUCT_ACTIVE
 } from '../constants/AdminTools';
 
 const initState = {
@@ -137,6 +141,8 @@ const adminTools = (state = initState, action) => {
       return { ...state, lastCourseUpsertResult: action.upsertResult };
     case ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY:
       return { ...state, contactCourseProgressActivity: action.contactCourseProgressActivity };
+    case ON_LOADING_CONTACT_SHOP_PURCHASE_HISTORY:
+      return { ...state, contactShopPurchaseHistory: action.contactShopPurchaseHistory };
     case ON_LOADING_CONTACT_LOGIN_FOOTPRINT:
       return { ...state, contactLoginFootprint: action.contactLoginFootprint };
     case ON_LOADING_ALL_USER_LOGIN_FOOTPRINT:
@@ -177,8 +183,26 @@ const adminTools = (state = initState, action) => {
           ? patchEnrolleeContactProfile(state.allEnrollees, action.contactProfilePatch)
           : state.allEnrollees
       };
+    case ON_LOADING_SHOP_REVENUE_DASHBOARD:
+      return {
+        ...state,
+        shopRevenueDashboard: action.shopRevenueDashboard,
+        shopCoursesWithPurchases: action.shopCoursesWithPurchases || state.shopCoursesWithPurchases || [],
+        shopRevenueFilters: action.shopRevenueFilters
+      };
+    case ON_UPSERTING_SHOP_PRODUCT_COURSE_TIER:
+      return { ...state, lastShopProductCourseTierUpsertResult: action.upsertResult };
+    case ON_TOGGLING_SHOP_PRODUCT_ACTIVE:
+      return { ...state, lastShopProductActiveToggleResult: action.toggleResult };
     case ON_CLEAR_SELECTED_CONTACT:
-      return { ...state, contactCourseProgressActivity: null, contactLoginFootprint: null, contactGeoMaps: null, contactGlobalUserRole: null };
+      return {
+        ...state,
+        contactCourseProgressActivity: null,
+        contactShopPurchaseHistory: null,
+        contactLoginFootprint: null,
+        contactGeoMaps: null,
+        contactGlobalUserRole: null
+      };
     default:
       return state;
   }

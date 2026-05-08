@@ -2,14 +2,15 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined } from '@ant-design/icons';
+import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic } from 'antd';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
 import IntlMessage from 'components/util-components/IntlMessage';
 import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
+import BarGraph from 'components/layout-components/Graphs/BarGraph';
 import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/LoginFootprintHeatmapGraph';
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import ContactProfileEditor from 'components/shared-components/ContactProfileEditor';
@@ -18,6 +19,7 @@ import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
 import AccessManagementPolicy from 'lob/AccessManagementPolicy';
 import ContactProfileEditorLob from 'lob/ContactProfileEditor';
 import ContactProfilesMonitoring from 'lob/ContactProfilesMonitoring';
+import ShopAnalytics from 'lob/ShopAnalytics';
 import { env } from 'configs/EnvironmentConfig';
 import dayjs from 'dayjs';
 import { onRenderingCourseRegistration, onRequestingGeographicalDivision } from 'redux/actions/Lrn';
@@ -31,6 +33,7 @@ import {
   onClearSelectedContact,
   onUpsertingCourse,
   onLoadingContactCourseProgressActivity,
+  onLoadingContactShopPurchaseHistory,
   onLoadingContactLoginFootprint,
   onLoadingAllUserLoginFootprint,
   onLoadingContactProfileMonitoring,
@@ -42,6 +45,9 @@ import {
   onLoadingContactGeoMaps,
   onUploadingCourseCoverImage,
   onUpsertingSelectedContactProfile,
+  onLoadingShopRevenueDashboard,
+  onUpsertingShopProductCourseTier,
+  onTogglingShopProductActive,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -55,6 +61,23 @@ const normalizeContactInternalId = (value) => (
 const hasAvatarResolution = (avatarUrlMap = {}, contactInternalId) => (
   Object.prototype.hasOwnProperty.call(avatarUrlMap || {}, normalizeContactInternalId(contactInternalId))
 );
+
+const getProductManagementValue = (row = {}, keys = []) => {
+  for (const key of keys) {
+    if (row?.[key] !== undefined && row?.[key] !== null && row?.[key] !== '') return row[key];
+  }
+  return null;
+};
+
+const normalizeBooleanValue = (value, fallback = true) => {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalizedValue = value.trim().toLowerCase();
+    if (['true', 'yes', '1', 'active'].includes(normalizedValue)) return true;
+    if (['false', 'no', '0', 'inactive'].includes(normalizedValue)) return false;
+  }
+  return value === undefined || value === null ? fallback : Boolean(value);
+};
 
 const GlobalAdminToolsLandingDashboard = (props) => {
   const {
@@ -74,8 +97,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onClearSelectedContact,
     onUpsertingCourse,
     onLoadingContactCourseProgressActivity,
+    onLoadingContactShopPurchaseHistory,
     onLoadingContactLoginFootprint,
     contactCourseProgressActivity,
+    contactShopPurchaseHistory,
     contactLoginFootprint,
     onLoadingAllUserLoginFootprint,
     allUserLoginFootprint,
@@ -92,6 +117,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     contactGeoMaps,
     onUploadingCourseCoverImage,
     onUpsertingSelectedContactProfile,
+    onLoadingShopRevenueDashboard,
+    onUpsertingShopProductCourseTier,
+    onTogglingShopProductActive,
+    shopRevenueDashboard,
+    shopCoursesWithPurchases,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   } = props;
@@ -119,6 +149,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const geoMaps = contactGeoMaps || { birth: null, residency: null };
   const [selectedProgressCourseId, setSelectedProgressCourseId] = useState('all');
   const [contactProgressLoading, setContactProgressLoading] = useState(false);
+  const [contactPurchaseHistoryLoading, setContactPurchaseHistoryLoading] = useState(false);
   const [contactLoginLoading, setContactLoginLoading] = useState(false);
   const [monitoringLoading, setMonitoringLoading] = useState(false);
   const [monitoringInnerTabKey, setMonitoringInnerTabKey] = useState('general-access');
@@ -135,6 +166,25 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [contactProfileSubmitLoading, setContactProfileSubmitLoading] = useState({
     optedOut: false,
     inactive: false
+  });
+  const [revenueInnerTabKey, setRevenueInnerTabKey] = useState('overview');
+  const [revenueProductTabKey, setRevenueProductTabKey] = useState('display');
+  const [revenueLoading, setRevenueLoading] = useState(false);
+  const [revenueProductSubmitting, setRevenueProductSubmitting] = useState(false);
+  const [revenueProductFormValues, setRevenueProductFormValues] = useState({
+    selectedProductKey: null,
+    paymentProviderPriceId: '',
+    courseCodeId: null,
+    tierId: 'Gold',
+    isActive: true
+  });
+  const [revenueFilters, setRevenueFilters] = useState({
+    courseCodeId: 'all',
+    tierId: 'all',
+    days: 30,
+    limit: 100,
+    searchText: '',
+    dateRange: [dayjs().subtract(30, 'day'), dayjs()]
   });
   const [isContactProfileEditorOpen, setContactProfileEditorOpen] = useState(false);
   const [contactProfileEditorSubmitting, setContactProfileEditorSubmitting] = useState(false);
@@ -155,7 +205,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const { message: messageApi } = App.useApp();
   const setLocale = (isLocaleOn, localeKey) =>
     isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
-  const t = (key) => intl.formatMessage({ id: key });
+  const t = useCallback((key, values) => intl.formatMessage({ id: key }, values), [intl]);
   const getCourseUpsertResult = (actionResult) => actionResult?.upsertResult || actionResult || null;
   const isCourseUpsertSuccessful = (actionResult) => getCourseUpsertResult(actionResult)?.success === true;
 
@@ -166,6 +216,196 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   );
   const contactProfileMonitoringAuthorization = accessManagementPolicy.canManageContactProfiles();
   const canManageContactProfileMonitoring = contactProfileMonitoringAuthorization.isAllowed;
+  const revenueCourseOptions = useMemo(() => (
+    ShopAnalytics.buildShopPurchasedCourseSelectionOptions(
+      shopCoursesWithPurchases,
+      {
+        allCoursesLabel: intl.formatMessage({ id: 'admin.tools.revenue.allCourses' }),
+        purchasesLabel: intl.formatMessage({ id: 'admin.tools.revenue.option.purchases' }),
+        buyersLabel: intl.formatMessage({ id: 'admin.tools.revenue.option.buyers' })
+      }
+    )
+  ), [shopCoursesWithPurchases, intl]);
+
+  const revenueTierOptions = [
+    { value: 'all', label: t('admin.tools.revenue.allTiers') },
+    { value: 'Gold', label: 'Gold' },
+    { value: 'Silver', label: 'Silver' },
+    { value: 'Free', label: 'Free' }
+  ];
+
+  const revenueProductCourseOptions = useMemo(() => (
+    (allRawCourses || []).map((course) => {
+      const courseCodeId = course?.CourseCodeId;
+      const courseName = course?.CourseDetails?.course || courseCodeId;
+      return {
+        value: courseCodeId,
+        label: `${courseName} - ${courseCodeId}`,
+        searchText: `${courseName} ${courseCodeId}`
+      };
+    }).filter(option => option.value)
+  ), [allRawCourses]);
+
+  const revenueProductRows = useMemo(() => {
+    const tableSources = [
+      shopRevenueDashboard?.tables?.activeProducts?.tableData,
+      shopRevenueDashboard?.tables?.productsByCourse?.tableData,
+      shopRevenueDashboard?.tables?.productsByTier?.tableData
+    ];
+    const rowsByProductId = new Map();
+
+    tableSources.flatMap(source => source || []).forEach((row) => {
+      const paymentProviderPriceId = getProductManagementValue(row, [
+        'PaymentProviderPriceId',
+        'paymentProviderPriceId',
+        'PaymentProviderProductId',
+        'paymentProviderProductId'
+      ]);
+      if (!paymentProviderPriceId || rowsByProductId.has(paymentProviderPriceId)) return;
+
+      rowsByProductId.set(paymentProviderPriceId, {
+        key: paymentProviderPriceId,
+        paymentProviderPriceId,
+        courseCodeId: getProductManagementValue(row, ['CourseCodeId', 'courseCodeId']),
+        courseName: getProductManagementValue(row, ['CourseName', 'courseName']),
+        tierId: getProductManagementValue(row, ['TierId', 'tierId']) || 'Gold',
+        isActive: normalizeBooleanValue(getProductManagementValue(row, ['IsProductActive', 'isProductActive', 'IsActive', 'isActive']), true)
+      });
+    });
+
+    return Array.from(rowsByProductId.values());
+  }, [shopRevenueDashboard]);
+
+  const revenueProductOptions = useMemo(() => (
+    revenueProductRows.map(product => ({
+      value: product.key,
+      searchText: [
+        product.paymentProviderPriceId,
+        product.courseCodeId,
+        product.courseName,
+        product.tierId
+      ].filter(Boolean).join(' '),
+      label: `${product.paymentProviderPriceId} - ${product.courseName || product.courseCodeId || product.tierId}`
+    }))
+  ), [revenueProductRows]);
+
+  const loadShopRevenueDashboard = useCallback((nextFilters = revenueFilters) => {
+    if (!emailId || !onLoadingShopRevenueDashboard) return Promise.resolve();
+
+    setRevenueLoading(true);
+    return onLoadingShopRevenueDashboard(emailId, nextFilters)
+      .finally(() => setRevenueLoading(false));
+  }, [emailId, onLoadingShopRevenueDashboard, revenueFilters]);
+
+  const updateRevenueFilters = useCallback((patch, shouldReload = false) => {
+    const nextFilters = {
+      ...revenueFilters,
+      ...patch
+    };
+
+    setRevenueFilters(nextFilters);
+
+    if (shouldReload) {
+      loadShopRevenueDashboard(nextFilters);
+    }
+  }, [loadShopRevenueDashboard, revenueFilters]);
+
+  const setRevenueProductFormField = useCallback((fieldName, value) => {
+    setRevenueProductFormValues(previousValues => ({
+      ...previousValues,
+      [fieldName]: value
+    }));
+  }, []);
+
+  const handleSelectRevenueProduct = useCallback((productKey) => {
+    const product = revenueProductRows.find(item => item.key === productKey);
+
+    setRevenueProductFormValues({
+      selectedProductKey: productKey || null,
+      paymentProviderPriceId: product?.paymentProviderPriceId || '',
+      courseCodeId: product?.courseCodeId || null,
+      tierId: product?.tierId || 'Gold',
+      isActive: product?.isActive ?? true
+    });
+  }, [revenueProductRows]);
+
+  const handleResetRevenueProductForm = useCallback(() => {
+    setRevenueProductFormValues({
+      selectedProductKey: null,
+      paymentProviderPriceId: '',
+      courseCodeId: null,
+      tierId: 'Gold',
+      isActive: true
+    });
+  }, []);
+
+  const handleUpsertRevenueProduct = useCallback(async () => {
+    if (!emailId) return;
+    if (
+      !revenueProductFormValues.paymentProviderPriceId ||
+      !revenueProductFormValues.courseCodeId ||
+      !revenueProductFormValues.tierId
+    ) {
+      messageApi.warning(t('admin.tools.revenue.product.required'));
+      return;
+    }
+
+    setRevenueProductSubmitting(true);
+    try {
+      const actionResult = await onUpsertingShopProductCourseTier(emailId, revenueProductFormValues);
+      const result = actionResult?.upsertResult || actionResult;
+      if (!result?.success) throw new Error(result?.errorMessage || 'Product upsert failed.');
+
+      messageApi.success(t('admin.tools.revenue.product.upsertSuccess'));
+      await loadShopRevenueDashboard();
+    } catch (error) {
+      console.error(error);
+      messageApi.error(t('admin.tools.revenue.product.upsertError'));
+    } finally {
+      setRevenueProductSubmitting(false);
+    }
+  }, [
+    emailId,
+    loadShopRevenueDashboard,
+    messageApi,
+    onUpsertingShopProductCourseTier,
+    revenueProductFormValues,
+    t
+  ]);
+
+  const handleDisableRevenueProduct = useCallback(async () => {
+    if (!emailId || !revenueProductFormValues.paymentProviderPriceId) return;
+
+    setRevenueProductSubmitting(true);
+    try {
+      const actionResult = await onTogglingShopProductActive(
+        emailId,
+        revenueProductFormValues.paymentProviderPriceId,
+        false
+      );
+      const result = actionResult?.toggleResult || actionResult;
+      if (!result?.success) throw new Error(result?.errorMessage || 'Product disable failed.');
+
+      messageApi.success(t('admin.tools.revenue.product.disableSuccess'));
+      setRevenueProductFormValues(previousValues => ({
+        ...previousValues,
+        isActive: false
+      }));
+      await loadShopRevenueDashboard();
+    } catch (error) {
+      console.error(error);
+      messageApi.error(t('admin.tools.revenue.product.disableError'));
+    } finally {
+      setRevenueProductSubmitting(false);
+    }
+  }, [
+    emailId,
+    loadShopRevenueDashboard,
+    messageApi,
+    onTogglingShopProductActive,
+    revenueProductFormValues.paymentProviderPriceId,
+    t
+  ]);
 
   useEffect(() => {
     if (emailId) {
@@ -173,6 +413,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emailId]);
+
+  useEffect(() => {
+    if (activeOuterTabKey !== 'revenue' || !emailId || shopRevenueDashboard) return;
+
+    loadShopRevenueDashboard();
+  }, [activeOuterTabKey, emailId, shopRevenueDashboard, loadShopRevenueDashboard]);
 
   useEffect(() => {
     if ((countries?.length > 0 && selfLanguageLevel?.length > 0) || !onRenderingCourseRegistration) return;
@@ -483,6 +729,31 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contactTabKey, selectedContact?.ContactInternalId, selectedContactCourseIdsKey, emailId]);
+
+  useEffect(() => {
+    if (
+      contactTabKey !== 'detailed' ||
+      !selectedContact?.ContactInternalId ||
+      !emailId
+    ) {
+      return;
+    }
+
+    let isActive = true;
+    setContactPurchaseHistoryLoading(true);
+
+    onLoadingContactShopPurchaseHistory(
+      selectedContact.ContactInternalId,
+      emailId
+    )?.finally(() => {
+      if (isActive) setContactPurchaseHistoryLoading(false);
+    });
+
+    return () => {
+      isActive = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactTabKey, selectedContact?.ContactInternalId, emailId]);
 
   useEffect(() => {
     if (
@@ -1592,6 +1863,35 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     return <Tabs items={langTabs} size="small" />;
   };
 
+  const renderContactShopPurchaseHistory = () => {
+    const currentPurchaseHistory = String(contactShopPurchaseHistory?.contactInternalId || '') === String(selectedContact?.ContactInternalId || '')
+      ? contactShopPurchaseHistory
+      : null;
+    const tableModel = currentPurchaseHistory?.tableModel;
+
+    if (contactPurchaseHistoryLoading) {
+      return (
+        <p style={{ textAlign: 'center', color: '#999', padding: 32 }}>
+          {setLocale(locale, 'admin.tools.label.loadingPurchaseHistory')}
+        </p>
+      );
+    }
+
+    if (!tableModel?.tableData?.length) {
+      return <Empty description={setLocale(locale, 'admin.tools.label.noPurchaseHistory')} style={{ marginBottom: 16 }} />;
+    }
+
+    return (
+      <AbstractTable
+        tableData={tableModel.tableData}
+        tableColumns={tableModel.columns}
+        tableExpandables={tableModel.expandable}
+        isAllowedToEditTableData={false}
+        isToRenderActionButton={false}
+      />
+    );
+  };
+
   const renderContactProgressActivity = () => {
     if (selectedContactCourseIds.length === 0) {
       return <Empty description={setLocale(locale, 'admin.tools.label.none')} style={{ marginBottom: 16 }} />;
@@ -1883,6 +2183,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         {/* Language History */}
         <Divider titlePlacement="left"><GlobalOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.languageHistory')}</Divider>
         {renderLanguageHistory(selectedContact.LanguageProficienciesHistory)}
+
+        {/* Purchase History */}
+        <Divider titlePlacement="left"><ShoppingCartOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.purchaseHistory')}</Divider>
+        {renderContactShopPurchaseHistory()}
 
         {/* Course Progress Activity */}
         <Divider titlePlacement="left"><LineChartOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.courseProgressActivity')}</Divider>
@@ -3215,11 +3519,395 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </Card>
   );
 
+  const renderRevenueMetricCard = (titleKey, value, icon, color = '#3e82f7') => (
+    <Col xs={24} sm={12} lg={6}>
+      <Card variant="outlined" size="small">
+        <Statistic
+          title={setLocale(locale, titleKey)}
+          value={value ?? '0'}
+          prefix={icon ? React.cloneElement(icon, { style: { color } }) : null}
+          valueStyle={{ color }}
+        />
+      </Card>
+    </Col>
+  );
+
+  const renderRevenueTable = (tableModel, emptyKey = 'admin.tools.revenue.noData') => (
+    tableModel?.tableData?.length > 0 ? (
+      <AbstractTable
+        tableData={tableModel.tableData}
+        tableColumns={tableModel.columns}
+        tableExpandables={tableModel.expandable}
+        isAllowedToEditTableData={false}
+        isToRenderActionButton={false}
+      />
+    ) : (
+      <Empty description={setLocale(locale, emptyKey)} />
+    )
+  );
+
+  const renderRevenueDivider = (titleKey, icon) => (
+    <Divider titlePlacement="left">
+      <span>
+        {icon ? React.cloneElement(icon, { style: { marginRight: 8 } }) : null}
+        {setLocale(locale, titleKey)}
+      </span>
+    </Divider>
+  );
+
+  const renderRevenueOverview = () => {
+    const overview = shopRevenueDashboard?.overview || {};
+
+    return (
+      <>
+        <Row gutter={[16, 16]}>
+          {renderRevenueMetricCard('admin.tools.revenue.totalRevenue', overview.totalRevenue, <DollarOutlined />, '#1677ff')}
+          {renderRevenueMetricCard('admin.tools.revenue.totalPurchases', overview.totalPurchases, <ShoppingCartOutlined />, '#52c41a')}
+          {renderRevenueMetricCard('admin.tools.revenue.conversionRate', overview.conversionRate, <LineChartOutlined />, '#722ed1')}
+          {renderRevenueMetricCard('admin.tools.revenue.activeProducts', overview.activeProducts, <BookOutlined />, '#fa8c16')}
+          {renderRevenueMetricCard('admin.tools.revenue.refundRate', overview.refundRate, <ReloadOutlined />, '#cf1322')}
+          {renderRevenueMetricCard('admin.tools.revenue.refundedAmount', overview.refundedAmount, <DollarOutlined />, '#d46b08')}
+          {renderRevenueMetricCard('admin.tools.revenue.repeatCustomerRate', overview.repeatCustomerRate, <UserOutlined />, '#08979c')}
+          {renderRevenueMetricCard('admin.tools.revenue.latestRefresh', overview.latestRefresh == null ? '-' : `${overview.latestRefresh}s`, <DashboardOutlined />, '#595959')}
+        </Row>
+      </>
+    );
+  };
+
+  const renderRevenueCharts = () => (
+    <Row gutter={[16, 16]}>
+      <Col xs={24} lg={12}>
+        <BarGraph
+          localizedTitle="admin.tools.revenue.revenueByTier"
+          graphData={shopRevenueDashboard?.charts?.revenueByTier || []}
+          passedValue="revenue"
+          passedType="type"
+        />
+      </Col>
+      <Col xs={24} lg={12}>
+        <BarGraph
+          localizedTitle="admin.tools.revenue.salesByLanguagePair"
+          graphData={shopRevenueDashboard?.charts?.languagePairSales || []}
+          passedValue="revenue"
+          passedType="type"
+        />
+      </Col>
+      <Col xs={24}>
+        <BarGraph
+          localizedTitle="admin.tools.revenue.topCourses"
+          graphData={shopRevenueDashboard?.charts?.topCourses || []}
+          passedValue="revenue"
+          passedType="type"
+        />
+      </Col>
+    </Row>
+  );
+
+  const renderRevenueTrends = () => (
+    <Row gutter={[16, 16]}>
+      <Col xs={24} lg={12}>
+        <TimelineTrendGraph
+          localizedTitle="admin.tools.revenue.monthlyRevenue"
+          trendData={shopRevenueDashboard?.charts?.monthlyRevenue || []}
+          lineColor="#1677ff"
+          enableGradientArea
+        />
+      </Col>
+      <Col xs={24} lg={12}>
+        <TimelineTrendGraph
+          localizedTitle="admin.tools.revenue.dailySales"
+          trendData={shopRevenueDashboard?.charts?.dailySales || []}
+          lineColor="#52c41a"
+          enableGradientArea
+        />
+      </Col>
+      <Col xs={24}>
+        <TimelineTrendGraph
+          localizedTitle="admin.tools.revenue.dateRangeSales"
+          trendData={shopRevenueDashboard?.charts?.salesByDateRange || []}
+          lineColor="#fa8c16"
+          enableGradientArea
+        />
+      </Col>
+    </Row>
+  );
+
+  const renderRevenueCustomers = () => (
+    <>
+      {renderRevenueDivider('admin.tools.revenue.topCustomers', <UserOutlined />)}
+      {renderRevenueTable(shopRevenueDashboard?.tables?.topCustomers)}
+      {renderRevenueDivider('admin.tools.revenue.recentCustomers', <LoginOutlined />)}
+      {renderRevenueTable(shopRevenueDashboard?.tables?.recentlyActiveCustomers)}
+      {renderRevenueDivider('admin.tools.revenue.customerCohorts', <LineChartOutlined />)}
+      {renderRevenueTable(shopRevenueDashboard?.tables?.customerCohorts)}
+    </>
+  );
+
+  const renderRevenueProductDisplay = () => (
+    <>
+      {renderRevenueDivider('admin.tools.revenue.activeProductsTable', <BookOutlined />)}
+      {renderRevenueTable(shopRevenueDashboard?.tables?.activeProducts)}
+      {renderRevenueDivider('admin.tools.revenue.productsByCourse', <ShoppingCartOutlined />)}
+      {renderRevenueTable(shopRevenueDashboard?.tables?.productsByCourse)}
+      {renderRevenueDivider('admin.tools.revenue.productsByTier', <DollarOutlined />)}
+      {renderRevenueTable(shopRevenueDashboard?.tables?.productsByTier)}
+    </>
+  );
+
+  const renderRevenueProductManagement = () => (
+    <>
+      <Alert
+        type="info"
+        showIcon
+        title={setLocale(locale, 'admin.tools.revenue.product.manageNotice')}
+        style={{ marginBottom: 16 }}
+      />
+      <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+        <Col xs={24} md={10}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'admin.tools.revenue.product.selectExisting')}</strong>
+          </div>
+          <Select
+            allowClear
+            showSearch={{
+              filterOption: (input, option) =>
+                (option?.searchText || option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
+            }}
+            value={revenueProductFormValues.selectedProductKey}
+            options={revenueProductOptions}
+            onChange={handleSelectRevenueProduct}
+            placeholder={t('admin.tools.revenue.product.selectExisting')}
+            style={{ width: '100%' }}
+          />
+        </Col>
+        <Col xs={24} md={14} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+          <Button onClick={handleResetRevenueProductForm}>
+            {setLocale(locale, 'admin.tools.revenue.product.newMapping')}
+          </Button>
+        </Col>
+      </Row>
+
+      <Row gutter={[12, 12]}>
+        <Col xs={24} md={12}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'shop.analytics.table.column.paymentProviderPriceId')} *</strong>
+          </div>
+          <Input
+            value={revenueProductFormValues.paymentProviderPriceId}
+            onChange={(event) => setRevenueProductFormField('paymentProviderPriceId', event.target.value)}
+            placeholder="price_..."
+          />
+        </Col>
+        <Col xs={24} md={12}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'shop.analytics.table.column.courseCodeId')} *</strong>
+          </div>
+          <Select
+            showSearch={{
+              filterOption: (input, option) =>
+                (option?.searchText || option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
+            }}
+            value={revenueProductFormValues.courseCodeId}
+            options={revenueProductCourseOptions}
+            onChange={(value) => setRevenueProductFormField('courseCodeId', value)}
+            style={{ width: '100%' }}
+          />
+        </Col>
+        <Col xs={24} md={8}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'shop.analytics.table.column.tier')} *</strong>
+          </div>
+          <Select
+            value={revenueProductFormValues.tierId}
+            options={revenueTierOptions.filter(option => option.value !== 'all')}
+            onChange={(value) => setRevenueProductFormField('tierId', value)}
+            style={{ width: '100%' }}
+          />
+        </Col>
+        <Col xs={24} md={8}>
+          <div style={{ marginBottom: 4 }}>
+            <strong>{setLocale(locale, 'shop.analytics.table.column.active')}</strong>
+          </div>
+          <Radio.Group
+            value={revenueProductFormValues.isActive}
+            onChange={(event) => setRevenueProductFormField('isActive', event.target.value)}
+          >
+            <Radio.Button value>{setLocale(locale, 'admin.tools.revenue.product.active')}</Radio.Button>
+            <Radio.Button value={false}>{setLocale(locale, 'admin.tools.revenue.product.inactive')}</Radio.Button>
+          </Radio.Group>
+        </Col>
+        <Col xs={24} md={8} style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+          <Button
+            type="primary"
+            icon={<SaveOutlined />}
+            loading={revenueProductSubmitting}
+            onClick={handleUpsertRevenueProduct}
+          >
+            {setLocale(locale, 'admin.tools.revenue.product.save')}
+          </Button>
+          <Popconfirm
+            title={t('admin.tools.revenue.product.disableConfirm')}
+            okText={t('admin.tools.confirmYes')}
+            cancelText={t('admin.tools.confirmNo')}
+            disabled={!revenueProductFormValues.paymentProviderPriceId}
+            onConfirm={handleDisableRevenueProduct}
+          >
+            <Button
+              danger
+              icon={<CloseCircleOutlined />}
+              loading={revenueProductSubmitting}
+              disabled={!revenueProductFormValues.paymentProviderPriceId}
+            >
+              {setLocale(locale, 'admin.tools.revenue.product.disable')}
+            </Button>
+          </Popconfirm>
+        </Col>
+      </Row>
+    </>
+  );
+
+  const renderRevenueProducts = () => (
+    <>
+      <Radio.Group
+        value={revenueProductTabKey}
+        onChange={(event) => setRevenueProductTabKey(event.target.value)}
+        style={{ marginBottom: 16 }}
+      >
+        <Radio.Button value="display">
+          <TableOutlined style={{ marginRight: 4 }} />
+          {setLocale(locale, 'admin.tools.revenue.product.display')}
+        </Radio.Button>
+        <Radio.Button value="manage">
+          <EditOutlined style={{ marginRight: 4 }} />
+          {setLocale(locale, 'admin.tools.revenue.product.manage')}
+        </Radio.Button>
+      </Radio.Group>
+
+      {revenueProductTabKey === 'manage'
+        ? renderRevenueProductManagement()
+        : renderRevenueProductDisplay()
+      }
+    </>
+  );
+
+  const renderRevenueReports = () => (
+    <>
+      {renderRevenueDivider('admin.tools.revenue.salesByDateRangeTable', <LineChartOutlined />)}
+      {renderRevenueTable(shopRevenueDashboard?.tables?.salesByDateRange)}
+      {renderRevenueDivider('admin.tools.revenue.refundAnalytics', <ReloadOutlined />)}
+      {renderRevenueTable(shopRevenueDashboard?.tables?.refundAnalytics)}
+      {renderRevenueDivider('admin.tools.revenue.exportSalesReport', <TableOutlined />)}
+      {renderRevenueTable(shopRevenueDashboard?.tables?.exportSalesReport)}
+    </>
+  );
+
+  const renderRevenueDashboard = () => {
+    const revenueTabItems = [
+      {
+        key: 'overview',
+        label: <span><DashboardOutlined /> {setLocale(locale, 'admin.tools.revenue.tab.overview')}</span>,
+        children: renderRevenueOverview()
+      },
+      {
+        key: 'charts',
+        label: <span><LineChartOutlined /> {setLocale(locale, 'admin.tools.revenue.tab.charts')}</span>,
+        children: renderRevenueCharts()
+      },
+      {
+        key: 'trends',
+        label: <span><LineChartOutlined /> {setLocale(locale, 'admin.tools.revenue.tab.trends')}</span>,
+        children: renderRevenueTrends()
+      },
+      {
+        key: 'purchases',
+        label: <span><ShoppingCartOutlined /> {setLocale(locale, 'admin.tools.revenue.tab.purchases')}</span>,
+        children: renderRevenueTable(shopRevenueDashboard?.tables?.purchases)
+      },
+      {
+        key: 'customers',
+        label: <span><UserOutlined /> {setLocale(locale, 'admin.tools.revenue.tab.customers')}</span>,
+        children: renderRevenueCustomers()
+      },
+      {
+        key: 'products',
+        label: <span><BookOutlined /> {setLocale(locale, 'admin.tools.revenue.tab.products')}</span>,
+        children: renderRevenueProducts()
+      },
+      {
+        key: 'reports',
+        label: <span><TableOutlined /> {setLocale(locale, 'admin.tools.revenue.tab.reports')}</span>,
+        children: renderRevenueReports()
+      }
+    ];
+
+    return (
+      <Card variant="outlined" size="small" style={{ marginBottom: 16 }} loading={revenueLoading}>
+        <h4 style={{ marginBottom: 12 }}>
+          <DollarOutlined style={{ marginRight: 8 }} />
+          {setLocale(locale, 'admin.tools.revenue.title')}
+        </h4>
+        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+          <Col xs={24} md={8}>
+            <Select
+              showSearch
+              optionFilterProp="label"
+              style={{ width: '100%' }}
+              value={revenueFilters.courseCodeId}
+              options={revenueCourseOptions}
+              onChange={(value) => updateRevenueFilters({ courseCodeId: value }, true)}
+            />
+          </Col>
+          <Col xs={24} md={4}>
+            <Select
+              style={{ width: '100%' }}
+              value={revenueFilters.tierId}
+              options={revenueTierOptions}
+              onChange={(value) => updateRevenueFilters({ tierId: value }, true)}
+            />
+          </Col>
+          <Col xs={24} md={6}>
+            <DatePicker.RangePicker
+              style={{ width: '100%' }}
+              value={revenueFilters.dateRange}
+              onChange={(value) => updateRevenueFilters({ dateRange: value || [] }, true)}
+            />
+          </Col>
+          <Col xs={24} md={4}>
+            <Input
+              value={revenueFilters.searchText}
+              placeholder={t('admin.tools.revenue.searchPlaceholder')}
+              prefix={<SearchOutlined />}
+              onChange={(event) => updateRevenueFilters({ searchText: event.target.value })}
+            />
+          </Col>
+          <Col xs={24} md={2}>
+            <Button
+              type="primary"
+              icon={<ReloadOutlined />}
+              block
+              loading={revenueLoading}
+              onClick={() => loadShopRevenueDashboard()}
+            >
+              {setLocale(locale, 'admin.tools.revenue.refresh')}
+            </Button>
+          </Col>
+        </Row>
+
+        <Tabs
+          activeKey={revenueInnerTabKey}
+          onChange={setRevenueInnerTabKey}
+          items={revenueTabItems}
+        />
+      </Card>
+    );
+  };
+
   const coverUrl = 'https://images.unsplash.com/photo-1593153041370-5ebf6b82886a?q=80&w=1461&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
   const outerTabsConfig = [
     { key: 'access', tab: <span><UserOutlined /> {setLocale(locale, 'admin.tools.tab.accessManagement')}</span> },
     { key: 'courses', tab: <span><BookOutlined /> {setLocale(locale, 'admin.tools.tab.courseManagement')}</span> },
+    { key: 'revenue', tab: <span><DollarOutlined /> {setLocale(locale, 'admin.tools.tab.revenue')}</span> },
     { key: 'monitoring', tab: <span><DashboardOutlined /> {setLocale(locale, 'admin.tools.tab.monitoring')}</span> }
   ];
 
@@ -3242,6 +3930,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       >
         {activeOuterTabKey === 'access' && renderAccessManagement()}
         {activeOuterTabKey === 'courses' && renderCourseManagement()}
+        {activeOuterTabKey === 'revenue' && renderRevenueDashboard()}
         {activeOuterTabKey === 'monitoring' && renderMonitoring()}
       </Card>
     </div>
@@ -3259,6 +3948,7 @@ function mapDispatchToProps(dispatch) {
     onClearSelectedContact,
     onUpsertingCourse,
     onLoadingContactCourseProgressActivity,
+    onLoadingContactShopPurchaseHistory,
     onLoadingContactLoginFootprint,
     onLoadingAllUserLoginFootprint,
     onLoadingContactProfileMonitoring,
@@ -3270,6 +3960,9 @@ function mapDispatchToProps(dispatch) {
     onLoadingContactGeoMaps,
     onUploadingCourseCoverImage,
     onUpsertingSelectedContactProfile,
+    onLoadingShopRevenueDashboard,
+    onUpsertingShopProductCourseTier,
+    onTogglingShopProductActive,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   }, dispatch);
@@ -3284,12 +3977,15 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     allEnrollees,
     allRawCourses,
     contactCourseProgressActivity,
+    contactShopPurchaseHistory,
     contactLoginFootprint,
     allUserLoginFootprint,
     contactProfileMonitoring,
     contactGlobalUserRole,
     avatarUrlMap,
-    contactGeoMaps
+    contactGeoMaps,
+    shopRevenueDashboard,
+    shopCoursesWithPurchases
   } = adminTools;
   return {
     user,
@@ -3300,12 +3996,15 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     countries,
     selfLanguageLevel,
     contactCourseProgressActivity,
+    contactShopPurchaseHistory,
     contactLoginFootprint,
     allUserLoginFootprint,
     contactProfileMonitoring,
     contactGlobalUserRole,
     avatarUrlMap,
-    contactGeoMaps
+    contactGeoMaps,
+    shopRevenueDashboard,
+    shopCoursesWithPurchases
   };
 };
 

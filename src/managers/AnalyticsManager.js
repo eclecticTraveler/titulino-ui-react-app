@@ -1,12 +1,15 @@
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
-import TitulinoAuthService from "services/TitulinoAuthService";
+import TitulinoLrnAuthService from "services/Lrn/TitulinoLrnAuthService";
+import TitulinoShopAuthService from "services/Shop/TitulinoShopAuthService";
 import GoogleService from "services/GoogleService";
 import LocalStorageService from "services/LocalStorageService";
 import AdminInsights from "lob/AdminInsights";
 import KnowMeProfiles from "lob/KnowMeProfiles";
 import FacilitadorDashboard from "lob/FacilitadorDashboard";
 import DashboardLayout from "lob/DashboardLayout";
+import ShopAnalytics from "lob/ShopAnalytics";
+import { env } from "configs/EnvironmentConfig";
 import utils from 'utils';
 
 // Use unified cache functions
@@ -21,6 +24,103 @@ const getUserProfileFromEmail = async (emailId) => {
 const getKnowMeTokenFromUserProfile = (user, fallbackToken) => (
   user?.innerToken || fallbackToken || null
 );
+
+const getAdminAuthTokenFromUserProfile = (user) => (
+  user?.innerToken || null
+);
+
+const getAdminAuthTokenByEmail = async (emailId, whoCalledMe) => {
+  const user = await getUserProfileFromEmail(emailId);
+  const token = getAdminAuthTokenFromUserProfile(user);
+
+  if (!token) {
+    console.warn(`No admin token found for ${whoCalledMe}`);
+  }
+
+  return token;
+};
+
+const normalizeContactProfileRows = (rows = []) => (
+  (Array.isArray(rows) ? rows : []).map(row => ({
+    ...row,
+    LanguageProficienciesHistory: Array.isArray(row?.LanguageProficienciesHistory)
+      ? row.LanguageProficienciesHistory
+      : [],
+    Emails: Array.isArray(row?.Emails) ? row.Emails : [],
+    CoursesHistory: Array.isArray(row?.CoursesHistory) ? row.CoursesHistory : [],
+    UserCourseRoles: Array.isArray(row?.UserCourseRoles) ? row.UserCourseRoles : [],
+    ContactCourseTiers: Array.isArray(row?.ContactCourseTiers) ? row.ContactCourseTiers : []
+  }))
+);
+
+const extractLocationScopedRows = (rowsOrGroupedRows, locationType) => {
+  if (Array.isArray(rowsOrGroupedRows)) return rowsOrGroupedRows;
+
+  const normalizedLocationType = String(locationType || '').toLowerCase();
+  if (normalizedLocationType === 'residency') {
+    return rowsOrGroupedRows?.Residency || rowsOrGroupedRows?.residency || [];
+  }
+  if (normalizedLocationType === 'birth') {
+    return rowsOrGroupedRows?.Birth || rowsOrGroupedRows?.birth || [];
+  }
+
+  return [];
+};
+
+const firstDefined = (...values) => values.find(value => value !== undefined && value !== null);
+
+const normalizeShopOverviewCountItems = (items) => (
+  Array.isArray(items)
+    ? items.map(item => ({
+      ...item,
+      Count: firstDefined(item?.Count, item?.PurchaserCount, item?.BuyerCount, item?.PurchaseCount, item?.TotalPurchasers, item?.TotalBuyers),
+      EnrolleeCount: firstDefined(item?.EnrolleeCount, item?.PurchaserCount, item?.BuyerCount, item?.PurchaseCount, item?.Count),
+      Sex: firstDefined(item?.Sex, item?.Gender, item?.sex, item?.gender),
+      Percentage: firstDefined(item?.Percentage, item?.Percent, item?.percentage, item?.percent),
+      AverageAge: firstDefined(item?.AverageAge, item?.AvgAge, item?.AgeAverage, item?.averageAge),
+      AgeGroup: firstDefined(item?.AgeGroup, item?.AgeRange, item?.Label, item?.label),
+      Status: firstDefined(item?.Status, item?.PurchaserStatus, item?.BuyerStatus, item?.Type, item?.type),
+      LanguageLevelAbbreviation: firstDefined(item?.LanguageLevelAbbreviation, item?.LanguageLevelId, item?.LanguageLevel, item?.Level)
+    }))
+    : items
+);
+
+const normalizeShopPurchaserOverviewPayload = (overview) => {
+  const source = Array.isArray(overview) ? overview[0] : overview;
+  if (!source || typeof source !== "object") return overview;
+
+  return {
+    ...source,
+    EnrolleesCount: firstDefined(
+      source?.EnrolleesCount,
+      source?.PurchasersCount,
+      source?.PurchaserCount,
+      source?.BuyersCount,
+      source?.BuyerCount,
+      source?.TotalPurchasers,
+      source?.TotalBuyers,
+      source?.TotalPurchases
+    ),
+    AgesAverageCount: firstDefined(source?.AgesAverageCount, source?.AverageAge, source?.AvgAge),
+    AgesDistribution: normalizeShopOverviewCountItems(firstDefined(source?.AgesDistribution, source?.AgeDistribution)),
+    GenderDistribution: normalizeShopOverviewCountItems(source?.GenderDistribution),
+    AgesAverageBySexCount: normalizeShopOverviewCountItems(firstDefined(
+      source?.AgesAverageBySexCount,
+      source?.AverageAgeBySex,
+      source?.AgesAverageByGenderCount
+    )),
+    EnrolleeTypeDistribution: normalizeShopOverviewCountItems(firstDefined(
+      source?.EnrolleeTypeDistribution,
+      source?.PurchaserTypeDistribution,
+      source?.BuyerTypeDistribution
+    )),
+    EnrolleeLanguageProficiencyDistribution: normalizeShopOverviewCountItems(firstDefined(
+      source?.EnrolleeLanguageProficiencyDistribution,
+      source?.PurchaserLanguageProficiencyDistribution,
+      source?.BuyerLanguageProficiencyDistribution
+    ))
+  };
+};
 
 export const getAllCourses = async () => {
   const key = `adminAllCourses`;
@@ -75,7 +175,7 @@ export const getCourseProgressOverviewInfoAdminDashboard = async (courseCodeId, 
     return null;
   }
 
-  const progressOverview = await TitulinoAuthService.getCourseProgressDemographicOverview(
+  const progressOverview = await TitulinoLrnAuthService.getCourseProgressDemographicOverview(
     courseCodeId,
     locationType,
     countryId,
@@ -119,8 +219,8 @@ export const getCourseProgressDemographicInfoAdminDashboard = async (courseCodeI
   const isAll = locationType?.toLowerCase() === "all";
 
   const rawData = isAll
-    ? await TitulinoAuthService.getCourseProgressCountryCount(courseCodeId, token, "getCourseProgressDemographicInfoAdminDashboard")
-    : await TitulinoAuthService.getCourseProgressCountryDivisionCount(courseCodeId, countryId, token, "getCourseProgressDemographicInfoAdminDashboard");
+    ? await TitulinoLrnAuthService.getCourseProgressCountryCount(courseCodeId, token, "getCourseProgressDemographicInfoAdminDashboard")
+    : await TitulinoLrnAuthService.getCourseProgressCountryDivisionCount(courseCodeId, countryId, token, "getCourseProgressDemographicInfoAdminDashboard");
 
   const transformedArrays = isAll
     ? await AdminInsights.transformEnrolleeGeneralDemographicData(rawData)
@@ -151,6 +251,79 @@ export const getEnrolleeInfoAdminDashboard = async (courseCodeId, locationType, 
   return AdminInsights.handleEnrolleeListConvertor(extracted, locationType, courseCodeId);
 };
 
+export const getShopPurchaserOverviewInfoAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
+  const token = await getAdminAuthTokenByEmail(emailId, "getShopPurchaserOverviewInfoAdminDashboard");
+  if (!token) return AdminInsights.overviewInfoConvertion({});
+
+  const overview = await TitulinoShopAuthService.getAdminDashboardShopPurchaserOverview(
+    courseCodeId,
+    locationType,
+    countryId,
+    token,
+    "getShopPurchaserOverviewInfoAdminDashboard"
+  );
+  const normalizedOverview = normalizeShopPurchaserOverviewPayload(overview);
+  const convertedOverview = await AdminInsights.overviewInfoConvertion(normalizedOverview);
+
+  if (env.ENVIROMENT !== "prod") {
+    console.groupCollapsed("[AnalyticsManager] shop purchaser overview payload");
+    console.log("params:", { courseCodeId, locationType, countryId });
+    console.log("raw overview:", overview);
+    console.log("normalized overview:", normalizedOverview);
+    console.log("converted overview:", convertedOverview);
+    console.groupEnd();
+  }
+
+  return convertedOverview;
+};
+
+export const getShopPurchaserDemographicInfoAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
+  const isAll = locationType?.toLowerCase() === "all";
+  const token = await getAdminAuthTokenByEmail(emailId, "getShopPurchaserDemographicInfoAdminDashboard");
+  if (!token) {
+    return {
+      transformedArrays: [],
+      mapType: isAll ? "world" : countryId,
+      mapJson: null
+    };
+  }
+
+  const rawData = isAll
+    ? await TitulinoShopAuthService.getShopPurchaserCountryCountByCourseCodeId(courseCodeId, token, "getShopPurchaserDemographicInfoAdminDashboard")
+    : await TitulinoShopAuthService.getShopPurchaserCountryDivisionCount(courseCodeId, countryId, token, "getShopPurchaserDemographicInfoAdminDashboard");
+
+  const transformedArrays = isAll
+    ? await AdminInsights.transformEnrolleeGeneralDemographicData(rawData)
+    : await AdminInsights.transformEnrolleeDivisionDemographicData(rawData);
+
+  const mapType = (isAll || countryId === 'GI') ? "world" : countryId;
+  const mapJson = await GoogleService.getGeoMapResource(isAll ? undefined : countryId, "getShopPurchaserDemographicInfoAdminDashboard");
+
+  return {
+    transformedArrays,
+    mapType,
+    mapJson
+  };
+};
+
+export const getShopPurchaserInfoAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
+  const isAll = locationType?.toLowerCase() === "all";
+  const token = await getAdminAuthTokenByEmail(emailId, "getShopPurchaserInfoAdminDashboard");
+  if (!token) return { tableData: [], columns: [], enrollmentDates: [], purchaseDates: [] };
+
+  const purchaserList = isAll
+    ? await TitulinoShopAuthService.getShopPurchasersByCourse(courseCodeId, token, "getShopPurchaserInfoAdminDashboard")
+    : await TitulinoShopAuthService.getShopPurchasersByCourseAndCountry(courseCodeId, countryId, token, "getShopPurchaserInfoAdminDashboard");
+
+  const extracted = isAll ? purchaserList : extractLocationScopedRows(purchaserList, locationType);
+
+  const normalizedRows = normalizeContactProfileRows(extracted);
+  return ShopAnalytics.buildShopPurchaserTableModel(normalizedRows, {
+    courseCodeId,
+    locationType
+  });
+};
+
 export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, locationType, countryId, emailId) => {
   const localStorageKey = `UserProfile_${emailId}`;
   const user = await LocalStorageService.getCachedObject(localStorageKey);
@@ -162,7 +335,7 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
   }
 
   const progressRows =
-    await TitulinoAuthService.getCourseProgress(
+    await TitulinoLrnAuthService.getCourseProgress(
       courseCodeId,
       token,
       "getEnrolleesCourseProgressAdminDashboard"
@@ -205,6 +378,50 @@ export const getEnrolleesCourseProgressAdminDashboard = async (courseCodeId, loc
     return result;
 };
 
+export const getShopAnalyticsDashboard = async (emailId) => {
+  const user = await getUserProfileFromEmail(emailId);
+  const token = getAdminAuthTokenFromUserProfile(user);
+
+  if (!token) {
+    console.warn("No token found for shop analytics dashboard");
+    return ShopAnalytics.buildShopAnalyticsDashboard();
+  }
+
+  const [
+    summary,
+    health,
+    purchaseRows,
+    activeProducts,
+    languagePairSales,
+    courseLeaderboard,
+    repeatCustomers,
+    customerLifetimeValue,
+    recentlyActiveCustomers
+  ] = await Promise.all([
+    TitulinoShopAuthService.getAdminDashboardShopSummary(token, null, "getShopAnalyticsDashboard"),
+    TitulinoShopAuthService.getShopDashboardHealth(token, "getShopAnalyticsDashboard"),
+    TitulinoShopAuthService.searchShopPurchases("", 100, token, "getShopAnalyticsDashboard"),
+    TitulinoShopAuthService.getAdminDashboardShopActiveProducts(token, "getShopAnalyticsDashboard"),
+    TitulinoShopAuthService.getAdminDashboardShopSalesByLanguagePair(token, "getShopAnalyticsDashboard"),
+    TitulinoShopAuthService.getAdminDashboardCoursePerformanceLeaderboard(10, token, "getShopAnalyticsDashboard"),
+    TitulinoShopAuthService.getAdminDashboardShopRepeatCustomers(null, token, "getShopAnalyticsDashboard"),
+    TitulinoShopAuthService.getAdminDashboardCustomerLifetimeValue(25, token, "getShopAnalyticsDashboard"),
+    TitulinoShopAuthService.getAdminDashboardRecentlyActiveCustomers(30, 25, token, "getShopAnalyticsDashboard")
+  ]);
+
+  return ShopAnalytics.buildShopAnalyticsDashboard({
+    summary,
+    health,
+    purchaseRows,
+    activeProducts,
+    languagePairSales,
+    courseLeaderboard,
+    repeatCustomers,
+    customerLifetimeValue,
+    recentlyActiveCustomers
+  });
+};
+
 export const getFacilitadorEnrolleesCourseProgressDashboard = async (courseCodeId, emailId) => {
   const localStorageKey = `UserProfile_${emailId}`;
   const user = await LocalStorageService.getCachedObject(localStorageKey);
@@ -216,7 +433,7 @@ export const getFacilitadorEnrolleesCourseProgressDashboard = async (courseCodeI
   }
 
   const progressRows =
-    await TitulinoAuthService.getCourseProgress(
+    await TitulinoLrnAuthService.getCourseProgress(
       courseCodeId,
       token,
       "getFacilitadorEnrolleesCourseProgressDashboard"
@@ -362,7 +579,7 @@ const upsertAdminEnrolleeCourseProgress = async (progressRecords, courseCodeId, 
     return { tableData: [], columns: [] };
   }
 
-    progressRecords = await TitulinoAuthService.upsertCourseProgress(progressRecords, token, "upsertAdminEnrolleeCourseProgress");
+    progressRecords = await TitulinoLrnAuthService.upsertCourseProgress(progressRecords, token, "upsertAdminEnrolleeCourseProgress");
     return progressRecords;  
   }
   catch (error) {
@@ -404,8 +621,12 @@ const AnalyticsManager = {
   getDemographicInfoAdminDashboard,
   getCourseProgressDemographicInfoAdminDashboard,
   getEnrolleeInfoAdminDashboard,
+  getShopPurchaserOverviewInfoAdminDashboard,
+  getShopPurchaserDemographicInfoAdminDashboard,
+  getShopPurchaserInfoAdminDashboard,
   getEnrolleeKnowMeProfilePictureForCourse,
   getEnrolleesCourseProgressAdminDashboard,
+  getShopAnalyticsDashboard,
   getFacilitadorEnrolleesCourseProgressDashboard,
   hydrateAnalyticsAvatarUrls,
   getFacilitadorOverviewCardOrder,

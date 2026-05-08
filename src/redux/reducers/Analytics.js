@@ -78,7 +78,10 @@ const analytics = (state = initState, action) => {
         demographicDashboardData: action.demographicDashboardData,
         progressDemographicDashboardData: action.progressDemographicDashboardData,
         enrolleDashboardData: applyAvatarCacheToTableModel(action.enrolleDashboardData, state.avatarUrlMap),
-        enrolleesCourseProgressData: applyAvatarCacheToTableModel(action.enrolleesCourseProgressData, state.avatarUrlMap)
+        enrolleesCourseProgressData: applyAvatarCacheToTableModel(action.enrolleesCourseProgressData, state.avatarUrlMap),
+        shopOverviewDashboardData: action.shopOverviewDashboardData,
+        shopDemographicDashboardData: action.shopDemographicDashboardData,
+        shopPurchaserDashboardData: applyAvatarCacheToTableModel(action.shopPurchaserDashboardData, state.avatarUrlMap)
       }
     case ON_HYDRATING_ANALYTICS_AVATARS:
       return {
@@ -92,6 +95,9 @@ const analytics = (state = initState, action) => {
         }),
         ...(action.tableModels?.facilitadorEnrolleeData && {
           facilitadorEnrolleeData: action.tableModels.facilitadorEnrolleeData
+        }),
+        ...(action.tableModels?.shopPurchaserDashboardData && {
+          shopPurchaserDashboardData: action.tableModels.shopPurchaserDashboardData
         })
       }
     case ON_GETTING_COUNTRIES_BY_LOCATION_TYPE:

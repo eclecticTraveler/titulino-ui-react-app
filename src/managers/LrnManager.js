@@ -1,5 +1,5 @@
 import LocalStorageService from "services/LocalStorageService";
-import TitulinoAuthService from "services/TitulinoAuthService";
+import TitulinoLrnAuthService from "services/Lrn/TitulinoLrnAuthService";
 import TitulinoNetService from "services/TitulinoNetService";
 import GrammarClassService from "services/GrammarClassService";
 import BookChapterService  from "services/BookChapterService";
@@ -27,7 +27,7 @@ const getUserCourseProgress = async(courseCodeId, emailId) => {
     const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
 
     if (token) {
-      courseProgress = await TitulinoAuthService.getCourseProgress(courseCodeId, token, "getUserCourseProgress");
+      courseProgress = await TitulinoLrnAuthService.getCourseProgress(courseCodeId, token, "getUserCourseProgress");
 
       // For now if the user is facilitador or admin given that it will bring the progress of all the users for RLS
       // filter to its own results: TODO
@@ -51,7 +51,7 @@ const getUserCourseProgress = async(courseCodeId, emailId) => {
 
 const upsertUserCourseProgress = async(courseProgress, courseCodeId, emailId) => {
   const token = await getCourseToken(courseCodeId, emailId);
-  courseProgress = await TitulinoAuthService.upsertCourseProgress(courseProgress, token, "upsertUserCourseProgress");
+  courseProgress = await TitulinoLrnAuthService.upsertCourseProgress(courseProgress, token, "upsertUserCourseProgress");
   return courseProgress;
 }
 
@@ -679,7 +679,7 @@ export const upsertUserKnowMeProgress = async (
   const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
 
   // 4. Send to Warehouse
-  const progressToUpsert = await TitulinoAuthService.upsertUserKnowMeSubmission(
+  const progressToUpsert = await TitulinoLrnAuthService.upsertUserKnowMeSubmission(
     fullKnowMeProgress,
     token,
     "upsertUserKnowMeProgress"

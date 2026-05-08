@@ -9,6 +9,7 @@ import {
   ON_CLEAR_SELECTED_CONTACT,
   ON_UPSERTING_COURSE,
   ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY,
+  ON_LOADING_CONTACT_SHOP_PURCHASE_HISTORY,
   ON_LOADING_CONTACT_LOGIN_FOOTPRINT,
   ON_LOADING_ALL_USER_LOGIN_FOOTPRINT,
   ON_LOADING_CONTACT_PROFILE_MONITORING,
@@ -17,7 +18,10 @@ import {
   ON_HYDRATING_ADMIN_TOOLS_AVATARS,
   ON_LOADING_CONTACT_GEO_MAPS,
   ON_UPLOADING_COURSE_COVER_IMAGE,
-  ON_UPSERTING_SELECTED_CONTACT_PROFILE
+  ON_UPSERTING_SELECTED_CONTACT_PROFILE,
+  ON_LOADING_SHOP_REVENUE_DASHBOARD,
+  ON_UPSERTING_SHOP_PRODUCT_COURSE_TIER,
+  ON_TOGGLING_SHOP_PRODUCT_ACTIVE
 } from '../constants/AdminTools';
 
 // Pure helpers re-exported via the manager so components keep a single
@@ -71,6 +75,11 @@ export const onLoadingContactCourseProgressActivity = async (contactInternalId, 
     contactEmails
   );
   return { type: ON_LOADING_CONTACT_COURSE_PROGRESS_ACTIVITY, contactCourseProgressActivity };
+};
+
+export const onLoadingContactShopPurchaseHistory = async (contactInternalId, emailId) => {
+  const contactShopPurchaseHistory = await AdminToolsManager.getContactShopPurchaseHistory(contactInternalId, emailId);
+  return { type: ON_LOADING_CONTACT_SHOP_PURCHASE_HISTORY, contactShopPurchaseHistory };
 };
 
 export const onLoadingContactLoginFootprint = async (contactInternalId, emailId) => {
@@ -169,5 +178,31 @@ export const onUpsertingSelectedContactProfile = async (profileUpdate, adminEmai
     type: ON_UPSERTING_SELECTED_CONTACT_PROFILE,
     upsertResult,
     contactProfilePatch: upsertResult?.contactProfilePatch || null
+  };
+};
+
+export const onLoadingShopRevenueDashboard = async (adminEmailId, filters) => {
+  const shopRevenueDashboard = await AdminToolsManager.getShopRevenueDashboard(adminEmailId, filters);
+  return {
+    type: ON_LOADING_SHOP_REVENUE_DASHBOARD,
+    shopRevenueDashboard,
+    shopCoursesWithPurchases: shopRevenueDashboard?.shopCoursesWithPurchases || shopRevenueDashboard?.raw?.shopCoursesWithPurchases || [],
+    shopRevenueFilters: filters
+  };
+};
+
+export const onUpsertingShopProductCourseTier = async (adminEmailId, productCourseTier) => {
+  const result = await AdminToolsManager.upsertShopProductCourseTier(adminEmailId, productCourseTier);
+  return {
+    type: ON_UPSERTING_SHOP_PRODUCT_COURSE_TIER,
+    upsertResult: result
+  };
+};
+
+export const onTogglingShopProductActive = async (adminEmailId, paymentProviderPriceId, isActive) => {
+  const result = await AdminToolsManager.toggleShopProductActive(adminEmailId, paymentProviderPriceId, isActive);
+  return {
+    type: ON_TOGGLING_SHOP_PRODUCT_ACTIVE,
+    toggleResult: result
   };
 };
