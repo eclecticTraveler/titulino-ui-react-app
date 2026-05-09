@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
@@ -19,6 +19,7 @@ import { authenticated, signIn, onResolvingAuthenticationWhenRefreshing } from "
 import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
 import Loading from 'components/shared-components/Loading';
 import ImpersonationSession from "lob/ImpersonationSession";
+import WebsitePreferences from "lob/WebsitePreferences";
  
 function RouteInterceptor({ children, isAuthenticated }) {
   const { pathname } = useLocation();
@@ -52,6 +53,7 @@ export const Views = (props) => {
         isLanguageConfigured, getIsLanguageConfiguredFlag, getSelectedContentLanguage, onContentLanguageChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
+    const preferencesHydrationKey = useRef(null);
 
     // Load the cookie for Authentication if there was any
      useSupabaseSessionSync((session) => {
@@ -98,6 +100,56 @@ export const Views = (props) => {
         token,
         user?.contactId,
         user?.emailId
+    ]);
+
+    useEffect(() => {
+        if (!user?.innerToken || !user?.emailId) return;
+
+        const isImpersonating = user?.impersonation?.isImpersonating === true;
+        const hydrationKey = [
+            user?.contactInternalId || user?.emailId,
+            isImpersonating ? 'impersonating' : 'normal'
+        ].join(':');
+
+        WebsitePreferences.configureWebsitePreferenceSync({
+            token: user.innerToken,
+            readOnly: isImpersonating
+        });
+
+        if (preferencesHydrationKey.current === hydrationKey) return;
+        preferencesHydrationKey.current = hydrationKey;
+
+        const hydratePreferences = async () => {
+            const result = await WebsitePreferences.hydrateWebsitePreferences({
+                token: user.innerToken,
+                targetStorage: isImpersonating ? window.sessionStorage : window.localStorage,
+                readOnly: isImpersonating,
+                whoCalledMe: 'Views.userPreferenceHydration'
+            });
+
+            if (result?.appliedCount > 0) {
+                onLoadingUserSelectedTheme();
+                getIsLanguageConfiguredFlag();
+                getUserBaseLanguage();
+                getSelectedContentLanguage();
+            } else if (!isImpersonating && result?.success && result?.exists !== true) {
+                WebsitePreferences.saveWebsitePreferencesNow({
+                    token: user.innerToken,
+                    whoCalledMe: 'Views.initialPreferenceBackup'
+                });
+            }
+        };
+
+        hydratePreferences();
+    }, [
+        getIsLanguageConfiguredFlag,
+        getSelectedContentLanguage,
+        getUserBaseLanguage,
+        onLoadingUserSelectedTheme,
+        user?.contactInternalId,
+        user?.emailId,
+        user?.impersonation?.isImpersonating,
+        user?.innerToken
     ]);
 
     useEffect(() => {

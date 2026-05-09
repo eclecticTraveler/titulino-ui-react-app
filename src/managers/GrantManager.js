@@ -70,12 +70,6 @@ const normalizeResolvedUserProfile = (userProfile = {}, fallbackEmailId = null) 
   };
 };
 
-const cacheUserProfile = async (user, ttlMinutes = 160) => {
-  if (!user?.emailId) return null;
-  await LocalStorageService.setCachedObject(`UserProfile_${user.emailId}`, user, ttlMinutes);
-  return user;
-};
-
 const getUserProfile = async (emailId, dobOrYob) => {
   const localStorageKey = `UserProfile_${emailId}`;
   // 1. Try to get from encrypted localStorage
@@ -128,7 +122,6 @@ const activateImpersonationProfile = async (userProfile) => {
   const user = ImpersonationSession.setActiveImpersonationProfile(userProfile);
   if (!user) return null;
 
-  await cacheUserProfile(user, 160);
   return user;
 };
 

@@ -1488,6 +1488,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       messageApi.warning(t('admin.tools.msg.selectEmail'));
       return;
     }
+    if (!activeImpersonationReason) {
+      messageApi.warning(t('admin.tools.impersonation.reasonRequired'));
+      return;
+    }
     if (!canStartContactImpersonation) {
       messageApi.warning(t(impersonationAuthorization.reasonKey || 'admin.tools.msg.notEnoughImpersonationPermissions'));
       return;
@@ -1513,7 +1517,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       const actionResult = await onStartingContactImpersonation({
         contactInternalId: selectedContact.ContactInternalId,
         selectedEmail: activeImpersonationEmail,
-        reason: impersonationReason,
+        reason: activeImpersonationReason,
         adminEmailId: emailId
       });
       const result = actionResult?.impersonationResult || actionResult;
@@ -1897,6 +1901,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const activeRevokeEmail = selectedRevokeEmail || selectedContactEmailOptions[0]?.value || null;
   const activeImpersonationEmail = selectedImpersonationEmail || selectedContactEmailOptions[0]?.value || null;
+  const activeImpersonationReason = impersonationReason.trim();
   const activeContactStatusEmail = selectedContactStatusEmail || selectedContactStatusEmailOptions[0]?.value || null;
   const selectedContactStatusEmailRecord = (selectedContact?.Emails || []).find(emailRecord => (
     (emailRecord?.EmailId || emailRecord?.emailId) === activeContactStatusEmail
@@ -2755,6 +2760,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 value={impersonationReason}
                 onChange={(event) => setImpersonationReason(event.target.value)}
                 placeholder={t('admin.tools.impersonation.reasonPlaceholder')}
+                status={canStartContactImpersonation && !activeImpersonationReason ? 'error' : undefined}
                 disabled={!canStartContactImpersonation}
               />
             </Col>
@@ -2765,13 +2771,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             onConfirm={handleStartContactImpersonation}
             okText={t('admin.tools.confirmYes')}
             cancelText={t('admin.tools.confirmNo')}
-            disabled={!canStartContactImpersonation || !activeImpersonationEmail}
+            disabled={!canStartContactImpersonation || !activeImpersonationEmail || !activeImpersonationReason}
           >
             <Button
               type="primary"
               icon={<UserSwitchOutlined />}
               loading={impersonationSubmitting}
-              disabled={!canStartContactImpersonation || !activeImpersonationEmail}
+              disabled={!canStartContactImpersonation || !activeImpersonationEmail || !activeImpersonationReason}
               style={{ marginTop: 16 }}
             >
               {setLocale(locale, 'admin.tools.impersonation.start')}

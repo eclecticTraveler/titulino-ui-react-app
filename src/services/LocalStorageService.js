@@ -1,5 +1,7 @@
 import CryptoJS from "crypto-js";
 import { env } from 'configs/EnvironmentConfig';
+import ImpersonationSession from "lob/ImpersonationSession";
+import WebsitePreferences from "lob/WebsitePreferences";
 const SECRET_KEY = process.env.REACT_APP_STORAGE_KEY;
 
 const STORAGE_SCHEMA_VERSION = '3';
@@ -16,14 +18,28 @@ export const migrateLocalStorageIfNeeded = () => {
     'UserNativeLanguage',
     'SelectedCourse',
     'UserCourseConfiguration',
-    'selectedLocale',
-    'selectedTheme',
-    'selectedSubnavigationPosition',
-    'selectedNavigationCollapse'
+    'selectedTheme'
   ];
   staleKeys.forEach(k => localStorage.removeItem(k));
 
   localStorage.setItem('storageSchemaVersion', STORAGE_SCHEMA_VERSION);
+};
+
+const getPreferenceAwareStorage = (key) => (
+  WebsitePreferences.isWebsitePreferenceStorageKey(key) &&
+  ImpersonationSession.hasActiveImpersonationProfile()
+    ? sessionStorage
+    : localStorage
+);
+
+const schedulePreferenceBackup = (key) => {
+  if (
+    WebsitePreferences.isWebsitePreferenceStorageKey(key) &&
+    !ImpersonationSession.hasActiveImpersonationProfile() &&
+    !WebsitePreferences.isApplyingWebsitePreferences()
+  ) {
+    WebsitePreferences.scheduleWebsitePreferencesBackup(key);
+  }
 };
 
 export const storeEncryptedObject = (key, value) => {
@@ -62,11 +78,12 @@ export const retrieveEncryptedObjectWithExpiry = (key) => {
 
 
 const setLocalStorageObject = async(objectToStore, localStorageKey) => {
-  localStorage.setItem(localStorageKey, JSON.stringify(objectToStore));
+  getPreferenceAwareStorage(localStorageKey).setItem(localStorageKey, JSON.stringify(objectToStore));
+  schedulePreferenceBackup(localStorageKey);
 }
 
 const getLocalStorageObject = async(localStorageKey) => {
-  const retrievedObjected = localStorage.getItem(localStorageKey);
+  const retrievedObjected = getPreferenceAwareStorage(localStorageKey).getItem(localStorageKey);
   if (retrievedObjected === null || retrievedObjected === undefined || retrievedObjected === 'undefined') {
     return null;
   }
@@ -75,7 +92,7 @@ const getLocalStorageObject = async(localStorageKey) => {
 }
 
 
-const setLocalStorageObjectWithExpiry = async (objectToStore, localStorageKey, ttlMinutes = 30) => {
+const setStorageObjectWithExpiry = async (objectToStore, localStorageKey, ttlMinutes = 30, storage = localStorage) => {
   const now = new Date();
   const ttlMilliseconds = ttlMinutes * 60 * 1000; // Convert minutes to milliseconds
 
@@ -84,11 +101,21 @@ const setLocalStorageObjectWithExpiry = async (objectToStore, localStorageKey, t
     expiry: now.getTime() + ttlMilliseconds, // Set expiry timestamp
   };
 
-  localStorage.setItem(localStorageKey, JSON.stringify(item));
+  storage.setItem(localStorageKey, JSON.stringify(item));
+  schedulePreferenceBackup(localStorageKey);
 };
 
-const getLocalStorageObjectWithExpiry = async (localStorageKey) => {
-  const itemStr = localStorage.getItem(localStorageKey);
+const setLocalStorageObjectWithExpiry = async (objectToStore, localStorageKey, ttlMinutes = 30) => (
+  setStorageObjectWithExpiry(
+    objectToStore,
+    localStorageKey,
+    ttlMinutes,
+    getPreferenceAwareStorage(localStorageKey)
+  )
+);
+
+const getStorageObjectWithExpiry = async (localStorageKey, storage = localStorage) => {
+  const itemStr = storage.getItem(localStorageKey);
 
   if (!itemStr) {
     return null; // If the item doesn't exist, return null
@@ -99,13 +126,16 @@ const getLocalStorageObjectWithExpiry = async (localStorageKey) => {
 
   if (now.getTime() > item.expiry) {
     // If the item has expired, remove it and return null
-    localStorage.removeItem(localStorageKey);
+    storage.removeItem(localStorageKey);
     return null;
   }
 
   return item.value; // Return the stored value if it's not expired
 };
 
+const getLocalStorageObjectWithExpiry = async (localStorageKey) => (
+  getStorageObjectWithExpiry(localStorageKey, getPreferenceAwareStorage(localStorageKey))
+);
 
 const getRandomObjectFromArray = async(objectsArray, storageKey, isToRetrieveByNewDate) => { // eslint-disable-line no-unused-vars
 
@@ -248,12 +278,20 @@ export const getOnLocale = async() => {
 }
 
 export const getCachedObject = (key) => {
+  if (WebsitePreferences.isWebsitePreferenceStorageKey(key)) {
+    return getLocalStorageObjectWithExpiry(key);
+  }
+
   return env.ENVIROMENT === "local"
     ? getLocalStorageObjectWithExpiry(key)
     : retrieveEncryptedObjectWithExpiry(key);
 };
 
 export const setCachedObject = (key, value, ttlInMinutes) => {
+  if (WebsitePreferences.isWebsitePreferenceStorageKey(key)) {
+    return setLocalStorageObjectWithExpiry(value, key, ttlInMinutes);
+  }
+
   return env.ENVIROMENT === "local"
     ? setLocalStorageObjectWithExpiry(value, key, ttlInMinutes)
     : storeEncryptedObjectWithExpiry(key, value, ttlInMinutes);
