@@ -14,6 +14,7 @@ import ContactProfilesMonitoring from "lob/ContactProfilesMonitoring";
 import ContactProfileEditor from "lob/ContactProfileEditor";
 import LrnConfiguration from "lob/LrnConfiguration";
 import ShopAnalytics from "lob/ShopAnalytics";
+import ImpersonationSession from "lob/ImpersonationSession";
 import utils from 'utils';
 
 const getTokenFromEmail = async (emailId) => {
@@ -290,6 +291,41 @@ export const getContactShopPurchaseHistory = async (contactInternalId, emailId) 
     contactInternalId,
     rows,
     tableModel: ShopAnalytics.buildContactShopPurchaseHistoryTableModel(rows, contactInternalId)
+  };
+};
+
+export const startContactImpersonation = async ({
+  contactInternalId,
+  selectedEmail,
+  reason,
+  adminEmailId
+} = {}) => {
+  const token = await getTokenFromEmail(adminEmailId);
+  if (!token) {
+    return {
+      success: false,
+      status: 401,
+      errorMessage: 'Missing admin token.'
+    };
+  }
+
+  const result = await TitulinoNetService.startContactImpersonation(
+    token,
+    {
+      contactInternalId,
+      selectedEmail,
+      reason
+    },
+    'AdminToolsManager.startContactImpersonation'
+  );
+
+  if (!result?.success) return result;
+
+  return {
+    ...result,
+    userProfile: ImpersonationSession.normalizeImpersonationUserProfile(result.userProfile || result.UserProfile),
+    impersonationSessionId: result.impersonationSessionId || result.ImpersonationSessionId || null,
+    expiresAt: result.expiresAt || result.ExpiresAt || null
   };
 };
 
@@ -816,6 +852,7 @@ const AdminToolsManager = {
   upsertCourse,
   getContactCourseProgressActivity,
   getContactShopPurchaseHistory,
+  startContactImpersonation,
   getContactLoginFootprint,
   getAllUserLoginFootprint,
   getContactProfileMonitoring,

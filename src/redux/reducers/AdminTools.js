@@ -24,7 +24,8 @@ import {
   ON_UPSERTING_SHOP_PRODUCT_COURSE_TIER,
   ON_UPSERTING_SHOP_TIERS,
   ON_UPSERTING_SHOP_PAYMENT_PROVIDERS,
-  ON_TOGGLING_SHOP_PRODUCT_ACTIVE
+  ON_TOGGLING_SHOP_PRODUCT_ACTIVE,
+  ON_STARTING_CONTACT_IMPERSONATION
 } from '../constants/AdminTools';
 
 const initState = {
@@ -200,6 +201,8 @@ const adminTools = (state = initState, action) => {
       return { ...state, lastShopPaymentProvidersUpsertResult: action.upsertResult };
     case ON_TOGGLING_SHOP_PRODUCT_ACTIVE:
       return { ...state, lastShopProductActiveToggleResult: action.toggleResult };
+    case ON_STARTING_CONTACT_IMPERSONATION:
+      return { ...state, lastImpersonationResult: action.impersonationResult };
     case ON_CLEAR_SELECTED_CONTACT:
       return {
         ...state,

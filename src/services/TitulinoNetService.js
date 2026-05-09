@@ -3,6 +3,7 @@ import { env } from '../configs/EnvironmentConfig';
 const titulinoNetEnrollmentApiUri = `${env.TITULINO_NET_API}/v1/enrollment`;
 const titulinoNetShopApiUri = `${env.TITULINO_NET_API}/v1/shop`;
 const titulinoNetLrnApiUri = `${env.TITULINO_NET_API}/v1/lrn`;
+const titulinoNetAdminApiUri = `${env.TITULINO_NET_API}/v1/admin`;
 let _results = [];
 
 const logKnowMeProfileDebug = (message, payload) => {
@@ -103,6 +104,81 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
     return null;
   }
 }
+
+export const startContactImpersonation = async (
+  token,
+  { contactInternalId, selectedEmail, reason } = {},
+  whoCalledMe = 'startContactImpersonation'
+) => {
+  if (!token || !contactInternalId || !selectedEmail) {
+    return {
+      success: false,
+      status: 400,
+      errorMessage: 'Missing impersonation token, contact, or email.'
+    };
+  }
+
+  const impersonationUrl = `${titulinoNetAdminApiUri}/impersonation/start`;
+  const raw = JSON.stringify({
+    contactInternalId,
+    selectedEmail,
+    ...(reason ? { reason } : {})
+  });
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log('[TitulinoNetService.startContactImpersonation]', {
+      whoCalledMe,
+      url: impersonationUrl,
+      payload: JSON.parse(raw)
+    });
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: raw,
+    redirect: 'follow'
+  };
+
+  try {
+    const response = await fetch(impersonationUrl, requestOptions);
+    const text = await response.text();
+    let apiResult = null;
+
+    try {
+      apiResult = text ? JSON.parse(text) : null;
+    } catch (parseError) {
+      apiResult = null;
+    }
+
+    if (!response.ok) {
+      return {
+        success: false,
+        status: response.status,
+        errorMessage: apiResult?.message || apiResult?.error || text || response.statusText
+      };
+    }
+
+    return {
+      ...apiResult,
+      ...(apiResult?.UserProfile && !apiResult?.userProfile ? { userProfile: apiResult.UserProfile } : {}),
+      ...(apiResult?.ImpersonationSessionId && !apiResult?.impersonationSessionId
+        ? { impersonationSessionId: apiResult.ImpersonationSessionId }
+        : {}),
+      ...(apiResult?.ExpiresAt && !apiResult?.expiresAt ? { expiresAt: apiResult.ExpiresAt } : {}),
+      success: true,
+      status: response.status
+    };
+  } catch (error) {
+    console.log(`Error starting impersonation in startContactImpersonation: from ${whoCalledMe}`);
+    console.error(error);
+    return {
+      success: false,
+      status: 500,
+      errorMessage: error?.message || 'Unexpected impersonation error.'
+    };
+  }
+};
 
 export const getRegistrationToken = async (whoCalledMe, userName) => {
   const loginUrl = `${titulinoNetEnrollmentApiUri}/auth`;
@@ -498,6 +574,7 @@ export const uploadCourseCoverImage = async (token, file, courseCodeId, whoCalle
 
 const TitulinoNetService = {
   getRegistrationToken,
+  startContactImpersonation,
   upsertEnrollment,
   getUserProfileByEmailAndYearOfBirth,
   getPurchaseSessionUrl,

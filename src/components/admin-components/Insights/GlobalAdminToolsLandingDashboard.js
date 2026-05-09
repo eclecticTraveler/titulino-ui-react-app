@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
 import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
 import IntlMessage from 'components/util-components/IntlMessage';
@@ -20,7 +20,9 @@ import AccessManagementPolicy from 'lob/AccessManagementPolicy';
 import ContactProfileEditorLob from 'lob/ContactProfileEditor';
 import ContactProfilesMonitoring from 'lob/ContactProfilesMonitoring';
 import ShopAnalytics from 'lob/ShopAnalytics';
+import ImpersonationSession from 'lob/ImpersonationSession';
 import { env } from 'configs/EnvironmentConfig';
+import { APP_PREFIX_PATH } from 'configs/AppConfig';
 import dayjs from 'dayjs';
 import { onRenderingCourseRegistration, onRequestingGeographicalDivision } from 'redux/actions/Lrn';
 import {
@@ -49,6 +51,7 @@ import {
   onUpsertingShopProductCourseTier,
   onUpsertingShopTiers,
   onUpsertingShopPaymentProviders,
+  onStartingContactImpersonation,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -122,6 +125,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onUpsertingShopProductCourseTier,
     onUpsertingShopTiers,
     onUpsertingShopPaymentProviders,
+    onStartingContactImpersonation,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     onRenderingCourseRegistration,
@@ -139,6 +143,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [selectedRevokeEmail, setSelectedRevokeEmail] = useState(null);
   const [selectedRevokeGlobalRole, setSelectedRevokeGlobalRole] = useState(null);
   const [selectedContactStatusEmail, setSelectedContactStatusEmail] = useState(null);
+  const [selectedImpersonationEmail, setSelectedImpersonationEmail] = useState(null);
+  const [impersonationReason, setImpersonationReason] = useState('');
+  const [impersonationSubmitting, setImpersonationSubmitting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [revokeSubmitting, setRevokeSubmitting] = useState(false);
   const [globalRoleLoading, setGlobalRoleLoading] = useState(false);
@@ -233,6 +240,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   );
   const contactProfileMonitoringAuthorization = accessManagementPolicy.canManageContactProfiles();
   const canManageContactProfileMonitoring = contactProfileMonitoringAuthorization.isAllowed;
+  const impersonationAuthorization = accessManagementPolicy.canImpersonateContacts();
+  const canStartContactImpersonation = impersonationAuthorization.isAllowed;
   const revenueCourseOptions = useMemo(() => (
     ShopAnalytics.buildShopPurchasedCourseSelectionOptions(
       shopCoursesWithPurchases,
@@ -1203,6 +1212,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setSelectedRevokeEmail(null);
     setSelectedRevokeGlobalRole(null);
     setSelectedContactStatusEmail(null);
+    setSelectedImpersonationEmail(null);
+    setImpersonationReason('');
+    setImpersonationSubmitting(false);
     setContactTabKey('summary');
   };
 
@@ -1464,6 +1476,100 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       messageApi.error(t('admin.tools.msg.setContactInactiveError'));
     } finally {
       setContactStatusSubmitting(prev => ({ ...prev, active: false }));
+    }
+  };
+
+  const handleStartContactImpersonation = async () => {
+    if (!selectedContact?.ContactInternalId) {
+      messageApi.warning(t('admin.tools.msg.selectContactFirst'));
+      return;
+    }
+    if (!activeImpersonationEmail) {
+      messageApi.warning(t('admin.tools.msg.selectEmail'));
+      return;
+    }
+    if (!canStartContactImpersonation) {
+      messageApi.warning(t(impersonationAuthorization.reasonKey || 'admin.tools.msg.notEnoughImpersonationPermissions'));
+      return;
+    }
+
+    let impersonationWindow = null;
+    setImpersonationSubmitting(true);
+    try {
+      impersonationWindow = window.open('about:blank', '_blank');
+
+      if (!impersonationWindow) {
+        messageApi.error(t('admin.tools.impersonation.popupBlocked'));
+        return;
+      }
+
+      try {
+        impersonationWindow.document.title = 'Titulino';
+        impersonationWindow.document.body.innerHTML = '<p>Starting Titulino impersonation...</p>';
+      } catch (windowPrepError) {
+        // The session handoff below is the important part; the loading text is only a nicety.
+      }
+
+      const actionResult = await onStartingContactImpersonation({
+        contactInternalId: selectedContact.ContactInternalId,
+        selectedEmail: activeImpersonationEmail,
+        reason: impersonationReason,
+        adminEmailId: emailId
+      });
+      const result = actionResult?.impersonationResult || actionResult;
+
+      if (!result?.success) {
+        impersonationWindow.close();
+        if (result?.status === 403) {
+          messageApi.error(t('admin.tools.impersonation.permissionError'));
+        } else if (result?.status === 409) {
+          messageApi.error(t('admin.tools.impersonation.alreadyImpersonating'));
+        } else {
+          messageApi.error(result?.errorMessage || t('admin.tools.impersonation.startError'));
+        }
+        return;
+      }
+
+      const launchId = result?.impersonationSessionId || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const launchUrl = `${window.location.origin}${APP_PREFIX_PATH}/impersonate?source=session&launchId=${encodeURIComponent(launchId)}`;
+
+      const stagedUserProfile = ImpersonationSession.setActiveImpersonationProfileInSessionStorage(
+        impersonationWindow.sessionStorage,
+        result.userProfile
+      );
+
+      if (!stagedUserProfile?.emailId || !stagedUserProfile?.innerToken) {
+        impersonationWindow.close();
+        messageApi.error(t('admin.tools.impersonation.startError'));
+        return;
+      }
+
+      if (env.ENVIROMENT !== 'prod') {
+        console.log('[GlobalAdminToolsLandingDashboard] impersonation session handoff', {
+          launchUrl,
+          launchId,
+          emailId: stagedUserProfile.emailId,
+          contactInternalId: stagedUserProfile.contactInternalId,
+          hasInnerToken: !!stagedUserProfile.innerToken
+        });
+      }
+
+      try {
+        impersonationWindow.opener = null;
+      } catch (openerError) {
+        // Some browsers do not allow clearing opener on about:blank windows.
+      }
+
+      impersonationWindow.location.replace(launchUrl);
+      messageApi.success(t('admin.tools.impersonation.startSuccess'));
+    } catch (error) {
+      if (impersonationWindow && !impersonationWindow.closed) {
+        impersonationWindow.close();
+      }
+      console.error('Error starting impersonation:', error);
+      messageApi.error(t('admin.tools.impersonation.startError'));
+    } finally {
+      setImpersonationSubmitting(false);
     }
   };
 
@@ -1790,6 +1896,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   );
 
   const activeRevokeEmail = selectedRevokeEmail || selectedContactEmailOptions[0]?.value || null;
+  const activeImpersonationEmail = selectedImpersonationEmail || selectedContactEmailOptions[0]?.value || null;
   const activeContactStatusEmail = selectedContactStatusEmail || selectedContactStatusEmailOptions[0]?.value || null;
   const selectedContactStatusEmailRecord = (selectedContact?.Emails || []).find(emailRecord => (
     (emailRecord?.EmailId || emailRecord?.emailId) === activeContactStatusEmail
@@ -2484,7 +2591,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     return (
       <>
-        <Divider titlePlacement="left" style={{ marginTop: 0 }}>
+        <Divider titlePlacement="left" style={{ marginTop: 24 }}>
           <SolutionOutlined style={{ marginRight: 6 }} />
           {setLocale(locale, 'admin.tools.contactStatus')}
         </Divider>
@@ -2595,6 +2702,86 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const renderImpersonationAccess = () => {
+    if (!selectedContact) return null;
+
+    const confirmationMessage = intl.formatMessage(
+      { id: 'admin.tools.impersonation.confirmStart' },
+      {
+        name: selectedContact.FullName || selectedContact.Names || selectedContact.ContactInternalId,
+        email: activeImpersonationEmail || t('admin.tools.label.email')
+      }
+    );
+
+    return (
+      <>
+        <Divider titlePlacement="left" style={{ marginTop: 24 }}>
+          <UserSwitchOutlined style={{ marginRight: 6 }} />
+          {setLocale(locale, 'admin.tools.impersonation.title')}
+        </Divider>
+
+        {!canStartContactImpersonation && (
+          <Alert
+            type="warning"
+            showIcon
+            title={setLocale(locale, 'admin.tools.msg.notEnoughImpersonationPermissions')}
+            style={{ marginBottom: 16 }}
+          />
+        )}
+
+        <div style={{ opacity: canStartContactImpersonation ? 1 : 0.55 }}>
+          <Row gutter={[16, 12]}>
+            <Col xs={24} sm={12} md={8}>
+              <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.label.email')}</strong></div>
+              {selectedContactEmailOptions.length > 1 ? (
+                <Select
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label || '').toString().toLowerCase().includes(input.toLowerCase())
+                  }
+                  value={activeImpersonationEmail}
+                  onChange={setSelectedImpersonationEmail}
+                  style={{ width: '100%' }}
+                  options={selectedContactEmailOptions}
+                  disabled={!canStartContactImpersonation}
+                />
+              ) : (
+                <Input value={activeImpersonationEmail || ''} readOnly disabled={!canStartContactImpersonation} />
+              )}
+            </Col>
+            <Col xs={24} sm={12} md={10}>
+              <div style={{ marginBottom: 8 }}><strong>{setLocale(locale, 'admin.tools.impersonation.reason')}</strong></div>
+              <Input
+                value={impersonationReason}
+                onChange={(event) => setImpersonationReason(event.target.value)}
+                placeholder={t('admin.tools.impersonation.reasonPlaceholder')}
+                disabled={!canStartContactImpersonation}
+              />
+            </Col>
+          </Row>
+
+          <Popconfirm
+            title={confirmationMessage}
+            onConfirm={handleStartContactImpersonation}
+            okText={t('admin.tools.confirmYes')}
+            cancelText={t('admin.tools.confirmNo')}
+            disabled={!canStartContactImpersonation || !activeImpersonationEmail}
+          >
+            <Button
+              type="primary"
+              icon={<UserSwitchOutlined />}
+              loading={impersonationSubmitting}
+              disabled={!canStartContactImpersonation || !activeImpersonationEmail}
+              style={{ marginTop: 16 }}
+            >
+              {setLocale(locale, 'admin.tools.impersonation.start')}
+            </Button>
+          </Popconfirm>
+        </div>
+      </>
+    );
+  };
+
   const renderAssignAccess = () => {
     if (!selectedContact) return null;
     const isEnroll = actionType === 'enroll';
@@ -2602,7 +2789,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     return (
       <>
-        {renderContactStatusManagement()}
+        {renderImpersonationAccess()}
 
         <Divider titlePlacement="left" style={{ marginTop: 24 }}>
           <SafetyCertificateOutlined style={{ marginRight: 6 }} />
@@ -2841,6 +3028,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             : setLocale(locale, 'admin.tools.globalPermissions')}
         </Divider>
         {isEnroll ? renderPermissionsTable() : renderGlobalPermissionsTable()}
+        {renderContactStatusManagement()}
       </>
     );
   };
@@ -3649,7 +3837,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           title={setLocale(locale, titleKey)}
           value={value ?? '0'}
           prefix={icon ? React.cloneElement(icon, { style: { color } }) : null}
-          valueStyle={{ color }}
+          styles={{ content: { color } }}
         />
       </Card>
     </Col>
@@ -4196,6 +4384,7 @@ function mapDispatchToProps(dispatch) {
     onUpsertingShopProductCourseTier,
     onUpsertingShopTiers,
     onUpsertingShopPaymentProviders,
+    onStartingContactImpersonation,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   }, dispatch);

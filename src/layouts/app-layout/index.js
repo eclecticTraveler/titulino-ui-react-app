@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { useNavigate } from 'react-router-dom';
 import SideNav from '../../components/layout-components/SideNav';
 import TopNav from '../../components/layout-components/TopNav';
 import Loading from '../../components/shared-components/Loading';
@@ -12,9 +13,15 @@ import AppViews from '../../views/app-views';
 import {
   Layout,
   Grid,
+  Alert,
+  Button,
 } from "antd";
+import IntlMessage from 'components/util-components/IntlMessage';
 
 import {onCurrentRouteInfo} from '../../redux/actions/Lrn';
+import { signOutSuccess } from '../../redux/actions/Auth';
+import { onStoppingImpersonationProfile } from '../../redux/actions/Grant';
+import { APP_PREFIX_PATH } from '../../configs/AppConfig';
 
 import { 
   SIDE_NAV_WIDTH, 
@@ -31,7 +38,18 @@ const { Content } = Layout;
 const { useBreakpoint } = Grid;
 
 
-export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicUpperMainNavigation, onCurrentRouteInfo }) => {
+export const AppLayout = ({
+  navCollapsed,
+  navType,
+  location,
+  direction,
+  dynamicUpperMainNavigation,
+  onCurrentRouteInfo,
+  onStoppingImpersonationProfile,
+  signOutSuccess,
+  user
+}) => {
+  const navigate = useNavigate();
   // Here we figure out the proper general submenu based on the url location we are hitting
   let currentRouteInfo;
   dynamicUpperMainNavigation?.forEach(singleFullMenu => {    
@@ -58,6 +76,15 @@ export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicU
     return <Loading cover="page" />;
   }
 
+  const handleStopImpersonation = async () => {
+    await onStoppingImpersonationProfile();
+    signOutSuccess();
+    window.close();
+    window.setTimeout(() => {
+      navigate(`${APP_PREFIX_PATH}/login`, { replace: true });
+    }, 150);
+  };
+
   const getLayoutDirectionGutter = () => {
     if(direction === DIR_LTR) {
       return {paddingLeft: getLayoutGutter()}
@@ -71,6 +98,24 @@ export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicU
   return (           
 		<Layout>
 			<HeaderNav isMobile={isMobile} />
+      {user?.impersonation?.isImpersonating && (
+        <Alert
+          type="warning"
+          showIcon
+          banner
+          title={(
+            <span>
+              <IntlMessage id="admin.tools.impersonation.banner" />
+              {user?.communicationName ? `: ${user.communicationName}` : ''}
+            </span>
+          )}
+          action={(
+            <Button size="small" onClick={handleStopImpersonation}>
+              <IntlMessage id="admin.tools.impersonation.stop" />
+            </Button>
+          )}
+        />
+      )}
 			
 			{(isNavTop && !isMobile) ? <TopNav routeInfo={currentRouteInfo}/> : null}
 			
@@ -93,14 +138,17 @@ export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicU
 
 function mapDispatchToProps(dispatch){
 	return bindActionCreators({
-    onCurrentRouteInfo: onCurrentRouteInfo
+    onCurrentRouteInfo: onCurrentRouteInfo,
+    onStoppingImpersonationProfile,
+    signOutSuccess
 	}, dispatch)
 }
 
-const mapStateToProps = ({ theme, lrn }) => { 
+const mapStateToProps = ({ theme, lrn, grant }) => { 
   const {dynamicUpperMainNavigation} = lrn
+  const { user } = grant;
   const { navCollapsed, navType, locale } =  theme;
-  return { navCollapsed, navType, locale, dynamicUpperMainNavigation }
+  return { navCollapsed, navType, locale, dynamicUpperMainNavigation, user }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(React.memo(AppLayout));

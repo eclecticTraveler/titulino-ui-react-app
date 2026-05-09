@@ -18,6 +18,7 @@ import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
 import { authenticated, signIn, onResolvingAuthenticationWhenRefreshing } from "redux/actions/Auth";
 import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
 import Loading from 'components/shared-components/Loading';
+import ImpersonationSession from "lob/ImpersonationSession";
  
 function RouteInterceptor({ children, isAuthenticated }) {
   const { pathname } = useLocation();
@@ -54,6 +55,10 @@ export const Views = (props) => {
 
     // Load the cookie for Authentication if there was any
      useSupabaseSessionSync((session) => {
+        const isImpersonationLaunch = window.location.pathname === `${APP_PREFIX_PATH}/impersonate`;
+        if (isImpersonationLaunch || ImpersonationSession.hasActiveImpersonationProfile()) {
+            return;
+        }
         // console.log("🧠 Supabase session received in sync hook:", session);
         const userFromSession = session?.user;
 
@@ -72,6 +77,34 @@ export const Views = (props) => {
 
       
     useEffect(() => {
+        const activeImpersonationProfile = ImpersonationSession.getActiveImpersonationProfile();
+        if (!activeImpersonationProfile?.emailId) return;
+
+        if (!token || token?.email !== activeImpersonationProfile.emailId) {
+            authenticated({
+                email: activeImpersonationProfile.emailId,
+                impersonation: true
+            });
+        }
+
+        if (!user?.contactId || user?.emailId !== activeImpersonationProfile.emailId) {
+            onLoadingAuthenticatedLandingPage(activeImpersonationProfile.emailId);
+            onResolvingAuthenticationWhenRefreshing(true);
+        }
+    }, [
+        authenticated,
+        onLoadingAuthenticatedLandingPage,
+        onResolvingAuthenticationWhenRefreshing,
+        token,
+        user?.contactId,
+        user?.emailId
+    ]);
+
+    useEffect(() => {
+        if (ImpersonationSession.hasActiveImpersonationProfile()) {
+            onResolvingAuthenticationWhenRefreshing(false);
+            return;
+        }
         if(token?.email && !user?.contactId){        
             onLoadingAuthenticatedLandingPage(token?.email);
             onResolvingAuthenticationWhenRefreshing(true);

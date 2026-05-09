@@ -23,7 +23,8 @@ import {
   ON_UPSERTING_SHOP_PRODUCT_COURSE_TIER,
   ON_UPSERTING_SHOP_TIERS,
   ON_UPSERTING_SHOP_PAYMENT_PROVIDERS,
-  ON_TOGGLING_SHOP_PRODUCT_ACTIVE
+  ON_TOGGLING_SHOP_PRODUCT_ACTIVE,
+  ON_STARTING_CONTACT_IMPERSONATION
 } from '../constants/AdminTools';
 
 // Pure helpers re-exported via the manager so components keep a single
@@ -82,6 +83,25 @@ export const onLoadingContactCourseProgressActivity = async (contactInternalId, 
 export const onLoadingContactShopPurchaseHistory = async (contactInternalId, emailId) => {
   const contactShopPurchaseHistory = await AdminToolsManager.getContactShopPurchaseHistory(contactInternalId, emailId);
   return { type: ON_LOADING_CONTACT_SHOP_PURCHASE_HISTORY, contactShopPurchaseHistory };
+};
+
+export const onStartingContactImpersonation = async ({
+  contactInternalId,
+  selectedEmail,
+  reason,
+  adminEmailId
+}) => {
+  const impersonationResult = await AdminToolsManager.startContactImpersonation({
+    contactInternalId,
+    selectedEmail,
+    reason,
+    adminEmailId
+  });
+
+  return {
+    type: ON_STARTING_CONTACT_IMPERSONATION,
+    impersonationResult
+  };
 };
 
 export const onLoadingContactLoginFootprint = async (contactInternalId, emailId) => {

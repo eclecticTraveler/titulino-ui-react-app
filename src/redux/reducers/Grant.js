@@ -4,27 +4,31 @@ import {
   AUTH_TITULINO_INTERNAL_TOKEN,
   ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
   ON_LOADING_AUTHENTICATED_LANDING_PAGE,
-  ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT
+  ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT,
+  ON_ACTIVATING_IMPERSONATION_PROFILE,
+  ON_STOPPING_IMPERSONATION_PROFILE
 } from '../constants/Grant';
+
+const emptyUser = {
+  userCourses: null,
+  contactId: null,
+  contactInternalId: null,
+  emailId: null,
+  yearOfBirth: null,
+  communicationName: null,
+  expirationDate: null,
+  hasEverBeenFacilitator: false,
+  isGlobalAccessUser: false,
+  globalRoles: [],
+  contactPaymentProviderId: null,
+  innerToken: localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
+};
 
 const initState = {
   generalLoading: false,
   message: '',
   showMessage: false,
-  user: {
-    userCourses: null,
-    contactId: null,
-    contactInternalId: null,
-    emailId: null,
-    yearOfBirth: null,
-    communicationName: null,
-    expirationDate: null,
-    hasEverBeenFacilitator: false,
-    isGlobalAccessUser: false,
-    globalRoles: [],
-    contactPaymentProviderId: null,
-    innerToken: localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
-  }
+  user: emptyUser
 };
 
 const grant = (state = initState, action) => {
@@ -62,6 +66,25 @@ const grant = (state = initState, action) => {
           ...state.user,
           ...action.user,
           innerToken: action.user?.innerToken || state.user?.innerToken || localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
+        }
+      };
+    case ON_ACTIVATING_IMPERSONATION_PROFILE:
+      return {
+        ...state,
+        generalLoading: false,
+        user: {
+          ...state.user,
+          ...action.user,
+          innerToken: action.user?.innerToken || state.user?.innerToken || localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
+        }
+      };
+    case ON_STOPPING_IMPERSONATION_PROFILE:
+      return {
+        ...state,
+        generalLoading: false,
+        user: {
+          ...emptyUser,
+          innerToken: localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
         }
       };
     case ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH:

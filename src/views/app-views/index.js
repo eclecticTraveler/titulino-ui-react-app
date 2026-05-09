@@ -19,6 +19,7 @@ const Enrollment = lazy(() => import(`./user/enrollment`));
 const RedirectSignup = lazy(() => import(`./user/redirect-signup`));
 const CourseSelectionView = lazy(() => retry(() => import(`./course-selection`)));
 const SessionRetrieval = lazy(() => import(`./user/session-retrieval`));
+const ImpersonationLaunch = lazy(() => import(`./user/impersonation`));
 const LoginView = lazy(() => import(`./user/login`));
 const LogoutView = lazy(() => import(`./user/logout`));
 
@@ -46,6 +47,7 @@ export const AppViews = (props) => {
 			<Route path={`signup`} element={<RouteElement component={RedirectSignup} />} />
 			<Route path={`switch-course`} element={<RouteElement component={CourseSelectionView} />} />
 			<Route path={`session-retrieval`} element={<RouteElement component={SessionRetrieval} />} />
+			<Route path={`impersonate`} element={<RouteElement component={ImpersonationLaunch} />} />
 			<Route path={`login`} element={<RouteElement component={LoginView} />} />
 			<Route path={`logout`} element={<RouteElement component={LogoutView} />} />
 			<Route path="" element={<Navigate to={`${APP_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${DEFAULT_LANDING_COURSE}`} replace />} />

@@ -337,8 +337,6 @@ export const getShopPurchaseHistoryByContacts = async (
   if (!normalizedContactInternalIds.length) return EMPTY_RESULT;
 
   const payloadCandidates = [
-    { p_contact_ids: normalizedContactInternalIds },
-    { p_contact_internal_ids: normalizedContactInternalIds },
     { p_contactinternalids: normalizedContactInternalIds }
   ];
 

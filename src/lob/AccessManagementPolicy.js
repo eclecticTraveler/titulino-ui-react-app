@@ -18,6 +18,8 @@ const ROLE_IDS = {
  * - titulino_proofer and titulino_report_builder cannot grant/revoke permissions.
  * - Contact-profile monitoring actions are limited to super admins,
  *   administrators, and customer support.
+ * - Contact impersonation is limited to the same profile-management roles;
+ *   the backend remains the final authority and also audits the request.
  *
  * These rules intentionally live in the LOB layer so the dashboard can ask
  * policy questions without hardcoding role-specific behavior in the UI.
@@ -26,32 +28,38 @@ const ACCESS_MANAGEMENT_POLICIES = {
   [ROLE_IDS.SUPER_ADMIN]: {
     global: { strategy: 'all' },
     course: { strategy: 'all' },
-    contactProfiles: { strategy: 'all' }
+    contactProfiles: { strategy: 'all' },
+    impersonation: { strategy: 'all' }
   },
   [ROLE_IDS.ADMINISTRATOR]: {
     global: { strategy: 'lowerPriority' },
     course: { strategy: 'all' },
-    contactProfiles: { strategy: 'all' }
+    contactProfiles: { strategy: 'all' },
+    impersonation: { strategy: 'all' }
   },
   [ROLE_IDS.GENERAL_SUPPORT]: {
     global: { roleIds: [ROLE_IDS.PROOFER] },
     course: { roleIds: [] },
-    contactProfiles: { roleIds: [] }
+    contactProfiles: { roleIds: [] },
+    impersonation: { roleIds: [] }
   },
   [ROLE_IDS.CUSTOMER_SUPPORT]: {
     global: { roleIds: [] },
     course: { roleIds: [ROLE_IDS.USER] },
-    contactProfiles: { strategy: 'all' }
+    contactProfiles: { strategy: 'all' },
+    impersonation: { strategy: 'all' }
   },
   [ROLE_IDS.PROOFER]: {
     global: { roleIds: [] },
     course: { roleIds: [] },
-    contactProfiles: { roleIds: [] }
+    contactProfiles: { roleIds: [] },
+    impersonation: { roleIds: [] }
   },
   [ROLE_IDS.REPORT_BUILDER]: {
     global: { roleIds: [] },
     course: { roleIds: [] },
-    contactProfiles: { roleIds: [] }
+    contactProfiles: { roleIds: [] },
+    impersonation: { roleIds: [] }
   }
 };
 
@@ -192,11 +200,30 @@ export const buildAccessManagementPolicy = (user = {}, allRoles = []) => {
     };
   };
 
+  const canImpersonateContacts = () => {
+    if (!hasGlobalAccess || currentUserGlobalRoles.length === 0) {
+      return {
+        isAllowed: false,
+        reasonKey: 'admin.tools.msg.notEnoughImpersonationPermissions'
+      };
+    }
+
+    const isAllowed = currentUserGlobalRoles.some(roleId => (
+      ACCESS_MANAGEMENT_POLICIES[roleId]?.impersonation?.strategy === 'all'
+    ));
+
+    return {
+      isAllowed,
+      reasonKey: isAllowed ? null : 'admin.tools.msg.notEnoughImpersonationPermissions'
+    };
+  };
+
   return {
     currentUserGlobalRoles,
     canManageRole,
     canManageAnyRole,
-    canManageContactProfiles
+    canManageContactProfiles,
+    canImpersonateContacts
   };
 };
 

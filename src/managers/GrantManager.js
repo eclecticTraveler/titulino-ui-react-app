@@ -3,6 +3,7 @@ import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import AdminInsights from "lob/AdminInsights";
 import ShopPurchaseExperience from "lob/ShopPurchaseExperience";
+import ImpersonationSession from "lob/ImpersonationSession";
 
 
 export const getAllCourses = async() => {
@@ -47,6 +48,34 @@ const setCourseAccessForUserCourses = async(purchasedTierAccess, courseCodeIdOfP
 }
 
 
+const normalizeResolvedUserProfile = (userProfile = {}, fallbackEmailId = null) => {
+  const globalRoles = Array.isArray(userProfile?.globalRoles)
+    ? userProfile.globalRoles
+    : [];
+
+  return {
+    userCourses: userProfile?.userCourses ?? null,
+    contactId: userProfile?.contactId ?? null,
+    contactInternalId: userProfile?.contactInternalId ?? null,
+    communicationName: userProfile?.communicationName ?? null,
+    expirationDate: userProfile?.expirationDate ?? null,
+    hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? userProfile?.hasEverBeenFacilitator ?? false,
+    isGlobalAccessUser: userProfile?.isGlobalAccessUser ?? globalRoles.length > 0,
+    globalRoles,
+    innerToken: userProfile?.innerToken || userProfile?.token,
+    emailId: userProfile?.emailId ?? fallbackEmailId,
+    yearOfBirth: userProfile?.yearOfBirth,
+    contactPaymentProviderId: userProfile?.contactPaymentProviderId ?? null,
+    ...(userProfile?.impersonation ? { impersonation: userProfile.impersonation } : {})
+  };
+};
+
+const cacheUserProfile = async (user, ttlMinutes = 160) => {
+  if (!user?.emailId) return null;
+  await LocalStorageService.setCachedObject(`UserProfile_${user.emailId}`, user, ttlMinutes);
+  return user;
+};
+
 const getUserProfile = async (emailId, dobOrYob) => {
   const localStorageKey = `UserProfile_${emailId}`;
   // 1. Try to get from encrypted localStorage
@@ -65,25 +94,9 @@ const getUserProfile = async (emailId, dobOrYob) => {
   // 2. Otherwise fetch from backend
   try {
     const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(emailId, dobOrYob);    
-    if (userProfile) {      
-      const globalRoles = Array.isArray(userProfile?.globalRoles)
-        ? userProfile.globalRoles
-        : [];
+    if (userProfile) {
       // 3. Store encrypted locally with TTL (e.g., 60 minutes)
-      const user = {
-        userCourses: userProfile?.userCourses ?? null,
-        contactId: userProfile?.contactId ?? null,
-        contactInternalId: userProfile?.contactInternalId ?? null,
-        communicationName: userProfile?.communicationName ?? null,
-        expirationDate: userProfile?.expirationDate ?? null,
-        hasEverBeenFacilitator: userProfile?.hasEverBeenFacilitador ?? false,
-        isGlobalAccessUser: userProfile?.isGlobalAccessUser ?? globalRoles.length > 0,
-        globalRoles,
-        innerToken: userProfile?.token,
-        emailId: emailId,
-        yearOfBirth: userProfile?.yearOfBirth,
-        contactPaymentProviderId: userProfile?.contactPaymentProviderId ?? null
-      };
+      const user = normalizeResolvedUserProfile(userProfile, emailId);
       
       LocalStorageService.setCachedObject(localStorageKey, user, 160);       
       // console.log("contactPaymentProviderId", user, userProfile);
@@ -101,15 +114,35 @@ const getUserProfile = async (emailId, dobOrYob) => {
 };
 
 const getCachedUserProfile = async (emailId) => {
+  const activeImpersonationProfile = ImpersonationSession.getActiveImpersonationProfile();
+  if (activeImpersonationProfile?.emailId === emailId) {
+    return activeImpersonationProfile;
+  }
+
   const localStorageKey = `UserProfile_${emailId}`;
   const user = await LocalStorageService.getCachedObject(localStorageKey);
   return user
+};
+
+const activateImpersonationProfile = async (userProfile) => {
+  const user = ImpersonationSession.setActiveImpersonationProfile(userProfile);
+  if (!user) return null;
+
+  await cacheUserProfile(user, 160);
+  return user;
+};
+
+const stopImpersonationProfile = async () => {
+  return ImpersonationSession.clearActiveImpersonationProfile();
 };
 
 
 const GrantManager = {
   getUserProfile,
   getCachedUserProfile,
+  activateImpersonationProfile,
+  stopImpersonationProfile,
+  normalizeResolvedUserProfile,
   setCourseAccessForUserCourses
 };
 

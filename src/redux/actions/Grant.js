@@ -6,7 +6,9 @@ ON_AUTHENTICATING_WITH_SSO,
 AUTH_TITULINO_INTERNAL_TOKEN,
 ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
 ON_LOADING_AUTHENTICATED_LANDING_PAGE,
-ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT
+ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT,
+ON_ACTIVATING_IMPERSONATION_PROFILE,
+ON_STOPPING_IMPERSONATION_PROFILE
 } from '../constants/Grant';
 
 export const onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut = async (purchasedTierAccess, courseCodeIdOfPurchasedItem, emailId) => {   
@@ -36,6 +38,22 @@ export const onLoadingAuthenticatedLandingPage = async (emailId) => {
     user: userProfile
   }
 }
+
+export const onActivatingImpersonationProfile = async (userProfile) => {
+  const user = await TitulinoManager.activateImpersonationProfile(userProfile);
+  return {
+    type: ON_ACTIVATING_IMPERSONATION_PROFILE,
+    user
+  };
+};
+
+export const onStoppingImpersonationProfile = async () => {
+  const stoppedUser = await TitulinoManager.stopImpersonationProfile();
+  return {
+    type: ON_STOPPING_IMPERSONATION_PROFILE,
+    stoppedUser
+  };
+};
 
 export const onAuthenticatingWithInternalResources = async (innerToken) => {
   return {
