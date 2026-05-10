@@ -17,12 +17,6 @@ import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graph
 import ContactProfileEditor from 'components/shared-components/ContactProfileEditor';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
-import AccessManagementPolicy from 'lob/AccessManagementPolicy';
-import ContactProfileEditorLob from 'lob/ContactProfileEditor';
-import ContactProfilesMonitoring from 'lob/ContactProfilesMonitoring';
-import ShopAnalytics from 'lob/ShopAnalytics';
-import ImpersonationSession from 'lob/ImpersonationSession';
-import ProcessLogs from 'lob/ProcessLogs';
 import { env } from 'configs/EnvironmentConfig';
 import { APP_PREFIX_PATH } from 'configs/AppConfig';
 import dayjs from 'dayjs';
@@ -58,7 +52,21 @@ import {
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
-  isValidHttpUrl
+  isValidHttpUrl,
+  buildAccessManagementPolicy,
+  buildShopPurchasedCourseSelectionOptions,
+  buildShopTierSelectionOptions,
+  buildShopCustomersTableModel,
+  buildContactProfileTableModel,
+  filterContactProfileTableData,
+  mergeContactProfilePatch,
+  setActiveImpersonationProfileInSessionStorage,
+  getProcessLogSourceConfigs,
+  getProcessLogSeverityOptions,
+  getProcessLogLimitOptions,
+  filterProcessLogRows,
+  buildProcessLogTableColumns,
+  buildProcessLogRoleSelectionOptions
 } from "redux/actions/AdminTools";
 
 const normalizeContactInternalId = (value) => (
@@ -174,7 +182,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [contactLoginLoading, setContactLoginLoading] = useState(false);
   const [monitoringLoading, setMonitoringLoading] = useState(false);
   const [monitoringInnerTabKey, setMonitoringInnerTabKey] = useState('general-access');
-  const [processLogSourceKey, setProcessLogSourceKey] = useState('api');
+  const [processLogSourceKey, setProcessLogSourceKey] = useState('general');
   const [processLogLoading, setProcessLogLoading] = useState(false);
   const [processLogFilters, setProcessLogFilters] = useState({
     severity: 'all',
@@ -183,7 +191,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     userSearchText: '',
     role: 'all',
     dateRange: [],
-    limit: 100,
+    limit: 50,
     offset: 0
   });
   const [contactProfileSearchText, setContactProfileSearchText] = useState('');
@@ -259,7 +267,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const emailId = user?.emailId || null;
   const accessManagementPolicy = useMemo(
-    () => AccessManagementPolicy.buildAccessManagementPolicy(user, allRoles),
+    () => buildAccessManagementPolicy(user, allRoles),
     [user, allRoles]
   );
   const contactProfileMonitoringAuthorization = accessManagementPolicy.canManageContactProfiles();
@@ -267,7 +275,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const impersonationAuthorization = accessManagementPolicy.canImpersonateContacts();
   const canStartContactImpersonation = impersonationAuthorization.isAllowed;
   const revenueCourseOptions = useMemo(() => (
-    ShopAnalytics.buildShopPurchasedCourseSelectionOptions(
+    buildShopPurchasedCourseSelectionOptions(
       shopCoursesWithPurchases,
       {
         allCoursesLabel: intl.formatMessage({ id: 'admin.tools.revenue.allCourses' }),
@@ -284,7 +292,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     shopRevenueDashboard?.raw?.shopPaymentProviders || []
   ), [shopRevenueDashboard?.raw?.shopPaymentProviders]);
   const revenueTierOptions = useMemo(() => {
-    const tierOptions = ShopAnalytics.buildShopTierSelectionOptions(revenueShopTierRows);
+    const tierOptions = buildShopTierSelectionOptions(revenueShopTierRows);
     const fallbackTierOptions = [
       { value: 'Gold', label: 'Gold', searchText: 'Gold' },
       { value: 'Silver', label: 'Silver', searchText: 'Silver' },
@@ -365,7 +373,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   ), [revenueProductRows]);
 
   const revenueShopCustomersTable = useMemo(() => (
-    ShopAnalytics.buildShopCustomersTableModel(
+    buildShopCustomersTableModel(
       shopRevenueDashboard?.raw?.shopCustomers || [],
       revenueFilters.searchText || ''
     )
@@ -1109,7 +1117,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   );
 
   const optedOutContactProfileTableModel = useMemo(
-    () => ContactProfilesMonitoring.buildContactProfileTableModel(
+    () => buildContactProfileTableModel(
       contactProfileMonitoring?.optedOutActiveContactProfiles || [],
       {
         optedOutEmailSelection,
@@ -1120,7 +1128,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     [contactProfileMonitoring?.optedOutActiveContactProfiles, optedOutEmailSelection, handleContactProfileInternalIdCopied, copyInternalIdTitle]
   );
   const inactiveContactProfileTableModel = useMemo(
-    () => ContactProfilesMonitoring.buildContactProfileTableModel(
+    () => buildContactProfileTableModel(
       contactProfileMonitoring?.inactiveContactProfiles || [],
       {
         hideCommunicationColumns: true,
@@ -1131,14 +1139,14 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     [contactProfileMonitoring?.inactiveContactProfiles, handleContactProfileInternalIdCopied, copyInternalIdTitle]
   );
   const filteredOptedOutContactProfileData = useMemo(
-    () => ContactProfilesMonitoring.filterContactProfileTableData(
+    () => filterContactProfileTableData(
       optedOutContactProfileTableModel?.tableData || [],
       contactProfileSearchText
     ),
     [optedOutContactProfileTableModel?.tableData, contactProfileSearchText]
   );
   const filteredInactiveContactProfileData = useMemo(
-    () => ContactProfilesMonitoring.filterContactProfileTableData(
+    () => filterContactProfileTableData(
       inactiveContactProfileTableModel?.tableData || [],
       contactProfileSearchText
     ),
@@ -1159,13 +1167,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     [activeProcessLogResult?.rows]
   );
   const filteredProcessLogRows = useMemo(
-    () => ProcessLogs.filterLogRows(processLogRows, processLogFilters),
+    () => filterProcessLogRows(processLogRows, processLogFilters),
     [processLogRows, processLogFilters]
   );
-  const processLogRoleOptions = useMemo(() => ([
-    { value: 'all', label: t('admin.tools.monitoring.processLogs.allRoles') },
-    ...ProcessLogs.getUniqueFilterOptions(processLogRows, 'createdByRole')
-  ]), [processLogRows, t]);
+  const processLogRoleOptions = useMemo(
+    () => buildProcessLogRoleSelectionOptions(processLogRows, t('admin.tools.monitoring.processLogs.allRoles')),
+    [processLogRows, t]
+  );
   const handleCopyProcessLogEventData = useCallback((record) => {
     const eventDataText = record?.eventDataText || '';
     if (!eventDataText || eventDataText === '-') return;
@@ -1177,7 +1185,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     });
   }, [messageApi, t]);
   const processLogColumns = useMemo(
-    () => ProcessLogs.buildLogTableColumns({
+    () => buildProcessLogTableColumns({
       t,
       copyTitle: t('admin.tools.monitoring.processLogs.copyEventData'),
       onCopyEventData: handleCopyProcessLogEventData
@@ -1382,12 +1390,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       if (upsertResult?.success === true) {
         const patch = upsertResult?.contactProfilePatch || actionResult?.contactProfilePatch || profileUpdate?.patch;
         if (patch) {
-          setSelectedContact(prev => ContactProfileEditorLob.mergeContactProfilePatch(prev, patch));
+          setSelectedContact(prev => mergeContactProfilePatch(prev, patch));
         }
         messageApi.success(t('admin.tools.profileEditor.saveSuccess'));
         setContactProfileEditorOpen(false);
         if (contactTabKey === 'detailed') {
-          onLoadingContactGeoMaps(ContactProfileEditorLob.mergeContactProfilePatch(selectedContact, patch));
+          onLoadingContactGeoMaps(mergeContactProfilePatch(selectedContact, patch));
         }
       } else {
         messageApi.error(t('admin.tools.profileEditor.saveError'));
@@ -1624,7 +1632,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       const launchId = result?.impersonationSessionId || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const launchUrl = `${window.location.origin}${APP_PREFIX_PATH}/impersonate?source=session&launchId=${encodeURIComponent(launchId)}`;
 
-      const stagedUserProfile = ImpersonationSession.setActiveImpersonationProfileInSessionStorage(
+      const stagedUserProfile = setActiveImpersonationProfileInSessionStorage(
         impersonationWindow.sessionStorage,
         result.userProfile
       );
@@ -3931,7 +3939,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             setProcessLogSourceKey(nextSourceKey);
             setProcessLogFilters(prev => ({ ...prev, offset: 0 }));
           }}
-          items={ProcessLogs.LOG_SOURCE_CONFIGS.map(sourceConfig => ({
+          items={getProcessLogSourceConfigs().map(sourceConfig => ({
             key: sourceConfig.key,
             label: (
               <span>
@@ -3948,7 +3956,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               <Select
                 value={processLogFilters.severity}
                 onChange={value => updateProcessLogFilter('severity', value)}
-                options={ProcessLogs.PROCESS_LOG_SEVERITY_OPTIONS.map(option => ({
+                options={getProcessLogSeverityOptions().map(option => ({
                   value: option.value,
                   label: option.labelKey ? t(option.labelKey) : option.value
                 }))}
@@ -4012,7 +4020,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               <Select
                 value={processLogFilters.limit}
                 onChange={value => updateProcessLogFilter('limit', value)}
-                options={ProcessLogs.PROCESS_LOG_LIMIT_OPTIONS}
+                options={getProcessLogLimitOptions()}
                 style={{ width: '100%' }}
               />
             ))}

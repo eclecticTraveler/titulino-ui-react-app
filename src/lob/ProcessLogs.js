@@ -4,6 +4,12 @@ import { CopyOutlined } from '@ant-design/icons';
 
 export const LOG_SOURCE_CONFIGS = [
   {
+    key: 'general',
+    endpointName: 'GetGeneralLogEvents',
+    localeKey: 'admin.tools.monitoring.processLogs.tab.general',
+    category: 'General'
+  },
+  {
     key: 'api',
     endpointName: 'GetApiLogEvents',
     localeKey: 'admin.tools.monitoring.processLogs.tab.api',
@@ -38,12 +44,6 @@ export const LOG_SOURCE_CONFIGS = [
     endpointName: 'GetImpersonationLogEvents',
     localeKey: 'admin.tools.monitoring.processLogs.tab.impersonation',
     category: 'Impersonation'
-  },
-  {
-    key: 'general',
-    endpointName: 'GetGeneralLogEvents',
-    localeKey: 'admin.tools.monitoring.processLogs.tab.general',
-    category: 'General'
   }
 ];
 

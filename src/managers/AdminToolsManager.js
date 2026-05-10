@@ -10,6 +10,7 @@ import StudentProgress from "lob/StudentProgress";
 import LoginFootprint from "lob/LoginFootprint";
 import KnowMeProfiles from "lob/KnowMeProfiles";
 import AdminTools from "lob/AdminTools";
+import AccessManagementPolicy from "lob/AccessManagementPolicy";
 import ContactProfilesMonitoring from "lob/ContactProfilesMonitoring";
 import ContactProfileEditor from "lob/ContactProfileEditor";
 import LrnConfiguration from "lob/LrnConfiguration";
@@ -40,6 +41,48 @@ const getRevenueDateRange = (dateRange = []) => {
     endDate: toIsoString(dateRange?.[1])
   };
 };
+
+export const buildAccessManagementPolicy = (...args) => (
+  AccessManagementPolicy.buildAccessManagementPolicy(...args)
+);
+
+export const buildShopPurchasedCourseSelectionOptions = (...args) => (
+  ShopAnalytics.buildShopPurchasedCourseSelectionOptions(...args)
+);
+
+export const buildShopTierSelectionOptions = (...args) => (
+  ShopAnalytics.buildShopTierSelectionOptions(...args)
+);
+
+export const buildShopCustomersTableModel = (...args) => (
+  ShopAnalytics.buildShopCustomersTableModel(...args)
+);
+
+export const buildContactProfileTableModel = (...args) => (
+  ContactProfilesMonitoring.buildContactProfileTableModel(...args)
+);
+
+export const filterContactProfileTableData = (...args) => (
+  ContactProfilesMonitoring.filterContactProfileTableData(...args)
+);
+
+export const mergeContactProfilePatch = (...args) => (
+  ContactProfileEditor.mergeContactProfilePatch(...args)
+);
+
+export const setActiveImpersonationProfileInSessionStorage = (...args) => (
+  ImpersonationSession.setActiveImpersonationProfileInSessionStorage(...args)
+);
+
+export const getProcessLogSourceConfigs = () => ProcessLogs.LOG_SOURCE_CONFIGS;
+export const getProcessLogSeverityOptions = () => ProcessLogs.PROCESS_LOG_SEVERITY_OPTIONS;
+export const getProcessLogLimitOptions = () => ProcessLogs.PROCESS_LOG_LIMIT_OPTIONS;
+export const filterProcessLogRows = (...args) => ProcessLogs.filterLogRows(...args);
+export const buildProcessLogTableColumns = (...args) => ProcessLogs.buildLogTableColumns(...args);
+export const buildProcessLogRoleSelectionOptions = (rows = [], allRolesLabel = 'All Roles') => ([
+  { value: 'all', label: allRolesLabel },
+  ...ProcessLogs.getUniqueFilterOptions(rows, 'createdByRole')
+]);
 
 export const initAdminTools = async (emailId) => {
   const token = await getTokenFromEmail(emailId);
@@ -901,6 +944,20 @@ const AdminToolsManager = {
   hydrateAdminToolAvatarUrls,
   getContactGeoMaps,
   uploadCourseCoverImage,
+  buildAccessManagementPolicy,
+  buildShopPurchasedCourseSelectionOptions,
+  buildShopTierSelectionOptions,
+  buildShopCustomersTableModel,
+  buildContactProfileTableModel,
+  filterContactProfileTableData,
+  mergeContactProfilePatch,
+  setActiveImpersonationProfileInSessionStorage,
+  getProcessLogSourceConfigs,
+  getProcessLogSeverityOptions,
+  getProcessLogLimitOptions,
+  filterProcessLogRows,
+  buildProcessLogTableColumns,
+  buildProcessLogRoleSelectionOptions,
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,

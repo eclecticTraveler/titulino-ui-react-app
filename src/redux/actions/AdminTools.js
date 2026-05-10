@@ -35,6 +35,20 @@ export const generateCourseCodeId = (...args) => AdminToolsManager.generateCours
 export const buildCourseUpsertPayload = (...args) => AdminToolsManager.buildCourseUpsertPayload(...args);
 export const prefillFromTemplate = (...args) => AdminToolsManager.prefillFromTemplate(...args);
 export const isValidHttpUrl = (...args) => AdminToolsManager.isValidHttpUrl(...args);
+export const buildAccessManagementPolicy = (...args) => AdminToolsManager.buildAccessManagementPolicy(...args);
+export const buildShopPurchasedCourseSelectionOptions = (...args) => AdminToolsManager.buildShopPurchasedCourseSelectionOptions(...args);
+export const buildShopTierSelectionOptions = (...args) => AdminToolsManager.buildShopTierSelectionOptions(...args);
+export const buildShopCustomersTableModel = (...args) => AdminToolsManager.buildShopCustomersTableModel(...args);
+export const buildContactProfileTableModel = (...args) => AdminToolsManager.buildContactProfileTableModel(...args);
+export const filterContactProfileTableData = (...args) => AdminToolsManager.filterContactProfileTableData(...args);
+export const mergeContactProfilePatch = (...args) => AdminToolsManager.mergeContactProfilePatch(...args);
+export const setActiveImpersonationProfileInSessionStorage = (...args) => AdminToolsManager.setActiveImpersonationProfileInSessionStorage(...args);
+export const getProcessLogSourceConfigs = (...args) => AdminToolsManager.getProcessLogSourceConfigs(...args);
+export const getProcessLogSeverityOptions = (...args) => AdminToolsManager.getProcessLogSeverityOptions(...args);
+export const getProcessLogLimitOptions = (...args) => AdminToolsManager.getProcessLogLimitOptions(...args);
+export const filterProcessLogRows = (...args) => AdminToolsManager.filterProcessLogRows(...args);
+export const buildProcessLogTableColumns = (...args) => AdminToolsManager.buildProcessLogTableColumns(...args);
+export const buildProcessLogRoleSelectionOptions = (...args) => AdminToolsManager.buildProcessLogRoleSelectionOptions(...args);
 
 export const onLoadingAdminToolsInit = async (emailId) => {
   const { allCourses, allRoles, allEnrollees, allRawCourses } = await AdminToolsManager.initAdminTools(emailId);
