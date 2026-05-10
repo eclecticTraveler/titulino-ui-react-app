@@ -4,6 +4,7 @@ import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
 import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic } from 'antd';
 import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined } from '@ant-design/icons';
+import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
 import IntlMessage from 'components/util-components/IntlMessage';
@@ -21,6 +22,7 @@ import ContactProfileEditorLob from 'lob/ContactProfileEditor';
 import ContactProfilesMonitoring from 'lob/ContactProfilesMonitoring';
 import ShopAnalytics from 'lob/ShopAnalytics';
 import ImpersonationSession from 'lob/ImpersonationSession';
+import ProcessLogs from 'lob/ProcessLogs';
 import { env } from 'configs/EnvironmentConfig';
 import { APP_PREFIX_PATH } from 'configs/AppConfig';
 import dayjs from 'dayjs';
@@ -39,6 +41,7 @@ import {
   onLoadingContactLoginFootprint,
   onLoadingAllUserLoginFootprint,
   onLoadingContactProfileMonitoring,
+  onLoadingProcessLogEvents,
   onTogglingContactEmailOptOut,
   onTogglingContactActive,
   onTogglingSelectedContactEmailOptOut,
@@ -83,6 +86,13 @@ const normalizeBooleanValue = (value, fallback = true) => {
   return value === undefined || value === null ? fallback : Boolean(value);
 };
 
+const getMeaningfulCharacterCount = (value = '') => (
+  Array.from(String(value).trim()).filter((character) => (
+    /[0-9]/.test(character) ||
+    character.toLocaleLowerCase() !== character.toLocaleUpperCase()
+  )).length
+);
+
 const GlobalAdminToolsLandingDashboard = (props) => {
   const {
     user,
@@ -109,6 +119,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onLoadingAllUserLoginFootprint,
     allUserLoginFootprint,
     onLoadingContactProfileMonitoring,
+    onLoadingProcessLogEvents,
     onTogglingContactEmailOptOut,
     onTogglingContactActive,
     onTogglingSelectedContactEmailOptOut,
@@ -128,6 +139,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onStartingContactImpersonation,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
+    processLogEventsBySource,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   } = props;
@@ -162,6 +174,18 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [contactLoginLoading, setContactLoginLoading] = useState(false);
   const [monitoringLoading, setMonitoringLoading] = useState(false);
   const [monitoringInnerTabKey, setMonitoringInnerTabKey] = useState('general-access');
+  const [processLogSourceKey, setProcessLogSourceKey] = useState('api');
+  const [processLogLoading, setProcessLogLoading] = useState(false);
+  const [processLogFilters, setProcessLogFilters] = useState({
+    severity: 'all',
+    searchText: '',
+    methodSearchText: '',
+    userSearchText: '',
+    role: 'all',
+    dateRange: [],
+    limit: 100,
+    offset: 0
+  });
   const [contactProfileSearchText, setContactProfileSearchText] = useState('');
   const [contactProfileMonitoringLoading, setContactProfileMonitoringLoading] = useState(false);
   const [selectedOptedOutEmailRowKeys, setSelectedOptedOutEmailRowKeys] = useState([]);
@@ -539,6 +563,25 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     t
   ]);
 
+  const loadProcessLogs = useCallback(async (
+    nextSourceKey = processLogSourceKey,
+    nextFilters = processLogFilters
+  ) => {
+    if (!emailId) return null;
+
+    setProcessLogLoading(true);
+    try {
+      return await onLoadingProcessLogEvents(emailId, nextSourceKey, nextFilters);
+    } finally {
+      setProcessLogLoading(false);
+    }
+  }, [
+    emailId,
+    onLoadingProcessLogEvents,
+    processLogFilters,
+    processLogSourceKey
+  ]);
+
   useEffect(() => {
     if (emailId) {
       onLoadingAdminToolsInit(emailId);
@@ -648,6 +691,19 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     canManageContactProfileMonitoring,
     contactProfileMonitoring?.emailId
   ]);
+
+  useEffect(() => {
+    if (
+      activeOuterTabKey !== 'monitoring' ||
+      monitoringInnerTabKey !== 'process-logs' ||
+      !emailId
+    ) {
+      return;
+    }
+
+    loadProcessLogs();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeOuterTabKey, monitoringInnerTabKey, emailId, processLogSourceKey]);
 
   useEffect(() => {
     if (
@@ -1097,6 +1153,37 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     contactProfileMonitoringLoading ||
     (monitoringInnerTabKey === 'contact-profiles' && isContactProfileMonitoringStale)
   );
+  const activeProcessLogResult = processLogEventsBySource?.[processLogSourceKey] || null;
+  const processLogRows = useMemo(
+    () => activeProcessLogResult?.rows || [],
+    [activeProcessLogResult?.rows]
+  );
+  const filteredProcessLogRows = useMemo(
+    () => ProcessLogs.filterLogRows(processLogRows, processLogFilters),
+    [processLogRows, processLogFilters]
+  );
+  const processLogRoleOptions = useMemo(() => ([
+    { value: 'all', label: t('admin.tools.monitoring.processLogs.allRoles') },
+    ...ProcessLogs.getUniqueFilterOptions(processLogRows, 'createdByRole')
+  ]), [processLogRows, t]);
+  const handleCopyProcessLogEventData = useCallback((record) => {
+    const eventDataText = record?.eventDataText || '';
+    if (!eventDataText || eventDataText === '-') return;
+
+    navigator.clipboard?.writeText(eventDataText).then(() => {
+      messageApi.success(t('admin.tools.monitoring.processLogs.copiedEventData'));
+    }).catch(() => {
+      messageApi.error(t('admin.tools.monitoring.processLogs.copyEventDataError'));
+    });
+  }, [messageApi, t]);
+  const processLogColumns = useMemo(
+    () => ProcessLogs.buildLogTableColumns({
+      t,
+      copyTitle: t('admin.tools.monitoring.processLogs.copyEventData'),
+      onCopyEventData: handleCopyProcessLogEventData
+    }),
+    [handleCopyProcessLogEventData, t]
+  );
 
   useEffect(() => {
     setContactProfileTableCounts({
@@ -1488,8 +1575,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       messageApi.warning(t('admin.tools.msg.selectEmail'));
       return;
     }
-    if (!activeImpersonationReason) {
-      messageApi.warning(t('admin.tools.impersonation.reasonRequired'));
+    if (!isImpersonationReasonValid) {
+      messageApi.warning(t('admin.tools.impersonation.reasonMinimum'));
       return;
     }
     if (!canStartContactImpersonation) {
@@ -1902,6 +1989,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const activeRevokeEmail = selectedRevokeEmail || selectedContactEmailOptions[0]?.value || null;
   const activeImpersonationEmail = selectedImpersonationEmail || selectedContactEmailOptions[0]?.value || null;
   const activeImpersonationReason = impersonationReason.trim();
+  const isImpersonationReasonValid = getMeaningfulCharacterCount(activeImpersonationReason) > 1;
   const activeContactStatusEmail = selectedContactStatusEmail || selectedContactStatusEmailOptions[0]?.value || null;
   const selectedContactStatusEmailRecord = (selectedContact?.Emails || []).find(emailRecord => (
     (emailRecord?.EmailId || emailRecord?.emailId) === activeContactStatusEmail
@@ -2760,7 +2848,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 value={impersonationReason}
                 onChange={(event) => setImpersonationReason(event.target.value)}
                 placeholder={t('admin.tools.impersonation.reasonPlaceholder')}
-                status={canStartContactImpersonation && !activeImpersonationReason ? 'error' : undefined}
+                status={canStartContactImpersonation && !isImpersonationReasonValid ? 'error' : undefined}
                 disabled={!canStartContactImpersonation}
               />
             </Col>
@@ -2771,13 +2859,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             onConfirm={handleStartContactImpersonation}
             okText={t('admin.tools.confirmYes')}
             cancelText={t('admin.tools.confirmNo')}
-            disabled={!canStartContactImpersonation || !activeImpersonationEmail || !activeImpersonationReason}
+            disabled={!canStartContactImpersonation || !activeImpersonationEmail || !isImpersonationReasonValid}
           >
             <Button
               type="primary"
               icon={<UserSwitchOutlined />}
               loading={impersonationSubmitting}
-              disabled={!canStartContactImpersonation || !activeImpersonationEmail || !activeImpersonationReason}
+              disabled={!canStartContactImpersonation || !activeImpersonationEmail || !isImpersonationReasonValid}
               style={{ marginTop: 16 }}
             >
               {setLocale(locale, 'admin.tools.impersonation.start')}
@@ -3814,6 +3902,204 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const renderProcessLogsMonitoring = () => {
+    const updateProcessLogFilter = (fieldName, value) => {
+      setProcessLogFilters(prev => ({
+        ...prev,
+        [fieldName]: value,
+        ...(fieldName !== 'offset' ? { offset: 0 } : {})
+      }));
+    };
+    const renderFilterTooltip = (tooltipKey, child) => (
+      <Tooltip title={t(tooltipKey)} placement="topLeft">
+        <div>{child}</div>
+      </Tooltip>
+    );
+
+    return (
+      <div>
+        <Alert
+          type="info"
+          showIcon
+          title={setLocale(locale, 'admin.tools.monitoring.processLogs.description')}
+          style={{ marginBottom: 16 }}
+        />
+
+        <Tabs
+          activeKey={processLogSourceKey}
+          onChange={(nextSourceKey) => {
+            setProcessLogSourceKey(nextSourceKey);
+            setProcessLogFilters(prev => ({ ...prev, offset: 0 }));
+          }}
+          items={ProcessLogs.LOG_SOURCE_CONFIGS.map(sourceConfig => ({
+            key: sourceConfig.key,
+            label: (
+              <span>
+                <TableOutlined style={{ marginRight: 6 }} />
+                {setLocale(locale, sourceConfig.localeKey)}
+              </span>
+            )
+          }))}
+        />
+
+        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={8} lg={4}>
+            {renderFilterTooltip('admin.tools.monitoring.processLogs.tooltip.severity', (
+              <Select
+                value={processLogFilters.severity}
+                onChange={value => updateProcessLogFilter('severity', value)}
+                options={ProcessLogs.PROCESS_LOG_SEVERITY_OPTIONS.map(option => ({
+                  value: option.value,
+                  label: option.labelKey ? t(option.labelKey) : option.value
+                }))}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={24} sm={12} md={16} lg={6}>
+            {renderFilterTooltip('admin.tools.monitoring.processLogs.tooltip.dateRange', (
+              <DatePicker.RangePicker
+                value={processLogFilters.dateRange?.length ? processLogFilters.dateRange : null}
+                onChange={dates => updateProcessLogFilter('dateRange', dates || [])}
+                style={{ width: '100%' }}
+                allowClear
+              />
+            ))}
+          </Col>
+          <Col xs={24} md={12} lg={6}>
+            {renderFilterTooltip('admin.tools.monitoring.processLogs.tooltip.search', (
+              <Input
+                allowClear
+                prefix={<SearchOutlined />}
+                placeholder={t('admin.tools.monitoring.processLogs.searchPlaceholder')}
+                value={processLogFilters.searchText}
+                onChange={event => updateProcessLogFilter('searchText', event.target.value)}
+              />
+            ))}
+          </Col>
+          <Col xs={24} md={12} lg={4}>
+            {renderFilterTooltip('admin.tools.monitoring.processLogs.tooltip.method', (
+              <Input
+                allowClear
+                placeholder={t('admin.tools.monitoring.processLogs.methodSearchPlaceholder')}
+                value={processLogFilters.methodSearchText}
+                onChange={event => updateProcessLogFilter('methodSearchText', event.target.value)}
+              />
+            ))}
+          </Col>
+          <Col xs={24} md={12} lg={4}>
+            {renderFilterTooltip('admin.tools.monitoring.processLogs.tooltip.user', (
+              <Input
+                allowClear
+                placeholder={t('admin.tools.monitoring.processLogs.userSearchPlaceholder')}
+                value={processLogFilters.userSearchText}
+                onChange={event => updateProcessLogFilter('userSearchText', event.target.value)}
+              />
+            ))}
+          </Col>
+          <Col xs={24} sm={12} md={8} lg={5}>
+            {renderFilterTooltip('admin.tools.monitoring.processLogs.tooltip.role', (
+              <Select
+                value={processLogFilters.role}
+                onChange={value => updateProcessLogFilter('role', value)}
+                options={processLogRoleOptions}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={12} sm={6} md={4} lg={3}>
+            {renderFilterTooltip('admin.tools.monitoring.processLogs.tooltip.limit', (
+              <Select
+                value={processLogFilters.limit}
+                onChange={value => updateProcessLogFilter('limit', value)}
+                options={ProcessLogs.PROCESS_LOG_LIMIT_OPTIONS}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={12} sm={6} md={4} lg={3}>
+            {renderFilterTooltip('admin.tools.monitoring.processLogs.tooltip.offset', (
+              <InputNumber
+                min={0}
+                step={processLogFilters.limit}
+                value={processLogFilters.offset}
+                onChange={value => updateProcessLogFilter('offset', Number(value || 0))}
+                style={{ width: '100%' }}
+                placeholder={t('admin.tools.monitoring.processLogs.offset')}
+              />
+            ))}
+          </Col>
+          <Col xs={24} sm={12} md={8} lg={4}>
+            {renderFilterTooltip('admin.tools.monitoring.processLogs.tooltip.refresh', (
+              <Button
+                type="primary"
+                icon={<ReloadOutlined />}
+                loading={processLogLoading}
+                onClick={() => loadProcessLogs()}
+                block
+              >
+                {setLocale(locale, 'admin.tools.monitoring.processLogs.refresh')}
+              </Button>
+            ))}
+          </Col>
+        </Row>
+
+        <Table
+          size="small"
+          rowKey="key"
+          columns={processLogColumns}
+          dataSource={filteredProcessLogRows}
+          loading={processLogLoading}
+          scroll={{ x: 1100 }}
+          pagination={{
+            pageSize: 25,
+            showSizeChanger: true,
+            showTotal: total => t('admin.tools.monitoring.processLogs.totalRows', { total })
+          }}
+          locale={{
+            emptyText: setLocale(locale, 'admin.tools.monitoring.processLogs.noData')
+          }}
+          expandable={{
+            rowExpandable: record => record?.eventDataText && record.eventDataText !== '-',
+            expandedRowRender: record => (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <strong>{setLocale(locale, 'admin.tools.monitoring.processLogs.eventData')}</strong>
+                  <Button
+                    size="small"
+                    type="link"
+                    icon={<CopyOutlined />}
+                    onClick={() => handleCopyProcessLogEventData(record)}
+                  >
+                    {setLocale(locale, 'admin.tools.monitoring.processLogs.copyEventData')}
+                  </Button>
+                </div>
+                <div
+                  style={{
+                    padding: 12,
+                    background: '#f6f8fa',
+                    border: '1px solid #e6ebf1',
+                    borderRadius: 6,
+                    maxHeight: 360,
+                    overflow: 'auto'
+                  }}
+                >
+                  <JsonView
+                    value={record.eventDataJson || {}}
+                    collapsed={2}
+                    displayDataTypes={false}
+                    enableClipboard
+                    style={{ background: 'transparent' }}
+                  />
+                </div>
+              </div>
+            )
+          }}
+        />
+      </div>
+    );
+  };
+
   const renderMonitoring = () => (
     <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
       <h4 style={{ marginBottom: 12 }}>
@@ -3828,11 +4114,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       >
         <Radio.Button value="general-access">{setLocale(locale, 'admin.tools.monitoring.tab.generalAccess')}</Radio.Button>
         <Radio.Button value="contact-profiles">{setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}</Radio.Button>
+        <Radio.Button value="process-logs">{setLocale(locale, 'admin.tools.monitoring.tab.processLogs')}</Radio.Button>
       </Radio.Group>
 
-      {monitoringInnerTabKey === 'general-access'
-        ? renderGeneralAccessMonitoring()
-        : renderContactProfilesMonitoring()}
+      {monitoringInnerTabKey === 'general-access' && renderGeneralAccessMonitoring()}
+      {monitoringInnerTabKey === 'contact-profiles' && renderContactProfilesMonitoring()}
+      {monitoringInnerTabKey === 'process-logs' && renderProcessLogsMonitoring()}
     </Card>
   );
 
@@ -4378,6 +4665,7 @@ function mapDispatchToProps(dispatch) {
     onLoadingContactLoginFootprint,
     onLoadingAllUserLoginFootprint,
     onLoadingContactProfileMonitoring,
+    onLoadingProcessLogEvents,
     onTogglingContactEmailOptOut,
     onTogglingContactActive,
     onTogglingSelectedContactEmailOptOut,
@@ -4413,7 +4701,8 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     avatarUrlMap,
     contactGeoMaps,
     shopRevenueDashboard,
-    shopCoursesWithPurchases
+    shopCoursesWithPurchases,
+    processLogEventsBySource
   } = adminTools;
   return {
     user,
@@ -4432,7 +4721,8 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     avatarUrlMap,
     contactGeoMaps,
     shopRevenueDashboard,
-    shopCoursesWithPurchases
+    shopCoursesWithPurchases,
+    processLogEventsBySource
   };
 };
 

@@ -63,6 +63,21 @@ const getArrayEndpoint = async (endpointName, token, whoCalledMe = endpointName)
   return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
 };
 
+export const getProcessLogEvents = async (
+  endpointName,
+  payload = {},
+  token,
+  whoCalledMe = 'getProcessLogEvents'
+) => {
+  if (!endpointName) {
+    console.warn(`[${whoCalledMe}] Missing endpointName`);
+    return EMPTY_RESULT;
+  }
+
+  const apiResult = await postJsonEndpoint(endpointName, payload, token, whoCalledMe);
+  return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
+};
+
 export const getAllEnrollees = async (token, whoCalledMe = 'getAllEnrollees') => (
   getArrayEndpoint('GetAllEnrollees', token, whoCalledMe)
 );
@@ -248,6 +263,7 @@ const TitulinoAdminAuthService = {
   getUserLoginFootprintByContact,
   getOptedOutActiveContactProfiles,
   getInactiveContactProfiles,
+  getProcessLogEvents,
   toggleContactEmailOptOut,
   toggleContactActive,
   upsertEnrolleeList

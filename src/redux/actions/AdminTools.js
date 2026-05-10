@@ -24,7 +24,8 @@ import {
   ON_UPSERTING_SHOP_TIERS,
   ON_UPSERTING_SHOP_PAYMENT_PROVIDERS,
   ON_TOGGLING_SHOP_PRODUCT_ACTIVE,
-  ON_STARTING_CONTACT_IMPERSONATION
+  ON_STARTING_CONTACT_IMPERSONATION,
+  ON_LOADING_PROCESS_LOG_EVENTS
 } from '../constants/AdminTools';
 
 // Pure helpers re-exported via the manager so components keep a single
@@ -117,6 +118,14 @@ export const onLoadingAllUserLoginFootprint = async (emailId) => {
 export const onLoadingContactProfileMonitoring = async (emailId) => {
   const contactProfileMonitoring = await AdminToolsManager.getContactProfileMonitoring(emailId);
   return { type: ON_LOADING_CONTACT_PROFILE_MONITORING, contactProfileMonitoring };
+};
+
+export const onLoadingProcessLogEvents = async (adminEmailId, sourceKey, filters) => {
+  const processLogEvents = await AdminToolsManager.getProcessLogEvents(adminEmailId, sourceKey, filters);
+  return {
+    type: ON_LOADING_PROCESS_LOG_EVENTS,
+    processLogEvents
+  };
 };
 
 export const onTogglingContactEmailOptOut = async (selectedRows, adminEmailId) => {

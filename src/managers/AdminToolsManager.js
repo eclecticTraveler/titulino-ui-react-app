@@ -15,6 +15,7 @@ import ContactProfileEditor from "lob/ContactProfileEditor";
 import LrnConfiguration from "lob/LrnConfiguration";
 import ShopAnalytics from "lob/ShopAnalytics";
 import ImpersonationSession from "lob/ImpersonationSession";
+import ProcessLogs from "lob/ProcessLogs";
 import utils from 'utils';
 
 const getTokenFromEmail = async (emailId) => {
@@ -421,6 +422,36 @@ export const getContactProfileMonitoring = async (emailId) => {
     inactiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel(
       inactiveContactProfiles
     )
+  };
+};
+
+export const getProcessLogEvents = async (emailId, sourceKey = 'api', filters = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const sourceConfig = ProcessLogs.getLogSourceConfig(sourceKey);
+
+  if (!token) {
+    return {
+      emailId,
+      sourceKey: sourceConfig.key,
+      filters,
+      rows: []
+    };
+  }
+
+  const payload = ProcessLogs.buildProcessLogPayload(filters);
+  const rows = await TitulinoAdminAuthService.getProcessLogEvents(
+    sourceConfig.endpointName,
+    payload,
+    token,
+    `AdminToolsManager.getProcessLogEvents.${sourceConfig.key}`
+  );
+
+  return {
+    emailId,
+    sourceKey: sourceConfig.key,
+    filters,
+    rows: ProcessLogs.normalizeLogRows(rows, sourceConfig.key),
+    rawRows: rows
   };
 };
 
@@ -856,6 +887,7 @@ const AdminToolsManager = {
   getContactLoginFootprint,
   getAllUserLoginFootprint,
   getContactProfileMonitoring,
+  getProcessLogEvents,
   getShopRevenueDashboard,
   upsertShopProductCourseTier,
   upsertShopTiers,
