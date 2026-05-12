@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined } from '@ant-design/icons';
+import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox } from 'antd';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, BoldOutlined, ItalicOutlined, UnderlineOutlined, TeamOutlined, BarChartOutlined } from '@ant-design/icons';
 import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
@@ -49,6 +49,9 @@ import {
   onUpsertingShopTiers,
   onUpsertingShopPaymentProviders,
   onStartingContactImpersonation,
+  onLoadingContactSegmentMetadata,
+  onLoadingContactSegment,
+  onSendingAudienceMessage,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -66,7 +69,13 @@ import {
   getProcessLogLimitOptions,
   filterProcessLogRows,
   buildProcessLogTableColumns,
-  buildProcessLogRoleSelectionOptions
+  buildProcessLogRoleSelectionOptions,
+  getAudienceDefaultFilters,
+  buildAudienceMetadataOptions,
+  buildAudienceCountryOptionsForLocation,
+  buildAudienceTableColumns,
+  buildAudienceSummary,
+  hasAudienceMessageContent
 } from "redux/actions/AdminTools";
 
 const normalizeContactInternalId = (value) => (
@@ -93,6 +102,8 @@ const normalizeBooleanValue = (value, fallback = true) => {
   }
   return value === undefined || value === null ? fallback : Boolean(value);
 };
+
+const AUDIENCE_REGION_NA_VALUE = '__not_available__';
 
 const getMeaningfulCharacterCount = (value = '') => (
   Array.from(String(value).trim()).filter((character) => (
@@ -145,9 +156,14 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onUpsertingShopTiers,
     onUpsertingShopPaymentProviders,
     onStartingContactImpersonation,
+    onLoadingContactSegmentMetadata,
+    onLoadingContactSegment,
+    onSendingAudienceMessage,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     processLogEventsBySource,
+    contactSegmentMetadata,
+    contactSegment,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   } = props;
@@ -194,6 +210,18 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     limit: 50,
     offset: 0
   });
+  const [messagingInnerTabKey, setMessagingInnerTabKey] = useState('audience');
+  const [audienceFilters, setAudienceFilters] = useState(() => getAudienceDefaultFilters());
+  const [audienceLoading, setAudienceLoading] = useState(false);
+  const [audienceMetadataLoading, setAudienceMetadataLoading] = useState(false);
+  const [selectedAudienceRowKeys, setSelectedAudienceRowKeys] = useState([]);
+  const [selectedAudienceRows, setSelectedAudienceRows] = useState([]);
+  const [audienceMessageDraft, setAudienceMessageDraft] = useState({
+    subject: '',
+    bodyHtml: '',
+    bodyText: ''
+  });
+  const [audienceMessageSending, setAudienceMessageSending] = useState(false);
   const [contactProfileSearchText, setContactProfileSearchText] = useState('');
   const [contactProfileMonitoringLoading, setContactProfileMonitoringLoading] = useState(false);
   const [selectedOptedOutEmailRowKeys, setSelectedOptedOutEmailRowKeys] = useState([]);
@@ -255,6 +283,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [courseTemplateId, setCourseTemplateId] = useState(null);
   // 'upload' (default) or 'url' — controls how the cover image is provided when creating a course.
   const [courseImageSourceMode, setCourseImageSourceMode] = useState('upload');
+  const audienceEditorRef = useRef(null);
 
   const locale = true;
   const intl = useIntl();
@@ -590,6 +619,100 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     processLogSourceKey
   ]);
 
+  const loadAudienceSegment = useCallback(async (nextFilters = audienceFilters) => {
+    if (!emailId || !onLoadingContactSegment) return null;
+
+    setAudienceLoading(true);
+    try {
+      const result = await onLoadingContactSegment(emailId, nextFilters);
+      setSelectedAudienceRowKeys([]);
+      setSelectedAudienceRows([]);
+      return result;
+    } finally {
+      setAudienceLoading(false);
+    }
+  }, [audienceFilters, emailId, onLoadingContactSegment]);
+
+  const loadAudienceMetadata = useCallback(async () => {
+    if (!emailId || !onLoadingContactSegmentMetadata) return null;
+
+    setAudienceMetadataLoading(true);
+    try {
+      return await onLoadingContactSegmentMetadata(emailId);
+    } finally {
+      setAudienceMetadataLoading(false);
+    }
+  }, [emailId, onLoadingContactSegmentMetadata]);
+
+  const updateAudienceFilter = useCallback((fieldName, value, shouldReload = false) => {
+    const nextFilters = {
+      ...audienceFilters,
+      [fieldName]: value,
+      ...(fieldName !== 'offset' ? { offset: 0 } : {})
+    };
+
+    setAudienceFilters(nextFilters);
+
+    if (shouldReload) {
+      loadAudienceSegment(nextFilters);
+    }
+  }, [audienceFilters, loadAudienceSegment]);
+
+  const resetAudienceFilters = useCallback(() => {
+    const defaultFilters = getAudienceDefaultFilters();
+    setAudienceFilters(defaultFilters);
+    loadAudienceSegment(defaultFilters);
+  }, [loadAudienceSegment]);
+
+  const handleAudienceEditorInput = useCallback(() => {
+    const bodyHtml = audienceEditorRef.current?.innerHTML || '';
+    const bodyText = audienceEditorRef.current?.innerText || '';
+    setAudienceMessageDraft(previousDraft => ({
+      ...previousDraft,
+      bodyHtml,
+      bodyText
+    }));
+  }, []);
+
+  const applyAudienceEditorCommand = useCallback((command, value = null) => {
+    audienceEditorRef.current?.focus();
+    document.execCommand(command, false, value);
+    handleAudienceEditorInput();
+  }, [handleAudienceEditorInput]);
+
+  const handleSendAudienceMessage = useCallback(async () => {
+    if (!emailId || selectedAudienceRows.length === 0 || !hasAudienceMessageContent(audienceMessageDraft)) return;
+
+    setAudienceMessageSending(true);
+    try {
+      const actionResult = await onSendingAudienceMessage(
+        emailId,
+        selectedAudienceRows,
+        audienceMessageDraft
+      );
+      const result = actionResult?.audienceMessageSendResult || actionResult;
+      if (!result?.success) throw new Error(result?.errorMessage || 'Audience message failed.');
+
+      messageApi.success(t('admin.tools.messaging.sendSuccess'));
+      setAudienceMessageDraft({ subject: '', bodyHtml: '', bodyText: '' });
+      if (audienceEditorRef.current) {
+        audienceEditorRef.current.innerHTML = '';
+      }
+    } catch (error) {
+      console.error(error);
+      messageApi.error(t('admin.tools.messaging.sendError'));
+    } finally {
+      setAudienceMessageSending(false);
+    }
+  }, [
+    audienceMessageDraft,
+    emailId,
+    messageApi,
+    onSendingAudienceMessage,
+    selectedAudienceRows,
+    t
+  ]);
+
   useEffect(() => {
     if (emailId) {
       onLoadingAdminToolsInit(emailId);
@@ -712,6 +835,24 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     loadProcessLogs();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeOuterTabKey, monitoringInnerTabKey, emailId, processLogSourceKey]);
+
+  useEffect(() => {
+    if (activeOuterTabKey !== 'messaging' || !emailId) return;
+
+    if (contactSegmentMetadata?.emailId !== emailId) {
+      loadAudienceMetadata();
+    }
+
+    if (contactSegment?.emailId !== emailId) {
+      loadAudienceSegment();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeOuterTabKey,
+    emailId,
+    contactSegment?.emailId,
+    contactSegmentMetadata?.emailId
+  ]);
 
   useEffect(() => {
     if (
@@ -1191,6 +1332,294 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       onCopyEventData: handleCopyProcessLogEventData
     }),
     [handleCopyProcessLogEventData, t]
+  );
+  const audienceRows = useMemo(
+    () => contactSegment?.rows || [],
+    [contactSegment?.rows]
+  );
+  const audienceTotalCount = contactSegment?.count ?? audienceRows.length;
+  const audienceMetadata = useMemo(
+    () => contactSegmentMetadata?.metadata || {},
+    [contactSegmentMetadata?.metadata]
+  );
+  const audienceOptions = useMemo(
+    () => buildAudienceMetadataOptions(audienceMetadata, {
+      all: t('admin.tools.messaging.option.all'),
+      female: t('admin.tools.messaging.option.female'),
+      male: t('admin.tools.messaging.option.male'),
+      allLocations: t('admin.tools.messaging.option.allLocations'),
+      residency: t('admin.tools.messaging.option.residency'),
+      birth: t('admin.tools.messaging.option.birth'),
+      any: t('admin.tools.messaging.option.any'),
+      with: t('admin.tools.messaging.option.with'),
+      without: t('admin.tools.messaging.option.without')
+    }),
+    [audienceMetadata, t]
+  );
+  const audienceCourseOptions = useMemo(() => {
+    const metadataCourses = audienceOptions.courses || [];
+    if (metadataCourses.length > 0) {
+      return metadataCourses.map(option => ({
+        ...option,
+        label: option.label,
+        tagLabel: option.value
+      }));
+    }
+
+    return (allRawCourses || []).map((course) => {
+      const courseCodeId = course?.CourseCodeId;
+      const courseName = course?.CourseDetails?.course || course?.CourseName || courseCodeId;
+      return {
+        value: courseCodeId,
+        label: `${courseName} - ${courseCodeId}`,
+        tagLabel: courseCodeId,
+        searchText: `${courseName} ${courseCodeId}`
+      };
+    }).filter(option => option.value);
+  }, [allRawCourses, audienceOptions.courses]);
+  const audienceMetadataCountryOptions = useMemo(() => {
+    const metadataCountries = audienceOptions.countries || [];
+    if (metadataCountries.length > 0) return metadataCountries;
+
+    return (countries || []).map(country => ({
+      value: country?.alphaKey || country?.value || country?.name,
+      label: country?.nativeName || country?.name || country?.value,
+      alpha3: country?.alphaKey,
+      searchText: [
+        country?.alphaKey,
+        country?.value,
+        country?.nativeName,
+        country?.name
+      ].filter(Boolean).join(' ')
+    })).filter(option => option.value);
+  }, [audienceOptions.countries, countries]);
+  const renderCountrySummary = useCallback((countryName, alpha3) => (
+    countryName || alpha3 ? (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        {alpha3 ? <Flag code={alpha3} style={{ width: 18, height: 12, objectFit: 'cover' }} /> : null}
+        <span>{countryName || alpha3}</span>
+      </span>
+    ) : '-'
+  ), []);
+  const audienceCountryOptions = useMemo(() => (
+    buildAudienceCountryOptionsForLocation({
+      metadataOptions: audienceMetadataCountryOptions,
+      rows: audienceRows,
+      locationType: audienceFilters.locationType
+    }).map(option => ({
+      ...option,
+      label: renderCountrySummary(option.label, option.alpha3)
+    }))
+  ), [
+    audienceFilters.locationType,
+    audienceMetadataCountryOptions,
+    audienceRows,
+    renderCountrySummary
+  ]);
+  const doesAudienceRowMatchCountry = useCallback((row, locationType = 'all', selectedCountry = null) => {
+    const selectedCountryValue = String(selectedCountry || '').trim().toLowerCase();
+    if (!selectedCountryValue) return true;
+
+    const matchesLocation = (countryName, alpha3) => (
+      [countryName, alpha3]
+        .filter(Boolean)
+        .map(value => String(value).trim().toLowerCase())
+        .includes(selectedCountryValue)
+    );
+
+    if (locationType === 'birth') {
+      return matchesLocation(row.birthCountryName, row.birthCountryAlpha3);
+    }
+
+    if (locationType === 'residency') {
+      return matchesLocation(row.residencyCountryName, row.residencyCountryAlpha3);
+    }
+
+    return (
+      matchesLocation(row.residencyCountryName, row.residencyCountryAlpha3) ||
+      matchesLocation(row.birthCountryName, row.birthCountryAlpha3)
+    );
+  }, []);
+  const getAudienceLocationRegions = useCallback((row, locationType = 'all', selectedCountry = null) => {
+    const regions = [];
+    const addRegion = (type) => {
+      const countryName = type === 'birth' ? row.birthCountryName : row.residencyCountryName;
+      const alpha3 = type === 'birth' ? row.birthCountryAlpha3 : row.residencyCountryAlpha3;
+      const selectedCountryValue = String(selectedCountry || '').trim().toLowerCase();
+      const matchesCountry = !selectedCountryValue || [countryName, alpha3]
+        .filter(Boolean)
+        .map(value => String(value).trim().toLowerCase())
+        .includes(selectedCountryValue);
+
+      if (!matchesCountry) return;
+
+      regions.push(type === 'birth' ? row.birthRegionName : row.residencyRegionName);
+    };
+
+    if (locationType === 'birth') {
+      addRegion('birth');
+      return regions;
+    }
+
+    if (locationType === 'residency') {
+      addRegion('residency');
+      return regions;
+    }
+
+    addRegion('residency');
+    addRegion('birth');
+    return regions;
+  }, []);
+  const audienceRegionOptions = useMemo(() => {
+    if (!audienceFilters.countryNameOrId) return [];
+
+    const regionMap = new Map();
+    (audienceRows || []).forEach((row) => {
+      if (!doesAudienceRowMatchCountry(row, audienceFilters.locationType, audienceFilters.countryNameOrId)) return;
+
+      getAudienceLocationRegions(row, audienceFilters.locationType, audienceFilters.countryNameOrId)
+        .forEach((regionName) => {
+          const label = regionName || t('admin.tools.messaging.regionNotAvailable');
+          const value = regionName || AUDIENCE_REGION_NA_VALUE;
+          if (!regionMap.has(value)) {
+            regionMap.set(value, {
+              value,
+              label,
+              searchText: label
+            });
+          }
+        });
+    });
+
+    return Array.from(regionMap.values())
+      .sort((a, b) => String(a.label || '').localeCompare(String(b.label || '')));
+  }, [
+    audienceFilters.countryNameOrId,
+    audienceFilters.locationType,
+    audienceRows,
+    doesAudienceRowMatchCountry,
+    getAudienceLocationRegions,
+    t
+  ]);
+  const audienceVisibleRows = useMemo(() => {
+    if (!audienceFilters.locationRegionName) return audienceRows;
+
+    return (audienceRows || []).filter((row) => (
+      getAudienceLocationRegions(row, audienceFilters.locationType, audienceFilters.countryNameOrId)
+        .some((regionName) => (
+          (regionName || AUDIENCE_REGION_NA_VALUE) === audienceFilters.locationRegionName
+        ))
+    ));
+  }, [
+    audienceFilters.countryNameOrId,
+    audienceFilters.locationRegionName,
+    audienceFilters.locationType,
+    audienceRows,
+    getAudienceLocationRegions
+  ]);
+  const audienceDisplayCount = audienceFilters.locationRegionName
+    ? audienceVisibleRows.length
+    : audienceTotalCount;
+  useEffect(() => {
+    if (!selectedAudienceRowKeys.length) return;
+
+    const visibleRowKeySet = new Set((audienceVisibleRows || []).map(row => row.key));
+    const nextSelectedRows = selectedAudienceRows.filter(row => visibleRowKeySet.has(row.key));
+    if (nextSelectedRows.length === selectedAudienceRows.length) return;
+
+    setSelectedAudienceRows(nextSelectedRows);
+    setSelectedAudienceRowKeys(nextSelectedRows.map(row => row.key));
+  }, [audienceVisibleRows, selectedAudienceRowKeys.length, selectedAudienceRows]);
+  const getAudienceLanguageLevelLabel = useCallback((level) => {
+    const normalizedLevel = String(level || '').trim().toLowerCase();
+    if (!normalizedLevel) return '';
+    const proficiencyKeyByLevel = {
+      be: 'admin.tools.label.proficiency.be',
+      ba: 'admin.tools.label.proficiency.ba',
+      in: 'admin.tools.label.proficiency.in',
+      ad: 'admin.tools.label.proficiency.ad',
+      na: 'admin.tools.label.proficiency.na'
+    };
+    const proficiencyKey = proficiencyKeyByLevel[normalizedLevel];
+    return proficiencyKey ? t(proficiencyKey) : normalizedLevel;
+  }, [t]);
+  const audienceLanguageOptions = useMemo(() => {
+    const metadataLanguages = audienceOptions.languages || [];
+    const fallbackLanguages = langData.map(language => ({
+      value: language.langId,
+      label: (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Flag code={language.icon} style={{ width: 18, height: 12, objectFit: 'cover' }} />
+          <span>{language.langName}</span>
+        </span>
+      ),
+      searchText: [language.langName, language.langId, language.lang].filter(Boolean).join(' ')
+    }));
+
+    return metadataLanguages.length > 0 ? metadataLanguages : fallbackLanguages;
+  }, [audienceOptions.languages]);
+  const audienceLanguageLevelOptions = useMemo(() => (
+    (
+      (audienceOptions.languageLevels || []).length > 0
+        ? audienceOptions.languageLevels
+        : (selfLanguageLevel || []).map(level => ({
+          value: level?.LevelAbbreviation,
+          label: level?.LocalizationKey ? t(level.LocalizationKey) : level?.LevelAbbreviation,
+          searchText: [level?.LevelAbbreviation, level?.LocalizationKey ? t(level.LocalizationKey) : null].filter(Boolean).join(' ')
+        })).filter(option => option.value)
+    ).map(option => ({
+      ...option,
+      label: getAudienceLanguageLevelLabel(option.value) || option.label,
+      searchText: [
+        option.searchText,
+        getAudienceLanguageLevelLabel(option.value),
+        option.value
+      ].filter(Boolean).join(' ')
+    }))
+  ), [audienceOptions.languageLevels, getAudienceLanguageLevelLabel, selfLanguageLevel, t]);
+  const renderAudienceCourseTag = useCallback((tagProps) => {
+    const { value, closable, onClose } = tagProps;
+    return (
+      <Tag
+        closable={closable}
+        onClose={onClose}
+        style={{
+          marginRight: 3,
+          maxWidth: 240,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          verticalAlign: 'middle'
+        }}
+      >
+        {value}
+      </Tag>
+    );
+  }, []);
+  const handleCopyAudienceInternalId = useCallback((contactInternalId) => {
+    if (!contactInternalId) return;
+    navigator.clipboard?.writeText(contactInternalId).then(() => {
+      messageApi.success(t('admin.tools.msg.copied'));
+    }).catch(() => {
+      messageApi.error(t('admin.tools.messaging.copyError'));
+    });
+  }, [messageApi, t]);
+  const audienceColumns = useMemo(
+    () => buildAudienceTableColumns({
+      t,
+      copyTitle: t('admin.tools.copyInternalId'),
+      onCopyInternalId: handleCopyAudienceInternalId,
+      renderCountrySummary,
+      getLanguageLevelLabel: getAudienceLanguageLevelLabel
+    }),
+    [getAudienceLanguageLevelLabel, handleCopyAudienceInternalId, renderCountrySummary, t]
+  );
+  const audienceSummary = useMemo(
+    () => buildAudienceSummary(audienceVisibleRows, selectedAudienceRows),
+    [audienceVisibleRows, selectedAudienceRows]
+  );
+  const canSendAudienceMessage = (
+    selectedAudienceRows.length > 0 &&
+    hasAudienceMessageContent(audienceMessageDraft)
   );
 
   useEffect(() => {
@@ -4131,6 +4560,583 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </Card>
   );
 
+  const renderMessagingFilters = () => {
+    const renderFilterTooltip = (tooltipKey, child) => (
+      <Tooltip title={t(tooltipKey)} placement="topLeft">
+        <div>{child}</div>
+      </Tooltip>
+    );
+
+    return (
+      <div>
+        <Alert
+          type="info"
+          showIcon
+          title={setLocale(locale, 'admin.tools.messaging.filtersDescription')}
+          style={{ marginBottom: 12 }}
+        />
+
+        <Card
+          size="small"
+          title={setLocale(locale, 'admin.tools.messaging.filterSection.search')}
+          style={{ marginBottom: 12 }}
+        >
+        <Row gutter={[12, 12]}>
+          <Col xs={24}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.search', (
+              <Input
+                allowClear
+                prefix={<SearchOutlined />}
+                placeholder={t('admin.tools.messaging.searchPlaceholder')}
+                value={audienceFilters.searchText}
+                onChange={event => updateAudienceFilter('searchText', event.target.value)}
+              />
+            ))}
+          </Col>
+        </Row>
+        </Card>
+
+        <Card
+          size="small"
+          title={setLocale(locale, 'admin.tools.messaging.filterSection.searchAndPaging')}
+          style={{ marginBottom: 12 }}
+        >
+        <Row gutter={[12, 12]}>
+          <Col xs={12} sm={8} lg={4}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.sex', (
+              <Select
+                value={audienceFilters.sex}
+                options={audienceOptions.sex}
+                onChange={value => updateAudienceFilter('sex', value)}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={12} sm={8} lg={3}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.minAge', (
+              <InputNumber
+                min={0}
+                max={120}
+                value={audienceFilters.minAge}
+                onChange={value => updateAudienceFilter('minAge', value)}
+                placeholder={t('admin.tools.messaging.minAge')}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={12} sm={8} lg={3}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.maxAge', (
+              <InputNumber
+                min={0}
+                max={120}
+                value={audienceFilters.maxAge}
+                onChange={value => updateAudienceFilter('maxAge', value)}
+                placeholder={t('admin.tools.messaging.maxAge')}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={12} sm={8} lg={3}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.limit', (
+              <Select
+                value={audienceFilters.limit}
+                options={[50, 100, 250, 500].map(value => ({ value, label: String(value) }))}
+                onChange={value => updateAudienceFilter('limit', value)}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={12} sm={8} lg={3}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.offset', (
+              <InputNumber
+                min={0}
+                step={audienceFilters.limit}
+                value={audienceFilters.offset}
+                onChange={value => updateAudienceFilter('offset', Number(value || 0))}
+                placeholder={t('admin.tools.messaging.offset')}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+        </Row>
+        </Card>
+
+        <Card
+          size="small"
+          title={setLocale(locale, 'admin.tools.messaging.filterSection.demographics')}
+          style={{ marginBottom: 12 }}
+        >
+        <Row gutter={[12, 12]}>
+          <Col xs={24} md={12} lg={4}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.locationType', (
+              <Select
+                value={audienceFilters.locationType}
+                options={audienceOptions.locationTypes}
+                onChange={(value) => {
+                  setAudienceFilters(previousFilters => ({
+                    ...previousFilters,
+                    locationType: value,
+                    countryNameOrId: null,
+                    locationRegionName: null,
+                    offset: 0
+                  }));
+                }}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={24} md={12} lg={5}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.country', (
+              <Select
+                allowClear
+                showSearch
+                value={audienceFilters.countryNameOrId}
+                placeholder={t('admin.tools.messaging.countryPlaceholder')}
+                options={audienceCountryOptions}
+                optionFilterProp="searchText"
+                onChange={(value) => {
+                  setAudienceFilters(previousFilters => ({
+                    ...previousFilters,
+                    countryNameOrId: value || null,
+                    locationRegionName: null,
+                    offset: 0
+                  }));
+                }}
+                loading={audienceMetadataLoading}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={24} md={12} lg={5}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.region', (
+              <Select
+                allowClear
+                showSearch
+                disabled={!audienceFilters.countryNameOrId}
+                value={audienceFilters.locationRegionName}
+                placeholder={t('admin.tools.messaging.regionPlaceholder')}
+                options={audienceRegionOptions}
+                optionFilterProp="searchText"
+                onChange={value => updateAudienceFilter('locationRegionName', value || null)}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={24} md={12} lg={5}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.language', (
+              <Select
+                allowClear
+                showSearch
+                value={audienceFilters.languageId}
+                placeholder={t('admin.tools.messaging.languagePlaceholder')}
+                options={[
+                  { value: 'all', label: t('admin.tools.messaging.option.all') },
+                  ...audienceLanguageOptions
+                ]}
+                optionFilterProp="searchText"
+                onChange={value => updateAudienceFilter('languageId', value || 'all')}
+                loading={audienceMetadataLoading}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={24} md={12} lg={5}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.languageLevel', (
+              <Select
+                allowClear
+                showSearch
+                value={audienceFilters.languageLevel}
+                placeholder={t('admin.tools.messaging.languageLevelPlaceholder')}
+                options={[
+                  { value: 'all', label: t('admin.tools.messaging.option.all') },
+                  ...audienceLanguageLevelOptions
+                ]}
+                optionFilterProp="searchText"
+                onChange={value => updateAudienceFilter('languageLevel', value || 'all')}
+                loading={audienceMetadataLoading}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+        </Row>
+        </Card>
+
+        <Card
+          size="small"
+          title={setLocale(locale, 'admin.tools.messaging.filterSection.coursesAndSignals')}
+          style={{ marginBottom: 12 }}
+        >
+        <Row gutter={[12, 12]} style={{ marginBottom: 12 }}>
+          <Col xs={24} lg={10}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.includeCourses', (
+              <Select
+                mode="multiple"
+                allowClear
+                showSearch
+                value={audienceFilters.courseCodeIds}
+                placeholder={t('admin.tools.messaging.includeCoursesPlaceholder')}
+                options={audienceCourseOptions}
+                optionFilterProp="searchText"
+                onChange={value => updateAudienceFilter('courseCodeIds', value || [])}
+                loading={audienceMetadataLoading}
+                maxTagCount={3}
+                tagRender={renderAudienceCourseTag}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={24} lg={10}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.excludeCourses', (
+              <Select
+                mode="multiple"
+                allowClear
+                showSearch
+                value={audienceFilters.excludeCourseCodeIds}
+                placeholder={t('admin.tools.messaging.excludeCoursesPlaceholder')}
+                options={audienceCourseOptions}
+                optionFilterProp="searchText"
+                onChange={value => updateAudienceFilter('excludeCourseCodeIds', value || [])}
+                loading={audienceMetadataLoading}
+                maxTagCount={3}
+                tagRender={renderAudienceCourseTag}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={24} lg={4}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.matchAllCourses', (
+              <Checkbox
+                checked={audienceFilters.matchAllCourses}
+                onChange={event => updateAudienceFilter('matchAllCourses', event.target.checked)}
+              >
+                {setLocale(locale, 'admin.tools.messaging.matchAllCourses')}
+              </Checkbox>
+            ))}
+          </Col>
+        </Row>
+
+        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
+          <Col xs={24} md={6}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.progress', (
+              <Select
+                value={audienceFilters.hasProgress}
+                options={audienceOptions.triState}
+                onChange={value => updateAudienceFilter('hasProgress', value)}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={24} md={6}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.certifications', (
+              <Select
+                value={audienceFilters.hasCertifications}
+                options={audienceOptions.triState}
+                onChange={value => updateAudienceFilter('hasCertifications', value)}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={24} md={6}>
+            {renderFilterTooltip('admin.tools.messaging.tooltip.purchases', (
+              <Select
+                value={audienceFilters.hasPurchases}
+                options={audienceOptions.triState}
+                onChange={value => updateAudienceFilter('hasPurchases', value)}
+                style={{ width: '100%' }}
+              />
+            ))}
+          </Col>
+          <Col xs={12} md={3}>
+            <Button
+              type="primary"
+              icon={<SearchOutlined />}
+              loading={audienceLoading}
+              onClick={() => loadAudienceSegment()}
+              block
+            >
+              {setLocale(locale, 'admin.tools.messaging.applyFilters')}
+            </Button>
+          </Col>
+          <Col xs={12} md={3}>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={resetAudienceFilters}
+              block
+            >
+              {setLocale(locale, 'admin.tools.messaging.clearFilters')}
+            </Button>
+          </Col>
+        </Row>
+        </Card>
+      </div>
+    );
+  };
+
+  const renderAudienceExpandedRow = (record) => (
+    <Descriptions size="small" column={2} bordered>
+      <Descriptions.Item label={t('admin.tools.messaging.column.firstName')}>
+        {record.names || '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label={t('admin.tools.messaging.column.lastName')}>
+        {record.lastNames || '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label={t('admin.tools.messaging.column.internalId')}>
+        {record.contactInternalId ? (
+          <span>
+            <span style={{ wordBreak: 'break-all' }}>{record.contactInternalId}</span>
+            <Tooltip title={t('admin.tools.copyInternalId')}>
+              <Button
+                type="link"
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={() => handleCopyAudienceInternalId(record.contactInternalId)}
+                style={{ color: '#1677ff' }}
+              />
+            </Tooltip>
+          </span>
+        ) : '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label={t('admin.tools.messaging.column.externalId')}>
+        {record.contactExternalId || '-'}
+      </Descriptions.Item>
+      <Descriptions.Item label={t('admin.tools.messaging.column.residency')}>
+        {renderCountrySummary(record.residencyCountryName, record.residencyCountryAlpha3)}
+        {record.residencyRegionName ? ` / ${record.residencyRegionName}` : ''}
+      </Descriptions.Item>
+      <Descriptions.Item label={t('admin.tools.messaging.column.birth')}>
+        {renderCountrySummary(record.birthCountryName, record.birthCountryAlpha3)}
+        {record.birthRegionName ? ` / ${record.birthRegionName}` : ''}
+      </Descriptions.Item>
+      <Descriptions.Item label={t('admin.tools.messaging.column.courses')} span={2}>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          {(record.courseCodes || []).map(courseCode => <Tag key={courseCode}>{courseCode}</Tag>)}
+          {(record.courseCodes || []).length === 0 ? '-' : null}
+        </div>
+      </Descriptions.Item>
+      <Descriptions.Item label={t('admin.tools.messaging.column.emails')} span={2}>
+        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          {(record.emailList || []).map(email => <Tag color="blue" key={email}>{email}</Tag>)}
+          {(record.emailList || []).length === 0 ? '-' : null}
+        </div>
+      </Descriptions.Item>
+    </Descriptions>
+  );
+
+  const renderAudienceTable = () => (
+    <>
+      {renderMessagingFilters()}
+      <Divider titlePlacement="left">
+        <TeamOutlined style={{ marginRight: 8 }} />
+        {t('admin.tools.messaging.audienceTitle', { count: audienceDisplayCount })}
+      </Divider>
+      <Table
+        rowKey="key"
+        size="small"
+        loading={audienceLoading}
+        columns={audienceColumns}
+        dataSource={audienceVisibleRows}
+        scroll={{ x: 1550 }}
+        rowSelection={{
+          selectedRowKeys: selectedAudienceRowKeys,
+          onChange: (keys, rows) => {
+            setSelectedAudienceRowKeys(keys);
+            setSelectedAudienceRows(rows);
+          }
+        }}
+        pagination={{
+          pageSize: 25,
+          showSizeChanger: true,
+          showTotal: total => t('admin.tools.messaging.loadedRows', { total })
+        }}
+        expandable={{
+          expandedRowRender: renderAudienceExpandedRow
+        }}
+        locale={{
+          emptyText: setLocale(locale, 'admin.tools.messaging.noAudienceRows')
+        }}
+      />
+    </>
+  );
+
+  const renderAudienceVisualization = () => {
+    const genderEntries = Object.entries(audienceSummary.genderCounts || {});
+    const countryEntries = Object.entries(audienceSummary.residencyCounts || {})
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12);
+    const languageLevelEntries = Object.entries(audienceSummary.languageLevelCounts || {})
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 12);
+
+    return (
+      <div>
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          {renderRevenueMetricCard('admin.tools.messaging.metric.backendCount', audienceTotalCount, <TeamOutlined />, '#1677ff')}
+          {renderRevenueMetricCard('admin.tools.messaging.metric.loadedRows', audienceSummary.totalRows, <TableOutlined />, '#52c41a')}
+          {renderRevenueMetricCard('admin.tools.messaging.metric.selectedRows', audienceSummary.selectedRows, <UserOutlined />, '#722ed1')}
+          {renderRevenueMetricCard('admin.tools.messaging.metric.emails', audienceSummary.totalEmails, <MailOutlined />, '#fa8c16')}
+        </Row>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} lg={12}>
+            <Card size="small" title={setLocale(locale, 'admin.tools.messaging.genderSnapshot')}>
+              {genderEntries.length > 0 ? genderEntries.map(([sex, count]) => (
+                <Tag key={sex} color={sex === 'F' ? 'magenta' : sex === 'M' ? 'blue' : 'default'}>
+                  {sex}: {count}
+                </Tag>
+              )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
+            </Card>
+          </Col>
+          <Col xs={24} lg={12}>
+            <Card size="small" title={setLocale(locale, 'admin.tools.messaging.residencySnapshot')}>
+              {countryEntries.length > 0 ? countryEntries.map(([country, count]) => (
+                <Tag key={country} color="green" style={{ marginBottom: 6 }}>
+                  {renderCountrySummary(country, audienceSummary.residencyCountryAlpha3ByName?.[country])}: {count}
+                </Tag>
+              )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
+            </Card>
+          </Col>
+          <Col xs={24} lg={12}>
+            <Card size="small" title={setLocale(locale, 'admin.tools.messaging.languageLevelSnapshot')}>
+              {languageLevelEntries.length > 0 ? languageLevelEntries.map(([languageLevelKey, count]) => {
+                const [languageId, level] = languageLevelKey.split(':');
+                const label = level ? `${languageId} ${getAudienceLanguageLevelLabel(level)}`.trim() : languageLevelKey;
+                return (
+                  <Tag key={languageLevelKey} color="blue" style={{ marginBottom: 6 }}>
+                    {label}: {count}
+                  </Tag>
+                );
+              }) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
+            </Card>
+          </Col>
+        </Row>
+      </div>
+    );
+  };
+
+  const renderAudienceMessageComposer = () => (
+    <div>
+      <Alert
+        type="info"
+        showIcon
+        title={t('admin.tools.messaging.selectedRecipients', {
+          count: selectedAudienceRows.length
+        })}
+        style={{ marginBottom: 16 }}
+      />
+      <Input
+        value={audienceMessageDraft.subject}
+        onChange={event => setAudienceMessageDraft(previousDraft => ({
+          ...previousDraft,
+          subject: event.target.value
+        }))}
+        placeholder={t('admin.tools.messaging.subjectPlaceholder')}
+        style={{ marginBottom: 12 }}
+      />
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+        <Tooltip title={t('admin.tools.messaging.editor.bold')}>
+          <Button icon={<BoldOutlined />} onClick={() => applyAudienceEditorCommand('bold')} />
+        </Tooltip>
+        <Tooltip title={t('admin.tools.messaging.editor.italic')}>
+          <Button icon={<ItalicOutlined />} onClick={() => applyAudienceEditorCommand('italic')} />
+        </Tooltip>
+        <Tooltip title={t('admin.tools.messaging.editor.underline')}>
+          <Button icon={<UnderlineOutlined />} onClick={() => applyAudienceEditorCommand('underline')} />
+        </Tooltip>
+        <Select
+          value="3"
+          style={{ width: 120 }}
+          onChange={value => applyAudienceEditorCommand('fontSize', value)}
+          options={[
+            { value: '2', label: t('admin.tools.messaging.editor.small') },
+            { value: '3', label: t('admin.tools.messaging.editor.normal') },
+            { value: '4', label: t('admin.tools.messaging.editor.large') }
+          ]}
+        />
+      </div>
+      <div
+        ref={audienceEditorRef}
+        contentEditable
+        suppressContentEditableWarning
+        onInput={handleAudienceEditorInput}
+        style={{
+          minHeight: 220,
+          padding: 12,
+          border: '1px solid #d9d9d9',
+          borderRadius: 6,
+          background: '#fff',
+          marginBottom: 12,
+          overflow: 'auto'
+        }}
+      />
+      <Popconfirm
+        title={t('admin.tools.messaging.confirmSend', { count: selectedAudienceRows.length })}
+        onConfirm={handleSendAudienceMessage}
+        okText={t('admin.tools.confirmYes')}
+        cancelText={t('admin.tools.confirmNo')}
+        disabled={!canSendAudienceMessage}
+      >
+        <Button
+          type="primary"
+          icon={<SendOutlined />}
+          loading={audienceMessageSending}
+          disabled={!canSendAudienceMessage}
+        >
+          {setLocale(locale, 'admin.tools.messaging.sendMessage')}
+        </Button>
+      </Popconfirm>
+    </div>
+  );
+
+  const renderMessagingDashboard = () => (
+    <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
+      <h4 style={{ marginBottom: 12 }}>
+        <MailOutlined style={{ marginRight: 8 }} />
+        {setLocale(locale, 'admin.tools.messaging.title')}
+      </h4>
+      <Alert
+        type="info"
+        showIcon
+        title={setLocale(locale, 'admin.tools.messaging.description')}
+        style={{ marginBottom: 16 }}
+      />
+      <Tabs
+        activeKey={messagingInnerTabKey}
+        onChange={setMessagingInnerTabKey}
+        items={[
+          {
+            key: 'audience',
+            label: (
+              <span>
+                <TeamOutlined style={{ marginRight: 6 }} />
+                {setLocale(locale, 'admin.tools.messaging.tab.audience')}
+              </span>
+            ),
+            children: renderAudienceTable()
+          },
+          {
+            key: 'visualization',
+            label: (
+              <span>
+                <BarChartOutlined style={{ marginRight: 6 }} />
+                {setLocale(locale, 'admin.tools.messaging.tab.visualization')}
+              </span>
+            ),
+            children: renderAudienceVisualization()
+          },
+          {
+            key: 'message',
+            label: (
+              <span>
+                <MessageOutlined style={{ marginRight: 6 }} />
+                {setLocale(locale, 'admin.tools.messaging.tab.message')}
+              </span>
+            ),
+            children: renderAudienceMessageComposer()
+          }
+        ]}
+      />
+    </Card>
+  );
+
   const renderRevenueMetricCard = (titleKey, value, icon, color = '#3e82f7') => (
     <Col xs={24} sm={12} lg={6}>
       <Card variant="outlined" size="small">
@@ -4629,6 +5635,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     { key: 'access', tab: <span><UserOutlined /> {setLocale(locale, 'admin.tools.tab.accessManagement')}</span> },
     { key: 'courses', tab: <span><BookOutlined /> {setLocale(locale, 'admin.tools.tab.courseManagement')}</span> },
     { key: 'revenue', tab: <span><DollarOutlined /> {setLocale(locale, 'admin.tools.tab.revenue')}</span> },
+    { key: 'messaging', tab: <span><MailOutlined /> {setLocale(locale, 'admin.tools.tab.messaging')}</span> },
     { key: 'monitoring', tab: <span><DashboardOutlined /> {setLocale(locale, 'admin.tools.tab.monitoring')}</span> }
   ];
 
@@ -4652,6 +5659,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         {activeOuterTabKey === 'access' && renderAccessManagement()}
         {activeOuterTabKey === 'courses' && renderCourseManagement()}
         {activeOuterTabKey === 'revenue' && renderRevenueDashboard()}
+        {activeOuterTabKey === 'messaging' && renderMessagingDashboard()}
         {activeOuterTabKey === 'monitoring' && renderMonitoring()}
       </Card>
     </div>
@@ -4687,6 +5695,9 @@ function mapDispatchToProps(dispatch) {
     onUpsertingShopTiers,
     onUpsertingShopPaymentProviders,
     onStartingContactImpersonation,
+    onLoadingContactSegmentMetadata,
+    onLoadingContactSegment,
+    onSendingAudienceMessage,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   }, dispatch);
@@ -4710,7 +5721,10 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     contactGeoMaps,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
-    processLogEventsBySource
+    processLogEventsBySource,
+    contactSegmentMetadata,
+    contactSegment,
+    lastAudienceMessageSendResult
   } = adminTools;
   return {
     user,
@@ -4730,7 +5744,10 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     contactGeoMaps,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
-    processLogEventsBySource
+    processLogEventsBySource,
+    contactSegmentMetadata,
+    contactSegment,
+    lastAudienceMessageSendResult
   };
 };
 

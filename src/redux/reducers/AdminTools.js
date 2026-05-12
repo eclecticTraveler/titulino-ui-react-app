@@ -26,12 +26,18 @@ import {
   ON_UPSERTING_SHOP_PAYMENT_PROVIDERS,
   ON_TOGGLING_SHOP_PRODUCT_ACTIVE,
   ON_STARTING_CONTACT_IMPERSONATION,
-  ON_LOADING_PROCESS_LOG_EVENTS
+  ON_LOADING_PROCESS_LOG_EVENTS,
+  ON_LOADING_CONTACT_SEGMENT_METADATA,
+  ON_LOADING_CONTACT_SEGMENT,
+  ON_SENDING_AUDIENCE_MESSAGE
 } from '../constants/AdminTools';
 
 const initState = {
   avatarUrlMap: {},
-  processLogEventsBySource: {}
+  processLogEventsBySource: {},
+  contactSegmentMetadata: null,
+  contactSegment: null,
+  lastAudienceMessageSendResult: null
 };
 
 const applyAvatarCacheToEnrollees = (allEnrollees = [], avatarUrlMap = {}) => (
@@ -213,6 +219,12 @@ const adminTools = (state = initState, action) => {
           [action.processLogEvents?.sourceKey || 'api']: action.processLogEvents
         }
       };
+    case ON_LOADING_CONTACT_SEGMENT_METADATA:
+      return { ...state, contactSegmentMetadata: action.contactSegmentMetadata };
+    case ON_LOADING_CONTACT_SEGMENT:
+      return { ...state, contactSegment: action.contactSegment };
+    case ON_SENDING_AUDIENCE_MESSAGE:
+      return { ...state, lastAudienceMessageSendResult: action.audienceMessageSendResult };
     case ON_CLEAR_SELECTED_CONTACT:
       return {
         ...state,

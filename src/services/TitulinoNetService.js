@@ -180,6 +180,77 @@ export const startContactImpersonation = async (
   }
 };
 
+export const sendAudienceMessage = async (
+  token,
+  payload = {},
+  whoCalledMe = 'sendAudienceMessage'
+) => {
+  const contactInternalIds = Array.isArray(payload?.contactInternalIds)
+    ? payload.contactInternalIds
+    : [];
+
+  if (!token || contactInternalIds.length === 0 || !payload?.message?.subject || !payload?.message?.bodyText) {
+    return {
+      success: false,
+      status: 400,
+      errorMessage: 'Missing token, recipients, subject, or message body.'
+    };
+  }
+
+  const sendUrl = `${titulinoNetAdminApiUri}/messaging/audience/send`;
+  const raw = JSON.stringify(payload);
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log('[TitulinoNetService.sendAudienceMessage]', {
+      whoCalledMe,
+      url: sendUrl,
+      payload
+    });
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: raw,
+    redirect: 'follow'
+  };
+
+  try {
+    const response = await fetch(sendUrl, requestOptions);
+    const text = await response.text();
+    let apiResult = null;
+
+    try {
+      apiResult = text ? JSON.parse(text) : null;
+    } catch {
+      apiResult = text;
+    }
+
+    if (!response.ok) {
+      return {
+        success: false,
+        status: response.status,
+        data: apiResult,
+        errorMessage: apiResult?.message || apiResult?.error || text || response.statusText
+      };
+    }
+
+    return {
+      success: true,
+      status: response.status,
+      data: apiResult
+    };
+  } catch (error) {
+    console.log(`Error sending audience message in sendAudienceMessage: from ${whoCalledMe}`);
+    console.error(error);
+    return {
+      success: false,
+      status: 500,
+      errorMessage: error?.message || 'Unexpected audience messaging error.'
+    };
+  }
+};
+
 export const getRegistrationToken = async (whoCalledMe, userName) => {
   const loginUrl = `${titulinoNetEnrollmentApiUri}/auth`;
   const myHeaders = new Headers();
@@ -575,6 +646,7 @@ export const uploadCourseCoverImage = async (token, file, courseCodeId, whoCalle
 const TitulinoNetService = {
   getRegistrationToken,
   startContactImpersonation,
+  sendAudienceMessage,
   upsertEnrollment,
   getUserProfileByEmailAndYearOfBirth,
   getPurchaseSessionUrl,

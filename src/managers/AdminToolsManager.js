@@ -17,6 +17,7 @@ import LrnConfiguration from "lob/LrnConfiguration";
 import ShopAnalytics from "lob/ShopAnalytics";
 import ImpersonationSession from "lob/ImpersonationSession";
 import ProcessLogs from "lob/ProcessLogs";
+import AudienceMessaging from "lob/AudienceMessaging";
 import utils from 'utils';
 
 const getTokenFromEmail = async (emailId) => {
@@ -83,6 +84,13 @@ export const buildProcessLogRoleSelectionOptions = (rows = [], allRolesLabel = '
   { value: 'all', label: allRolesLabel },
   ...ProcessLogs.getUniqueFilterOptions(rows, 'createdByRole')
 ]);
+
+export const getAudienceDefaultFilters = () => AudienceMessaging.getDefaultAudienceFilters();
+export const buildAudienceMetadataOptions = (...args) => AudienceMessaging.buildMetadataOptions(...args);
+export const buildAudienceCountryOptionsForLocation = (...args) => AudienceMessaging.buildCountryOptionsForLocation(...args);
+export const buildAudienceTableColumns = (...args) => AudienceMessaging.buildAudienceTableColumns(...args);
+export const buildAudienceSummary = (...args) => AudienceMessaging.buildAudienceSummary(...args);
+export const hasAudienceMessageContent = (...args) => AudienceMessaging.hasMessageContent(...args);
 
 export const initAdminTools = async (emailId) => {
   const token = await getTokenFromEmail(emailId);
@@ -495,6 +503,100 @@ export const getProcessLogEvents = async (emailId, sourceKey = 'api', filters = 
     filters,
     rows: ProcessLogs.normalizeLogRows(rows, sourceConfig.key),
     rawRows: rows
+  };
+};
+
+export const getContactSegmentMetadata = async (emailId) => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) {
+    return {
+      emailId,
+      metadata: AudienceMessaging.normalizeMetadata({})
+    };
+  }
+
+  const metadata = await TitulinoAdminAuthService.getContactSegmentMetadata(
+    token,
+    'AdminToolsManager.getContactSegmentMetadata'
+  );
+
+  return {
+    emailId,
+    metadata: AudienceMessaging.normalizeMetadata(metadata),
+    rawMetadata: metadata
+  };
+};
+
+export const getContactSegment = async (emailId, filters = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = AudienceMessaging.buildContactSegmentPayload(filters);
+
+  if (!token) {
+    return {
+      emailId,
+      filters,
+      payload,
+      count: 0,
+      rows: [],
+      rawRows: []
+    };
+  }
+
+  const [rows, count] = await Promise.all([
+    TitulinoAdminAuthService.getContactSegment(
+      payload,
+      token,
+      'AdminToolsManager.getContactSegment'
+    ),
+    TitulinoAdminAuthService.getContactSegmentCount(
+      payload,
+      token,
+      'AdminToolsManager.getContactSegmentCount'
+    )
+  ]);
+
+  return {
+    emailId,
+    filters,
+    payload,
+    count,
+    rows: AudienceMessaging.normalizeContactSegmentRows(rows),
+    rawRows: rows
+  };
+};
+
+export const sendAudienceMessage = async (emailId, selectedRows = [], messageDraft = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = AudienceMessaging.buildAudienceMessagePayload(selectedRows, messageDraft);
+
+  if (!token) {
+    return {
+      success: false,
+      status: 401,
+      payload,
+      errorMessage: 'Missing admin token.'
+    };
+  }
+
+  if (!payload.contactInternalIds.length || !AudienceMessaging.hasMessageContent(messageDraft)) {
+    return {
+      success: false,
+      status: 400,
+      payload,
+      errorMessage: 'Missing recipients or message content.'
+    };
+  }
+
+  const result = await TitulinoNetService.sendAudienceMessage(
+    token,
+    payload,
+    'AdminToolsManager.sendAudienceMessage'
+  );
+
+  return {
+    ...result,
+    payload
   };
 };
 
@@ -931,6 +1033,9 @@ const AdminToolsManager = {
   getAllUserLoginFootprint,
   getContactProfileMonitoring,
   getProcessLogEvents,
+  getContactSegmentMetadata,
+  getContactSegment,
+  sendAudienceMessage,
   getShopRevenueDashboard,
   upsertShopProductCourseTier,
   upsertShopTiers,
@@ -958,6 +1063,12 @@ const AdminToolsManager = {
   filterProcessLogRows,
   buildProcessLogTableColumns,
   buildProcessLogRoleSelectionOptions,
+  getAudienceDefaultFilters,
+  buildAudienceMetadataOptions,
+  buildAudienceCountryOptionsForLocation,
+  buildAudienceTableColumns,
+  buildAudienceSummary,
+  hasAudienceMessageContent,
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,

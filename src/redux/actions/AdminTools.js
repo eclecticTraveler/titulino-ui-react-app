@@ -25,7 +25,10 @@ import {
   ON_UPSERTING_SHOP_PAYMENT_PROVIDERS,
   ON_TOGGLING_SHOP_PRODUCT_ACTIVE,
   ON_STARTING_CONTACT_IMPERSONATION,
-  ON_LOADING_PROCESS_LOG_EVENTS
+  ON_LOADING_PROCESS_LOG_EVENTS,
+  ON_LOADING_CONTACT_SEGMENT_METADATA,
+  ON_LOADING_CONTACT_SEGMENT,
+  ON_SENDING_AUDIENCE_MESSAGE
 } from '../constants/AdminTools';
 
 // Pure helpers re-exported via the manager so components keep a single
@@ -49,6 +52,12 @@ export const getProcessLogLimitOptions = (...args) => AdminToolsManager.getProce
 export const filterProcessLogRows = (...args) => AdminToolsManager.filterProcessLogRows(...args);
 export const buildProcessLogTableColumns = (...args) => AdminToolsManager.buildProcessLogTableColumns(...args);
 export const buildProcessLogRoleSelectionOptions = (...args) => AdminToolsManager.buildProcessLogRoleSelectionOptions(...args);
+export const getAudienceDefaultFilters = (...args) => AdminToolsManager.getAudienceDefaultFilters(...args);
+export const buildAudienceMetadataOptions = (...args) => AdminToolsManager.buildAudienceMetadataOptions(...args);
+export const buildAudienceCountryOptionsForLocation = (...args) => AdminToolsManager.buildAudienceCountryOptionsForLocation(...args);
+export const buildAudienceTableColumns = (...args) => AdminToolsManager.buildAudienceTableColumns(...args);
+export const buildAudienceSummary = (...args) => AdminToolsManager.buildAudienceSummary(...args);
+export const hasAudienceMessageContent = (...args) => AdminToolsManager.hasAudienceMessageContent(...args);
 
 export const onLoadingAdminToolsInit = async (emailId) => {
   const { allCourses, allRoles, allEnrollees, allRawCourses } = await AdminToolsManager.initAdminTools(emailId);
@@ -139,6 +148,35 @@ export const onLoadingProcessLogEvents = async (adminEmailId, sourceKey, filters
   return {
     type: ON_LOADING_PROCESS_LOG_EVENTS,
     processLogEvents
+  };
+};
+
+export const onLoadingContactSegmentMetadata = async (adminEmailId) => {
+  const contactSegmentMetadata = await AdminToolsManager.getContactSegmentMetadata(adminEmailId);
+  return {
+    type: ON_LOADING_CONTACT_SEGMENT_METADATA,
+    contactSegmentMetadata
+  };
+};
+
+export const onLoadingContactSegment = async (adminEmailId, filters) => {
+  const contactSegment = await AdminToolsManager.getContactSegment(adminEmailId, filters);
+  return {
+    type: ON_LOADING_CONTACT_SEGMENT,
+    contactSegment
+  };
+};
+
+export const onSendingAudienceMessage = async (adminEmailId, selectedRows, messageDraft) => {
+  const audienceMessageSendResult = await AdminToolsManager.sendAudienceMessage(
+    adminEmailId,
+    selectedRows,
+    messageDraft
+  );
+
+  return {
+    type: ON_SENDING_AUDIENCE_MESSAGE,
+    audienceMessageSendResult
   };
 };
 

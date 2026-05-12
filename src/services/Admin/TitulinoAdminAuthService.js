@@ -78,6 +78,49 @@ export const getProcessLogEvents = async (
   return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
 };
 
+export const getContactSegment = async (payload = {}, token, whoCalledMe = 'getContactSegment') => {
+  const apiResult = await postJsonEndpoint('GetContactSegment', payload, token, whoCalledMe);
+  return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
+};
+
+export const getContactSegmentCount = async (payload = {}, token, whoCalledMe = 'getContactSegmentCount') => {
+  const apiResult = await postJsonEndpoint('GetContactSegmentCount', payload, token, whoCalledMe, 0);
+
+  if (typeof apiResult === 'number') return apiResult;
+  if (typeof apiResult === 'string') return Number(apiResult) || 0;
+  if (Array.isArray(apiResult)) {
+    const firstResult = apiResult[0];
+    if (typeof firstResult === 'number') return firstResult;
+    return Number(
+      firstResult?.count ??
+      firstResult?.Count ??
+      firstResult?.total ??
+      firstResult?.Total ??
+      firstResult?.getcontactsegmentcount ??
+      firstResult?.GetContactSegmentCount
+    ) || 0;
+  }
+
+  return Number(
+    apiResult?.count ??
+    apiResult?.Count ??
+    apiResult?.total ??
+    apiResult?.Total ??
+    apiResult?.getcontactsegmentcount ??
+    apiResult?.GetContactSegmentCount
+  ) || 0;
+};
+
+export const getContactSegmentMetadata = async (token, whoCalledMe = 'getContactSegmentMetadata') => {
+  const apiResult = await postJsonEndpoint('GetContactSegmentMetadata', {}, token, whoCalledMe, {});
+  if (Array.isArray(apiResult)) {
+    return apiResult[0] && typeof apiResult[0] === 'object' ? apiResult[0] : {};
+  }
+  return apiResult && typeof apiResult === 'object' && !Array.isArray(apiResult)
+    ? apiResult
+    : {};
+};
+
 export const getAllEnrollees = async (token, whoCalledMe = 'getAllEnrollees') => (
   getArrayEndpoint('GetAllEnrollees', token, whoCalledMe)
 );
@@ -264,6 +307,9 @@ const TitulinoAdminAuthService = {
   getOptedOutActiveContactProfiles,
   getInactiveContactProfiles,
   getProcessLogEvents,
+  getContactSegment,
+  getContactSegmentCount,
+  getContactSegmentMetadata,
   toggleContactEmailOptOut,
   toggleContactActive,
   upsertEnrolleeList
