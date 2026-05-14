@@ -195,6 +195,13 @@ export const buildContactSegmentPayload = (filters = {}) => {
   }, {});
 };
 
+export const buildContactSegmentCountPayload = (filters = {}) => {
+  const payload = buildContactSegmentPayload(filters);
+  delete payload.p_limit;
+  delete payload.p_offset;
+  return payload;
+};
+
 export const buildCountryDivisionsPayload = (filters = {}) => ({
   p_locationtype: filters.locationType || 'all',
   p_countrynameorid: toNullable(filters.countryNameOrId)
@@ -721,6 +728,7 @@ export const hasMessageContent = (messageDraft = {}) => (
 const AudienceMessaging = {
   getDefaultAudienceFilters,
   buildContactSegmentPayload,
+  buildContactSegmentCountPayload,
   buildCountryDivisionsPayload,
   normalizeContactSegmentRows,
   normalizeMetadata,

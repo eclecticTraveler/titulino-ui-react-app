@@ -533,12 +533,14 @@ export const getContactSegmentMetadata = async (emailId) => {
 export const getContactSegment = async (emailId, filters = {}) => {
   const token = await getTokenFromEmail(emailId);
   const payload = AudienceMessaging.buildContactSegmentPayload(filters);
+  const countPayload = AudienceMessaging.buildContactSegmentCountPayload(filters);
 
   if (!token) {
     return {
       emailId,
       filters,
       payload,
+      countPayload,
       count: 0,
       rows: [],
       rawRows: []
@@ -552,7 +554,7 @@ export const getContactSegment = async (emailId, filters = {}) => {
       'AdminToolsManager.getContactSegment'
     ),
     TitulinoAdminAuthService.getContactSegmentCount(
-      payload,
+      countPayload,
       token,
       'AdminToolsManager.getContactSegmentCount'
     )
@@ -562,6 +564,7 @@ export const getContactSegment = async (emailId, filters = {}) => {
     emailId,
     filters,
     payload,
+    countPayload,
     count,
     rows: AudienceMessaging.normalizeContactSegmentRows(rows),
     rawRows: rows

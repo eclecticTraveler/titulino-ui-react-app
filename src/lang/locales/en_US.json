@@ -504,7 +504,7 @@
 	"admin.tools.messaging.sendSuccess": "Audience message submitted.",
 	"admin.tools.messaging.sendError": "Audience message could not be submitted.",
 	"admin.tools.messaging.copyError": "Could not copy the internal ID.",
-	"admin.tools.messaging.metric.backendCount": "Backend Count",
+	"admin.tools.messaging.metric.backendCount": "Enrollee Backend Count",
 	"admin.tools.messaging.metric.loadedRows": "Loaded Rows",
 	"admin.tools.messaging.metric.selectedRows": "Selected Rows",
 	"admin.tools.messaging.metric.emails": "Emails",

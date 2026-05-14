@@ -505,7 +505,7 @@
 	"admin.tools.messaging.sendSuccess": "Mensagem de audiencia enviada.",
 	"admin.tools.messaging.sendError": "Nao foi possivel enviar a mensagem de audiencia.",
 	"admin.tools.messaging.copyError": "Nao foi possivel copiar o ID interno.",
-	"admin.tools.messaging.metric.backendCount": "Contagem Backend",
+	"admin.tools.messaging.metric.backendCount": "Contagem de cadastrados no Backend",
 	"admin.tools.messaging.metric.loadedRows": "Linhas Carregadas",
 	"admin.tools.messaging.metric.selectedRows": "Linhas Selecionadas",
 	"admin.tools.messaging.metric.emails": "E-mails",
