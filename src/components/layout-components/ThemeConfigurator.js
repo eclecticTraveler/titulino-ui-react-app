@@ -1,7 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Radio, Switch } from 'antd';
+import { Button, Radio, Switch } from 'antd';
 import IntlMessage from "../util-components/IntlMessage";
+import { SwapOutlined } from '@ant-design/icons';
 import { 
 	toggleCollapsedNav, 
 	onNavTypeChange,
@@ -11,7 +12,9 @@ import {
 	onSwitchTheme,
 	onDirectionChange
 } from 'redux/actions/Theme';
+import { getIsLanguageConfiguredFlag, onUserSelectingContentLanguage } from 'redux/actions/Lrn';
 import NavLanguage from './NavLanguage';
+import { env } from 'configs/EnvironmentConfig';
 import { 
 	NAV_TYPE_SIDE,
 	NAV_TYPE_TOP,
@@ -52,7 +55,9 @@ export const ThemeConfigurator = ({
 	onHeaderNavColorChange,
 	onSwitchTheme,
 	direction,
-	onDirectionChange
+	onDirectionChange,
+	getIsLanguageConfiguredFlag,
+	onUserSelectingContentLanguage
 }) => {
 	const isNavTop = navType === NAV_TYPE_TOP? true : false
 	const isCollapse = navCollapsed 
@@ -89,6 +94,11 @@ export const ThemeConfigurator = ({
 		onNavTypeChange(value)
 	}
 
+	const resetBaseCourseLanguage = () => {
+		getIsLanguageConfiguredFlag('reset');
+		onUserSelectingContentLanguage(null);
+	}
+
 	return (
 		<>
 			<div className="mb-5">
@@ -100,6 +110,24 @@ export const ThemeConfigurator = ({
 					}
 				/>
 			</div>
+			{env.IS_LANGUAGE_PICKER_ENABLED && (
+				<div className="mb-5">
+					<h4 className="mb-3 font-weight-bold">{setLocale(locale, 'settings.menu.sub.title.course')}</h4>
+					<ListOption
+						name={setLocale(locale, 'settings.menu.sub.title.course.language')}
+						selector={
+							<Button
+								size="small"
+								icon={<SwapOutlined />}
+								onClick={resetBaseCourseLanguage}
+							>
+								{setLocale(locale, 'profile.switch.course')}
+							</Button>
+						}
+						vertical
+					/>
+				</div>
+			)}
 			<div className="mb-5">
 			<h4 className="mb-3 font-weight-bold">{setLocale(locale, 'settings.menu.sub.title.1')}</h4>
 				<ListOption 
@@ -150,7 +178,9 @@ const mapDispatchToProps = {
 	onTopNavColorChange,
 	onHeaderNavColorChange,
 	onSwitchTheme,
-	onDirectionChange
+	onDirectionChange,
+	getIsLanguageConfiguredFlag,
+	onUserSelectingContentLanguage
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ThemeConfigurator)

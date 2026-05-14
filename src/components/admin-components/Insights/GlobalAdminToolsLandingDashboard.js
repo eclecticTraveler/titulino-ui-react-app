@@ -50,7 +50,9 @@ import {
   onUpsertingShopPaymentProviders,
   onStartingContactImpersonation,
   onLoadingContactSegmentMetadata,
+  onLoadingContactSegmentCountryDivisions,
   onLoadingContactSegment,
+  onLoadingAudienceMessageVariables,
   onSendingAudienceMessage,
   generateCourseCodeId,
   buildCourseUpsertPayload,
@@ -73,8 +75,10 @@ import {
   getAudienceDefaultFilters,
   buildAudienceMetadataOptions,
   buildAudienceCountryOptionsForLocation,
+  buildAudienceCountryDivisionOptions,
   buildAudienceTableColumns,
   buildAudienceSummary,
+  buildAudienceMessageVariableOptions,
   hasAudienceMessageContent
 } from "redux/actions/AdminTools";
 
@@ -102,8 +106,6 @@ const normalizeBooleanValue = (value, fallback = true) => {
   }
   return value === undefined || value === null ? fallback : Boolean(value);
 };
-
-const AUDIENCE_REGION_NA_VALUE = '__not_available__';
 
 const getMeaningfulCharacterCount = (value = '') => (
   Array.from(String(value).trim()).filter((character) => (
@@ -157,13 +159,17 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onUpsertingShopPaymentProviders,
     onStartingContactImpersonation,
     onLoadingContactSegmentMetadata,
+    onLoadingContactSegmentCountryDivisions,
     onLoadingContactSegment,
+    onLoadingAudienceMessageVariables,
     onSendingAudienceMessage,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     processLogEventsBySource,
     contactSegmentMetadata,
+    contactSegmentCountryDivisions,
     contactSegment,
+    audienceMessageVariables,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   } = props;
@@ -210,10 +216,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     limit: 50,
     offset: 0
   });
-  const [messagingInnerTabKey, setMessagingInnerTabKey] = useState('audience');
+  const [messagingInnerTabKey, setMessagingInnerTabKey] = useState('message');
   const [audienceFilters, setAudienceFilters] = useState(() => getAudienceDefaultFilters());
   const [audienceLoading, setAudienceLoading] = useState(false);
   const [audienceMetadataLoading, setAudienceMetadataLoading] = useState(false);
+  const [audienceCountryDivisionsLoading, setAudienceCountryDivisionsLoading] = useState(false);
   const [selectedAudienceRowKeys, setSelectedAudienceRowKeys] = useState([]);
   const [selectedAudienceRows, setSelectedAudienceRows] = useState([]);
   const [audienceMessageDraft, setAudienceMessageDraft] = useState({
@@ -644,6 +651,23 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     }
   }, [emailId, onLoadingContactSegmentMetadata]);
 
+  const loadAudienceCountryDivisions = useCallback(async (nextFilters = audienceFilters) => {
+    if (!emailId || !onLoadingContactSegmentCountryDivisions || !nextFilters.countryNameOrId) return null;
+
+    setAudienceCountryDivisionsLoading(true);
+    try {
+      return await onLoadingContactSegmentCountryDivisions(emailId, nextFilters);
+    } finally {
+      setAudienceCountryDivisionsLoading(false);
+    }
+  }, [audienceFilters, emailId, onLoadingContactSegmentCountryDivisions]);
+
+  const loadAudienceMessageVariables = useCallback(async () => {
+    if (!emailId || !onLoadingAudienceMessageVariables) return null;
+
+    return await onLoadingAudienceMessageVariables(emailId, 'audience');
+  }, [emailId, onLoadingAudienceMessageVariables]);
+
   const updateAudienceFilter = useCallback((fieldName, value, shouldReload = false) => {
     const nextFilters = {
       ...audienceFilters,
@@ -679,6 +703,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     document.execCommand(command, false, value);
     handleAudienceEditorInput();
   }, [handleAudienceEditorInput]);
+
+  const insertAudienceSubjectVariable = useCallback((variableToken) => {
+    if (!variableToken) return;
+
+    setAudienceMessageDraft(previousDraft => ({
+      ...previousDraft,
+      subject: `${previousDraft.subject || ''}${variableToken}`
+    }));
+  }, []);
+
+  const insertAudienceBodyVariable = useCallback((variableToken) => {
+    if (!variableToken) return;
+
+    applyAudienceEditorCommand('insertText', variableToken);
+  }, [applyAudienceEditorCommand]);
 
   const handleSendAudienceMessage = useCallback(async () => {
     if (!emailId || selectedAudienceRows.length === 0 || !hasAudienceMessageContent(audienceMessageDraft)) return;
@@ -852,6 +891,41 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     emailId,
     contactSegment?.emailId,
     contactSegmentMetadata?.emailId
+  ]);
+
+  useEffect(() => {
+    if (activeOuterTabKey !== 'messaging' || !emailId) return;
+
+    if (
+      audienceMessageVariables?.emailId !== emailId ||
+      audienceMessageVariables?.scope !== 'audience'
+    ) {
+      loadAudienceMessageVariables();
+    }
+  }, [
+    activeOuterTabKey,
+    audienceMessageVariables?.emailId,
+    audienceMessageVariables?.scope,
+    emailId,
+    loadAudienceMessageVariables
+  ]);
+
+  useEffect(() => {
+    if (
+      activeOuterTabKey !== 'messaging' ||
+      !emailId ||
+      !audienceFilters.countryNameOrId
+    ) {
+      return;
+    }
+
+    loadAudienceCountryDivisions(audienceFilters);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeOuterTabKey,
+    emailId,
+    audienceFilters.countryNameOrId,
+    audienceFilters.locationType
   ]);
 
   useEffect(() => {
@@ -1416,120 +1490,34 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     audienceRows,
     renderCountrySummary
   ]);
-  const doesAudienceRowMatchCountry = useCallback((row, locationType = 'all', selectedCountry = null) => {
-    const selectedCountryValue = String(selectedCountry || '').trim().toLowerCase();
-    if (!selectedCountryValue) return true;
-
-    const matchesLocation = (countryName, alpha3) => (
-      [countryName, alpha3]
-        .filter(Boolean)
-        .map(value => String(value).trim().toLowerCase())
-        .includes(selectedCountryValue)
-    );
-
-    if (locationType === 'birth') {
-      return matchesLocation(row.birthCountryName, row.birthCountryAlpha3);
-    }
-
-    if (locationType === 'residency') {
-      return matchesLocation(row.residencyCountryName, row.residencyCountryAlpha3);
-    }
-
-    return (
-      matchesLocation(row.residencyCountryName, row.residencyCountryAlpha3) ||
-      matchesLocation(row.birthCountryName, row.birthCountryAlpha3)
-    );
-  }, []);
-  const getAudienceLocationRegions = useCallback((row, locationType = 'all', selectedCountry = null) => {
-    const regions = [];
-    const addRegion = (type) => {
-      const countryName = type === 'birth' ? row.birthCountryName : row.residencyCountryName;
-      const alpha3 = type === 'birth' ? row.birthCountryAlpha3 : row.residencyCountryAlpha3;
-      const selectedCountryValue = String(selectedCountry || '').trim().toLowerCase();
-      const matchesCountry = !selectedCountryValue || [countryName, alpha3]
-        .filter(Boolean)
-        .map(value => String(value).trim().toLowerCase())
-        .includes(selectedCountryValue);
-
-      if (!matchesCountry) return;
-
-      regions.push(type === 'birth' ? row.birthRegionName : row.residencyRegionName);
-    };
-
-    if (locationType === 'birth') {
-      addRegion('birth');
-      return regions;
-    }
-
-    if (locationType === 'residency') {
-      addRegion('residency');
-      return regions;
-    }
-
-    addRegion('residency');
-    addRegion('birth');
-    return regions;
-  }, []);
-  const audienceRegionOptions = useMemo(() => {
+  const audienceCountryDivisionRows = useMemo(() => {
     if (!audienceFilters.countryNameOrId) return [];
+    if (contactSegmentCountryDivisions?.emailId !== emailId) return [];
+    if (contactSegmentCountryDivisions?.payload?.p_countrynameorid !== audienceFilters.countryNameOrId) return [];
+    if (
+      (contactSegmentCountryDivisions?.payload?.p_locationtype || 'all') !==
+      (audienceFilters.locationType || 'all')
+    ) {
+      return [];
+    }
 
-    const regionMap = new Map();
-    (audienceRows || []).forEach((row) => {
-      if (!doesAudienceRowMatchCountry(row, audienceFilters.locationType, audienceFilters.countryNameOrId)) return;
-
-      getAudienceLocationRegions(row, audienceFilters.locationType, audienceFilters.countryNameOrId)
-        .forEach((regionName) => {
-          const label = regionName || t('admin.tools.messaging.regionNotAvailable');
-          const value = regionName || AUDIENCE_REGION_NA_VALUE;
-          if (!regionMap.has(value)) {
-            regionMap.set(value, {
-              value,
-              label,
-              searchText: label
-            });
-          }
-        });
-    });
-
-    return Array.from(regionMap.values())
-      .sort((a, b) => String(a.label || '').localeCompare(String(b.label || '')));
+    return contactSegmentCountryDivisions?.rows || [];
   }, [
     audienceFilters.countryNameOrId,
     audienceFilters.locationType,
-    audienceRows,
-    doesAudienceRowMatchCountry,
-    getAudienceLocationRegions,
-    t
+    contactSegmentCountryDivisions?.emailId,
+    contactSegmentCountryDivisions?.payload?.p_countrynameorid,
+    contactSegmentCountryDivisions?.payload?.p_locationtype,
+    contactSegmentCountryDivisions?.rows,
+    emailId
   ]);
-  const audienceVisibleRows = useMemo(() => {
-    if (!audienceFilters.locationRegionName) return audienceRows;
-
-    return (audienceRows || []).filter((row) => (
-      getAudienceLocationRegions(row, audienceFilters.locationType, audienceFilters.countryNameOrId)
-        .some((regionName) => (
-          (regionName || AUDIENCE_REGION_NA_VALUE) === audienceFilters.locationRegionName
-        ))
-    ));
-  }, [
-    audienceFilters.countryNameOrId,
-    audienceFilters.locationRegionName,
-    audienceFilters.locationType,
-    audienceRows,
-    getAudienceLocationRegions
-  ]);
-  const audienceDisplayCount = audienceFilters.locationRegionName
-    ? audienceVisibleRows.length
-    : audienceTotalCount;
-  useEffect(() => {
-    if (!selectedAudienceRowKeys.length) return;
-
-    const visibleRowKeySet = new Set((audienceVisibleRows || []).map(row => row.key));
-    const nextSelectedRows = selectedAudienceRows.filter(row => visibleRowKeySet.has(row.key));
-    if (nextSelectedRows.length === selectedAudienceRows.length) return;
-
-    setSelectedAudienceRows(nextSelectedRows);
-    setSelectedAudienceRowKeys(nextSelectedRows.map(row => row.key));
-  }, [audienceVisibleRows, selectedAudienceRowKeys.length, selectedAudienceRows]);
+  const audienceRegionOptions = useMemo(() => (
+    buildAudienceCountryDivisionOptions(
+      audienceCountryDivisionRows,
+      t('admin.tools.messaging.regionNotAvailable')
+    )
+  ), [audienceCountryDivisionRows, t]);
+  const audienceDisplayCount = audienceTotalCount;
   const getAudienceLanguageLevelLabel = useCallback((level) => {
     const normalizedLevel = String(level || '').trim().toLowerCase();
     if (!normalizedLevel) return '';
@@ -1614,13 +1602,23 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     [getAudienceLanguageLevelLabel, handleCopyAudienceInternalId, renderCountrySummary, t]
   );
   const audienceSummary = useMemo(
-    () => buildAudienceSummary(audienceVisibleRows, selectedAudienceRows),
-    [audienceVisibleRows, selectedAudienceRows]
+    () => buildAudienceSummary(audienceRows, selectedAudienceRows),
+    [audienceRows, selectedAudienceRows]
   );
+  const audienceMessageVariableOptions = useMemo(
+    () => buildAudienceMessageVariableOptions(audienceMessageVariables, 'audience'),
+    [audienceMessageVariables]
+  );
+  const hasAudienceMessageDraftContent = hasAudienceMessageContent(audienceMessageDraft);
   const canSendAudienceMessage = (
     selectedAudienceRows.length > 0 &&
-    hasAudienceMessageContent(audienceMessageDraft)
+    hasAudienceMessageDraftContent
   );
+  const audienceMessageSendDisabledHint = selectedAudienceRows.length === 0
+    ? t('admin.tools.messaging.chooseAudienceHint')
+    : !hasAudienceMessageDraftContent
+      ? t('admin.tools.messaging.writeMessageHint')
+      : '';
 
   useEffect(() => {
     setContactProfileTableCounts({
@@ -4718,6 +4716,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 options={audienceRegionOptions}
                 optionFilterProp="searchText"
                 onChange={value => updateAudienceFilter('locationRegionName', value || null)}
+                loading={audienceCountryDivisionsLoading}
                 style={{ width: '100%' }}
               />
             ))}
@@ -4934,7 +4933,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         size="small"
         loading={audienceLoading}
         columns={audienceColumns}
-        dataSource={audienceVisibleRows}
+        dataSource={audienceRows}
         scroll={{ x: 1550 }}
         rowSelection={{
           selectedRowKeys: selectedAudienceRowKeys,
@@ -5022,15 +5021,28 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         })}
         style={{ marginBottom: 16 }}
       />
-      <Input
-        value={audienceMessageDraft.subject}
-        onChange={event => setAudienceMessageDraft(previousDraft => ({
-          ...previousDraft,
-          subject: event.target.value
-        }))}
-        placeholder={t('admin.tools.messaging.subjectPlaceholder')}
-        style={{ marginBottom: 12 }}
-      />
+      <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+        <Col xs={24} md={18}>
+          <Input
+            value={audienceMessageDraft.subject}
+            onChange={event => setAudienceMessageDraft(previousDraft => ({
+              ...previousDraft,
+              subject: event.target.value
+            }))}
+            placeholder={t('admin.tools.messaging.subjectPlaceholder')}
+          />
+        </Col>
+        <Col xs={24} md={6}>
+          <Select
+            value={undefined}
+            placeholder={t('admin.tools.messaging.editor.variable')}
+            options={audienceMessageVariableOptions}
+            optionFilterProp="searchText"
+            onChange={insertAudienceSubjectVariable}
+            style={{ width: '100%' }}
+          />
+        </Col>
+      </Row>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
         <Tooltip title={t('admin.tools.messaging.editor.bold')}>
           <Button icon={<BoldOutlined />} onClick={() => applyAudienceEditorCommand('bold')} />
@@ -5051,6 +5063,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             { value: '4', label: t('admin.tools.messaging.editor.large') }
           ]}
         />
+        <Select
+          value={undefined}
+          placeholder={t('admin.tools.messaging.editor.variable')}
+          style={{ width: 240, maxWidth: '100%' }}
+          popupMatchSelectWidth={280}
+          options={audienceMessageVariableOptions}
+          optionFilterProp="searchText"
+          onChange={insertAudienceBodyVariable}
+        />
       </div>
       <div
         ref={audienceEditorRef}
@@ -5067,22 +5088,37 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           overflow: 'auto'
         }}
       />
-      <Popconfirm
-        title={t('admin.tools.messaging.confirmSend', { count: selectedAudienceRows.length })}
-        onConfirm={handleSendAudienceMessage}
-        okText={t('admin.tools.confirmYes')}
-        cancelText={t('admin.tools.confirmNo')}
-        disabled={!canSendAudienceMessage}
-      >
-        <Button
-          type="primary"
-          icon={<SendOutlined />}
-          loading={audienceMessageSending}
-          disabled={!canSendAudienceMessage}
+      <Tooltip title={audienceMessageSendDisabledHint}>
+        <span style={{ display: 'inline-block' }}>
+          <Popconfirm
+            title={t('admin.tools.messaging.confirmSend', { count: selectedAudienceRows.length })}
+            onConfirm={handleSendAudienceMessage}
+            okText={t('admin.tools.confirmYes')}
+            cancelText={t('admin.tools.confirmNo')}
+            disabled={!canSendAudienceMessage}
+          >
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              loading={audienceMessageSending}
+              disabled={!canSendAudienceMessage}
+            >
+              {setLocale(locale, 'admin.tools.messaging.sendMessage')}
+            </Button>
+          </Popconfirm>
+        </span>
+      </Tooltip>
+      {selectedAudienceRows.length === 0 && (
+        <div
+          style={{
+            color: '#72849a',
+            fontSize: 12,
+            marginTop: 8
+          }}
         >
-          {setLocale(locale, 'admin.tools.messaging.sendMessage')}
-        </Button>
-      </Popconfirm>
+          {setLocale(locale, 'admin.tools.messaging.chooseAudienceHint')}
+        </div>
+      )}
     </div>
   );
 
@@ -5103,6 +5139,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         onChange={setMessagingInnerTabKey}
         items={[
           {
+            key: 'message',
+            label: (
+              <span>
+                <MessageOutlined style={{ marginRight: 6 }} />
+                {setLocale(locale, 'admin.tools.messaging.tab.message')}
+              </span>
+            ),
+            children: renderAudienceMessageComposer()
+          },
+          {
             key: 'audience',
             label: (
               <span>
@@ -5121,16 +5167,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               </span>
             ),
             children: renderAudienceVisualization()
-          },
-          {
-            key: 'message',
-            label: (
-              <span>
-                <MessageOutlined style={{ marginRight: 6 }} />
-                {setLocale(locale, 'admin.tools.messaging.tab.message')}
-              </span>
-            ),
-            children: renderAudienceMessageComposer()
           }
         ]}
       />
@@ -5696,7 +5732,9 @@ function mapDispatchToProps(dispatch) {
     onUpsertingShopPaymentProviders,
     onStartingContactImpersonation,
     onLoadingContactSegmentMetadata,
+    onLoadingContactSegmentCountryDivisions,
     onLoadingContactSegment,
+    onLoadingAudienceMessageVariables,
     onSendingAudienceMessage,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
@@ -5723,7 +5761,9 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     shopCoursesWithPurchases,
     processLogEventsBySource,
     contactSegmentMetadata,
+    contactSegmentCountryDivisions,
     contactSegment,
+    audienceMessageVariables,
     lastAudienceMessageSendResult
   } = adminTools;
   return {
@@ -5746,7 +5786,9 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     shopCoursesWithPurchases,
     processLogEventsBySource,
     contactSegmentMetadata,
+    contactSegmentCountryDivisions,
     contactSegment,
+    audienceMessageVariables,
     lastAudienceMessageSendResult
   };
 };

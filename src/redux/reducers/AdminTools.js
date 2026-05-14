@@ -28,7 +28,9 @@ import {
   ON_STARTING_CONTACT_IMPERSONATION,
   ON_LOADING_PROCESS_LOG_EVENTS,
   ON_LOADING_CONTACT_SEGMENT_METADATA,
+  ON_LOADING_CONTACT_SEGMENT_COUNTRY_DIVISIONS,
   ON_LOADING_CONTACT_SEGMENT,
+  ON_LOADING_AUDIENCE_MESSAGE_VARIABLES,
   ON_SENDING_AUDIENCE_MESSAGE
 } from '../constants/AdminTools';
 
@@ -36,7 +38,9 @@ const initState = {
   avatarUrlMap: {},
   processLogEventsBySource: {},
   contactSegmentMetadata: null,
+  contactSegmentCountryDivisions: null,
   contactSegment: null,
+  audienceMessageVariables: null,
   lastAudienceMessageSendResult: null
 };
 
@@ -221,8 +225,12 @@ const adminTools = (state = initState, action) => {
       };
     case ON_LOADING_CONTACT_SEGMENT_METADATA:
       return { ...state, contactSegmentMetadata: action.contactSegmentMetadata };
+    case ON_LOADING_CONTACT_SEGMENT_COUNTRY_DIVISIONS:
+      return { ...state, contactSegmentCountryDivisions: action.contactSegmentCountryDivisions };
     case ON_LOADING_CONTACT_SEGMENT:
       return { ...state, contactSegment: action.contactSegment };
+    case ON_LOADING_AUDIENCE_MESSAGE_VARIABLES:
+      return { ...state, audienceMessageVariables: action.audienceMessageVariables };
     case ON_SENDING_AUDIENCE_MESSAGE:
       return { ...state, lastAudienceMessageSendResult: action.audienceMessageSendResult };
     case ON_CLEAR_SELECTED_CONTACT:

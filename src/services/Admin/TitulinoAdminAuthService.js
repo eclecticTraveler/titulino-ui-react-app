@@ -121,6 +121,11 @@ export const getContactSegmentMetadata = async (token, whoCalledMe = 'getContact
     : {};
 };
 
+export const getCountryDivisions = async (payload = {}, token, whoCalledMe = 'getCountryDivisions') => {
+  const apiResult = await postJsonEndpoint('GetCountryDivisions', payload, token, whoCalledMe);
+  return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
+};
+
 export const getAllEnrollees = async (token, whoCalledMe = 'getAllEnrollees') => (
   getArrayEndpoint('GetAllEnrollees', token, whoCalledMe)
 );
@@ -310,6 +315,7 @@ const TitulinoAdminAuthService = {
   getContactSegment,
   getContactSegmentCount,
   getContactSegmentMetadata,
+  getCountryDivisions,
   toggleContactEmailOptOut,
   toggleContactActive,
   upsertEnrolleeList

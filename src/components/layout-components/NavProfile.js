@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import { 
   SettingOutlined, 
   LogoutOutlined,
-  SwapOutlined,
   LoginOutlined,
   GlobalOutlined,
   UsergroupAddOutlined,
@@ -20,7 +19,6 @@ import ProfileNavLanguagePanelConfig from './ProfileNavLanguagePanelConfig';
 
 import { Link } from 'react-router-dom';
 import { env } from "configs/EnvironmentConfig";
-import { getIsLanguageConfiguredFlag, onUserSelectingContentLanguage } from 'redux/actions/Lrn';
 import Flag from 'react-world-flags';
 
 const locale = true;
@@ -51,28 +49,6 @@ const configureMenuItems = (user, token) => {
             path: "insight",
             isAuth: true
           }
-                
-          // },
-          // {
-          // title: setLocale(locale, ""),
-          // icon: EditOutlined ,
-          // path: ""
-          // },      
-          // {
-          //   title: setLocale(locale, ""),
-          // icon: SettingOutlined,
-          // path: ""
-          // },
-          // {
-          //   title: setLocale(locale, "profile.switch.course"),
-          //   icon: SwapOutlined,
-          //   path: "switch-course"
-          // },
-          // {
-          // title: setLocale(locale,"profile.edit.profile"),
-          // icon: EditOutlined ,
-          // path: "edit-profile"
-          // },
       );
     }
   }
@@ -95,10 +71,6 @@ const configureMenuItems = (user, token) => {
 export const NavProfile = (props) => {  
   const {
     direction,
-    mode,
-    isMobile,
-    getIsLanguageConfiguredFlag,
-    onUserSelectingContentLanguage,
     token,
     signOut,
     user,
@@ -114,13 +86,6 @@ export const NavProfile = (props) => {
   const onClose = () => {
     setVisible(false);
   };
-
-  const resetBaseCourseLanguage = () => {
-    // TODO THIS NEEDS TO BE CLEANED UP AND DONE BETTER WHEN NEW COURSES ARE AVAILABLE
-    // BUT LETS WORRY WHEN IT COMES TO MORE COURSES, THIS IS DEBT
-    getIsLanguageConfiguredFlag("reset");
-    onUserSelectingContentLanguage(null);
-  }
 
   const handleSigningOut = () => {
     signOut();
@@ -188,17 +153,6 @@ export const NavProfile = (props) => {
               </Link>
             ),
           })),
-
-          ...(env.IS_LANGUAGE_PICKER_ENABLED ? [{
-            key: menuItems?.length + 2,
-            onClick: resetBaseCourseLanguage,
-            label: (
-              <span>
-                <SwapOutlined className="mr-3 profile-accomdation" />
-                <span className="font-weight-normal"> {setLocale(locale, "profile.switch.course")}</span>
-              </span>
-            ),
-          }] : []),
 
           {
             key: 'language',
@@ -286,4 +240,4 @@ const mapStateToProps = ({ theme, auth, grant, lrn }) => {
 	return { contentLanguage, token, user, baseLanguage, selectedContentLanguage }
 };
 
-export default connect(mapStateToProps, {signOut, getIsLanguageConfiguredFlag, onUserSelectingContentLanguage})(NavProfile)
+export default connect(mapStateToProps, {signOut})(NavProfile)

@@ -251,6 +251,61 @@ export const sendAudienceMessage = async (
   }
 };
 
+export const getMessageTemplateVariables = async (
+  token,
+  scope = 'audience',
+  whoCalledMe = 'getMessageTemplateVariables'
+) => {
+  if (!token) {
+    return {
+      version: 1,
+      variables: []
+    };
+  }
+
+  const variablesUrl = `${titulinoNetAdminApiUri}/messaging/template-variables?scope=${encodeURIComponent(scope || 'audience')}`;
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log('[TitulinoNetService.getMessageTemplateVariables]', {
+      whoCalledMe,
+      url: variablesUrl,
+      scope
+    });
+  }
+
+  const requestOptions = {
+    method: 'GET',
+    headers: getHeaders(token),
+    redirect: 'follow'
+  };
+
+  try {
+    const response = await fetch(variablesUrl, requestOptions);
+    const text = await response.text();
+
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') {
+        console.warn(`[${whoCalledMe}] Message template variables failed with status ${response.status}`);
+        console.warn(`[${whoCalledMe}] Response body: ${text}`);
+      }
+
+      return {
+        version: 1,
+        variables: []
+      };
+    }
+
+    return text ? JSON.parse(text) : { version: 1, variables: [] };
+  } catch (error) {
+    console.log(`Error loading message template variables in getMessageTemplateVariables: from ${whoCalledMe}`);
+    console.error(error);
+    return {
+      version: 1,
+      variables: []
+    };
+  }
+};
+
 export const getRegistrationToken = async (whoCalledMe, userName) => {
   const loginUrl = `${titulinoNetEnrollmentApiUri}/auth`;
   const myHeaders = new Headers();
@@ -647,6 +702,7 @@ const TitulinoNetService = {
   getRegistrationToken,
   startContactImpersonation,
   sendAudienceMessage,
+  getMessageTemplateVariables,
   upsertEnrollment,
   getUserProfileByEmailAndYearOfBirth,
   getPurchaseSessionUrl,

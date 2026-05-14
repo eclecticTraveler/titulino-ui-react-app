@@ -88,8 +88,10 @@ export const buildProcessLogRoleSelectionOptions = (rows = [], allRolesLabel = '
 export const getAudienceDefaultFilters = () => AudienceMessaging.getDefaultAudienceFilters();
 export const buildAudienceMetadataOptions = (...args) => AudienceMessaging.buildMetadataOptions(...args);
 export const buildAudienceCountryOptionsForLocation = (...args) => AudienceMessaging.buildCountryOptionsForLocation(...args);
+export const buildAudienceCountryDivisionOptions = (...args) => AudienceMessaging.buildCountryDivisionOptions(...args);
 export const buildAudienceTableColumns = (...args) => AudienceMessaging.buildAudienceTableColumns(...args);
 export const buildAudienceSummary = (...args) => AudienceMessaging.buildAudienceSummary(...args);
+export const buildAudienceMessageVariableOptions = (...args) => AudienceMessaging.buildMessageVariableOptions(...args);
 export const hasAudienceMessageContent = (...args) => AudienceMessaging.hasMessageContent(...args);
 
 export const initAdminTools = async (emailId) => {
@@ -566,6 +568,57 @@ export const getContactSegment = async (emailId, filters = {}) => {
   };
 };
 
+export const getCountryDivisions = async (emailId, filters = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = AudienceMessaging.buildCountryDivisionsPayload(filters);
+
+  if (!token || !payload.p_countrynameorid) {
+    return {
+      emailId,
+      filters,
+      payload,
+      rows: []
+    };
+  }
+
+  const rows = await TitulinoAdminAuthService.getCountryDivisions(
+    payload,
+    token,
+    'AdminToolsManager.getCountryDivisions'
+  );
+
+  return {
+    emailId,
+    filters,
+    payload,
+    rows
+  };
+};
+
+export const getAudienceMessageVariables = async (emailId, scope = 'audience') => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) {
+    return {
+      emailId,
+      ...AudienceMessaging.normalizeMessageTemplateVariables({}, scope),
+      rawCatalog: null
+    };
+  }
+
+  const catalog = await TitulinoNetService.getMessageTemplateVariables(
+    token,
+    scope,
+    'AdminToolsManager.getAudienceMessageVariables'
+  );
+
+  return {
+    emailId,
+    ...AudienceMessaging.normalizeMessageTemplateVariables(catalog, scope),
+    rawCatalog: catalog
+  };
+};
+
 export const sendAudienceMessage = async (emailId, selectedRows = [], messageDraft = {}) => {
   const token = await getTokenFromEmail(emailId);
   const payload = AudienceMessaging.buildAudienceMessagePayload(selectedRows, messageDraft);
@@ -1035,6 +1088,8 @@ const AdminToolsManager = {
   getProcessLogEvents,
   getContactSegmentMetadata,
   getContactSegment,
+  getCountryDivisions,
+  getAudienceMessageVariables,
   sendAudienceMessage,
   getShopRevenueDashboard,
   upsertShopProductCourseTier,
@@ -1066,8 +1121,10 @@ const AdminToolsManager = {
   getAudienceDefaultFilters,
   buildAudienceMetadataOptions,
   buildAudienceCountryOptionsForLocation,
+  buildAudienceCountryDivisionOptions,
   buildAudienceTableColumns,
   buildAudienceSummary,
+  buildAudienceMessageVariableOptions,
   hasAudienceMessageContent,
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,

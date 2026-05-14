@@ -27,7 +27,9 @@ import {
   ON_STARTING_CONTACT_IMPERSONATION,
   ON_LOADING_PROCESS_LOG_EVENTS,
   ON_LOADING_CONTACT_SEGMENT_METADATA,
+  ON_LOADING_CONTACT_SEGMENT_COUNTRY_DIVISIONS,
   ON_LOADING_CONTACT_SEGMENT,
+  ON_LOADING_AUDIENCE_MESSAGE_VARIABLES,
   ON_SENDING_AUDIENCE_MESSAGE
 } from '../constants/AdminTools';
 
@@ -55,8 +57,10 @@ export const buildProcessLogRoleSelectionOptions = (...args) => AdminToolsManage
 export const getAudienceDefaultFilters = (...args) => AdminToolsManager.getAudienceDefaultFilters(...args);
 export const buildAudienceMetadataOptions = (...args) => AdminToolsManager.buildAudienceMetadataOptions(...args);
 export const buildAudienceCountryOptionsForLocation = (...args) => AdminToolsManager.buildAudienceCountryOptionsForLocation(...args);
+export const buildAudienceCountryDivisionOptions = (...args) => AdminToolsManager.buildAudienceCountryDivisionOptions(...args);
 export const buildAudienceTableColumns = (...args) => AdminToolsManager.buildAudienceTableColumns(...args);
 export const buildAudienceSummary = (...args) => AdminToolsManager.buildAudienceSummary(...args);
+export const buildAudienceMessageVariableOptions = (...args) => AdminToolsManager.buildAudienceMessageVariableOptions(...args);
 export const hasAudienceMessageContent = (...args) => AdminToolsManager.hasAudienceMessageContent(...args);
 
 export const onLoadingAdminToolsInit = async (emailId) => {
@@ -164,6 +168,22 @@ export const onLoadingContactSegment = async (adminEmailId, filters) => {
   return {
     type: ON_LOADING_CONTACT_SEGMENT,
     contactSegment
+  };
+};
+
+export const onLoadingContactSegmentCountryDivisions = async (adminEmailId, filters) => {
+  const contactSegmentCountryDivisions = await AdminToolsManager.getCountryDivisions(adminEmailId, filters);
+  return {
+    type: ON_LOADING_CONTACT_SEGMENT_COUNTRY_DIVISIONS,
+    contactSegmentCountryDivisions
+  };
+};
+
+export const onLoadingAudienceMessageVariables = async (adminEmailId, scope = 'audience') => {
+  const audienceMessageVariables = await AdminToolsManager.getAudienceMessageVariables(adminEmailId, scope);
+  return {
+    type: ON_LOADING_AUDIENCE_MESSAGE_VARIABLES,
+    audienceMessageVariables
   };
 };
 

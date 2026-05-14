@@ -93,6 +93,33 @@
 		font-size: 1.25rem;
 	}
 
+	.nav-icon-container {
+		min-width: 2.5rem;
+		height: @header-height;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		outline: none;
+
+		&:hover,
+		&:focus {
+			color: @primary-color;
+		}
+	}
+
+	.nav-course-switcher {
+		min-width: 2rem;
+		margin-right: 0.35rem;
+
+		.anticon {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			line-height: 1;
+		}
+	}
+
 	&.ant-layout-header {
 		height: @header-height;
 		line-height: @header-height;
@@ -112,6 +139,7 @@
 		// margin-left: inherit;
 		padding: 0 1rem;
 		display: flex;
+		align-items: center;
 	}
 
 	.nav-left {
@@ -573,4 +601,3 @@
 
 
 }
-

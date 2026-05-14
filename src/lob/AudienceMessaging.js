@@ -43,6 +43,110 @@ const toStringArrayOrNull = (value) => {
   return normalizedValues.length > 0 ? normalizedValues : null;
 };
 
+export const DEFAULT_AUDIENCE_MESSAGE_VARIABLES = [
+  {
+    token: '{{name}}',
+    resolverKey: 'name',
+    label: 'Preferred name',
+    description: 'PersonalCommunicationName, then FullName, then Names.',
+    example: 'Maria'
+  },
+  {
+    token: '{{association}}',
+    resolverKey: 'association',
+    label: 'Greeting',
+    description: 'Gender and proficiency aware greeting used by Missive.',
+    example: 'Mi querida hermana/o'
+  },
+  {
+    token: '{{location}}',
+    resolverKey: 'location',
+    label: 'Location',
+    description: 'Residency country native name when available.',
+    example: 'Mexico'
+  },
+  {
+    token: '{{fullName}}',
+    resolverKey: 'fullName',
+    label: 'Full name',
+    description: 'Full contact name.',
+    example: 'Maria Garcia'
+  },
+  {
+    token: '{{lastNames}}',
+    resolverKey: 'lastNames',
+    label: 'Last names',
+    description: 'Contact last names.',
+    example: 'Garcia'
+  }
+];
+
+const normalizeTemplateToken = (value) => {
+  const normalized = normalizeText(value)
+    .replace(/^\{\{/, '')
+    .replace(/\}\}$/, '')
+    .trim();
+
+  return normalized ? `{{${normalized}}}` : '';
+};
+
+const normalizeVariableScopes = (value) => (
+  (Array.isArray(value) ? value : [])
+    .map(scope => normalizeText(scope).toLowerCase())
+    .filter(Boolean)
+);
+
+export const normalizeMessageTemplateVariables = (catalog = {}, scope = 'audience') => {
+  const rawVariables = Array.isArray(catalog)
+    ? catalog
+    : getValue(catalog, 'variables', 'Variables') || [];
+  const normalizedScope = normalizeText(scope).toLowerCase() || 'audience';
+
+  const variables = rawVariables
+    .map((variable, index) => {
+      const token = normalizeTemplateToken(getValue(variable, 'token', 'Token', 'value'));
+      if (!token) return null;
+
+      return {
+        token,
+        resolverKey: normalizeText(getValue(variable, 'resolverKey', 'ResolverKey')),
+        label: normalizeText(getValue(variable, 'label', 'Label')) || token,
+        description: normalizeText(getValue(variable, 'description', 'Description')),
+        example: normalizeText(getValue(variable, 'example', 'Example')),
+        scopes: normalizeVariableScopes(getValue(variable, 'scopes', 'Scopes')),
+        sortOrder: Number(getValue(variable, 'sortOrder', 'SortOrder')) || index
+      };
+    })
+    .filter(Boolean)
+    .filter(variable => (
+      normalizedScope === 'all' ||
+      variable.scopes.length === 0 ||
+      variable.scopes.includes(normalizedScope)
+    ))
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.label.localeCompare(b.label));
+
+  return {
+    version: getValue(catalog, 'version', 'Version') || 1,
+    scope: normalizedScope,
+    variables: variables.length > 0 ? variables : DEFAULT_AUDIENCE_MESSAGE_VARIABLES
+  };
+};
+
+export const buildMessageVariableOptions = (catalog = {}, scope = 'audience') => (
+  normalizeMessageTemplateVariables(catalog, scope).variables.map(variable => ({
+    value: variable.token,
+    label: variable.label === variable.token ? variable.token : `${variable.label} ${variable.token}`,
+    title: variable.description,
+    searchText: [
+      variable.token,
+      variable.label,
+      variable.description,
+      variable.example,
+      variable.resolverKey
+    ].filter(Boolean).join(' ')
+  }))
+);
+
 export const getDefaultAudienceFilters = () => ({
   searchText: '',
   sex: 'all',
@@ -70,6 +174,7 @@ export const buildContactSegmentPayload = (filters = {}) => {
     p_maxage: toNumberOrNull(filters.maxAge),
     p_locationtype: filters.locationType || 'all',
     p_countrynameorid: toNullable(filters.countryNameOrId),
+    p_countrydivisionnameorid: toNullable(filters.locationRegionName),
     p_languageid: toNullable(filters.languageId),
     p_languagelevel: toNullable(filters.languageLevel),
     p_coursecodeids: toStringArrayOrNull(filters.courseCodeIds),
@@ -89,6 +194,11 @@ export const buildContactSegmentPayload = (filters = {}) => {
     return accumulator;
   }, {});
 };
+
+export const buildCountryDivisionsPayload = (filters = {}) => ({
+  p_locationtype: filters.locationType || 'all',
+  p_countrynameorid: toNullable(filters.countryNameOrId)
+});
 
 const getEmailId = (emailRecord = {}) => (
   getValue(emailRecord, 'EmailId', 'emailId', 'EmailRawInput', 'emailRawInput')
@@ -322,6 +432,80 @@ export const buildCountryOptionsForLocation = ({
     .sort((a, b) => String(a.label || '').localeCompare(String(b.label || '')));
 };
 
+export const buildCountryDivisionOptions = (countryDivisions = [], notAvailableLabel = 'N/A') => {
+  const optionMap = new Map();
+
+  (Array.isArray(countryDivisions) ? countryDivisions : []).forEach((division, index) => {
+    const isPrimitive = typeof division === 'string' || typeof division === 'number';
+    const rawValue = isPrimitive ? division : getValue(
+      division,
+      'CountryDivisionName',
+      'countryDivisionName',
+      'CountryDivisionNativeName',
+      'countryDivisionNativeName',
+      'CountryDivisionResidencyName',
+      'countryDivisionResidencyName',
+      'CountryDivisionResidencyNativeName',
+      'countryDivisionResidencyNativeName',
+      'CountryDivisionBirthName',
+      'countryDivisionBirthName',
+      'CountryDivisionBirthNativeName',
+      'countryDivisionBirthNativeName',
+      'DivisionName',
+      'divisionName',
+      'Name',
+      'name',
+      'value',
+      'CountryDivisionOfResidency',
+      'countryDivisionOfResidency',
+      'CountryDivisionOfBirth',
+      'countryDivisionOfBirth',
+      'CountryDivisionCode',
+      'countryDivisionCode',
+      'CountryDivisionId',
+      'countryDivisionId'
+    );
+    const rawLabel = isPrimitive ? division : getValue(
+      division,
+      'CountryDivisionNativeName',
+      'countryDivisionNativeName',
+      'CountryDivisionResidencyNativeName',
+      'countryDivisionResidencyNativeName',
+      'CountryDivisionBirthNativeName',
+      'countryDivisionBirthNativeName',
+      'CountryDivisionName',
+      'countryDivisionName',
+      'CountryDivisionResidencyName',
+      'countryDivisionResidencyName',
+      'CountryDivisionBirthName',
+      'countryDivisionBirthName',
+      'DivisionName',
+      'divisionName',
+      'Name',
+      'name',
+      'label'
+    );
+    const value = normalizeText(rawValue) || notAvailableLabel;
+    const label = normalizeText(rawLabel) || notAvailableLabel;
+    const key = value || `division-${index}`;
+
+    if (optionMap.has(key)) return;
+
+    optionMap.set(key, {
+      value,
+      label,
+      searchText: [
+        value,
+        label,
+        isPrimitive ? null : getValue(division, 'CountryDivisionId', 'countryDivisionId', 'AlphaKey', 'alphaKey')
+      ].filter(Boolean).join(' ')
+    });
+  });
+
+  return Array.from(optionMap.values())
+    .sort((a, b) => String(a.label || '').localeCompare(String(b.label || '')));
+};
+
 const getTagColorForSex = (sex) => {
   if (sex === 'F') return 'magenta';
   if (sex === 'M') return 'blue';
@@ -537,14 +721,18 @@ export const hasMessageContent = (messageDraft = {}) => (
 const AudienceMessaging = {
   getDefaultAudienceFilters,
   buildContactSegmentPayload,
+  buildCountryDivisionsPayload,
   normalizeContactSegmentRows,
   normalizeMetadata,
   buildMetadataOptions,
   buildCountryOptionsForLocation,
+  buildCountryDivisionOptions,
   buildAudienceTableColumns,
   buildAudienceSummary,
   buildAudienceMessagePayload,
-  hasMessageContent
+  hasMessageContent,
+  normalizeMessageTemplateVariables,
+  buildMessageVariableOptions
 };
 
 export default AudienceMessaging;
