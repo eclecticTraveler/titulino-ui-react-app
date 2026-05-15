@@ -46,7 +46,6 @@ import Loading from 'components/shared-components/Loading';
 import IntlMessage from 'components/util-components/IntlMessage';
 import ContactProfileEditorLob, { CONTACT_PROFILE_EDIT_SCOPES } from 'lob/ContactProfileEditor';
 import KnowMeProfiles from 'lob/KnowMeProfiles';
-import LrnManager from 'managers/LrnManager';
 import { onLoadingAuthenticatedEnrolleeProfile } from 'redux/actions/Grant';
 import {
   getAllLanguageOptions,
@@ -55,6 +54,7 @@ import {
 } from 'redux/actions/Lrn';
 import {
   onLoadingContactGeoMaps as onLoadingContactGeoMapsAction,
+  onLoadingContactCertificationHistory,
   onLoadingContactShopPurchaseHistory,
   onUpsertingSelectedContactProfile
 } from 'redux/actions/AdminTools';
@@ -340,8 +340,8 @@ const getCourseRows = (profile, user) => {
 const normalizeAwardTier = (value) => {
   const normalizedValue = normalizeIdentifier(value);
   if (!normalizedValue) return null;
-  if (normalizedValue.includes('gold')) return 'Gold';
-  if (normalizedValue.includes('silver') || normalizedValue.includes('participation')) return 'Silver';
+  if (normalizedValue.includes('gold')) return 'Golden';
+  if (normalizedValue.includes('silver') || normalizedValue.includes('participation')) return 'Participation';
   return null;
 };
 
@@ -387,6 +387,12 @@ const getAwardTier = (award) => (
     award?.certificateTypeId,
     award?.CertificateType,
     award?.certificateType,
+    award?.CertificationKey,
+    award?.certificationKey,
+    award?.CertificationDisplayKey,
+    award?.certificationDisplayKey,
+    award?.CertificationDescription,
+    award?.certificationDescription,
     award?.Name,
     award?.name
   ))
@@ -411,22 +417,25 @@ const getProfileAwardsByCourse = (profile) => {
   }, {});
 };
 
-const normalizePercent = (value) => {
-  const numberValue = Number(value || 0);
-  if (Number.isNaN(numberValue)) return 0;
-  return numberValue > 1 ? numberValue / 100 : numberValue;
-};
+const getCertificationRowsByCourse = (certificationRows = []) => (
+  normalizeArray(certificationRows).reduce((accumulator, certification) => {
+    const courseCodeId = getAwardCourseCodeId(certification);
+    const awardTier = getAwardTier(certification);
+    if (!courseCodeId || !awardTier) return accumulator;
 
-const getProgressAwards = (studentPercentagesForCourse = {}) => {
-  const awards = [];
-  if (normalizePercent(studentPercentagesForCourse?.goldenCertificatePercentage) >= 1) {
-    awards.push('Gold');
-  }
-  if (normalizePercent(studentPercentagesForCourse?.participationCertificatePercentage) >= 1) {
-    awards.push('Silver');
-  }
-  return awards;
-};
+    const courseKey = normalizeIdentifier(courseCodeId);
+    accumulator[courseKey] = [
+      ...(accumulator[courseKey] || []),
+      {
+        ...certification,
+        awardTier,
+        courseCodeId,
+        createdAt: getValue(certification?.createdAt, certification?.CreatedAt)
+      }
+    ];
+  return accumulator;
+  }, {})
+);
 
 const getUploadValueFromEvent = (event) => (Array.isArray(event) ? event : event?.fileList);
 
@@ -489,6 +498,7 @@ const EnrolleeProfile = ({
   getAllLanguageOptions,
   onRequestingGeographicalDivision,
   onLoadingContactGeoMaps,
+  onLoadingContactCertificationHistory,
   onLoadingContactShopPurchaseHistory,
   onUpsertingSelectedContactProfile
 }) => {
@@ -625,7 +635,7 @@ const EnrolleeProfile = ({
   }, [contactInternalId, knowMeToken]);
 
   useEffect(() => {
-    if (!awardCourseRows.length) {
+    if (!contactInternalId) {
       setAwardRows([]);
       setAwardsLoading(false);
       return;
@@ -634,34 +644,52 @@ const EnrolleeProfile = ({
     let isActive = true;
     setAwardsLoading(true);
 
-    Promise.all(awardCourseRows.map(async (course) => {
-      const explicitAwards = profileAwardsByCourse[normalizeIdentifier(course.courseCodeId)] || [];
-      if (explicitAwards.length || !user?.emailId) {
-        return {
-          ...course,
-          awards: explicitAwards,
-          awardSource: explicitAwards.length ? 'profile' : 'none'
-        };
-      }
+    onLoadingContactCertificationHistory?.(user?.emailId, {
+      contactInternalIds: [contactInternalId],
+      courseCodeIds: awardCourseRows.map(course => course.courseCodeId).filter(Boolean),
+      limit: 500,
+      offset: 0
+    })
+      ?.then((action) => {
+        if (!isActive) return;
 
-      try {
-        const progressResult = await LrnManager.getUserCourseProgress(course.courseCodeId, user.emailId);
-        return {
-          ...course,
-          awards: getProgressAwards(progressResult?.studentPercentagesForCourse),
-          awardSource: 'progress'
-        };
-      } catch (error) {
-        console.error('Failed to load profile awards for course', course.courseCodeId, error);
-        return {
-          ...course,
-          awards: [],
-          awardSource: 'progress'
-        };
-      }
-    }))
-      .then((rows) => {
-        if (isActive) setAwardRows(rows);
+        const certificationRows = action?.contactCertificationHistory?.rows || [];
+        const certificationRowsByCourse = getCertificationRowsByCourse(certificationRows);
+        const courseById = awardCourseRows.reduce((accumulator, course) => {
+          if (course?.courseCodeId) accumulator[normalizeIdentifier(course.courseCodeId)] = course;
+          return accumulator;
+        }, {});
+        const courseKeys = Array.from(new Set([
+          ...Object.keys(courseById),
+          ...Object.keys(profileAwardsByCourse),
+          ...Object.keys(certificationRowsByCourse)
+        ]));
+
+        setAwardRows(courseKeys.map((courseKey) => {
+          const course = courseById[courseKey] || {
+            key: courseKey,
+            courseCodeId: certificationRowsByCourse[courseKey]?.[0]?.courseCodeId || courseKey,
+            title: certificationRowsByCourse[courseKey]?.[0]?.courseCodeId || courseKey
+          };
+          const explicitAwards = profileAwardsByCourse[courseKey] || [];
+          const certificationAwards = (certificationRowsByCourse[courseKey] || []).map(certification => certification.awardTier);
+
+          return {
+            ...course,
+            awards: Array.from(new Set([...explicitAwards, ...certificationAwards])),
+            awardRecords: certificationRowsByCourse[courseKey] || []
+          };
+        }));
+      })
+      ?.catch((error) => {
+        console.error('Failed to load profile certification history', error);
+        if (isActive) {
+          setAwardRows(awardCourseRows.map(course => ({
+            ...course,
+            awards: profileAwardsByCourse[normalizeIdentifier(course.courseCodeId)] || [],
+            awardRecords: []
+          })));
+        }
       })
       .finally(() => {
         if (isActive) setAwardsLoading(false);
@@ -670,7 +698,7 @@ const EnrolleeProfile = ({
     return () => {
       isActive = false;
     };
-  }, [awardCourseRows, profileAwardsByCourse, user?.emailId]);
+  }, [awardCourseRows, contactInternalId, onLoadingContactCertificationHistory, profileAwardsByCourse, user?.emailId]);
 
   useEffect(() => {
     if (!contactInternalId || !user?.emailId) return;
@@ -812,12 +840,13 @@ const EnrolleeProfile = ({
   const renderAwardTag = (award) => (
     <Tag
       key={award}
-      color={award === 'Gold' ? 'gold' : undefined}
-      style={award === 'Silver' ? {
+      color={award === 'Golden' ? 'gold' : undefined}
+      style={award === 'Participation' ? {
         background: '#f4f5f7',
         borderColor: '#bfbfbf',
-        color: '#595959'
-      } : undefined}
+        color: '#595959',
+        margin: 0
+      } : { margin: 0 }}
     >
       <SafetyCertificateOutlined /> {award}
     </Tag>
@@ -847,11 +876,63 @@ const EnrolleeProfile = ({
       <div>
         <div style={{ fontWeight: 700, color: '#102a43' }}>No awards yet</div>
         <div style={{ color: '#72849a', maxWidth: 260 }}>
-          Gold and silver awards will appear here by course code once earned.
+          Golden and participation awards will appear here by course once earned.
         </div>
       </div>
     </div>
   );
+
+  const renderAwardBadge = (award, record) => {
+    const awardRecord = (record?.awardRecords || []).find(certification => getAwardTier(certification) === award);
+    const badgeImageUrl = getValue(
+      awardRecord?.BadgeImageUrl,
+      awardRecord?.badgeImageUrl
+    );
+    const badgeSize = 36;
+
+    return (
+      <div
+        key={award}
+        style={{
+          display: 'inline-flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          gap: 6,
+          minWidth: 88
+        }}
+      >
+        {badgeImageUrl && (
+          <Image
+            src={badgeImageUrl}
+            width={badgeSize}
+            height={badgeSize}
+            preview
+            wrapperStyle={{
+              width: badgeSize,
+              height: badgeSize,
+              borderRadius: 8,
+              overflow: 'hidden',
+              border: '1px solid #e6ebf1',
+              background: '#f8fafc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            style={{
+              width: badgeSize,
+              height: badgeSize,
+              objectFit: 'contain',
+              padding: 2,
+              boxSizing: 'border-box',
+              display: 'block'
+            }}
+          />
+        )}
+        {renderAwardTag(award)}
+      </div>
+    );
+  };
 
   const renderAwards = () => {
     const earnedAwardRows = awardRows.filter(row => row?.awards?.length);
@@ -874,6 +955,7 @@ const EnrolleeProfile = ({
             title: 'Course',
             dataIndex: 'title',
             key: 'title',
+            width: 170,
             render: (_, record) => (
               <Space>
                 <Avatar
@@ -891,10 +973,19 @@ const EnrolleeProfile = ({
             title: 'Award',
             dataIndex: 'awards',
             key: 'awards',
-            render: awards => (
-              <Space size={4} wrap>
-                {awards.map(renderAwardTag)}
-              </Space>
+            width: 220,
+            render: (awards, record) => (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  flexWrap: 'nowrap',
+                  minWidth: 188
+                }}
+              >
+                {awards.map(award => renderAwardBadge(award, record))}
+              </div>
             )
           }
         ]}
@@ -1543,6 +1634,7 @@ function mapDispatchToProps(dispatch) {
     getAllLanguageOptions,
     onRequestingGeographicalDivision,
     onLoadingContactGeoMaps: onLoadingContactGeoMapsAction,
+    onLoadingContactCertificationHistory,
     onLoadingContactShopPurchaseHistory,
     onUpsertingSelectedContactProfile
   }, dispatch);

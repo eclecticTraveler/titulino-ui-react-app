@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
 import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, BoldOutlined, ItalicOutlined, UnderlineOutlined, TeamOutlined, BarChartOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, BoldOutlined, ItalicOutlined, UnderlineOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined } from '@ant-design/icons';
 import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
@@ -18,6 +18,7 @@ import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
 import { env } from 'configs/EnvironmentConfig';
 import { APP_PREFIX_PATH } from 'configs/AppConfig';
+import AdminToolsManager from 'managers/AdminToolsManager';
 import dayjs from 'dayjs';
 import { onRenderingCourseRegistration, onRequestingGeographicalDivision } from 'redux/actions/Lrn';
 import {
@@ -51,6 +52,7 @@ import {
   onLoadingContactSegmentMetadata,
   onLoadingContactSegmentCountryDivisions,
   onLoadingContactSegment,
+  onLoadingContactCertificationHistory,
   onLoadingAudienceMessageVariables,
   onSendingAudienceMessage,
   generateCourseCodeId,
@@ -204,8 +206,8 @@ const buildContactCourseHistoryRows = (contact = {}, rawCourses = []) => {
 const normalizeAwardTier = (value) => {
   const normalizedValue = normalizeContactInternalId(value);
   if (!normalizedValue) return null;
-  if (normalizedValue.includes('gold')) return 'Gold';
-  if (normalizedValue.includes('silver') || normalizedValue.includes('participation')) return 'Silver';
+  if (normalizedValue.includes('gold')) return 'Golden';
+  if (normalizedValue.includes('silver') || normalizedValue.includes('participation')) return 'Participation';
   return null;
 };
 
@@ -251,6 +253,12 @@ const getAwardTier = (award = {}) => (
     award?.certificateTypeId,
     award?.CertificateType,
     award?.certificateType,
+    award?.CertificationKey,
+    award?.certificationKey,
+    award?.CertificationDisplayKey,
+    award?.certificationDisplayKey,
+    award?.CertificationDescription,
+    award?.certificationDescription,
     award?.Name,
     award?.name
   ))
@@ -275,24 +283,25 @@ const getContactAwardsByCourse = (contact = {}) => {
   }, {});
 };
 
-const getCourseProgressAwards = (progressRows = []) => {
-  const category1Rows = toCourseArray(progressRows).filter(row => row?.CategoryId === 1);
-  const category2Rows = toCourseArray(progressRows).filter(row => row?.CategoryId === 2);
-  const category4Rows = toCourseArray(progressRows).filter(row => row?.CategoryId === 4);
-  const category1Classes = new Set(category1Rows.map(row => row?.ClassNumber).filter(value => value !== undefined && value !== null));
-  const category2Classes = new Set(category2Rows.map(row => row?.ClassNumber).filter(value => value !== undefined && value !== null));
-  const awards = [];
+const getCertificationRowsByCourse = (certificationRows = []) => (
+  toCourseArray(certificationRows).reduce((accumulator, certification) => {
+    const courseCodeId = getAwardCourseCodeId(certification);
+    const awardTier = getAwardTier(certification);
+    if (!courseCodeId || !awardTier) return accumulator;
 
-  if (category1Classes.size >= 8 && category2Classes.size >= 8 && category4Rows.length >= 1) {
-    awards.push('Gold');
-  }
-
-  if (category1Classes.size >= 8) {
-    awards.push('Silver');
-  }
-
-  return awards;
-};
+    const courseKey = normalizeContactInternalId(courseCodeId);
+    accumulator[courseKey] = [
+      ...(accumulator[courseKey] || []),
+      {
+        ...certification,
+        awardTier,
+        courseCodeId,
+        createdAt: getFirstCourseValue(certification?.createdAt, certification?.CreatedAt)
+      }
+    ];
+    return accumulator;
+  }, {})
+);
 
 const normalizeBooleanValue = (value, fallback = true) => {
   if (typeof value === 'boolean') return value;
@@ -310,6 +319,176 @@ const getMeaningfulCharacterCount = (value = '') => (
     character.toLocaleLowerCase() !== character.toLocaleUpperCase()
   )).length
 );
+
+const normalizeContactSearchText = (value = '') => (
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/['\u2019]/g, '')
+    .replace(/[^a-z0-9@._+-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+);
+
+const getContactEmailIds = (contact = {}) => (
+  Array.from(new Set([
+    ...toCourseArray(contact?.Emails || contact?.emails)
+      .map(email => (typeof email === 'string'
+        ? email
+        : getFirstCourseValue(email?.EmailId, email?.emailId, email?.email))),
+    ...toCourseArray(contact?.emailList)
+  ].filter(Boolean)))
+);
+
+const getContactDisplayName = (contact = {}) => (
+  getFirstCourseValue(
+    contact?.FullName,
+    contact?.fullName,
+    contact?.PersonalCommunicationName,
+    contact?.personalCommunicationName,
+    [
+      getFirstCourseValue(contact?.Names, contact?.names),
+      getFirstCourseValue(contact?.LastNames, contact?.lastNames)
+    ].filter(Boolean).join(' ')
+  ) || 'Unknown contact'
+);
+
+const getContactInternalIdValue = (contact = {}) => (
+  getFirstCourseValue(contact?.ContactInternalId, contact?.contactInternalId)
+);
+
+const getContactSearchFieldValues = (contact = {}) => {
+  const names = getFirstCourseValue(contact?.Names, contact?.names);
+  const lastNames = getFirstCourseValue(contact?.LastNames, contact?.lastNames);
+  const displayName = getContactDisplayName(contact);
+  const emails = getContactEmailIds(contact);
+
+  return [
+    displayName,
+    names,
+    lastNames,
+    [names, lastNames].filter(Boolean).join(' '),
+    [lastNames, names].filter(Boolean).join(' '),
+    lastNames && names ? `${lastNames}, ${names}` : '',
+    getFirstCourseValue(contact?.PersonalCommunicationName, contact?.personalCommunicationName),
+    getFirstCourseValue(contact?.ContactExternalId, contact?.contactExternalId),
+    getContactInternalIdValue(contact),
+    ...emails
+  ].filter(Boolean);
+};
+
+const scoreContactSearchMatch = (contact = {}, rawQuery = '') => {
+  const query = normalizeContactSearchText(rawQuery);
+  if (getMeaningfulCharacterCount(query) < 2) return 0;
+
+  const queryTokens = query.split(' ').filter(Boolean);
+  const normalizedFields = getContactSearchFieldValues(contact)
+    .map(normalizeContactSearchText)
+    .filter(Boolean);
+  const searchableText = normalizedFields.join(' ');
+
+  if (!searchableText) return 0;
+  if (normalizedFields.some(field => field === query)) return 1000;
+  if (normalizedFields.some(field => field.startsWith(query))) return 900;
+  if (normalizedFields.some(field => field.includes(query))) return 800;
+
+  const hasAllTokens = queryTokens.every(token => (
+    normalizedFields.some(field => field.split(' ').some(fieldToken => fieldToken.includes(token)))
+  ));
+
+  if (!hasAllTokens) return 0;
+
+  return queryTokens.reduce((score, token) => {
+    const exactTokenMatch = normalizedFields.some(field => field.split(' ').includes(token));
+    const startsWithTokenMatch = normalizedFields.some(field => field.split(' ').some(fieldToken => fieldToken.startsWith(token)));
+    return score + (exactTokenMatch ? 24 : startsWithTokenMatch ? 12 : 4);
+  }, 500);
+};
+
+const resolveSelectableContact = (contact = {}, allEnrollees = [], avatarUrlMap = {}) => {
+  const contactInternalId = getContactInternalIdValue(contact);
+  const loadedContact = (allEnrollees || []).find(enrollee => (
+    normalizeContactInternalId(enrollee?.ContactInternalId) === normalizeContactInternalId(contactInternalId)
+  ));
+  const baseContact = loadedContact || contact;
+  const emailRecords = toCourseArray(baseContact?.Emails || baseContact?.emails);
+  const emailList = toCourseArray(contact?.emailList);
+  const normalizedEmails = emailRecords.length > 0
+    ? emailRecords
+    : emailList.map(emailId => ({ EmailId: emailId }));
+  const resolvedContactInternalId = getContactInternalIdValue(baseContact) || contactInternalId;
+
+  return {
+    ...baseContact,
+    ContactInternalId: resolvedContactInternalId,
+    ContactExternalId: getFirstCourseValue(baseContact?.ContactExternalId, baseContact?.contactExternalId, contact?.contactExternalId),
+    Names: getFirstCourseValue(baseContact?.Names, baseContact?.names, contact?.names),
+    LastNames: getFirstCourseValue(baseContact?.LastNames, baseContact?.lastNames, contact?.lastNames),
+    FullName: getContactDisplayName(baseContact),
+    PersonalCommunicationName: getFirstCourseValue(
+      baseContact?.PersonalCommunicationName,
+      baseContact?.personalCommunicationName,
+      contact?.personalCommunicationName
+    ),
+    Sex: getFirstCourseValue(baseContact?.Sex, baseContact?.sex, contact?.sex),
+    Age: getFirstCourseValue(baseContact?.Age, baseContact?.age, contact?.age),
+    IsActive: getFirstCourseValue(baseContact?.IsActive, baseContact?.isActive, contact?.isActive),
+    Emails: normalizedEmails,
+    Location: getFirstCourseValue(baseContact?.Location, baseContact?.location, contact?.Location, contact?.location) || {},
+    CoursesHistory: toCourseArray(baseContact?.CoursesHistory || baseContact?.coursesHistory || contact?.coursesHistory),
+    UserCourseRoles: toCourseArray(baseContact?.UserCourseRoles || baseContact?.userCourseRoles || contact?.userCourseRoles),
+    LanguageProficienciesHistory: toCourseArray(
+      baseContact?.LanguageProficienciesHistory ||
+      baseContact?.languageProficienciesHistory ||
+      contact?.languageProficienciesHistory
+    ),
+    AvatarUrl: getFirstCourseValue(
+      baseContact?.AvatarUrl,
+      baseContact?.avatarUrl,
+      avatarUrlMap?.[normalizeContactInternalId(resolvedContactInternalId)]
+    )
+  };
+};
+
+const buildContactAutocompleteOption = (contact = {}, options = {}) => {
+  const contactInternalId = getContactInternalIdValue(contact);
+  const displayName = getContactDisplayName(contact);
+  const emailText = getContactEmailIds(contact).join(', ');
+  const birthCountry = getFirstCourseValue(
+    contact?.Location?.BirthLocation?.CountryOfBirth,
+    contact?.location?.birthLocation?.countryOfBirth,
+    contact?.birthCountryAlpha3
+  );
+
+  return {
+    key: contactInternalId,
+    value: `${displayName}${emailText ? ` - ${emailText}` : ''}`,
+    searchText: getContactSearchFieldValues(contact).join(' '),
+    label: (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {birthCountry && (
+          <Flag code={birthCountry} style={{ width: 20, flexShrink: 0 }} />
+        )}
+        <Avatar
+          size={32}
+          src={contact?.AvatarUrl || contact?.avatarUrl}
+          icon={<UserOutlined />}
+          style={{
+            backgroundColor: (contact?.AvatarUrl || contact?.avatarUrl) ? 'transparent' : '#87d068',
+            flexShrink: 0
+          }}
+        />
+        <div style={{ minWidth: 0 }}>
+          <strong>{displayName}</strong>
+          {options.sourceLabel ? <Tag style={{ marginLeft: 6 }}>{options.sourceLabel}</Tag> : null}
+          <br />
+          <small style={{ color: '#888' }}>{emailText || contactInternalId}</small>
+        </div>
+      </div>
+    )
+  };
+};
 
 const GlobalAdminToolsLandingDashboard = (props) => {
   const {
@@ -358,6 +537,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onLoadingContactSegmentMetadata,
     onLoadingContactSegmentCountryDivisions,
     onLoadingContactSegment,
+    onLoadingContactCertificationHistory,
     onLoadingAudienceMessageVariables,
     onSendingAudienceMessage,
     shopRevenueDashboard,
@@ -373,6 +553,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
   const [searchText, setSearchText] = useState('');
+  const [advancedContactSearchOpen, setAdvancedContactSearchOpen] = useState(false);
+  const [advancedContactFilters, setAdvancedContactFilters] = useState(() => ({
+    ...getAudienceDefaultFilters(),
+    limit: 20,
+    offset: 0
+  }));
+  const [advancedContactSearchLoading, setAdvancedContactSearchLoading] = useState(false);
+  const [advancedContactSearchResult, setAdvancedContactSearchResult] = useState(null);
+  const [advancedContactCountryDivisions, setAdvancedContactCountryDivisions] = useState([]);
+  const [advancedContactCountryDivisionsLoading, setAdvancedContactCountryDivisionsLoading] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [actionType, setActionType] = useState('enroll');
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -397,6 +587,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const geoMaps = contactGeoMaps || { birth: null, residency: null };
   const [selectedProgressCourseId, setSelectedProgressCourseId] = useState('all');
   const [contactProgressLoading, setContactProgressLoading] = useState(false);
+  const [contactCertificationHistoryLoading, setContactCertificationHistoryLoading] = useState(false);
+  const [selectedContactCertificationHistory, setSelectedContactCertificationHistory] = useState(null);
   const [contactPurchaseHistoryLoading, setContactPurchaseHistoryLoading] = useState(false);
   const [contactLoginLoading, setContactLoginLoading] = useState(false);
   const [monitoringLoading, setMonitoringLoading] = useState(false);
@@ -426,6 +618,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     bodyText: ''
   });
   const [audienceMessageSending, setAudienceMessageSending] = useState(false);
+  const [audienceCertificationLoading, setAudienceCertificationLoading] = useState(false);
+  const [audienceCertificationHistory, setAudienceCertificationHistory] = useState(null);
+  const [audienceCertificationFilters, setAudienceCertificationFilters] = useState({
+    source: 'selected',
+    courseCodeIds: [],
+    certificationKeys: [],
+    limit: 500,
+    offset: 0
+  });
   const [contactProfileSearchText, setContactProfileSearchText] = useState('');
   const [contactProfileMonitoringLoading, setContactProfileMonitoringLoading] = useState(false);
   const [selectedOptedOutEmailRowKeys, setSelectedOptedOutEmailRowKeys] = useState([]);
@@ -885,6 +1086,50 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     loadAudienceSegment(defaultFilters);
   }, [loadAudienceSegment]);
 
+  const updateAdvancedContactFilter = useCallback((fieldName, value) => {
+    setAdvancedContactFilters(previousFilters => ({
+      ...previousFilters,
+      [fieldName]: value,
+      ...(fieldName !== 'offset' ? { offset: 0 } : {})
+    }));
+  }, []);
+
+  const resetAdvancedContactFilters = useCallback(() => {
+    setAdvancedContactFilters({
+      ...getAudienceDefaultFilters(),
+      limit: 20,
+      offset: 0
+    });
+    setAdvancedContactSearchResult(null);
+    setAdvancedContactCountryDivisions([]);
+  }, []);
+
+  const loadAdvancedContactSearch = useCallback(async (nextFilters = advancedContactFilters) => {
+    if (!emailId) return null;
+
+    const normalizedFilters = {
+      ...nextFilters,
+      limit: Number(nextFilters.limit || 20),
+      offset: Number(nextFilters.offset || 0)
+    };
+
+    setAdvancedContactSearchLoading(true);
+    try {
+      const result = await AdminToolsManager.getContactSegment(emailId, normalizedFilters);
+      setAdvancedContactSearchResult(result);
+      if ((result?.rows || []).length === 0) {
+        messageApi.info('No matching contacts found for those filters.');
+      }
+      return result;
+    } catch (error) {
+      console.error('Failed to run advanced contact search', error);
+      messageApi.error('Advanced contact search failed.');
+      return null;
+    } finally {
+      setAdvancedContactSearchLoading(false);
+    }
+  }, [advancedContactFilters, emailId, messageApi]);
+
   const handleAudienceEditorInput = useCallback(() => {
     const bodyHtml = audienceEditorRef.current?.innerHTML || '';
     const bodyText = audienceEditorRef.current?.innerText || '';
@@ -948,6 +1193,72 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     selectedAudienceRows,
     t
   ]);
+
+  const updateAudienceCertificationFilter = useCallback((fieldName, value) => {
+    setAudienceCertificationFilters(previousFilters => ({
+      ...previousFilters,
+      [fieldName]: value
+    }));
+  }, []);
+
+  const handleLoadAudienceCertificationHistory = useCallback(async () => {
+    if (!emailId || !onLoadingContactCertificationHistory) return;
+
+    const loadedAudienceRows = contactSegment?.rows || [];
+    const sourceRows = audienceCertificationFilters.source === 'all'
+      ? loadedAudienceRows
+      : selectedAudienceRows;
+    const contactInternalIds = Array.from(new Set(
+      (sourceRows || [])
+        .map(row => row?.contactInternalId)
+        .filter(Boolean)
+    ));
+
+    if (contactInternalIds.length === 0) {
+      messageApi.warning('Select recipients or load an audience before requesting certification history.');
+      return;
+    }
+
+    setAudienceCertificationLoading(true);
+    try {
+      const action = await onLoadingContactCertificationHistory(emailId, {
+        contactInternalIds,
+        courseCodeIds: audienceCertificationFilters.courseCodeIds,
+        certificationKeys: audienceCertificationFilters.certificationKeys,
+        limit: audienceCertificationFilters.limit,
+        offset: audienceCertificationFilters.offset
+      });
+      setAudienceCertificationHistory(action?.contactCertificationHistory || null);
+    } finally {
+      setAudienceCertificationLoading(false);
+    }
+  }, [
+    audienceCertificationFilters,
+    contactSegment?.rows,
+    emailId,
+    messageApi,
+    onLoadingContactCertificationHistory,
+    selectedAudienceRows
+  ]);
+
+  const handleExportAudienceCertificationHistory = useCallback(() => {
+    const rows = audienceCertificationHistory?.rows || [];
+    if (!rows.length) return;
+
+    const headers = ['ContactInternalId', 'EmailId', 'CourseCodeId', 'CertificationKey', 'CertificationDescription', 'CreatedAt'];
+    const escapeCsvValue = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const csv = [
+      headers.join(','),
+      ...rows.map(row => headers.map(header => escapeCsvValue(row[header] ?? row[header.charAt(0).toLowerCase() + header.slice(1)])).join(','))
+    ].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `certification-history-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [audienceCertificationHistory?.rows]);
 
   useEffect(() => {
     if (emailId) {
@@ -1091,6 +1402,25 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   ]);
 
   useEffect(() => {
+    if (
+      activeOuterTabKey !== 'access' ||
+      !advancedContactSearchOpen ||
+      !emailId ||
+      contactSegmentMetadata?.emailId === emailId
+    ) {
+      return;
+    }
+
+    loadAudienceMetadata();
+  }, [
+    activeOuterTabKey,
+    advancedContactSearchOpen,
+    contactSegmentMetadata?.emailId,
+    emailId,
+    loadAudienceMetadata
+  ]);
+
+  useEffect(() => {
     if (activeOuterTabKey !== 'messaging' || !emailId) return;
 
     if (
@@ -1128,6 +1458,46 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   useEffect(() => {
     if (
       activeOuterTabKey !== 'access' ||
+      !advancedContactSearchOpen ||
+      !emailId ||
+      !advancedContactFilters.countryNameOrId
+    ) {
+      setAdvancedContactCountryDivisions([]);
+      return;
+    }
+
+    let isActive = true;
+    setAdvancedContactCountryDivisionsLoading(true);
+
+    AdminToolsManager.getCountryDivisions(emailId, {
+      locationType: advancedContactFilters.locationType,
+      countryNameOrId: advancedContactFilters.countryNameOrId
+    })
+      .then((result) => {
+        if (isActive) setAdvancedContactCountryDivisions(result?.rows || []);
+      })
+      .catch((error) => {
+        console.error('Failed to load advanced contact search regions', error);
+        if (isActive) setAdvancedContactCountryDivisions([]);
+      })
+      .finally(() => {
+        if (isActive) setAdvancedContactCountryDivisionsLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [
+    activeOuterTabKey,
+    advancedContactFilters.countryNameOrId,
+    advancedContactFilters.locationType,
+    advancedContactSearchOpen,
+    emailId
+  ]);
+
+  useEffect(() => {
+    if (
+      activeOuterTabKey !== 'access' ||
       !selectedContact?.ContactInternalId ||
       !emailId
     ) {
@@ -1160,29 +1530,47 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   /* ── Client-side search over pre-loaded enrollees ── */
   const filteredEnrollees = useMemo(() => {
-    if (!searchText || searchText.length < 2 || !allEnrollees?.length) return [];
-    const lower = searchText.toLowerCase();
-    return allEnrollees.filter(e =>
-      (e.FullName || '').toLowerCase().includes(lower) ||
-      (e.Names || '').toLowerCase().includes(lower) ||
-      (e.LastNames || '').toLowerCase().includes(lower) ||
-      (e.ContactExternalId != null ? String(e.ContactExternalId) : '').toLowerCase().includes(lower) ||
-      (e.ContactInternalId != null ? String(e.ContactInternalId) : '').toLowerCase().includes(lower) ||
-      (e.Emails || []).some(em => (em.EmailId || '').toLowerCase().includes(lower))
-    ).slice(0, 20);
+    if (!searchText || getMeaningfulCharacterCount(searchText) < 2 || !allEnrollees?.length) return [];
+
+    return allEnrollees
+      .map(enrollee => ({
+        enrollee,
+        score: scoreContactSearchMatch(enrollee, searchText)
+      }))
+      .filter(result => result.score > 0)
+      .sort((left, right) => right.score - left.score)
+      .slice(0, 20)
+      .map(result => result.enrollee);
   }, [searchText, allEnrollees]);
+
+  const advancedContactResultsWithAvatarUrls = useMemo(() => (
+    (advancedContactSearchResult?.rows || [])
+      .map(row => resolveSelectableContact(row, allEnrollees, avatarUrlMap))
+      .filter(contact => getContactInternalIdValue(contact))
+  ), [advancedContactSearchResult?.rows, allEnrollees, avatarUrlMap]);
+
+  const advancedContactSearchOptions = useMemo(() => (
+    advancedContactResultsWithAvatarUrls.map(contact => (
+      buildContactAutocompleteOption(contact, { sourceLabel: 'Advanced' })
+    ))
+  ), [advancedContactResultsWithAvatarUrls]);
 
   const visibleContactIdsForAvatarHydration = useMemo(() => {
     const visibleIds = filteredEnrollees
       .map(enrollee => enrollee?.ContactInternalId)
       .filter(Boolean);
 
+    advancedContactResultsWithAvatarUrls
+      .map(contact => contact?.ContactInternalId)
+      .filter(Boolean)
+      .forEach(contactInternalId => visibleIds.push(contactInternalId));
+
     if (selectedContact?.ContactInternalId) {
       visibleIds.push(selectedContact.ContactInternalId);
     }
 
     return Array.from(new Set(visibleIds.map(normalizeContactInternalId).filter(Boolean)));
-  }, [filteredEnrollees, selectedContact?.ContactInternalId]);
+  }, [advancedContactResultsWithAvatarUrls, filteredEnrollees, selectedContact?.ContactInternalId]);
 
   const filteredEnrolleesWithAvatarUrls = useMemo(() => (
     (filteredEnrollees || []).map((enrollee) => ({
@@ -1362,6 +1750,39 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contactTabKey, selectedContact?.ContactInternalId, emailId]);
+
+  useEffect(() => {
+    if (
+      contactTabKey !== 'detailed' ||
+      !selectedContact?.ContactInternalId ||
+      !emailId ||
+      !onLoadingContactCertificationHistory
+    ) {
+      setSelectedContactCertificationHistory(null);
+      return;
+    }
+
+    let isActive = true;
+    setContactCertificationHistoryLoading(true);
+
+    onLoadingContactCertificationHistory(emailId, {
+      contactInternalIds: [selectedContact.ContactInternalId],
+      courseCodeIds: selectedContactCourseIds,
+      limit: 500,
+      offset: 0
+    })
+      ?.then((action) => {
+        if (isActive) setSelectedContactCertificationHistory(action?.contactCertificationHistory || null);
+      })
+      ?.finally(() => {
+        if (isActive) setContactCertificationHistoryLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactTabKey, selectedContact?.ContactInternalId, selectedContactCourseIdsKey, emailId]);
 
   useEffect(() => {
     if (
@@ -1608,6 +2029,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     () => contactSegment?.rows || [],
     [contactSegment?.rows]
   );
+  const audienceRowByContactId = useMemo(() => (
+    (audienceRows || []).reduce((accumulator, row) => {
+      if (row?.contactInternalId) accumulator[normalizeContactInternalId(row.contactInternalId)] = row;
+      return accumulator;
+    }, {})
+  ), [audienceRows]);
   const audienceTotalCount = contactSegment?.count ?? audienceRows.length;
   const audienceMetadata = useMemo(
     () => contactSegmentMetadata?.metadata || {},
@@ -1648,6 +2075,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       };
     }).filter(option => option.value);
   }, [allRawCourses, audienceOptions.courses]);
+  const audienceCertificationKeyOptions = useMemo(() => {
+    const metadataCertificateTypes = audienceOptions.certificateTypes || [];
+    const fallbackOptions = [
+      { value: 'GOLD', label: 'Golden', searchText: 'GOLD Gold Golden Certificate' },
+      { value: 'Participation', label: 'Participation', searchText: 'Participation Silver Certificate' }
+    ];
+
+    return metadataCertificateTypes.length > 0 ? metadataCertificateTypes : fallbackOptions;
+  }, [audienceOptions.certificateTypes]);
   const audienceMetadataCountryOptions = useMemo(() => {
     const metadataCountries = audienceOptions.countries || [];
     if (metadataCountries.length > 0) return metadataCountries;
@@ -1687,6 +2123,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     audienceRows,
     renderCountrySummary
   ]);
+  const advancedContactCountryOptions = useMemo(() => (
+    buildAudienceCountryOptionsForLocation({
+      metadataOptions: audienceMetadataCountryOptions,
+      rows: audienceRows,
+      locationType: advancedContactFilters.locationType
+    }).map(option => ({
+      ...option,
+      label: renderCountrySummary(option.label, option.alpha3)
+    }))
+  ), [
+    advancedContactFilters.locationType,
+    audienceMetadataCountryOptions,
+    audienceRows,
+    renderCountrySummary
+  ]);
   const audienceCountryDivisionRows = useMemo(() => {
     if (!audienceFilters.countryNameOrId) return [];
     if (contactSegmentCountryDivisions?.emailId !== emailId) return [];
@@ -1714,6 +2165,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       t('admin.tools.messaging.regionNotAvailable')
     )
   ), [audienceCountryDivisionRows, t]);
+  const advancedContactRegionOptions = useMemo(() => (
+    buildAudienceCountryDivisionOptions(
+      advancedContactCountryDivisions,
+      t('admin.tools.messaging.regionNotAvailable')
+    )
+  ), [advancedContactCountryDivisions, t]);
   const audienceDisplayCount = audienceTotalCount;
   const getAudienceLanguageLevelLabel = useCallback((level) => {
     const normalizedLevel = String(level || '').trim().toLowerCase();
@@ -1909,7 +2366,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const handleContactSelect = (value, option) => {
     const found = filteredEnrolleeMap?.[option.key] || (allEnrollees || []).find(e => e.ContactInternalId === option.key);
-    setSelectedContact(found || null);
+    setSelectedContact(found ? resolveSelectableContact(found, allEnrollees, avatarUrlMap) : null);
+  };
+
+  const handleAdvancedContactSelect = (value, option) => {
+    const found = advancedContactResultsWithAvatarUrls.find(contact => (
+      normalizeContactInternalId(contact?.ContactInternalId) === normalizeContactInternalId(option.key)
+    ));
+    setSelectedContact(found ? resolveSelectableContact(found, allEnrollees, avatarUrlMap) : null);
+    setSearchText(value || '');
   };
 
   const handleClearContact = () => {
@@ -2854,12 +3319,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const renderAwardTag = (award) => (
     <Tag
       key={award}
-      color={award === 'Gold' ? 'gold' : undefined}
-      style={award === 'Silver' ? {
+      color={award === 'Golden' ? 'gold' : undefined}
+      style={award === 'Participation' ? {
         background: '#f4f5f7',
         borderColor: '#bfbfbf',
-        color: '#595959'
-      } : undefined}
+        color: '#595959',
+        margin: 0
+      } : { margin: 0 }}
     >
       <SafetyCertificateOutlined /> {award}
     </Tag>
@@ -2889,35 +3355,93 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       <div>
         <div style={{ fontWeight: 700, color: '#102a43' }}>No awards yet</div>
         <div style={{ color: '#72849a', maxWidth: 280 }}>
-          Gold and silver awards will appear here by course once earned.
+          Golden and participation awards will appear here by course once earned.
         </div>
       </div>
     </div>
   );
 
+  const renderAwardBadge = (award, record) => {
+    const awardRecord = (record?.awardRecords || []).find(certification => getAwardTier(certification) === award);
+    const badgeImageUrl = getFirstCourseValue(
+      awardRecord?.BadgeImageUrl,
+      awardRecord?.badgeImageUrl
+    );
+    const badgeSize = 42;
+
+    return (
+      <div
+        key={award}
+        style={{
+          display: 'inline-flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          gap: 6,
+          minWidth: 88
+        }}
+      >
+        {badgeImageUrl && (
+          <Image
+            src={badgeImageUrl}
+            width={badgeSize}
+            height={badgeSize}
+            preview
+            wrapperStyle={{
+              width: badgeSize,
+              height: badgeSize,
+              borderRadius: 8,
+              overflow: 'hidden',
+              border: '1px solid #e6ebf1',
+              background: '#f8fafc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            style={{
+              width: badgeSize,
+              height: badgeSize,
+              objectFit: 'contain',
+              padding: 2,
+              boxSizing: 'border-box',
+              display: 'block'
+            }}
+          />
+        )}
+        {renderAwardTag(award)}
+      </div>
+    );
+  };
+
   const renderContactAwards = () => {
     const courseRows = buildContactCourseHistoryRows(selectedContact, allRawCourses);
     const contactAwardsByCourse = getContactAwardsByCourse(selectedContact);
-    const currentActivity = String(contactCourseProgressActivity?.contactInternalId || '') === String(selectedContact?.ContactInternalId || '')
-      ? contactCourseProgressActivity
+    const currentCertificationHistory = String(selectedContactCertificationHistory?.filters?.contactInternalIds?.[0] || '') === String(selectedContact?.ContactInternalId || '')
+      ? selectedContactCertificationHistory
       : null;
-    const progressRowsByCourse = (currentActivity?.rows || []).reduce((accumulator, row) => {
-      const courseCodeId = row?.CourseCodeId || row?.courseCodeId;
-      if (!courseCodeId) return accumulator;
-
-      const courseKey = normalizeContactInternalId(courseCodeId);
-      accumulator[courseKey] = [...(accumulator[courseKey] || []), row];
+    const certificationRowsByCourse = getCertificationRowsByCourse(currentCertificationHistory?.rows || []);
+    const courseById = courseRows.reduce((accumulator, course) => {
+      if (course?.courseCodeId) accumulator[normalizeContactInternalId(course.courseCodeId)] = course;
       return accumulator;
     }, {});
-    const awardRows = courseRows.map(course => {
-      const courseKey = normalizeContactInternalId(course.courseCodeId);
+    const courseKeys = Array.from(new Set([
+      ...Object.keys(courseById),
+      ...Object.keys(contactAwardsByCourse),
+      ...Object.keys(certificationRowsByCourse)
+    ]));
+    const awardRows = courseKeys.map(courseKey => {
+      const course = courseById[courseKey] || {
+        key: courseKey,
+        courseCodeId: certificationRowsByCourse[courseKey]?.[0]?.courseCodeId || courseKey,
+        title: certificationRowsByCourse[courseKey]?.[0]?.courseCodeId || courseKey
+      };
       const explicitAwards = contactAwardsByCourse[courseKey] || [];
-      const progressAwards = getCourseProgressAwards(progressRowsByCourse[courseKey] || []);
-      const awards = Array.from(new Set([...explicitAwards, ...progressAwards]));
-      return { ...course, awards };
+      const certificationAwards = (certificationRowsByCourse[courseKey] || []).map(certification => certification.awardTier);
+      const awards = Array.from(new Set([...explicitAwards, ...certificationAwards]));
+      return { ...course, awards, awardRecords: certificationRowsByCourse[courseKey] || [] };
     }).filter(course => course.awards.length > 0);
 
-    if (!contactProgressLoading && awardRows.length === 0) {
+    if (!contactCertificationHistoryLoading && awardRows.length === 0) {
       return renderContactAwardsEmpty();
     }
 
@@ -2925,7 +3449,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       <Table
         size="small"
         rowKey="key"
-        loading={contactProgressLoading}
+        loading={contactCertificationHistoryLoading}
         pagination={false}
         dataSource={awardRows}
         locale={{ emptyText: renderContactAwardsEmpty() }}
@@ -2935,6 +3459,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             title: setLocale(locale, 'admin.tools.monitoring.contactProfile.course'),
             dataIndex: 'title',
             key: 'title',
+            width: 260,
             render: (_, record) => (
               <Space>
                 <Avatar
@@ -2952,10 +3477,19 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             title: 'Award',
             dataIndex: 'awards',
             key: 'awards',
-            render: awards => (
-              <Space size={4} wrap>
-                {awards.map(renderAwardTag)}
-              </Space>
+            width: 240,
+            render: (awards, record) => (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  flexWrap: 'nowrap',
+                  minWidth: 188
+                }}
+              >
+                {awards.map(award => renderAwardBadge(award, record))}
+              </div>
             )
           }
         ]}
@@ -4010,6 +4544,268 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const renderAdvancedContactSearch = () => {
+    const resultRows = advancedContactResultsWithAvatarUrls || [];
+    const resultCount = advancedContactSearchResult?.count ?? resultRows.length;
+
+    return (
+      <div
+        style={{
+          marginTop: 12,
+          paddingTop: 12,
+          borderTop: '1px solid #f0f0f0'
+        }}
+      >
+        <Row gutter={[12, 12]}>
+          <Col xs={24} lg={8}>
+            <Input
+              allowClear
+              prefix={<SearchOutlined />}
+              placeholder={t('admin.tools.messaging.searchPlaceholder')}
+              value={advancedContactFilters.searchText}
+              onChange={event => updateAdvancedContactFilter('searchText', event.target.value)}
+            />
+          </Col>
+          <Col xs={12} sm={8} lg={4}>
+            <Select
+              value={advancedContactFilters.sex}
+              options={audienceOptions.sex}
+              onChange={value => updateAdvancedContactFilter('sex', value)}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={12} sm={8} lg={3}>
+            <InputNumber
+              min={0}
+              max={120}
+              value={advancedContactFilters.minAge}
+              onChange={value => updateAdvancedContactFilter('minAge', value)}
+              placeholder={t('admin.tools.messaging.minAge')}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={12} sm={8} lg={3}>
+            <InputNumber
+              min={0}
+              max={120}
+              value={advancedContactFilters.maxAge}
+              onChange={value => updateAdvancedContactFilter('maxAge', value)}
+              placeholder={t('admin.tools.messaging.maxAge')}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={12} sm={8} lg={3}>
+            <Select
+              value={advancedContactFilters.limit}
+              options={[10, 20, 50, 100].map(value => ({ value, label: String(value) }))}
+              onChange={value => updateAdvancedContactFilter('limit', value)}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={12} sm={8} lg={3}>
+            <InputNumber
+              min={0}
+              step={advancedContactFilters.limit}
+              value={advancedContactFilters.offset}
+              onChange={value => updateAdvancedContactFilter('offset', Number(value || 0))}
+              placeholder={t('admin.tools.messaging.offset')}
+              style={{ width: '100%' }}
+            />
+          </Col>
+
+          <Col xs={24} md={8} lg={4}>
+            <Select
+              value={advancedContactFilters.locationType}
+              options={audienceOptions.locationTypes}
+              onChange={(value) => {
+                setAdvancedContactFilters(previousFilters => ({
+                  ...previousFilters,
+                  locationType: value,
+                  countryNameOrId: null,
+                  locationRegionName: null,
+                  offset: 0
+                }));
+              }}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={8} lg={5}>
+            <Select
+              allowClear
+              showSearch
+              value={advancedContactFilters.countryNameOrId}
+              placeholder={t('admin.tools.messaging.countryPlaceholder')}
+              options={advancedContactCountryOptions}
+              optionFilterProp="searchText"
+              onChange={(value) => {
+                setAdvancedContactFilters(previousFilters => ({
+                  ...previousFilters,
+                  countryNameOrId: value || null,
+                  locationRegionName: null,
+                  offset: 0
+                }));
+              }}
+              loading={audienceMetadataLoading}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={8} lg={5}>
+            <Select
+              allowClear
+              showSearch
+              disabled={!advancedContactFilters.countryNameOrId}
+              value={advancedContactFilters.locationRegionName}
+              placeholder={t('admin.tools.messaging.regionPlaceholder')}
+              options={advancedContactRegionOptions}
+              optionFilterProp="searchText"
+              onChange={value => updateAdvancedContactFilter('locationRegionName', value || null)}
+              loading={advancedContactCountryDivisionsLoading}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={8} lg={5}>
+            <Select
+              allowClear
+              showSearch
+              value={advancedContactFilters.languageId}
+              placeholder={t('admin.tools.messaging.languagePlaceholder')}
+              options={[
+                { value: 'all', label: t('admin.tools.messaging.option.all') },
+                ...audienceLanguageOptions
+              ]}
+              optionFilterProp="searchText"
+              onChange={value => updateAdvancedContactFilter('languageId', value || 'all')}
+              loading={audienceMetadataLoading}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={8} lg={5}>
+            <Select
+              allowClear
+              showSearch
+              value={advancedContactFilters.languageLevel}
+              placeholder={t('admin.tools.messaging.languageLevelPlaceholder')}
+              options={[
+                { value: 'all', label: t('admin.tools.messaging.option.all') },
+                ...audienceLanguageLevelOptions
+              ]}
+              optionFilterProp="searchText"
+              onChange={value => updateAdvancedContactFilter('languageLevel', value || 'all')}
+              loading={audienceMetadataLoading}
+              style={{ width: '100%' }}
+            />
+          </Col>
+
+          <Col xs={24} lg={10}>
+            <Select
+              mode="multiple"
+              allowClear
+              showSearch
+              value={advancedContactFilters.courseCodeIds}
+              placeholder={t('admin.tools.messaging.includeCoursesPlaceholder')}
+              options={audienceCourseOptions}
+              optionFilterProp="searchText"
+              onChange={value => updateAdvancedContactFilter('courseCodeIds', value || [])}
+              loading={audienceMetadataLoading}
+              maxTagCount={2}
+              tagRender={renderAudienceCourseTag}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} lg={10}>
+            <Select
+              mode="multiple"
+              allowClear
+              showSearch
+              value={advancedContactFilters.excludeCourseCodeIds}
+              placeholder={t('admin.tools.messaging.excludeCoursesPlaceholder')}
+              options={audienceCourseOptions}
+              optionFilterProp="searchText"
+              onChange={value => updateAdvancedContactFilter('excludeCourseCodeIds', value || [])}
+              loading={audienceMetadataLoading}
+              maxTagCount={2}
+              tagRender={renderAudienceCourseTag}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} lg={4}>
+            <Checkbox
+              checked={advancedContactFilters.matchAllCourses}
+              onChange={event => updateAdvancedContactFilter('matchAllCourses', event.target.checked)}
+            >
+              {setLocale(locale, 'admin.tools.messaging.matchAllCourses')}
+            </Checkbox>
+          </Col>
+
+          <Col xs={24} md={6}>
+            <Select
+              value={advancedContactFilters.hasProgress}
+              options={audienceOptions.triState}
+              onChange={value => updateAdvancedContactFilter('hasProgress', value)}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={6}>
+            <Select
+              value={advancedContactFilters.hasCertifications}
+              options={audienceOptions.triState}
+              onChange={value => updateAdvancedContactFilter('hasCertifications', value)}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={6}>
+            <Select
+              value={advancedContactFilters.hasPurchases}
+              options={audienceOptions.triState}
+              onChange={value => updateAdvancedContactFilter('hasPurchases', value)}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={12} md={3}>
+            <Button
+              type="primary"
+              icon={<SearchOutlined />}
+              loading={advancedContactSearchLoading}
+              onClick={() => loadAdvancedContactSearch()}
+              block
+            >
+              {setLocale(locale, 'admin.tools.messaging.applyFilters')}
+            </Button>
+          </Col>
+          <Col xs={12} md={3}>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={resetAdvancedContactFilters}
+              block
+            >
+              {setLocale(locale, 'admin.tools.messaging.clearFilters')}
+            </Button>
+          </Col>
+        </Row>
+
+        {advancedContactSearchResult && (
+          <div style={{ marginTop: 12 }}>
+            <div style={{ color: '#72849a', fontSize: 12, marginBottom: 6 }}>
+              {resultRows.length} shown{resultCount != null ? ` of ${resultCount}` : ''}
+            </div>
+            <AutoComplete
+              style={{ width: '100%' }}
+              options={advancedContactSearchOptions}
+              onSelect={handleAdvancedContactSelect}
+              filterOption={(input, option) => (
+                normalizeContactSearchText(option?.searchText || option?.value)
+                  .includes(normalizeContactSearchText(input))
+              )}
+              placeholder={t('admin.tools.searchPlaceholder')}
+            >
+              <Input prefix={<UserOutlined />} />
+            </AutoComplete>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderAccessManagement = () => (
     <>
       {/* Step 1: Search Contact */}
@@ -4036,6 +4832,18 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             </Button>
           )}
         </div>
+        <div style={{ marginTop: 8 }}>
+          <Button
+            type="link"
+            size="small"
+            icon={<SearchOutlined />}
+            onClick={() => setAdvancedContactSearchOpen(previousValue => !previousValue)}
+            style={{ paddingLeft: 0 }}
+          >
+            {advancedContactSearchOpen ? 'Hide Advanced Search' : 'Advanced Search'}
+          </Button>
+        </div>
+        {advancedContactSearchOpen && renderAdvancedContactSearch()}
       </Card>
 
       {/* Step 2: Contact Summary (with Summary / Detailed / Access tabs) */}
@@ -5459,6 +6267,170 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const renderAudienceCertificationReport = () => {
+    const certificationRows = [...(audienceCertificationHistory?.rows || [])]
+      .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    const selectedSourceCount = audienceCertificationFilters.source === 'all'
+      ? audienceRows.length
+      : selectedAudienceRows.length;
+    const sourceOptions = [
+      { value: 'selected', label: `Selected audience (${selectedAudienceRows.length})` },
+      { value: 'all', label: `Loaded audience (${audienceRows.length})` }
+    ];
+    const getCourseDisplay = (courseCodeId) => {
+      const rawCourse = (allRawCourses || []).find(course => course?.CourseCodeId === courseCodeId);
+      const courseTitle = rawCourse?.CourseDetails?.course || rawCourse?.CourseName || courseCodeId;
+      return courseTitle ? `${courseTitle}` : courseCodeId || '-';
+    };
+
+    return (
+      <div>
+        <Alert
+          type="info"
+          showIcon
+          message="Certification history drill-down"
+          description="Use this after narrowing the audience. It requests certification history for selected rows or the currently loaded audience."
+          style={{ marginBottom: 16 }}
+        />
+        <Card size="small" title="Certification Filters" style={{ marginBottom: 16 }}>
+          <Row gutter={[12, 12]}>
+            <Col xs={24} md={6}>
+              <Select
+                value={audienceCertificationFilters.source}
+                options={sourceOptions}
+                onChange={value => updateAudienceCertificationFilter('source', value)}
+                style={{ width: '100%' }}
+              />
+            </Col>
+            <Col xs={24} md={7}>
+              <Select
+                mode="multiple"
+                allowClear
+                showSearch
+                value={audienceCertificationFilters.courseCodeIds}
+                placeholder="Course"
+                options={audienceCourseOptions}
+                optionFilterProp="searchText"
+                tagRender={renderAudienceCourseTag}
+                maxTagCount={2}
+                onChange={value => updateAudienceCertificationFilter('courseCodeIds', value || [])}
+                style={{ width: '100%' }}
+              />
+            </Col>
+            <Col xs={24} md={5}>
+              <Select
+                mode="multiple"
+                allowClear
+                showSearch
+                value={audienceCertificationFilters.certificationKeys}
+                placeholder="Certification"
+                options={audienceCertificationKeyOptions}
+                optionFilterProp="searchText"
+                maxTagCount={2}
+                onChange={value => updateAudienceCertificationFilter('certificationKeys', value || [])}
+                style={{ width: '100%' }}
+              />
+            </Col>
+            <Col xs={12} md={3}>
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                loading={audienceCertificationLoading}
+                disabled={selectedSourceCount === 0}
+                onClick={handleLoadAudienceCertificationHistory}
+                block
+              >
+                Load
+              </Button>
+            </Col>
+            <Col xs={12} md={3}>
+              <Button
+                icon={<DownloadOutlined />}
+                disabled={!certificationRows.length}
+                onClick={handleExportAudienceCertificationHistory}
+                block
+              >
+                Export
+              </Button>
+            </Col>
+          </Row>
+        </Card>
+        <Table
+          size="small"
+          rowKey="key"
+          loading={audienceCertificationLoading}
+          dataSource={certificationRows}
+          pagination={{
+            pageSize: 25,
+            showSizeChanger: true
+          }}
+          locale={{ emptyText: 'No certification history loaded' }}
+          scroll={{ x: 1100 }}
+          columns={[
+            {
+              title: 'Contact',
+              dataIndex: 'contactInternalId',
+              key: 'contactInternalId',
+              width: 260,
+              render: contactInternalId => {
+                const audienceRow = audienceRowByContactId[normalizeContactInternalId(contactInternalId)] || {};
+                return (
+                  <div>
+                    <strong>{audienceRow.fullName || contactInternalId || '-'}</strong>
+                    {audienceRow.primaryEmail ? (
+                      <div style={{ color: '#72849a', fontSize: 12 }}>{audienceRow.primaryEmail}</div>
+                    ) : null}
+                  </div>
+                );
+              }
+            },
+            {
+              title: 'Email',
+              dataIndex: 'emailId',
+              key: 'emailId',
+              width: 230,
+              render: value => value || '-'
+            },
+            {
+              title: 'Course',
+              dataIndex: 'courseCodeId',
+              key: 'courseCodeId',
+              width: 260,
+              render: courseCodeId => (
+                <div>
+                  <strong>{getCourseDisplay(courseCodeId)}</strong>
+                  <div style={{ color: '#72849a', fontSize: 12 }}>{courseCodeId || '-'}</div>
+                </div>
+              )
+            },
+            {
+              title: 'Certification',
+              dataIndex: 'certificationKey',
+              key: 'certificationKey',
+              width: 200,
+              render: (_, record) => {
+                const displayCertificationKey = record.certificationDisplayKey || getAwardTier(record);
+                return (
+                  <Tag color={displayCertificationKey === 'Golden' ? 'gold' : 'default'}>
+                    {displayCertificationKey || record.certificationDescription || record.certificationKey || '-'}
+                  </Tag>
+                );
+              }
+            },
+            {
+              title: 'Created',
+              dataIndex: 'createdAt',
+              key: 'createdAt',
+              width: 180,
+              sorter: (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0),
+              render: value => (value ? new Date(value).toLocaleString() : '-')
+            }
+          ]}
+        />
+      </div>
+    );
+  };
+
   const renderAudienceMessageComposer = () => (
     <div>
       <Alert
@@ -5615,6 +6587,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               </span>
             ),
             children: renderAudienceVisualization()
+          },
+          {
+            key: 'certifications',
+            label: (
+              <span>
+                <SafetyCertificateOutlined style={{ marginRight: 6 }} />
+                Certifications
+              </span>
+            ),
+            children: renderAudienceCertificationReport()
           }
         ]}
       />
@@ -6182,6 +7164,7 @@ function mapDispatchToProps(dispatch) {
     onLoadingContactSegmentMetadata,
     onLoadingContactSegmentCountryDivisions,
     onLoadingContactSegment,
+    onLoadingContactCertificationHistory,
     onLoadingAudienceMessageVariables,
     onSendingAudienceMessage,
     onRenderingCourseRegistration,

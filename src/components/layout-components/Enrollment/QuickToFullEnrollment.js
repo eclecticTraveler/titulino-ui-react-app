@@ -51,38 +51,6 @@ export const QuickToFullEnrollment = (props) => {
     !returningEnrolleeCountryDivisionInfo?.personalCommunicationName
   );
 
-  const removeEmptyEnrollmentValues = (value) => {
-    if (Array.isArray(value)) {
-      return value
-        .map(removeEmptyEnrollmentValues)
-        .filter((item) => item !== undefined);
-    }
-
-    if (value && typeof value === "object") {
-      const cleanedEntries = Object.entries(value).reduce((accumulator, [key, currentValue]) => {
-        const cleanedValue = removeEmptyEnrollmentValues(currentValue);
-
-        if (
-          cleanedValue === undefined ||
-          cleanedValue === null ||
-          cleanedValue === ""
-        ) {
-          return accumulator;
-        }
-
-        if (Array.isArray(cleanedValue) && cleanedValue.length === 0) {
-          return accumulator;
-        }
-
-        accumulator[key] = cleanedValue;
-        return accumulator;
-      }, {});
-
-      return Object.keys(cleanedEntries).length > 0 ? cleanedEntries : undefined;
-    }
-
-    return value;
-  };
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
     };

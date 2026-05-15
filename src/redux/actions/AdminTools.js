@@ -29,6 +29,7 @@ import {
   ON_LOADING_CONTACT_SEGMENT_METADATA,
   ON_LOADING_CONTACT_SEGMENT_COUNTRY_DIVISIONS,
   ON_LOADING_CONTACT_SEGMENT,
+  ON_LOADING_CONTACT_CERTIFICATION_HISTORY,
   ON_LOADING_AUDIENCE_MESSAGE_VARIABLES,
   ON_SENDING_AUDIENCE_MESSAGE
 } from '../constants/AdminTools';
@@ -168,6 +169,14 @@ export const onLoadingContactSegment = async (adminEmailId, filters) => {
   return {
     type: ON_LOADING_CONTACT_SEGMENT,
     contactSegment
+  };
+};
+
+export const onLoadingContactCertificationHistory = async (adminEmailId, filters) => {
+  const contactCertificationHistory = await AdminToolsManager.getContactCertificationHistory(adminEmailId, filters);
+  return {
+    type: ON_LOADING_CONTACT_CERTIFICATION_HISTORY,
+    contactCertificationHistory
   };
 };
 

@@ -19,7 +19,7 @@ const loadRequestedClassUrl = async(levelNo, chapterNo, baseLanguageCode, conten
   const rawCourseData = rawClassData?.find(c => {
     const langMatch = c.baseLanguages ? c.baseLanguages.includes(baseLanguageCode) : c.nativeLanguage === baseLanguageCode;
     const courseMatch = c.contentLanguageCode ? c.contentLanguageCode === contentLanguageCode : c.course === toLegacyCourseCode(contentLanguageCode);
-    return c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && courseMatch && langMatch;
+    return (c.theme === levelNo || c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo)) && courseMatch && langMatch;
   });
   const rawRequestedModule = rawCourseData?.chapters.find(ch => ch.chapter === parseInt(chapterNo, 10));
   return rawRequestedModule?.url;

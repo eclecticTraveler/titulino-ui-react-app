@@ -11,6 +11,7 @@ import utils from 'utils';
 import GoogleService from "services/GoogleService";
 import localLanguageCourses from "assets/data/lang-courses.data.json";
 import localCourseThemeRegistry from "assets/data/course-theme-registry.data.json";
+import localBadgeThemeRegistry from "assets/data/badge-theme-registry.data.json";
 import { env } from "configs/EnvironmentConfig";
 
 const getUserCourseProgress = async(courseCodeId, emailId) => {
@@ -265,6 +266,19 @@ const getCourseThemeRegistry = async () => {
   }
 
   const remoteRegistry = await GoogleService.getCourseThemeRegistryData("getCourseThemeRegistry");
+  return remoteRegistry && typeof remoteRegistry === 'object' && Object.keys(remoteRegistry).length > 0
+    ? remoteRegistry
+    : localRegistry;
+}
+
+const getBadgeThemeRegistry = async () => {
+  const localRegistry = localBadgeThemeRegistry && typeof localBadgeThemeRegistry === 'object' ? localBadgeThemeRegistry : {};
+
+  if (env.IS_TO_USE_LOCAL_BADGE_THEME_DATA) {
+    return localRegistry;
+  }
+
+  const remoteRegistry = await GoogleService.getBadgeThemeRegistryData("getBadgeThemeRegistry");
   return remoteRegistry && typeof remoteRegistry === 'object' && Object.keys(remoteRegistry).length > 0
     ? remoteRegistry
     : localRegistry;
@@ -747,6 +761,7 @@ const LrnManager = {
   getUserUpperNavigationConfig,
   getAllLanguageOptions,
   getCourseThemeRegistry,
+  getBadgeThemeRegistry,
   getGrammarClasses,
   getCourseProgress,
   getUserCoursesForEnrollment,

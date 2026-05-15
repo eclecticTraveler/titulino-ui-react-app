@@ -8,7 +8,7 @@ const loadQuizletData = async() => {
 
 const loadRequestedModule = async(levelNo, baseLanguageCode, contentLanguageCode) => {
   const rawQuizletData = await loadQuizletData();
-  const rawRequestedModule = rawQuizletData?.folders.find(q => (q.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && q.baseLanguages?.includes(baseLanguageCode) && q.contentLanguageCode === contentLanguageCode ));
+  const rawRequestedModule = rawQuizletData?.folders.find(q => ((q.theme === levelNo || q.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo)) && q.baseLanguages?.includes(baseLanguageCode) && q.contentLanguageCode === contentLanguageCode ));
   return rawRequestedModule;
 }
 

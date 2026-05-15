@@ -28,7 +28,7 @@ const loadRequestedGrammarUrl = async (
   const courseLevelMatch = rawClassData?.find(c => {
     const langMatch = c.baseLanguages ? c.baseLanguages.includes(baseLanguageCode) : c.nativeLanguage === baseLanguageCode;
     const courseMatch = c.contentLanguageCode ? c.contentLanguageCode === contentLanguageCode : c.course === toLegacyCourseCode(contentLanguageCode);
-    return c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && courseMatch && langMatch;
+    return (c.theme === levelNo || c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo)) && courseMatch && langMatch;
   });
 
   if (!courseLevelMatch || !courseLevelMatch.chapters?.length) {
@@ -56,7 +56,7 @@ const getRequestedGrammarUrlsByChapter = async (
   const courseLevelMatch = rawClassData?.find(c => {
     const langMatch = c.baseLanguages ? c.baseLanguages.includes(baseLanguageCode) : c.nativeLanguage === baseLanguageCode;
     const courseMatch = c.contentLanguageCode ? c.contentLanguageCode === contentLanguageCode : c.course === toLegacyCourseCode(contentLanguageCode);
-    return c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo) && courseMatch && langMatch;
+    return (c.theme === levelNo || c.level === CentralCourseThemeService.getThemeMappedLevelNo(levelNo)) && courseMatch && langMatch;
   });
 
   if (!courseLevelMatch || !courseLevelMatch.chapters?.length) {

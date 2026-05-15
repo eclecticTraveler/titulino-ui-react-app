@@ -30,6 +30,7 @@ import {
   ON_LOADING_CONTACT_SEGMENT_METADATA,
   ON_LOADING_CONTACT_SEGMENT_COUNTRY_DIVISIONS,
   ON_LOADING_CONTACT_SEGMENT,
+  ON_LOADING_CONTACT_CERTIFICATION_HISTORY,
   ON_LOADING_AUDIENCE_MESSAGE_VARIABLES,
   ON_SENDING_AUDIENCE_MESSAGE
 } from '../constants/AdminTools';
@@ -40,6 +41,7 @@ const initState = {
   contactSegmentMetadata: null,
   contactSegmentCountryDivisions: null,
   contactSegment: null,
+  contactCertificationHistory: null,
   audienceMessageVariables: null,
   lastAudienceMessageSendResult: null
 };
@@ -229,6 +231,8 @@ const adminTools = (state = initState, action) => {
       return { ...state, contactSegmentCountryDivisions: action.contactSegmentCountryDivisions };
     case ON_LOADING_CONTACT_SEGMENT:
       return { ...state, contactSegment: action.contactSegment };
+    case ON_LOADING_CONTACT_CERTIFICATION_HISTORY:
+      return { ...state, contactCertificationHistory: action.contactCertificationHistory };
     case ON_LOADING_AUDIENCE_MESSAGE_VARIABLES:
       return { ...state, audienceMessageVariables: action.audienceMessageVariables };
     case ON_SENDING_AUDIENCE_MESSAGE:
@@ -237,6 +241,7 @@ const adminTools = (state = initState, action) => {
       return {
         ...state,
         contactCourseProgressActivity: null,
+        contactCertificationHistory: null,
         contactShopPurchaseHistory: null,
         contactLoginFootprint: null,
         contactGeoMaps: null,

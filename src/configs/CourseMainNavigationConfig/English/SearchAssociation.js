@@ -14,6 +14,7 @@ const localizedKeywords = {
 		supermarket: ['mercado', 'compras'],
 		household: ['suministros de limpieza', 'mantenimiento del hogar'],
 		'work-n-jobs': ['trabajo', 'empleos'],
+		speeches: ['discurso', 'habla', 'pronunciación']
 	  },
 	},
 	pt: {
@@ -21,6 +22,7 @@ const localizedKeywords = {
 		supermarket: ['mercado', 'compras'],
 		household: ['suprimentos de limpeza', 'manutenção doméstica'],
 		'work-n-jobs': ['trabalho', 'empregos'],
+		speeches: ['discurso', 'fala', 'pronúncia']
 	  },
 	}
   };

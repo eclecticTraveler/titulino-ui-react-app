@@ -1,4 +1,5 @@
 import localCourseThemeRegistry from "assets/data/course-theme-registry.data.json";
+import localBadgeThemeRegistry from "assets/data/badge-theme-registry.data.json";
 
 // Build reverse lookup: courseCodeId → theme
 export const buildCodeToTheme = (registry) =>
@@ -10,6 +11,47 @@ export const buildCodeToTheme = (registry) =>
 // Module-level defaults built from the bundled JSON (keeps sync callers working)
 const DEFAULT_REGISTRY = localCourseThemeRegistry;
 const DEFAULT_CODE_TO_THEME = buildCodeToTheme(DEFAULT_REGISTRY);
+const DEFAULT_BADGE_REGISTRY = localBadgeThemeRegistry;
+
+const normalizeIdentifier = (value) => (
+  value == null ? "" : String(value).trim().toLowerCase()
+);
+
+export const getCertificationDisplayKey = (certificationKey) => {
+  const normalizedKey = normalizeIdentifier(certificationKey);
+  if (!normalizedKey) return "";
+  if (normalizedKey.includes("gold")) return "Golden";
+  if (normalizedKey.includes("silver") || normalizedKey.includes("participation")) return "Participation";
+  return String(certificationKey).trim();
+};
+
+export const getCourseThemeByCourseCodeId = (courseCodeId, registry) => {
+  const normalizedCourseCodeId = normalizeIdentifier(courseCodeId);
+  if (!normalizedCourseCodeId) return null;
+
+  return Object.entries(registry || DEFAULT_REGISTRY).find(([, courseCodeIds]) => (
+    (courseCodeIds || []).some(code => normalizeIdentifier(code) === normalizedCourseCodeId)
+  ))?.[0] || null;
+};
+
+export const getBadgeMetadataForCertification = (
+  courseCodeId,
+  certificationKey,
+  courseThemeRegistry,
+  badgeThemeRegistry
+) => {
+  const theme = getCourseThemeByCourseCodeId(courseCodeId, courseThemeRegistry);
+  const displayCertificationKey = getCertificationDisplayKey(certificationKey);
+  const badgeRegistry = badgeThemeRegistry || DEFAULT_BADGE_REGISTRY;
+  const themeBadges = theme ? badgeRegistry?.[theme] : null;
+  const badgeMetadata = themeBadges?.[displayCertificationKey] || null;
+
+  return {
+    theme,
+    imageUrl: badgeMetadata?.imageUrl || badgeMetadata?.ImageUrl || null,
+    certificationKey: displayCertificationKey || certificationKey || null
+  };
+};
 
 export const mapUserCoursesByTheme = (userCourses = {}, registry) => {
   const codeToTheme = registry ? buildCodeToTheme(registry) : DEFAULT_CODE_TO_THEME;
@@ -174,6 +216,9 @@ export const buildStudentKnowMeFileName = async (file, contactId, emailId, class
 
 const LrnConfiguration = {
   mapUserCoursesByTheme,
+  getCertificationDisplayKey,
+  getCourseThemeByCourseCodeId,
+  getBadgeMetadataForCertification,
   getCourseCodeIdByCourseTheme,
   getFacilitadorCourseCodeIdForTheme,
   buildSingleFullKnowMeProgressWithCourseCodeId,

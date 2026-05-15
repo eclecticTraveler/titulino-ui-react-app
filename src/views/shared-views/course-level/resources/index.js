@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { getUserBaseLanguage, onLoadingUserResourcesByCourseTheme  } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
@@ -14,13 +14,13 @@ import ProgressDashboardByEmailV3 from 'components/layout-components/ProgressDas
 import { env } from 'configs/EnvironmentConfig';
 
 const ExternalFormSection = (props) => {
-    const { location, baseLanguage, contentLanguage, onLoadingUserResourcesByCourseTheme, currentCourseCodeId } = props;
+    const { location, baseLanguage, contentLanguage, onLoadingUserResourcesByCourseTheme } = props;
     // const [countdownComplete, setCountdownComplete] = useState(false);
 
     const loadResources = useCallback(() => {        
         const pathInfo = utils.getThemeCourseInfoFromUrl(location?.pathname); 
         onLoadingUserResourcesByCourseTheme(pathInfo?.courseTheme, baseLanguage?.localeCode, contentLanguage)
-    }, [location, baseLanguage, contentLanguage, currentCourseCodeId]);
+    }, [location, baseLanguage, contentLanguage, onLoadingUserResourcesByCourseTheme]);
 
     // const getNextThursday = () => {
     //     const now = new Date();

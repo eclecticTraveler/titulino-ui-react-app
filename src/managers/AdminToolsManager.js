@@ -14,6 +14,7 @@ import AccessManagementPolicy from "lob/AccessManagementPolicy";
 import ContactProfilesMonitoring from "lob/ContactProfilesMonitoring";
 import ContactProfileEditor from "lob/ContactProfileEditor";
 import LrnConfiguration from "lob/LrnConfiguration";
+import LrnManager from "managers/LrnManager";
 import ShopAnalytics from "lob/ShopAnalytics";
 import ImpersonationSession from "lob/ImpersonationSession";
 import ProcessLogs from "lob/ProcessLogs";
@@ -571,6 +572,61 @@ export const getContactSegment = async (emailId, filters = {}) => {
   };
 };
 
+export const getContactCertificationHistory = async (emailId, filters = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = AudienceMessaging.buildContactCertificationHistoryPayload(filters);
+
+  if (!token) {
+    return {
+      emailId,
+      filters,
+      payload,
+      rows: [],
+      rawRows: []
+    };
+  }
+
+  const [rows, courseThemeRegistry, badgeThemeRegistry] = await Promise.all([
+    TitulinoAdminAuthService.getContactCertificationHistory(
+      payload,
+      token,
+      'AdminToolsManager.getContactCertificationHistory'
+    ),
+    LrnManager.getCourseThemeRegistry(),
+    LrnManager.getBadgeThemeRegistry()
+  ]);
+
+  const normalizedRows = AudienceMessaging.normalizeCertificationHistoryRows(rows).map((row) => {
+    // We reach here in the GCP the import localCourseThemeRegistry from "assets/data/course-theme-registry.data.json";
+    //Also we reach import localBadgeThemeRegistry from "assets/data/badge-theme-registry.data.json";  and then we pass it to the lob files
+    
+    const badgeMetadata = LrnConfiguration.getBadgeMetadataForCertification(
+      row.courseCodeId,
+      row.certificationKey,
+      courseThemeRegistry,
+      badgeThemeRegistry
+    );
+
+    return {
+      ...row,
+      BadgeImageUrl: badgeMetadata.imageUrl,
+      BadgeTheme: badgeMetadata.theme,
+      CertificationDisplayKey: badgeMetadata.certificationKey,
+      badgeImageUrl: badgeMetadata.imageUrl,
+      badgeTheme: badgeMetadata.theme,
+      certificationDisplayKey: badgeMetadata.certificationKey
+    };
+  });
+
+  return {
+    emailId,
+    filters,
+    payload,
+    rows: normalizedRows,
+    rawRows: rows
+  };
+};
+
 export const getCountryDivisions = async (emailId, filters = {}) => {
   const token = await getTokenFromEmail(emailId);
   const payload = AudienceMessaging.buildCountryDivisionsPayload(filters);
@@ -1091,6 +1147,7 @@ const AdminToolsManager = {
   getProcessLogEvents,
   getContactSegmentMetadata,
   getContactSegment,
+  getContactCertificationHistory,
   getCountryDivisions,
   getAudienceMessageVariables,
   sendAudienceMessage,

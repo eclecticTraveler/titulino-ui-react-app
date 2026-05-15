@@ -202,6 +202,22 @@ export const buildContactSegmentCountPayload = (filters = {}) => {
   return payload;
 };
 
+export const buildContactCertificationHistoryPayload = (filters = {}) => {
+  const payload = {
+    p_contactinternalids: toStringArrayOrNull(filters.contactInternalIds),
+    p_coursecodeids: toStringArrayOrNull(filters.courseCodeIds),
+    p_certificationkeys: toStringArrayOrNull(filters.certificationKeys),
+    p_limit: Number(filters.limit || 500),
+    p_offset: Number(filters.offset || 0)
+  };
+
+  return Object.entries(payload).reduce((accumulator, [key, value]) => {
+    if (value === null || value === undefined || value === '') return accumulator;
+    accumulator[key] = value;
+    return accumulator;
+  }, {});
+};
+
 export const buildCountryDivisionsPayload = (filters = {}) => ({
   p_locationtype: filters.locationType || 'all',
   p_countrynameorid: toNullable(filters.countryNameOrId)
@@ -277,6 +293,11 @@ export const normalizeContactSegmentRow = (row = {}, index = 0) => {
         .map(course => getValue(course?.CourseDetails || course?.courseDetails || {}, 'course', 'Course'))
         .filter(Boolean)
     )),
+    certificationKeys: Array.from(new Set(
+      (getValue(row, 'Certifications', 'certifications', 'CertificationHistory', 'certificationHistory') || [])
+        .map(certification => getValue(certification, 'CertificationKey', 'certificationKey'))
+        .filter(Boolean)
+    )),
     languageId: languageLevel.languageId,
     languageLevel: languageLevel.level
   };
@@ -284,6 +305,29 @@ export const normalizeContactSegmentRow = (row = {}, index = 0) => {
 
 export const normalizeContactSegmentRows = (rows = []) => (
   (Array.isArray(rows) ? rows : []).map((row, index) => normalizeContactSegmentRow(row, index))
+);
+
+export const normalizeCertificationHistoryRow = (row = {}, index = 0) => {
+  const progressId = getValue(row, 'ProgressId', 'progressId');
+  const contactInternalId = getValue(row, 'ContactInternalId', 'contactInternalId');
+  const courseCodeId = getValue(row, 'CourseCodeId', 'courseCodeId');
+  const certificationKey = getValue(row, 'CertificationKey', 'certificationKey');
+
+  return {
+    ...row,
+    key: [progressId, contactInternalId, courseCodeId, certificationKey, index].filter(Boolean).join('-') || `certification-${index}`,
+    progressId,
+    contactInternalId,
+    emailId: getValue(row, 'EmailId', 'emailId'),
+    courseCodeId,
+    certificationKey,
+    certificationDescription: getValue(row, 'CertificationDescription', 'certificationDescription') || certificationKey,
+    createdAt: getValue(row, 'CreatedAt', 'createdAt', 'CreationDate', 'creationDate')
+  };
+};
+
+export const normalizeCertificationHistoryRows = (rows = []) => (
+  (Array.isArray(rows) ? rows : []).map((row, index) => normalizeCertificationHistoryRow(row, index))
 );
 
 const normalizeCollection = (metadata = {}, ...keys) => {
@@ -362,6 +406,27 @@ export const buildMetadataOptions = (metadata = {}, labels = {}) => {
       ], ['LocalizationKey', 'Name', 'label']))
       .filter(Boolean),
     courses: courseOptions,
+    certificateTypes: normalized.certificateTypes
+      .map(item => buildOption(item, [
+        'CertificationKey',
+        'certificationKey',
+        'CertificateTypeId',
+        'certificateTypeId',
+        'Key',
+        'key',
+        'value'
+      ], [
+        'CertificationDescription',
+        'certificationDescription',
+        'CertificateTypeName',
+        'certificateTypeName',
+        'Description',
+        'description',
+        'Name',
+        'name',
+        'label'
+      ]))
+      .filter(Boolean),
     countries: normalized.countries
       .map(item => buildOption(item, [
         'CountryOfResidencyAlpha3',
@@ -729,8 +794,10 @@ const AudienceMessaging = {
   getDefaultAudienceFilters,
   buildContactSegmentPayload,
   buildContactSegmentCountPayload,
+  buildContactCertificationHistoryPayload,
   buildCountryDivisionsPayload,
   normalizeContactSegmentRows,
+  normalizeCertificationHistoryRows,
   normalizeMetadata,
   buildMetadataOptions,
   buildCountryOptionsForLocation,
