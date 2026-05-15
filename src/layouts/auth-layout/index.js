@@ -9,6 +9,7 @@ import HeaderNav from 'components/layout-components/HeaderNav';
 import PageHeader from 'components/layout-components/PageHeader';
 import Footer from 'components/layout-components/Footer';
 import AuthViews from 'views/auth-views'
+import AuthenticatedProfileGate from 'components/layout-components/AuthenticatedProfileGate';
 import {
   Layout,
   Grid,
@@ -80,7 +81,9 @@ export const AuthLayout = ({ navCollapsed, navType, location, direction, dynamic
 					<div className={`app-content ${isNavTop ? 'layout-top-nav' : ''}`}>
 						<PageHeader display={true} title={currentRouteInfo?.title} />				
 						<Content>
-							<AuthViews />
+							<AuthenticatedProfileGate>
+								<AuthViews />
+							</AuthenticatedProfileGate>
 						</Content>
 					</div>
 		  			<Footer />

@@ -8,7 +8,8 @@ ON_RETRIEVING_PROFILE_BY_EMAIL_ID_AND_YEAR_OF_BIRTH,
 ON_LOADING_AUTHENTICATED_LANDING_PAGE,
 ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT,
 ON_ACTIVATING_IMPERSONATION_PROFILE,
-ON_STOPPING_IMPERSONATION_PROFILE
+ON_STOPPING_IMPERSONATION_PROFILE,
+ON_LOADING_AUTHENTICATED_ENROLLEE_PROFILE
 } from '../constants/Grant';
 
 export const onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut = async (purchasedTierAccess, courseCodeIdOfPurchasedItem, emailId) => {   
@@ -38,6 +39,14 @@ export const onLoadingAuthenticatedLandingPage = async (emailId) => {
     user: userProfile
   }
 }
+
+export const onLoadingAuthenticatedEnrolleeProfile = async (emailId, dobOrYob) => {
+  const enrolleeProfile = await TitulinoManager.getAuthenticatedEnrolleeProfile(emailId, dobOrYob);
+  return {
+    type: ON_LOADING_AUTHENTICATED_ENROLLEE_PROFILE,
+    enrolleeProfile
+  };
+};
 
 export const onActivatingImpersonationProfile = async (userProfile) => {
   const user = await TitulinoManager.activateImpersonationProfile(userProfile);

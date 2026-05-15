@@ -1,10 +1,14 @@
 import LocalStorageService from "services/LocalStorageService";
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
+import TitulinoAdminAuthService from "services/Admin/TitulinoAdminAuthService";
 import AdminInsights from "lob/AdminInsights";
 import ShopPurchaseExperience from "lob/ShopPurchaseExperience";
 import ImpersonationSession from "lob/ImpersonationSession";
+import { env } from "configs/EnvironmentConfig";
 
+const USER_PROFILE_CACHE_TTL_MINUTES = env.USER_PROFILE_CACHE_TTL_MINUTES;
+const COURSE_DATA_CACHE_TTL_MINUTES = env.COURSE_DATA_CACHE_TTL_MINUTES;
 
 export const getAllCourses = async() => {
   const localStorageKey = `adminAllCourses`;
@@ -16,9 +20,9 @@ export const getAllCourses = async() => {
   const allCourses = await TitulinoRestService.getAllCourses("getAllCourses");
   const transformedCourses = await AdminInsights.courseSelectionConverter(allCourses);
   await LocalStorageService.setEnrolleesByCourse(
-    transformedCourses, // Save both and set 60 min expiration     
+    transformedCourses,
     localStorageKey,
-    60
+    COURSE_DATA_CACHE_TTL_MINUTES
   );
   
   return transformedCourses;
@@ -41,8 +45,11 @@ const setCourseAccessForUserCourses = async(purchasedTierAccess, courseCodeIdOfP
     userCourses: updatedUserCourses,
   };
 
-  // Store in cache with TTL (60 min?)
-  await LocalStorageService.setCachedObject(localStorageKey, updatedUser, 60);
+  await LocalStorageService.setCachedObject(
+    localStorageKey,
+    updatedUser,
+    USER_PROFILE_CACHE_TTL_MINUTES
+  );
 
   return updatedUserCourses;
 }
@@ -70,6 +77,155 @@ const normalizeResolvedUserProfile = (userProfile = {}, fallbackEmailId = null) 
   };
 };
 
+const getValue = (...values) => values.find(value => value !== undefined && value !== null && value !== '');
+
+const normalizeIdentifier = (value) => (
+  value == null ? '' : String(value).trim().toLowerCase()
+);
+
+const getEmailValues = (profile = {}) => {
+  const emailRows = Array.isArray(profile?.Emails || profile?.emails)
+    ? (profile?.Emails || profile?.emails)
+    : [];
+
+  return emailRows
+    .map(email => (typeof email === 'string' ? email : email?.EmailId || email?.emailId))
+    .filter(Boolean);
+};
+
+const getYearFromDobOrYob = (dobOrYob) => {
+  const match = String(dobOrYob || '').match(/^(\d{4})/);
+  return match ? match[1] : null;
+};
+
+const omitEmptyValues = (values = {}) => (
+  Object.entries(values).reduce((accumulator, [key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      accumulator[key] = value;
+    }
+    return accumulator;
+  }, {})
+);
+
+const matchesKnownProfileIdentifier = (profile = {}, { emailId, contactInternalId, contactExternalId } = {}) => {
+  const emails = getEmailValues(profile).map(normalizeIdentifier);
+  return (
+    normalizeIdentifier(profile?.ContactInternalId || profile?.contactInternalId) === normalizeIdentifier(contactInternalId) ||
+    normalizeIdentifier(profile?.ContactExternalId || profile?.contactExternalId) === normalizeIdentifier(contactExternalId) ||
+    emails.includes(normalizeIdentifier(emailId))
+  );
+};
+
+const getAuthenticatedContactProfileByKnownId = async ({
+  emailId,
+  token,
+  contactInternalId,
+  contactExternalId
+} = {}) => {
+  if (!token) return null;
+
+  const searchValues = Array.from(new Set([
+    contactInternalId,
+    contactExternalId,
+    emailId
+  ].map(value => String(value || '').trim()).filter(Boolean)));
+
+  for (const searchText of searchValues) {
+    const rows = await TitulinoAdminAuthService.getContactSegment(
+      {
+        p_search: searchText,
+        p_limit: 5,
+        p_offset: 0
+      },
+      token,
+      'GrantManager.getAuthenticatedContactProfileByKnownId'
+    );
+
+    const matchedProfile = (rows || []).find(row => matchesKnownProfileIdentifier(row, {
+      emailId,
+      contactInternalId,
+      contactExternalId
+    }));
+
+    if (matchedProfile) return matchedProfile;
+  }
+
+  return null;
+};
+
+const buildQuickLocation = (quickInfo = {}, type) => {
+  const isResidency = type === 'residency';
+  const location = isResidency
+    ? {
+      CountryOfResidency: getValue(quickInfo?.countryOfResidencyId, quickInfo?.CountryOfResidencyId),
+      CountryOfResidencyName: getValue(quickInfo?.countryOfResidencyName, quickInfo?.CountryOfResidencyName),
+      CountryOfResidencyNativeName: getValue(quickInfo?.countryOfResidencyName, quickInfo?.CountryOfResidencyName),
+      CountryDivisionResidencyId: getValue(quickInfo?.countryDivisionIdResidency, quickInfo?.CountryDivisionIdResidency),
+      CountryDivisionResidencyName: getValue(quickInfo?.countryDivisionResidencyName, quickInfo?.CountryDivisionResidencyName)
+    }
+    : {
+      CountryOfBirth: getValue(quickInfo?.countryOfBirthId, quickInfo?.CountryOfBirthId),
+      CountryOfBirthName: getValue(quickInfo?.countryOfBirthName, quickInfo?.CountryOfBirthName),
+      CountryOfBirthNativeName: getValue(quickInfo?.countryOfBirthName, quickInfo?.CountryOfBirthName),
+      CountryDivisionBirthId: getValue(quickInfo?.countryDivisionIdBirth, quickInfo?.CountryDivisionIdBirth),
+      CountryDivisionBirthName: getValue(quickInfo?.countryDivisionBirthName, quickInfo?.CountryDivisionBirthName)
+    };
+
+  return omitEmptyValues(location);
+};
+
+const mergeAuthenticatedEnrolleeProfile = ({
+  loginProfile = {},
+  quickInfo = {},
+  contactProfile = {},
+  fallbackEmailId = null
+} = {}) => {
+  const profile = contactProfile || {};
+  const loginEmails = [loginProfile?.emailId, fallbackEmailId].filter(Boolean);
+  const quickEmails = [quickInfo?.email, quickInfo?.emailId, quickInfo?.emailAddress].filter(Boolean);
+  const currentEmails = getEmailValues(profile);
+  const emailValues = Array.from(new Set([...currentEmails, ...quickEmails, ...loginEmails].filter(Boolean)));
+
+  return {
+    ...loginProfile,
+    ...profile,
+    ContactInternalId: getValue(profile?.ContactInternalId, profile?.contactInternalId, quickInfo?.contactInternalId, loginProfile?.contactInternalId),
+    ContactExternalId: getValue(profile?.ContactExternalId, profile?.contactExternalId, quickInfo?.contactExternalId, loginProfile?.contactId),
+    Names: getValue(profile?.Names, profile?.names, quickInfo?.names, loginProfile?.communicationName),
+    LastNames: getValue(profile?.LastNames, profile?.lastNames, quickInfo?.lastNames),
+    FullName: getValue(
+      profile?.FullName,
+      profile?.fullName,
+      quickInfo?.personalCommunicationName,
+      loginProfile?.communicationName,
+      [quickInfo?.names, quickInfo?.lastNames].filter(Boolean).join(' ')
+    ),
+    PersonalCommunicationName: getValue(profile?.PersonalCommunicationName, profile?.personalCommunicationName, quickInfo?.personalCommunicationName),
+    Sex: getValue(profile?.Sex, profile?.sex, quickInfo?.sex),
+    DateOfBirth: getValue(profile?.DateOfBirth, profile?.dateOfBirth, quickInfo?.dateOfBirth),
+    Age: getValue(profile?.Age, profile?.age, quickInfo?.age),
+    Emails: emailValues.map((emailId, index) => ({
+      EmailId: emailId,
+      emailId,
+      ContactEmailPriority: index,
+      HasOptedOutOfCommunication: false,
+      hasOptedOutOfCommunication: false
+    })),
+    CoursesHistory: getValue(profile?.CoursesHistory, profile?.coursesHistory, loginProfile?.userCourses, []),
+    Location: {
+      ...(profile?.Location || profile?.location || {}),
+      ResidencyLocation: {
+        ...(profile?.Location?.ResidencyLocation || profile?.location?.residencyLocation || {}),
+        ...buildQuickLocation(quickInfo, 'residency')
+      },
+      BirthLocation: {
+        ...(profile?.Location?.BirthLocation || profile?.location?.birthLocation || {}),
+        ...buildQuickLocation(quickInfo, 'birth')
+      }
+    }
+  };
+};
+
 const getUserProfile = async (emailId, dobOrYob) => {
   const localStorageKey = `UserProfile_${emailId}`;
   // 1. Try to get from encrypted localStorage
@@ -89,10 +245,13 @@ const getUserProfile = async (emailId, dobOrYob) => {
   try {
     const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(emailId, dobOrYob);    
     if (userProfile) {
-      // 3. Store encrypted locally with TTL (e.g., 60 minutes)
       const user = normalizeResolvedUserProfile(userProfile, emailId);
       
-      LocalStorageService.setCachedObject(localStorageKey, user, 160);       
+      LocalStorageService.setCachedObject(
+        localStorageKey,
+        user,
+        USER_PROFILE_CACHE_TTL_MINUTES
+      );
       // console.log("contactPaymentProviderId", user, userProfile);
       return user;
       
@@ -118,6 +277,47 @@ const getCachedUserProfile = async (emailId) => {
   return user
 };
 
+const getAuthenticatedEnrolleeProfile = async (emailId, dobOrYob) => {
+  if (!emailId || !dobOrYob) return null;
+
+  const yearOfBirth = getYearFromDobOrYob(dobOrYob);
+  const [userProfile, quickInfo, cachedUser] = await Promise.all([
+    TitulinoNetService.getUserProfileByEmailAndYearOfBirth(
+      emailId,
+      dobOrYob,
+      'GrantManager.getAuthenticatedEnrolleeProfile'
+    ),
+    yearOfBirth
+      ? TitulinoRestService.getQuickEnrolleeCountryDivisionInfo(
+        emailId,
+        yearOfBirth,
+        'GrantManager.getAuthenticatedEnrolleeProfile'
+      )
+      : Promise.resolve(null),
+    getCachedUserProfile(emailId)
+  ]);
+
+  const normalizedUserProfile = userProfile
+    ? normalizeResolvedUserProfile(userProfile, emailId)
+    : null;
+  const loginProfile = normalizedUserProfile || cachedUser || {};
+  const token = loginProfile?.innerToken || cachedUser?.innerToken || null;
+
+  const contactProfile = await getAuthenticatedContactProfileByKnownId({
+    emailId,
+    token,
+    contactInternalId: getValue(loginProfile?.contactInternalId, cachedUser?.contactInternalId, quickInfo?.contactInternalId),
+    contactExternalId: getValue(loginProfile?.contactId, cachedUser?.contactId, quickInfo?.contactExternalId)
+  });
+
+  return mergeAuthenticatedEnrolleeProfile({
+    loginProfile,
+    quickInfo: quickInfo || {},
+    contactProfile: contactProfile || {},
+    fallbackEmailId: emailId
+  });
+};
+
 const activateImpersonationProfile = async (userProfile) => {
   const user = ImpersonationSession.setActiveImpersonationProfile(userProfile);
   if (!user) return null;
@@ -133,6 +333,7 @@ const stopImpersonationProfile = async () => {
 const GrantManager = {
   getUserProfile,
   getCachedUserProfile,
+  getAuthenticatedEnrolleeProfile,
   activateImpersonationProfile,
   stopImpersonationProfile,
   normalizeResolvedUserProfile,

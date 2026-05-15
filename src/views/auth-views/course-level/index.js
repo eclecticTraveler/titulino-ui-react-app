@@ -1,4 +1,4 @@
-import React, {Component, Suspense} from 'react'
+import React, {Component} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
 import { geteBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse }  from 'redux/actions/Lrn';
@@ -9,7 +9,6 @@ import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 import utils from 'utils';
 import Loading from 'components/shared-components/Loading';
-import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 
 class AuthCourseLevel extends Component {
 
@@ -48,14 +47,7 @@ class AuthCourseLevel extends Component {
 
     render() {
         if(this.props.token){
-            if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
-                return (
-                    <div id="unathenticated-landing-page-margin">
-                        <EmailYearSearchForm/>
-                    </div>
-                )
-            } else if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
-
+            if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
                 if (this.props.userIsEnrolledInCourse === true) {
                     return (
                         <div id="unathenticated-landing-page-margin">

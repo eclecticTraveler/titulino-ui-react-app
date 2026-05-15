@@ -25,7 +25,6 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
-import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
 import DraggableDashboardGrid from 'components/shared-components/DraggableDashboardGrid';
@@ -227,14 +226,6 @@ const FacilitatorsLandingDashboard = (props) => {
       defaultOverviewCardOrder
     )?.catch((error) => console.error("Error saving facilitador overview card order:", error));
   };
-
-    if (user?.emailId && !user?.yearOfBirth) {
-      return (
-        <div id="unathenticated-landing-page-margin">
-          <EmailYearSearchForm />
-        </div>
-      );
-    }
 
   // ─── Tab 1: General View ────────────────────────────────
   const renderOverview = () => {

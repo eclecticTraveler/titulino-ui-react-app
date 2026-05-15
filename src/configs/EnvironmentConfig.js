@@ -8,13 +8,16 @@ const commonConfig = {
   TITULINO_NET_API: process.env.REACT_APP_TITULINO_NET_API || '',
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
   RECAPTCHA_SITE_KEY: process.env.REACT_APP_RECAPTCHA_SITE_KEY || '',
+  USER_PROFILE_CACHE_TTL_MINUTES: 160,
+  INTERNAL_TOKEN_CACHE_TTL_MINUTES: 60,
+  COURSE_DATA_CACHE_TTL_MINUTES: 60,
+  IS_LANGUAGE_PICKER_ENABLED:true,
+  IS_SSO_ON: true,
+  IS_SHOPPING_UX_ON: true,
 };
 
 const dev = {
   ...commonConfig,
-  IS_SSO_ON: true,
-  IS_SHOPPING_UX_ON: true,
-  IS_LANGUAGE_PICKER_ENABLED:true,
   IS_LOGIN_FOOTPRINT_INDIVIDUAL_HEATMAP_ON: true,
   IS_TO_DISPLAY_PROGRESS_DASHBOARD: true,
   ENVIROMENT: 'dev',  
@@ -22,9 +25,6 @@ const dev = {
 
 const prod = {
   ...commonConfig,
-  IS_SSO_ON: true,
-  IS_SHOPPING_UX_ON: true,
-  IS_LANGUAGE_PICKER_ENABLED:true,
   IS_LOGIN_FOOTPRINT_INDIVIDUAL_HEATMAP_ON: false,
   IS_TO_DISPLAY_PROGRESS_DASHBOARD: true,
   ENVIROMENT: 'prod'
@@ -32,9 +32,6 @@ const prod = {
 
 const local = {
   ...commonConfig,
-  IS_SSO_ON: true,
-  IS_SHOPPING_UX_ON: true,
-  IS_LANGUAGE_PICKER_ENABLED:true,
   IS_TO_DISPLAY_PROGRESS_DASHBOARD: true,
   IS_TO_USE_LOCAL_LANG_COURSES_DATA: true,
   IS_LOGIN_FOOTPRINT_INDIVIDUAL_HEATMAP_ON:false,

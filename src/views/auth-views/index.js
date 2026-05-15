@@ -10,6 +10,7 @@ import { retry } from '../../helpers/index';
 
 // Lazy-loaded route components (hoisted to module scope for stable references)
 const Analytics = lazy(() => import(`./user/analytics`));
+const Profile = lazy(() => retry(() => import(`./user/profile`)));
 const GlobalAdminToolsView = lazy(() => retry(() => import(`./user/global-admin-tools`)));
 const SharedCourseLevel = lazy(() => retry(() => import(`../shared-views/course-level`)));
 const SharedCourseLevelResources = lazy(() => retry(() => import(`../shared-views/course-level/resources`)));
@@ -36,6 +37,7 @@ export const AuthViews = (props) => {
     <Suspense fallback={<Loading cover="page"/>}>
       <Routes>
         <Route path={`insight`} element={<RouteElement component={Analytics} />} />
+        <Route path={`profile`} element={<RouteElement component={Profile} />} />
         <Route path={`global-admin`} element={<RouteElement component={GlobalAdminToolsView} />} />
         <Route path={`${contentLanguage}/:${cfg?.level}`} element={<RouteElement component={SharedCourseLevel} />} />
         <Route path={`${contentLanguage}/:${cfg?.level}/${cfg?.resources}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelResources} />} />

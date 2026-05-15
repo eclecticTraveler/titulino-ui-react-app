@@ -2,13 +2,12 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox } from 'antd';
+import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space } from 'antd';
 import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, BoldOutlined, ItalicOutlined, UnderlineOutlined, TeamOutlined, BarChartOutlined } from '@ant-design/icons';
 import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
 import IntlMessage from 'components/util-components/IntlMessage';
-import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
@@ -95,6 +94,204 @@ const getProductManagementValue = (row = {}, keys = []) => {
     if (row?.[key] !== undefined && row?.[key] !== null && row?.[key] !== '') return row[key];
   }
   return null;
+};
+
+const getFirstCourseValue = (...values) => (
+  values.find(value => value !== undefined && value !== null && value !== '')
+);
+
+const toCourseArray = (value) => (Array.isArray(value) ? value : []);
+
+const getCourseRoleId = (course = {}) => (
+  getFirstCourseValue(
+    course?.UserRoleId,
+    course?.userRoleId,
+    course?.RoleId,
+    course?.roleId,
+    course?.role,
+    course?.Role,
+    course?.userRoleIdForTheCourse
+  )
+);
+
+const getCourseRoleLabel = (roleId) => {
+  const normalizedRole = normalizeContactInternalId(roleId);
+  if (!normalizedRole) return 'Unknown';
+  if (normalizedRole === 'titulino_user' || normalizedRole.includes('student')) return 'Student';
+  if (normalizedRole.includes('facilit') || normalizedRole.includes('faculit')) return 'Facilitator';
+  if (normalizedRole.includes('admin')) return 'Admin';
+  return 'Unknown';
+};
+
+const getCourseRoleColor = (roleId) => {
+  const label = getCourseRoleLabel(roleId);
+  if (label === 'Student') return 'blue';
+  if (label === 'Facilitator') return 'green';
+  if (label === 'Admin') return 'purple';
+  return 'default';
+};
+
+const getCourseLanguageDefinition = (languageId) => (
+  langData.find(language => (
+    normalizeContactInternalId(language.langId) === normalizeContactInternalId(languageId) ||
+    normalizeContactInternalId(language.lang) === normalizeContactInternalId(languageId)
+  ))
+);
+
+const buildContactCourseHistoryRows = (contact = {}, rawCourses = []) => {
+  const contactCourses = toCourseArray(contact?.CoursesHistory || contact?.coursesHistory);
+  const roleRows = toCourseArray(contact?.UserCourseRoles || contact?.userCourseRoles);
+  const rawCourseById = toCourseArray(rawCourses).reduce((accumulator, course) => {
+    const courseCodeId = course?.CourseCodeId || course?.courseCodeId;
+    if (courseCodeId) accumulator[courseCodeId] = course;
+    return accumulator;
+  }, {});
+  const roleByCourseId = roleRows.reduce((accumulator, roleRow) => {
+    const courseCodeId = getFirstCourseValue(roleRow?.CourseCodeId, roleRow?.courseCodeId, roleRow?.courseId, roleRow?.CourseId);
+    if (courseCodeId) accumulator[courseCodeId] = getCourseRoleId(roleRow);
+    return accumulator;
+  }, {});
+  const rowSources = [
+    ...contactCourses,
+    ...roleRows.filter(roleRow => !contactCourses.some(course => (
+      getFirstCourseValue(course?.CourseCodeId, course?.courseCodeId, course?.courseId, course?.CourseId) ===
+      getFirstCourseValue(roleRow?.CourseCodeId, roleRow?.courseCodeId, roleRow?.courseId, roleRow?.CourseId)
+    )))
+  ];
+  const seen = new Set();
+
+  return rowSources.map((course, index) => {
+    const courseCodeId = getFirstCourseValue(course?.CourseCodeId, course?.courseCodeId, course?.courseId, course?.CourseId);
+    const rawCourse = rawCourseById[courseCodeId] || {};
+    const details = course?.CourseDetails || course?.courseDetails || rawCourse?.CourseDetails || rawCourse?.courseDetails || {};
+    const title = getFirstCourseValue(
+      details?.course,
+      details?.Course,
+      course?.CourseTitle,
+      course?.courseTitle,
+      rawCourse?.CourseTitle,
+      rawCourse?.courseTitle,
+      courseCodeId
+    );
+    const startDate = getFirstCourseValue(course?.StartDate, course?.startDate, rawCourse?.StartDate, rawCourse?.startDate);
+    const endDate = getFirstCourseValue(course?.EndDate, course?.endDate, rawCourse?.EndDate, rawCourse?.endDate);
+    const targetLanguageId = getFirstCourseValue(course?.TargetLanguageId, course?.targetLanguageId, rawCourse?.TargetLanguageId, rawCourse?.targetLanguageId);
+    const audienceLanguageId = getFirstCourseValue(
+      course?.NativeLanguageId,
+      course?.nativeLanguageId,
+      rawCourse?.NativeLanguageId,
+      rawCourse?.nativeLanguageId,
+      details?.targetAudienceNativeLanguageId,
+      details?.targetAudienceNativeLanguage
+    );
+    const imageUrl = getFirstCourseValue(
+      course?.imageUrl,
+      details?.imageUrl,
+      details?.ImageUrl,
+      details?.courseProfileImage,
+      details?.courseImageUrl,
+      rawCourse?.CourseDetails?.imageUrl
+    );
+    const roleId = getFirstCourseValue(getCourseRoleId(course), roleByCourseId[courseCodeId]);
+    const key = [courseCodeId, title, startDate, endDate, roleId || index].filter(Boolean).join('|') || index;
+
+    if (seen.has(key)) return null;
+    seen.add(key);
+    return { key, courseCodeId, title, imageUrl, targetLanguageId, audienceLanguageId, startDate, endDate, roleId };
+  }).filter(Boolean);
+};
+
+const normalizeAwardTier = (value) => {
+  const normalizedValue = normalizeContactInternalId(value);
+  if (!normalizedValue) return null;
+  if (normalizedValue.includes('gold')) return 'Gold';
+  if (normalizedValue.includes('silver') || normalizedValue.includes('participation')) return 'Silver';
+  return null;
+};
+
+const normalizeAwardCollection = (value) => {
+  if (Array.isArray(value)) return value;
+  if (!value || typeof value !== 'object') return [];
+
+  const hasAwardShape = getFirstCourseValue(
+    value?.CourseCodeId,
+    value?.courseCodeId,
+    value?.CourseId,
+    value?.courseId,
+    value?.AwardTier,
+    value?.awardTier,
+    value?.CertificateTypeId,
+    value?.certificateTypeId
+  );
+
+  if (hasAwardShape) return [value];
+  return Object.values(value).flatMap(normalizeAwardCollection);
+};
+
+const getAwardCourseCodeId = (award = {}) => (
+  getFirstCourseValue(
+    award?.CourseCodeId,
+    award?.courseCodeId,
+    award?.CourseId,
+    award?.courseId,
+    award?.CourseCode,
+    award?.courseCode
+  )
+);
+
+const getAwardTier = (award = {}) => (
+  normalizeAwardTier(getFirstCourseValue(
+    award?.AwardTier,
+    award?.awardTier,
+    award?.AwardType,
+    award?.awardType,
+    award?.TierId,
+    award?.tierId,
+    award?.CertificateTypeId,
+    award?.certificateTypeId,
+    award?.CertificateType,
+    award?.certificateType,
+    award?.Name,
+    award?.name
+  ))
+);
+
+const getContactAwardsByCourse = (contact = {}) => {
+  const rawAwards = [
+    ...normalizeAwardCollection(contact?.Awards || contact?.awards),
+    ...normalizeAwardCollection(contact?.CourseAwards || contact?.courseAwards),
+    ...normalizeAwardCollection(contact?.Certificates || contact?.certificates),
+    ...normalizeAwardCollection(contact?.CourseCertificates || contact?.courseCertificates)
+  ];
+
+  return rawAwards.reduce((accumulator, award) => {
+    const courseCodeId = getAwardCourseCodeId(award);
+    const awardTier = getAwardTier(award);
+    if (!courseCodeId || !awardTier) return accumulator;
+
+    const courseKey = normalizeContactInternalId(courseCodeId);
+    accumulator[courseKey] = Array.from(new Set([...(accumulator[courseKey] || []), awardTier]));
+    return accumulator;
+  }, {});
+};
+
+const getCourseProgressAwards = (progressRows = []) => {
+  const category1Rows = toCourseArray(progressRows).filter(row => row?.CategoryId === 1);
+  const category2Rows = toCourseArray(progressRows).filter(row => row?.CategoryId === 2);
+  const category4Rows = toCourseArray(progressRows).filter(row => row?.CategoryId === 4);
+  const category1Classes = new Set(category1Rows.map(row => row?.ClassNumber).filter(value => value !== undefined && value !== null));
+  const category2Classes = new Set(category2Rows.map(row => row?.ClassNumber).filter(value => value !== undefined && value !== null));
+  const awards = [];
+
+  if (category1Classes.size >= 8 && category2Classes.size >= 8 && category4Rows.length >= 1) {
+    awards.push('Gold');
+  }
+
+  if (category1Classes.size >= 8) {
+    awards.push('Silver');
+  }
+
+  return awards;
 };
 
 const normalizeBooleanValue = (value, fallback = true) => {
@@ -1690,14 +1887,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </div>
   );
 
-  if (user?.emailId && !user?.yearOfBirth) {
-    return (
-      <div id="unathenticated-landing-page-margin">
-        <EmailYearSearchForm />
-      </div>
-    );
-  }
-
   const searchOptions = filteredEnrolleesWithAvatarUrls.map(e => ({
     key: e.ContactInternalId,
     value: `${e.FullName || `${e.Names} ${e.LastNames}`} — ${e.Emails?.[0]?.EmailId || ''}`,
@@ -2650,6 +2839,200 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const renderCourseLanguageValue = (languageId) => {
+    const languageInfo = getCourseLanguageDefinition(languageId);
+    if (!languageId) return '—';
+
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        {languageInfo?.icon && <Flag code={languageInfo.icon} style={{ width: 18 }} />}
+        <span>{languageInfo?.langName || String(languageId).toUpperCase()}</span>
+      </span>
+    );
+  };
+
+  const renderAwardTag = (award) => (
+    <Tag
+      key={award}
+      color={award === 'Gold' ? 'gold' : undefined}
+      style={award === 'Silver' ? {
+        background: '#f4f5f7',
+        borderColor: '#bfbfbf',
+        color: '#595959'
+      } : undefined}
+    >
+      <SafetyCertificateOutlined /> {award}
+    </Tag>
+  );
+
+  const renderContactAwardsEmpty = () => (
+    <div
+      style={{
+        minHeight: 220,
+        border: '1px dashed #d9e2ec',
+        borderRadius: 8,
+        background: '#fbfdff',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+        textAlign: 'center',
+        padding: 24
+      }}
+    >
+      <Avatar
+        size={64}
+        icon={<SafetyCertificateOutlined />}
+        style={{ background: '#fff7e6', color: '#d48806' }}
+      />
+      <div>
+        <div style={{ fontWeight: 700, color: '#102a43' }}>No awards yet</div>
+        <div style={{ color: '#72849a', maxWidth: 280 }}>
+          Gold and silver awards will appear here by course once earned.
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderContactAwards = () => {
+    const courseRows = buildContactCourseHistoryRows(selectedContact, allRawCourses);
+    const contactAwardsByCourse = getContactAwardsByCourse(selectedContact);
+    const currentActivity = String(contactCourseProgressActivity?.contactInternalId || '') === String(selectedContact?.ContactInternalId || '')
+      ? contactCourseProgressActivity
+      : null;
+    const progressRowsByCourse = (currentActivity?.rows || []).reduce((accumulator, row) => {
+      const courseCodeId = row?.CourseCodeId || row?.courseCodeId;
+      if (!courseCodeId) return accumulator;
+
+      const courseKey = normalizeContactInternalId(courseCodeId);
+      accumulator[courseKey] = [...(accumulator[courseKey] || []), row];
+      return accumulator;
+    }, {});
+    const awardRows = courseRows.map(course => {
+      const courseKey = normalizeContactInternalId(course.courseCodeId);
+      const explicitAwards = contactAwardsByCourse[courseKey] || [];
+      const progressAwards = getCourseProgressAwards(progressRowsByCourse[courseKey] || []);
+      const awards = Array.from(new Set([...explicitAwards, ...progressAwards]));
+      return { ...course, awards };
+    }).filter(course => course.awards.length > 0);
+
+    if (!contactProgressLoading && awardRows.length === 0) {
+      return renderContactAwardsEmpty();
+    }
+
+    return (
+      <Table
+        size="small"
+        rowKey="key"
+        loading={contactProgressLoading}
+        pagination={false}
+        dataSource={awardRows}
+        locale={{ emptyText: renderContactAwardsEmpty() }}
+        scroll={{ x: true }}
+        columns={[
+          {
+            title: setLocale(locale, 'admin.tools.monitoring.contactProfile.course'),
+            dataIndex: 'title',
+            key: 'title',
+            render: (_, record) => (
+              <Space>
+                <Avatar
+                  shape="square"
+                  size={42}
+                  src={record.imageUrl}
+                  icon={<BookOutlined />}
+                  style={{ borderRadius: 8, flexShrink: 0 }}
+                />
+                <span style={{ fontWeight: 600 }}>{record.title || 'â€”'}</span>
+              </Space>
+            )
+          },
+          {
+            title: 'Award',
+            dataIndex: 'awards',
+            key: 'awards',
+            render: awards => (
+              <Space size={4} wrap>
+                {awards.map(renderAwardTag)}
+              </Space>
+            )
+          }
+        ]}
+      />
+    );
+  };
+
+  const renderContactCourseHistory = () => {
+    const courseRows = buildContactCourseHistoryRows(selectedContact, allRawCourses);
+
+    return (
+      <Table
+        size="small"
+        rowKey="key"
+        pagination={false}
+        dataSource={courseRows}
+        locale={{ emptyText: setLocale(locale, 'admin.tools.label.none') }}
+        scroll={{ x: true }}
+        columns={[
+          {
+            title: setLocale(locale, 'admin.tools.monitoring.contactProfile.course'),
+            dataIndex: 'title',
+            key: 'title',
+            render: (_, record) => (
+              <Space>
+                <Avatar
+                  shape="square"
+                  size={42}
+                  src={record.imageUrl}
+                  icon={<BookOutlined />}
+                  style={{ borderRadius: 8, flexShrink: 0 }}
+                />
+                <span style={{ fontWeight: 600 }}>{record.title || '—'}</span>
+              </Space>
+            )
+          },
+          {
+            title: setLocale(locale, 'admin.tools.monitoring.contactProfile.courseCodeId'),
+            dataIndex: 'courseCodeId',
+            key: 'courseCodeId',
+            responsive: ['md']
+          },
+          {
+            title: setLocale(locale, 'admin.tools.monitoring.contactProfile.role'),
+            dataIndex: 'roleId',
+            key: 'roleId',
+            render: roleId => <Tag color={getCourseRoleColor(roleId)}>{getCourseRoleLabel(roleId)}</Tag>
+          },
+          {
+            title: setLocale(locale, 'admin.tools.course.label.targetLanguage'),
+            dataIndex: 'targetLanguageId',
+            key: 'targetLanguageId',
+            render: renderCourseLanguageValue
+          },
+          {
+            title: setLocale(locale, 'admin.tools.course.label.nativeLanguage'),
+            dataIndex: 'audienceLanguageId',
+            key: 'audienceLanguageId',
+            render: renderCourseLanguageValue
+          },
+          {
+            title: setLocale(locale, 'admin.tools.monitoring.contactProfile.startDate'),
+            dataIndex: 'startDate',
+            key: 'startDate',
+            render: value => (value ? new Date(value).toLocaleDateString() : '—')
+          },
+          {
+            title: setLocale(locale, 'admin.tools.monitoring.contactProfile.endDate'),
+            dataIndex: 'endDate',
+            key: 'endDate',
+            render: value => (value ? new Date(value).toLocaleDateString() : t('admin.tools.label.current'))
+          }
+        ]}
+      />
+    );
+  };
+
   const renderContactProgressActivity = () => {
     if (selectedContactCourseIds.length === 0) {
       return <Empty description={setLocale(locale, 'admin.tools.label.none')} style={{ marginBottom: 16 }} />;
@@ -2897,6 +3280,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                         }]}
                         mapSource={birthRegion ? geoMaps.birth : WorldMap}
                         mapType={birthRegion ? birthCode : 'world'}
+                        zoomable
+                        showRegionList
                       />
                     )}
                   </div>
@@ -2927,6 +3312,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                         }]}
                         mapSource={residencyRegion ? geoMaps.residency : WorldMap}
                         mapType={residencyRegion ? residencyCode : 'world'}
+                        zoomable
+                        showRegionList
                       />
                     )}
                   </div>
@@ -2938,21 +3325,37 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <Empty description={setLocale(locale, 'admin.tools.label.none')} style={{ marginBottom: 16 }} />
         )}
 
-        {/* Language History */}
-        <Divider titlePlacement="left"><GlobalOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.languageHistory')}</Divider>
-        {renderLanguageHistory(selectedContact.LanguageProficienciesHistory)}
-
-        {/* Purchase History */}
-        <Divider titlePlacement="left"><ShoppingCartOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.purchaseHistory')}</Divider>
-        {renderContactShopPurchaseHistory()}
-
-        {/* Course Progress Activity */}
-        <Divider titlePlacement="left"><LineChartOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.courseProgressActivity')}</Divider>
-        {renderContactProgressActivity()}
-
-        {/* Login Footprint */}
-        <Divider titlePlacement="left"><LoginOutlined style={{ marginRight: 6 }} />{setLocale(locale, 'admin.tools.label.loginFootprint')}</Divider>
-        {renderContactLoginFootprint()}
+        <Divider titlePlacement="left"><TableOutlined style={{ marginRight: 6 }} />History</Divider>
+        <Tabs
+          size="small"
+          items={[
+            {
+              key: 'language',
+              label: <span><GlobalOutlined /> Language</span>,
+              children: renderLanguageHistory(selectedContact.LanguageProficienciesHistory)
+            },
+            {
+              key: 'awards',
+              label: <span><SafetyCertificateOutlined /> Awards</span>,
+              children: renderContactAwards()
+            },
+            {
+              key: 'courses',
+              label: <span><BookOutlined /> Courses</span>,
+              children: renderContactCourseHistory()
+            },
+            {
+              key: 'purchase',
+              label: <span><ShoppingCartOutlined /> Purchase</span>,
+              children: renderContactShopPurchaseHistory()
+            },
+            {
+              key: 'activity',
+              label: <span><LineChartOutlined /> Activity</span>,
+              children: renderContactActivityHistory()
+            }
+          ]}
+        />
       </>
     );
 
@@ -3003,6 +3406,51 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       </Card>
     );
   };
+
+  const renderContactLoginHeatmap = () => {
+    const currentFootprint = String(contactLoginFootprint?.contactInternalId || '') === String(selectedContact?.ContactInternalId || '')
+      ? contactLoginFootprint
+      : null;
+
+    if (contactLoginLoading) {
+      return (
+        <p style={{ textAlign: 'center', color: '#999', padding: 40 }}>
+          {setLocale(locale, 'admin.tools.loginFootprint.loading')}
+        </p>
+      );
+    }
+
+    return (
+      <LoginFootprintHeatmapGraph
+        hideCard
+        heatmapData={currentFootprint?.heatmapData || []}
+        emptyDescriptionKey="admin.tools.loginFootprint.noActivity"
+      />
+    );
+  };
+
+  const renderContactActivityHistory = () => (
+    <Tabs
+      size="small"
+      items={[
+        {
+          key: 'course-progress',
+          label: <span><LineChartOutlined /> {setLocale(locale, 'admin.tools.label.courseProgressActivity')}</span>,
+          children: renderContactProgressActivity()
+        },
+        {
+          key: 'login-footprint',
+          label: <span><LoginOutlined /> {setLocale(locale, 'admin.tools.label.loginFootprint')}</span>,
+          children: renderContactLoginFootprint()
+        },
+        {
+          key: 'heatmap',
+          label: <span><TableOutlined /> {setLocale(locale, 'admin.tools.monitoring.loginHeatmap')}</span>,
+          children: renderContactLoginHeatmap()
+        }
+      ]}
+    />
+  );
 
   const permissionTableColumns = [
     {

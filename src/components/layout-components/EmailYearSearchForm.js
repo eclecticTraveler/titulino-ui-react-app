@@ -282,9 +282,10 @@ useEffect(() => {
               <Form.Item style={{ marginBottom: "10px" }}>
               <Button 
                 type="primary" 
+                size="large"
                 htmlType="submit" 
                 loading={loading} 
-                style={{ width: "100%" }} 
+                style={{ width: "100%", minHeight: 44, fontWeight: 600 }}
                 disabled={!(yearOfBirth && user?.emailId)}
               >
                 {setLocale(locale, "resources.myprogress.search")}

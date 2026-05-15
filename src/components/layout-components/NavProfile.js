@@ -6,6 +6,7 @@ import {
   LogoutOutlined,
   LoginOutlined,
   GlobalOutlined,
+  IdcardOutlined,
   UsergroupAddOutlined,
   RadarChartOutlined,
   ToolOutlined
@@ -31,6 +32,15 @@ const configureMenuItems = (user, token) => {
   const menuLinks = [];
 
   if(token){
+    menuLinks.push(
+      {
+        title: "Profile",
+        icon: IdcardOutlined,
+        path: "profile",
+        isAuth: true
+      }
+    );
+
     if(user?.isGlobalAccessUser){
       menuLinks.push(
         {

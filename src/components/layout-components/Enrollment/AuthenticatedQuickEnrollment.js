@@ -20,7 +20,6 @@ import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
 import EnrollmentModal from "./EnrollmentModal";
 import { env } from "configs/EnvironmentConfig";
-import EmailYearSearchForm from "components/layout-components/EmailYearSearchForm";
 
 export const AuthenticatedQuickEnrollment = (props) => {
   const {
@@ -451,14 +450,6 @@ export const AuthenticatedQuickEnrollment = (props) => {
   const titleOfEnrollment = setLocale(locale, "enrollment.quickEnrollment");
   const converUrl = "https://images.unsplash.com/photo-1655800466797-8ab2598b4274?q=80&w=1690&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
   const enrollmentVersion = "v3.0";
-
-  if (user?.emailId && !user?.yearOfBirth) {
-    return (
-      <div id="unathenticated-landing-page-margin">
-        <EmailYearSearchForm />
-      </div>
-    );
-  }
 
   return (
     <div className="container customerName">

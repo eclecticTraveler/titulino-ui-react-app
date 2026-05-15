@@ -15,6 +15,7 @@ import TitulinoNetService from "services/TitulinoNetService";
 import StudentProgress from "lob/StudentProgress";
 import LrnConfiguration from "lob/LrnConfiguration"
 import TitulinoManager from "managers/LrnManager";
+import { env } from "configs/EnvironmentConfig";
 
 import { 
   GET_SELECTED_LEVEL_FROM_UPPER_NAV_ON_CLICK,
@@ -69,6 +70,8 @@ import {
   ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE
 } from "../constants/Lrn";
 import LrnManager from "managers/LrnManager";
+
+const COURSE_DATA_CACHE_TTL_MINUTES = env.COURSE_DATA_CACHE_TTL_MINUTES;
 
 export const onRequestingGraphForLandingDashboard = async() => {
   const graph = await GraphService.getDashboardData();
@@ -336,11 +339,11 @@ export const onRequestingCourseProgressStructure = async (baseLanguage, contentL
     const countByRegion = await TitulinoRestService.getEnrolleeCountryCountByCourseCodeId(courseCodeId, "onLoadingEnrolleeByRegion");
     const { transformedArray, totalEnrolleeCount } = await StudentProgress.transformEnrolleeGeographycalResidencyData(countByRegion);
   
-    // Save fetched and transformed data to local storage with expiry (e.g., 60 minutes)
+    // Save fetched and transformed data to local storage with the configured course-data TTL.
     await LocalStorageService.setEnrolleesByCourse(
-      { transformedArray, totalEnrolleeCount }, // Save both and set 60 min expiration     
+      { transformedArray, totalEnrolleeCount },
       localStorageKey,
-      60
+      COURSE_DATA_CACHE_TTL_MINUTES
     );
   
     // Return fresh data

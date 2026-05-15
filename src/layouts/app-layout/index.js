@@ -10,6 +10,7 @@ import HeaderNav from '../../components/layout-components/HeaderNav';
 import PageHeader from '../../components/layout-components/PageHeader';
 import Footer from 'components/layout-components/Footer';
 import AppViews from '../../views/app-views';
+import AuthenticatedProfileGate from 'components/layout-components/AuthenticatedProfileGate';
 import {
   Layout,
   Grid,
@@ -125,7 +126,9 @@ export const AppLayout = ({
 					<div className={`app-content ${isNavTop ? 'layout-top-nav' : ''}`}>
 						<PageHeader display={true} title={currentRouteInfo?.title} />				
 						<Content>
-							<AppViews />
+							<AuthenticatedProfileGate>
+								<AppViews />
+							</AuthenticatedProfileGate>
 						</Content>
 					</div>
           <Footer />

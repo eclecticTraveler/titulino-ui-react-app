@@ -6,7 +6,8 @@ import {
   ON_LOADING_AUTHENTICATED_LANDING_PAGE,
   ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT,
   ON_ACTIVATING_IMPERSONATION_PROFILE,
-  ON_STOPPING_IMPERSONATION_PROFILE
+  ON_STOPPING_IMPERSONATION_PROFILE,
+  ON_LOADING_AUTHENTICATED_ENROLLEE_PROFILE
 } from '../constants/Grant';
 
 const emptyUser = {
@@ -28,7 +29,8 @@ const initState = {
   generalLoading: false,
   message: '',
   showMessage: false,
-  user: emptyUser
+  user: emptyUser,
+  enrolleeProfile: null
 };
 
 const grant = (state = initState, action) => {
@@ -95,6 +97,11 @@ const grant = (state = initState, action) => {
           ...state.user,
           ...action.user  // <- Carefully overwrite specific user properties from action
         }
+      };
+    case ON_LOADING_AUTHENTICATED_ENROLLEE_PROFILE:
+      return {
+        ...state,
+        enrolleeProfile: action.enrolleeProfile
       };
 
     default:

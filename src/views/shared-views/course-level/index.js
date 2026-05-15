@@ -9,7 +9,6 @@ import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 import utils from 'utils';
 import Loading from 'components/shared-components/Loading';
-import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import { env } from 'configs/EnvironmentConfig';
 import FacilitatorsLandingDashboard from 'components/admin-components/Insights/FacilitatorsLandingDashboard';
 
@@ -77,14 +76,7 @@ class CourseLevel extends Component {
         const facilitatorDashboardCourseCodeId = this.props.facilitadorCourseCodeId || (isGlobalUser ? this.props.currentCourseCodeId : null);
         const isFacilitatorOfCourse = !!facilitatorDashboardCourseCodeId;
         if(this.props.token){
-            if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
-                return (
-                    <div id="unathenticated-landing-page-margin">
-                        <EmailYearSearchForm/>
-                    </div>
-                )
-            } else if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
-
+            if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
                 if (this.props.userIsEnrolledInCourse === true) {
 
                     if(env.IS_TO_DISPLAY_PROGRESS_DASHBOARD) {

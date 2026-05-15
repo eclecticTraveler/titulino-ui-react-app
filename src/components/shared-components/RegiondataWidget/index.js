@@ -337,7 +337,7 @@ const getFeatureRegionName = (geoFeature, mapType) => {
   return props.NAME_1 || props.VARNAME_1 || props.name || "";
 };
 
-const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
+const MapChart = ({ setTooltipContent, data, mapSource, mapType, zoomable = true }) => {
   const [hoveredRegionKey, setHoveredRegionKey] = useState("");
   const [mapTransform, setMapTransform] = useState(defaultMapTransform);
   const [isPanning, setIsPanning] = useState(false);
@@ -364,6 +364,7 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
   };
 
   const handleZoom = (direction) => {
+    if (!zoomable) return;
     setMapTransform((currentTransform) => (
       zoomMapAtPoint(currentTransform, currentTransform.scale + direction * zoomStep)
     ));
@@ -376,6 +377,7 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
   };
 
   const handleWheel = (event) => {
+    if (!zoomable) return;
     event.preventDefault();
     const direction = event.deltaY < 0 ? 1 : -1;
     const point = getSvgPoint(event);
@@ -385,7 +387,7 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
   };
 
   const handlePointerDown = (event) => {
-    if (mapTransform.scale <= minZoom) return;
+    if (!zoomable || mapTransform.scale <= minZoom) return;
 
     const bounds = event.currentTarget.getBoundingClientRect();
     panStartRef.current = {
@@ -430,47 +432,49 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
         transform: mapType === "world" ? `translateY(${worldVerticalOffset}px)` : "none"
       }}
     >
-      <div
-        className="d-flex align-items-center"
-        style={{
-          position: "absolute",
-          top: 12,
-          right: 12,
-          zIndex: 2,
-          gap: 4,
-          padding: 4,
-          border: "1px solid #E6E8EE",
-          borderRadius: 6,
-          background: "rgba(255, 255, 255, 0.92)",
-          boxShadow: "0 6px 18px rgba(15, 23, 42, 0.08)"
-        }}
-      >
-        <Button size="small" title="Zoom out" aria-label="Zoom out" disabled={mapTransform.scale <= minZoom} onClick={() => handleZoom(-1)}>
-          -
-        </Button>
-        <Button size="small" title="Reset zoom" aria-label="Reset zoom" disabled={mapTransform.scale <= minZoom} onClick={handleResetZoom}>
-          1x
-        </Button>
-        <Button size="small" title="Zoom in" aria-label="Zoom in" disabled={mapTransform.scale >= maxZoom} onClick={() => handleZoom(1)}>
-          +
-        </Button>
-      </div>
+      {zoomable && (
+        <div
+          className="d-flex align-items-center"
+          style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            zIndex: 2,
+            gap: 4,
+            padding: 4,
+            border: "1px solid #E6E8EE",
+            borderRadius: 6,
+            background: "rgba(255, 255, 255, 0.92)",
+            boxShadow: "0 6px 18px rgba(15, 23, 42, 0.08)"
+          }}
+        >
+          <Button size="small" title="Zoom out" aria-label="Zoom out" disabled={mapTransform.scale <= minZoom} onClick={() => handleZoom(-1)}>
+            -
+          </Button>
+          <Button size="small" title="Reset zoom" aria-label="Reset zoom" disabled={mapTransform.scale <= minZoom} onClick={handleResetZoom}>
+            1x
+          </Button>
+          <Button size="small" title="Zoom in" aria-label="Zoom in" disabled={mapTransform.scale >= maxZoom} onClick={() => handleZoom(1)}>
+            +
+          </Button>
+        </div>
+      )}
       <svg
         data-tip=""
         width="100%"
         height={mapHeight}
         viewBox={`0 0 ${mapWidth} ${mapHeight}`}
         preserveAspectRatio="xMidYMid meet"
-        onWheel={handleWheel}
-        onDoubleClick={() => handleZoom(1)}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onPointerLeave={handlePointerUp}
+        onWheel={zoomable ? handleWheel : undefined}
+        onDoubleClick={zoomable ? () => handleZoom(1) : undefined}
+        onPointerDown={zoomable ? handlePointerDown : undefined}
+        onPointerMove={zoomable ? handlePointerMove : undefined}
+        onPointerUp={zoomable ? handlePointerUp : undefined}
+        onPointerCancel={zoomable ? handlePointerUp : undefined}
+        onPointerLeave={zoomable ? handlePointerUp : undefined}
         style={{
-          cursor: mapTransform.scale > minZoom ? (isPanning ? "grabbing" : "grab") : "default",
-          touchAction: "none"
+          cursor: zoomable && mapTransform.scale > minZoom ? (isPanning ? "grabbing" : "grab") : "default",
+          touchAction: zoomable ? "none" : "auto"
         }}
       >
         <g transform={`translate(${mapTransform.x} ${mapTransform.y}) scale(${mapTransform.scale})`}>
@@ -515,11 +519,11 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType }) => {
 };
 
 const RegionMap = (props) => {
-  const { data, mapSource, mapType } = props;
+  const { data, mapSource, mapType, zoomable } = props;
   const [content, setContent] = useState("");
   return (
     <>
-      <MapChart data={data} mapSource={mapSource} mapType={mapType} setTooltipContent={setContent} />
+      <MapChart data={data} mapSource={mapSource} mapType={mapType} zoomable={zoomable} setTooltipContent={setContent} />
       <ReactTooltip>{content}</ReactTooltip>
     </>
   );
@@ -543,22 +547,33 @@ const renderDataList = (data, mapType) => {
 };
 
 export const RegiondataWidget = (props) => {
-  const { data = [], mapSource = geoUrl, mapType = "world", title, content, list } = props;
+  const {
+    data = [],
+    mapSource = geoUrl,
+    mapType = "world",
+    title,
+    content,
+    list,
+    zoomable = true,
+    showRegionList = true
+  } = props;
   const isMobile = !utils.getBreakPoint(useBreakpoint()).includes("lg");
   return (
     <Card styles={{ body: { padding: 0 } }}>
       <Row>
-        <Col xs={24} sm={24} md={24} lg={7} className="border-right">
-          <div className="d-flex flex-column p-3 justify-content-between">
-            <div>{title && <h4 className="font-weight-bold">{title}</h4>}</div>
-            <div>{content}</div>
-            <div>{list ? list : renderDataList(data, mapType)}</div>
-          </div>
-        </Col>
-        <Col xs={24} sm={24} md={24} lg={17}>
+        {showRegionList && (
+          <Col xs={24} sm={24} md={24} lg={7} className="border-right">
+            <div className="d-flex flex-column p-3 justify-content-between">
+              <div>{title && <h4 className="font-weight-bold">{title}</h4>}</div>
+              <div>{content}</div>
+              <div>{list ? list : renderDataList(data, mapType)}</div>
+            </div>
+          </Col>
+        )}
+        <Col xs={24} sm={24} md={24} lg={showRegionList ? 17 : 24}>
           <div className="d-flex flex-column justify-content-center" style={{ minHeight: isMobile ? 200 : 435 }}>
             <div className="p-3 w-100">
-              <RegionMap data={data} mapSource={mapSource} mapType={mapType} />
+              <RegionMap data={data} mapSource={mapSource} mapType={mapType} zoomable={zoomable} />
             </div>
           </div>
         </Col>
@@ -574,6 +589,8 @@ RegiondataWidget.propTypes = {
   mapType: PropTypes.string,
   content: PropTypes.element,
   list: PropTypes.element,
+  zoomable: PropTypes.bool,
+  showRegionList: PropTypes.bool,
 };
 
 export default RegiondataWidget;

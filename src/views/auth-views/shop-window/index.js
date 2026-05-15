@@ -9,7 +9,6 @@ import { bindActionCreators } from "redux";
 import { onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase } from "redux/actions/Shop";
 import {onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut} from "redux/actions/Grant";
 import utils from "utils";
-import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import { loadStripe } from "@stripe/stripe-js";
 import ConfettiExplosion from 'react-confetti-explosion';
 import GenericModal from "components/layout-components/GenericModal";
@@ -24,7 +23,7 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const SHOPPING_PARAMETERS_STORED_KEY = "postQueryParams";
 
 const ShopWindow = (props) => {
-  const { user, baseLanguage, contentLanguage, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase, token, onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut } = props;
+  const { user, baseLanguage, contentLanguage, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase, onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut } = props;
   const [hoveredTier, setHoveredTier] = useState(null);
   const screens = utils.getBreakPoint(useBreakpoint());
   const isMobile = !screens.includes("md");
@@ -283,16 +282,6 @@ const ShopWindow = (props) => {
     </Card>
   );
 
-  if(token){
-      if(user?.emailId && !user?.yearOfBirth){
-          return (
-              <div id="unathenticated-landing-page-margin">
-                  <EmailYearSearchForm/>
-              </div>
-          )
-      }
-    }
-
   const coverUrl =
     "https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2304&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
@@ -520,13 +509,12 @@ function mapDispatchToProps(dispatch) {
   );
 }
 
-const mapStateToProps = ({ grant, shop, lrn, theme, auth }) => {
+const mapStateToProps = ({ grant, shop, lrn, theme }) => {
   const { user } = grant;
   const { productCatalog } = shop;
   const { baseLanguage } = lrn;
   const { contentLanguage } = theme;
-  const { token } = auth;
-  return { user, productCatalog, baseLanguage, contentLanguage, token };
+  return { user, productCatalog, baseLanguage, contentLanguage };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ShopWindow);

@@ -26,7 +26,6 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
-import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import DraggableDashboardGrid from 'components/shared-components/DraggableDashboardGrid';
 
 const defaultInsightsOverviewCardOrder = [
@@ -634,14 +633,6 @@ const InsightsLandingDashboard = (props) => {
       {setLocale(locale, "admin.dashboard.insights.lockInnerTabs")}
     </Checkbox>
   );
-
-	if(user?.emailId && !user?.yearOfBirth){
-		return (
-			<div id="unathenticated-landing-page-margin">
-				<EmailYearSearchForm/>
-			</div>
-		)
-	}
 
   const renderInnerTabsByOuter = (outerKey) => {
     const innerTabsByOuter = {
