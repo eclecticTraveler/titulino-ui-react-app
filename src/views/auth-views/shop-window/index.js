@@ -185,6 +185,7 @@ const ShopWindow = (props) => {
   ];
 
   const handlePurchase = async (priceId) => {
+        {/* Removed extra </Row> here to fix JSX error */}
     if (!user?.emailId) return;
   
     try {
@@ -322,98 +323,112 @@ const ShopWindow = (props) => {
 
       <Card variant="outlined" style={{ marginTop: 16 }}>
         <Row gutter={[16, 16]} style={{ marginTop: 30 }}>
-          {tierKeys.length === 2
-            ? tierKeys.map((tierKey, idx) => {
-                const tierInfo = activeCourse.tiers?.[tierKey];
-                const isDisabled = !tierInfo?.isEnabledForPurchase;
-                const imageUrl = tierInfo?.imageUrl || "";
-                const isPurchased = tierInfo?.isPurchased ?? false;
-                const priceId = tierInfo?.priceId || null;
-                let buttonText = tierKey === purchasedTier
-                  ? setLocale(locale, "shop.feature.current")
-                  : (tierInfo?.priceUsd === 3 && hasLocaleKey('shop.feature.buy3'))
-                    ? setLocale(locale, 'shop.feature.buy3')
-                    : (tierInfo?.priceUsd === 5 && hasLocaleKey('shop.feature.buy5'))
-                    ? setLocale(locale, 'shop.feature.buy5')
-                    : `Buy ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
-                let badgeText = tierKey === purchasedTier
-                  ? setLocale(locale, "shop.feature.purchased")
-                  : isPurchased
-                    ? setLocale(locale, "shop.feature.included")
-                    : tierInfo?.priceUsd
-                      ? `⭐ ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)} $${tierInfo.priceUsd} USD 💵`
-                      : `⭐ ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
-                let badgeColor = tierKey === purchasedTier
-                  ? "#52c41a"
-                  : isPurchased
+          {(() => {
+            // Sort tiers by price ascending for star logic
+            const sortedTierKeys = [...tierKeys].sort((a, b) => {
+              const aPrice = activeCourse.tiers[a]?.priceUsd ?? 0;
+              const bPrice = activeCourse.tiers[b]?.priceUsd ?? 0;
+              return aPrice - bPrice;
+            });
+            const badgeColors = ["#00a9fa", "#1890ff", "#f5222d", "#faad14", "#722ed1"];
+            return (tierKeys.length === 2
+              ? tierKeys.map((tierKey, idx) => {
+                  const tierInfo = activeCourse.tiers?.[tierKey];
+                  const isDisabled = !tierInfo?.isEnabledForPurchase;
+                  const imageUrl = tierInfo?.imageUrl || "";
+                  const isPurchased = tierInfo?.isPurchased ?? false;
+                  const priceId = tierInfo?.priceId || null;
+                  let buttonText = tierKey === purchasedTier
+                    ? setLocale(locale, "shop.feature.current")
+                    : (tierInfo?.priceUsd === 3 && hasLocaleKey('shop.feature.buy3'))
+                      ? setLocale(locale, 'shop.feature.buy3')
+                      : (tierInfo?.priceUsd === 5 && hasLocaleKey('shop.feature.buy5'))
+                      ? setLocale(locale, 'shop.feature.buy5')
+                      : `Buy ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
+                  const tierIndex = sortedTierKeys.indexOf(tierKey);
+                  const stars = "⭐".repeat(tierIndex + 1);
+                  let badgeText = tierKey === purchasedTier
+                    ? setLocale(locale, "shop.feature.purchased")
+                    : isPurchased
+                      ? setLocale(locale, "shop.feature.included")
+                      : tierInfo?.priceUsd
+                        ? `${stars} Special Offer $${tierInfo.priceUsd} USD 💵`
+                        : `${stars} ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
+                  let badgeColor = tierKey === purchasedTier
                     ? "#00a9fa"
-                    : "#1890ff";
-                const featuresForTier = data.filter((item) => item[tierKey]);
-                // Center with offset: first card offset 4, second no offset
-                return (
-                  <Col xs={24} md={8} offset={idx === 0 ? 4 : 0} key={tierKey}>
-                    <Badge.Ribbon
-                      text={badgeText}
-                      color={badgeColor}
-                      style={{
-                        marginTop: 40,
-                        padding: "0 12px",
-                        fontSize: 17,
-                        height: 32,
-                        lineHeight: "32px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {renderTierCard({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased })}
-                    </Badge.Ribbon>
-                  </Col>
-                );
-              })
-            : tierKeys.map((tierKey) => {
-                const tierInfo = activeCourse.tiers?.[tierKey];
-                const isDisabled = !tierInfo?.isEnabledForPurchase;
-                const imageUrl = tierInfo?.imageUrl || "";
-                const isPurchased = tierInfo?.isPurchased ?? false;
-                const priceId = tierInfo?.priceId || null;
-                let buttonText = tierKey === purchasedTier
-                  ? setLocale(locale, "shop.feature.current")
-                  : (tierInfo?.priceUsd === 3 && hasLocaleKey('shop.feature.buy3'))
-                    ? setLocale(locale, 'shop.feature.buy3')
-                    : (tierInfo?.priceUsd === 5 && hasLocaleKey('shop.feature.buy5'))
-                    ? setLocale(locale, 'shop.feature.buy5')
-                    : `Buy ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
-                let badgeText = tierKey === purchasedTier
-                  ? setLocale(locale, "shop.feature.purchased")
-                  : isPurchased
-                    ? setLocale(locale, "shop.feature.included")
-                    : tierInfo?.priceUsd
-                      ? `⭐ ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)} $${tierInfo.priceUsd} USD 💵`
-                      : `⭐ ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
-                let badgeColor = tierKey === purchasedTier
-                  ? "#52c41a"
-                  : isPurchased
-                    ? "#00a9fa"
-                    : "#1890ff";
-                const featuresForTier = data.filter((item) => item[tierKey]);
-                return (
-                  <Col xs={24} md={Math.max(24 / tierKeys.length, 8)} key={tierKey}>
-                    <Badge.Ribbon
-                      text={badgeText}
-                      color={badgeColor}
-                      style={{
-                        marginTop: 40,
-                        padding: "0 12px",
-                        fontSize: 17,
-                        height: 32,
-                        lineHeight: "32px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {renderTierCard({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased })}
-                    </Badge.Ribbon>
-                  </Col>
-                );
-              })}
+                    : isPurchased
+                      ? "#00a9fa"
+                      : badgeColors[tierIndex % badgeColors.length];
+                  const featuresForTier = data.filter((item) => item[tierKey]);
+                  // Center with offset: first card offset 4, second no offset
+                  return (
+                    <Col xs={24} md={8} offset={idx === 0 ? 4 : 0} key={tierKey}>
+                      <Badge.Ribbon
+                        text={badgeText}
+                        color={badgeColor}
+                        style={{
+                          marginTop: 40,
+                          padding: "0 12px",
+                          fontSize: 17,
+                          height: 32,
+                          lineHeight: "32px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {renderTierCard({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased })}
+                      </Badge.Ribbon>
+                    </Col>
+                  );
+                })
+              : tierKeys.map((tierKey) => {
+                  const tierInfo = activeCourse.tiers?.[tierKey];
+                  const isDisabled = !tierInfo?.isEnabledForPurchase;
+                  const imageUrl = tierInfo?.imageUrl || "";
+                  const isPurchased = tierInfo?.isPurchased ?? false;
+                  const priceId = tierInfo?.priceId || null;
+                  let buttonText = tierKey === purchasedTier
+                    ? setLocale(locale, "shop.feature.current")
+                    : (tierInfo?.priceUsd === 3 && hasLocaleKey('shop.feature.buy3'))
+                      ? setLocale(locale, 'shop.feature.buy3')
+                      : (tierInfo?.priceUsd === 5 && hasLocaleKey('shop.feature.buy5'))
+                      ? setLocale(locale, 'shop.feature.buy5')
+                      : `Buy ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
+                  const tierIndex = sortedTierKeys.indexOf(tierKey);
+                  const stars = "⭐".repeat(tierIndex + 1);
+                  let badgeText = tierKey === purchasedTier
+                    ? setLocale(locale, "shop.feature.purchased")
+                    : isPurchased
+                      ? setLocale(locale, "shop.feature.included")
+                      : tierInfo?.priceUsd
+                        ? `${stars} Special Offer $${tierInfo.priceUsd} USD 💵`
+                        : `${stars} ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
+                  let badgeColor = tierKey === purchasedTier
+                    ? "#52c41a"
+                    : isPurchased
+                      ? "#00a9fa"
+                      : badgeColors[tierIndex % badgeColors.length];
+                  const featuresForTier = data.filter((item) => item[tierKey]);
+                  return (
+                    <Col xs={24} md={Math.max(24 / tierKeys.length, 8)} key={tierKey}>
+                      <Badge.Ribbon
+                        text={badgeText}
+                        color={badgeColor}
+                        style={{
+                          marginTop: 40,
+                          padding: "0 12px",
+                          fontSize: 17,
+                          height: 32,
+                          lineHeight: "32px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {renderTierCard({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased })}
+                      </Badge.Ribbon>
+                    </Col>
+                  );
+                })
+            );
+          })()}
         </Row>
 
         {!isMobile && (
