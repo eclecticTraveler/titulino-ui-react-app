@@ -2362,6 +2362,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     ),
   }));
 
+    const formatDateOnly = (date) => {
+    if (!date) return '—';
+
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(date)) {
+      const [year, month, day] = date.slice(0, 10).split('-');
+      return `${month}/${day}/${year}`;
+    }
+
+    return date;
+  };
   const handleSearchChange = (value) => setSearchText(value);
 
   const handleContactSelect = (value, option) => {
@@ -3764,8 +3774,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                   </div>
                 ) : '—'}
               </Descriptions.Item>
-              <Descriptions.Item label={setLocale(locale, 'admin.tools.label.dateOfBirth')} style={{ minWidth: 120 }}>
-                {selectedContact.DateOfBirth ? new Date(selectedContact.DateOfBirth).toLocaleDateString() : '—'}
+              <Descriptions.Item label={setLocale(locale, 'admin.tools.label.dateOfBirth')} style={{ minWidth: 120 }}              >
+                {formatDateOnly(selectedContact.DateOfBirth)}
               </Descriptions.Item>
               <Descriptions.Item label={setLocale(locale, 'admin.tools.label.age')}>
                 {selectedContact.Age ?? '—'}
