@@ -1,9 +1,8 @@
 import { AUTH_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 import { getCoursePracticeResourcesInnerSubMenu } from './CoursePracticeInnerSubMenu';
-import { getAuthCourseInnerSubMenuV1, getAuthCourseInnerSubMenuNoClass, getCoursePracticeInnerSubMenuV2Light} from './AuthCourseInnerSubMenu';
+import { getAuthCourseInnerSubMenuV2, getAuthCourseInnerSubMenuNoClass, getCoursePracticeInnerSubMenuV2Light} from './AuthCourseInnerSubMenu';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
-import { COURSE_TIERS_CONFIG } from 'configs/CourseThemeConfig';
 import {
 	faCarrot,
 	faPepperHot,
@@ -21,9 +20,7 @@ import {
    } from '@fortawesome/free-solid-svg-icons';
       
 
-export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
-	const isSilver = course?.courseTierAccess === COURSE_TIERS_CONFIG.silver;
-	const isGold = course?.courseTierAccess === COURSE_TIERS_CONFIG.gold;
+export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {	
 
 	const commonPath = `${AUTH_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-speeches/${getLocalizedConfig(lang)?.chapter}`;
 	const baseMenu = [
@@ -46,7 +43,7 @@ export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'speeches', 1)
+				...getAuthCourseInnerSubMenuV2(lang, 'speeches', 1, course?.courseTierAccess)
 			]
 		},
 		{
@@ -57,7 +54,7 @@ export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'speeches', 2)
+				...getAuthCourseInnerSubMenuV2(lang, 'speeches', 2, course?.courseTierAccess)
 			]
 		},
 		{
@@ -68,7 +65,7 @@ export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'speeches', 3)
+				...getAuthCourseInnerSubMenuV2(lang, 'speeches', 3, course?.courseTierAccess)
 			]
 		},
 		{
@@ -79,7 +76,7 @@ export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'speeches', 4)
+				...getAuthCourseInnerSubMenuV2(lang, 'speeches', 4, course?.courseTierAccess)
 			]
 		},
 		{
@@ -90,7 +87,7 @@ export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'speeches', 5)
+				...getAuthCourseInnerSubMenuV2(lang, 'speeches', 5, course?.courseTierAccess)
 			]
 		},
 		{
@@ -101,7 +98,7 @@ export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'speeches', 6)
+				...getAuthCourseInnerSubMenuV2(lang, 'speeches', 6, course?.courseTierAccess)
 			]
 		},
 		{
@@ -112,7 +109,7 @@ export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'speeches', 7)
+				...getAuthCourseInnerSubMenuV2(lang, 'speeches', 7, course?.courseTierAccess)
 			]
 		},
 		{
@@ -123,7 +120,7 @@ export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'speeches', 8)
+				...getAuthCourseInnerSubMenuV2(lang, 'speeches', 8, course?.courseTierAccess)
 			]
 		},
 		{
@@ -134,7 +131,7 @@ export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'speeches', 9)
+				...getAuthCourseInnerSubMenuV2(lang, 'speeches', 9, course?.courseTierAccess)
 			]
 		},
 		{
@@ -145,7 +142,7 @@ export const AuthCourseSubNavigationSpeechesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV1(lang, 'speeches', 10)
+				...getAuthCourseInnerSubMenuV2(lang, 'speeches', 10, course?.courseTierAccess)
 			]
 		},
 		{

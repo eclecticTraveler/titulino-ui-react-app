@@ -141,39 +141,47 @@ const ShopWindow = (props) => {
       />
     );
 
-  // Build table data from activeCourse features
-  const data = activeCourse.features.map((feature, idx) => ({
-    key: String(idx + 1),
-    feature: setLocale(locale, feature.feature),
-    free: feature.enabled.free,
-    silver: feature.enabled.silver,
-    gold: feature.enabled.gold
-  }));
-  
-  
+  // Dynamically get tier keys from activeCourse.tiers
+  const tierKeys = activeCourse.tiers ? Object.keys(activeCourse.tiers) : [];
+
+  // Build table data dynamically from features and tiers
+  const data = activeCourse.features.map((feature, idx) => {
+    const row = {
+      key: String(idx + 1),
+      feature: setLocale(locale, feature.feature),
+    };
+    tierKeys.forEach((tierKey) => {
+      row[tierKey] = feature.enabled[tierKey];
+    });
+    return row;
+  });
+
+  // Helper to check if a translation key exists in the current locale messages
+  const localeMessages = (window && window.__localeMessages) || {};
+  const hasLocaleKey = (key) => {
+    // Try to get from Redux if available
+    if (props.intl && props.intl.messages) {
+      return Object.prototype.hasOwnProperty.call(props.intl.messages, key);
+    }
+    // Fallback to global
+    return Object.prototype.hasOwnProperty.call(localeMessages, key);
+  };
+
+  // Build columns dynamically for each tier
   const columns = [
     { title: setLocale(locale, "shop.feature.features"), dataIndex: "feature", key: "feature" },
-    {
-      title: setLocale(locale, "shop.feature.free"),
-      dataIndex: "free",
-      key: "free",
-      align: "center",
-      render: renderIcon,
-    },
-    {
-      title: setLocale(locale, "shop.feature.silverCost"),
-      dataIndex: "silver",
-      key: "silver",
-      align: "center",
-      render: (_, record) => renderIcon(record.silver),
-    },
-    {
-      title: setLocale(locale, "shop.feature.goldCost"),
-      dataIndex: "gold",
-      key: "gold",
-      align: "center",
-      render: (_, record) => renderIcon(record.gold),
-    },
+    ...tierKeys.map((tierKey) => {
+      const costKey = `shop.feature.${tierKey}Cost`;
+      return {
+        title: hasLocaleKey(costKey)
+          ? setLocale(locale, costKey)
+          : tierKey.charAt(0).toUpperCase() + tierKey.slice(1),
+        dataIndex: tierKey,
+        key: tierKey,
+        align: "center",
+        render: (value, record) => renderIcon(record[tierKey]),
+      };
+    }),
   ];
 
   const handlePurchase = async (priceId) => {
@@ -228,7 +236,7 @@ const ShopWindow = (props) => {
     );
   };
 
-  // Render tier card for each pricing tier
+  // Render tier card for each pricing tier (dynamic)
   const renderTierCard = ({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased }) => (
     <Card
       hoverable
@@ -247,44 +255,32 @@ const ShopWindow = (props) => {
             marginTop: 20,
           }}
         />
-      <Button
-        type={
-          tierKey === purchasedTier
-            ? "default" // purchased
-            : isDisabled
-            ? undefined
-            : "primary"
-        }
-        block
-        disabled={
-          purchasedTier === "gold"
-            ? true // everything else locked
-            : purchasedTier === "silver" && tierKey === "free"
-            ? true // free locked once silver is bought
-            : isDisabled
-        }
-        onClick={
-          !isDisabled &&
-          !(purchasedTier === "gold") && // lock all when gold purchased
-          !(purchasedTier === "silver" && tierKey === "free") && // lock free when silver purchased
-          tierKey !== purchasedTier // don’t re-purchase current tier
-            ? () => precheckoutShop(tierKey, priceId)
-            : undefined
-        }
-      >
-        {buttonText}
-      </Button>
-
+        <Button
+          type={tierKey === purchasedTier ? "default" : isDisabled ? undefined : "primary"}
+          block
+          disabled={
+            purchasedTier && tierKey !== purchasedTier && activeCourse.tiers[purchasedTier]?.lockOthers
+              ? true
+              : isDisabled
+          }
+          onClick={
+            !isDisabled &&
+            (!purchasedTier || (tierKey !== purchasedTier && !(activeCourse.tiers[purchasedTier]?.lockOthers)))
+              ? () => precheckoutShop(tierKey, priceId)
+              : undefined
+          }
+        >
+          {buttonText}
+        </Button>
       </div>
-
       {isMobile && renderFeaturesList(featuresForTier)}
-
     </Card>
   );
 
   const coverUrl =
     "https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2304&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
+  // Find purchased tier dynamically
   const purchasedTier = Object.entries(activeCourse.tiers || {}).find(
     ([, tier]) => tier?.isPurchased
   )?.[0] || null;
@@ -326,74 +322,98 @@ const ShopWindow = (props) => {
 
       <Card variant="outlined" style={{ marginTop: 16 }}>
         <Row gutter={[16, 16]} style={{ marginTop: 30 }}>
-          {["free", "silver", "gold"].map((tierKey) => {
-			      const tierInfo = activeCourse.tiers?.[tierKey];
-            const isDisabled = !tierInfo?.isEnabledForPurchase;
-            const imageUrl = tierInfo?.imageUrl || "";
-            const isPurchased = tierInfo?.isPurchased ?? false;
-            const priceId = tierInfo?.priceId || null;
-            const buttonText =
-            tierKey === purchasedTier
-              ? setLocale(locale, "shop.feature.current") // purchased tier
-              : (purchasedTier === "silver" && tierKey === "free") ||
-                (purchasedTier === "gold" && (tierKey === "free" || tierKey === "silver"))
-              ? setLocale(locale, "shop.feature.current") // included tiers look "current"
-              : {
-                  free: setLocale(locale, "shop.feature.current"),
-                  silver: setLocale(locale, "shop.feature.buy3"),
-                  gold: setLocale(locale, "shop.feature.buy5"),
-                }[tierKey];
-          
- 
-              // Badge text logic
-              const badgeText =
-              tierKey === purchasedTier
-                ? setLocale(locale, "shop.feature.purchased") // current purchased tier
-                : (purchasedTier === "silver" && tierKey === "free")
-                ? "⭐ Included"
-                : (purchasedTier === "gold" && (tierKey === "free" || tierKey === "silver"))
-                ? "⭐ Included"
-                : tierKey === "free"
-                ? "⭐ Current"
-                : tierKey === "silver"
-                ? `⭐⭐ Special Offer $${tierInfo?.priceUsd ?? ""} USD 💵`
-                : `⭐⭐⭐ Special Offer $${tierInfo?.priceUsd ?? ""} USD 💵`;           
-
-                const badgeColor =
-                tierKey === purchasedTier
-                  ? "#52c41a" // purchased = green
-                  : (purchasedTier === "silver" && tierKey === "free") ||
-                    (purchasedTier === "gold" && (tierKey === "free" || tierKey === "silver"))
-                  ? "#00a9fa" // included = blue
-                  : tierKey === "free"
+          {tierKeys.length === 2
+            ? tierKeys.map((tierKey, idx) => {
+                const tierInfo = activeCourse.tiers?.[tierKey];
+                const isDisabled = !tierInfo?.isEnabledForPurchase;
+                const imageUrl = tierInfo?.imageUrl || "";
+                const isPurchased = tierInfo?.isPurchased ?? false;
+                const priceId = tierInfo?.priceId || null;
+                let buttonText = tierKey === purchasedTier
+                  ? setLocale(locale, "shop.feature.current")
+                  : (tierInfo?.priceUsd === 3 && hasLocaleKey('shop.feature.buy3'))
+                    ? setLocale(locale, 'shop.feature.buy3')
+                    : (tierInfo?.priceUsd === 5 && hasLocaleKey('shop.feature.buy5'))
+                    ? setLocale(locale, 'shop.feature.buy5')
+                    : `Buy ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
+                let badgeText = tierKey === purchasedTier
+                  ? setLocale(locale, "shop.feature.purchased")
+                  : isPurchased
+                    ? setLocale(locale, "shop.feature.included")
+                    : tierInfo?.priceUsd
+                      ? `⭐ ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)} $${tierInfo.priceUsd} USD 💵`
+                      : `⭐ ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
+                let badgeColor = tierKey === purchasedTier
                   ? "#52c41a"
-                  : tierKey === "silver"
-                  ? "#1890ff"
-                  : "#f5222d";
-              
-
-            // Filter features enabled for this tier to display in card
-            const featuresForTier = data.filter((item) => item[tierKey]);
-
-            return (
-              <Col xs={24} md={8} key={tierKey}>
-                <Badge.Ribbon
-                  text={badgeText}
-                  color={badgeColor}
-                  style={{
-                    marginTop: 40,
-                    padding: "0 12px",
-                    fontSize: 17,
-                    height: 32,
-                    lineHeight: "32px",
-                    fontWeight: 600,
-                  }}
-                >
-                  {renderTierCard({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased })}
-                </Badge.Ribbon>
-              </Col>
-            );
-          })}
+                  : isPurchased
+                    ? "#00a9fa"
+                    : "#1890ff";
+                const featuresForTier = data.filter((item) => item[tierKey]);
+                // Center with offset: first card offset 4, second no offset
+                return (
+                  <Col xs={24} md={8} offset={idx === 0 ? 4 : 0} key={tierKey}>
+                    <Badge.Ribbon
+                      text={badgeText}
+                      color={badgeColor}
+                      style={{
+                        marginTop: 40,
+                        padding: "0 12px",
+                        fontSize: 17,
+                        height: 32,
+                        lineHeight: "32px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {renderTierCard({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased })}
+                    </Badge.Ribbon>
+                  </Col>
+                );
+              })
+            : tierKeys.map((tierKey) => {
+                const tierInfo = activeCourse.tiers?.[tierKey];
+                const isDisabled = !tierInfo?.isEnabledForPurchase;
+                const imageUrl = tierInfo?.imageUrl || "";
+                const isPurchased = tierInfo?.isPurchased ?? false;
+                const priceId = tierInfo?.priceId || null;
+                let buttonText = tierKey === purchasedTier
+                  ? setLocale(locale, "shop.feature.current")
+                  : (tierInfo?.priceUsd === 3 && hasLocaleKey('shop.feature.buy3'))
+                    ? setLocale(locale, 'shop.feature.buy3')
+                    : (tierInfo?.priceUsd === 5 && hasLocaleKey('shop.feature.buy5'))
+                    ? setLocale(locale, 'shop.feature.buy5')
+                    : `Buy ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
+                let badgeText = tierKey === purchasedTier
+                  ? setLocale(locale, "shop.feature.purchased")
+                  : isPurchased
+                    ? setLocale(locale, "shop.feature.included")
+                    : tierInfo?.priceUsd
+                      ? `⭐ ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)} $${tierInfo.priceUsd} USD 💵`
+                      : `⭐ ${tierKey.charAt(0).toUpperCase() + tierKey.slice(1)}`;
+                let badgeColor = tierKey === purchasedTier
+                  ? "#52c41a"
+                  : isPurchased
+                    ? "#00a9fa"
+                    : "#1890ff";
+                const featuresForTier = data.filter((item) => item[tierKey]);
+                return (
+                  <Col xs={24} md={Math.max(24 / tierKeys.length, 8)} key={tierKey}>
+                    <Badge.Ribbon
+                      text={badgeText}
+                      color={badgeColor}
+                      style={{
+                        marginTop: 40,
+                        padding: "0 12px",
+                        fontSize: 17,
+                        height: 32,
+                        lineHeight: "32px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {renderTierCard({ tierKey, isDisabled, imageUrl, buttonText, featuresForTier, priceId, isPurchased })}
+                    </Badge.Ribbon>
+                  </Col>
+                );
+              })}
         </Row>
 
         {!isMobile && (
@@ -410,11 +430,9 @@ const ShopWindow = (props) => {
 
       <Drawer
         title={
-          drawerTier === "free"
-            ? "⭐ Current"
-            : drawerTier === "silver"
-            ? `Silver Package $${activeCourse.tiers?.[drawerTier]?.priceUsd ?? ""} USD ⭐⭐`
-            : `Gold Package $${activeCourse.tiers?.[drawerTier]?.priceUsd ?? ""} USD ⭐⭐⭐`
+          drawerTier
+            ? `${drawerTier.charAt(0).toUpperCase() + drawerTier.slice(1)} Package${activeCourse.tiers?.[drawerTier]?.priceUsd ? ` $${activeCourse.tiers[drawerTier].priceUsd} USD` : ""}`
+            : ""
         }
         placement="bottom"
         closable={false}
