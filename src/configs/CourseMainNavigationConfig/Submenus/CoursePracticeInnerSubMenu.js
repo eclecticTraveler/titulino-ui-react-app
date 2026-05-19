@@ -9,7 +9,6 @@ import {
 	faBookReader,
 	faKeyboard,
 	faClone,
-	faDice,
 	faUserClock,
 	faChalkboard
    } from '@fortawesome/free-solid-svg-icons';
@@ -187,4 +186,3 @@ export const getCoursePracticeResourcesInnerSubMenu = (lang, levelNo, chapterNo)
 		]
 	
 }
-

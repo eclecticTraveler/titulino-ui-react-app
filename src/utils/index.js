@@ -323,7 +323,47 @@ class Utils {
 		  return [];
 		}
 	  
-		return Object.keys(userCourses);
+		return Object.entries(userCourses)
+			.map(([key, course]) => (
+				course?.courseCodeId ||
+				course?.CourseCodeId ||
+				course?.course_code_id ||
+				key
+			))
+			.filter(Boolean);
+	}
+
+	static getUserCourseFromUserCourses(userCourses, courseCodeId) {
+		if (!userCourses || typeof userCourses !== "object" || !courseCodeId) {
+		  return null;
+		}
+
+		const directCourse = userCourses[courseCodeId];
+		if (directCourse) return directCourse;
+
+		const normalizedCourseCodeId = String(courseCodeId).trim().toLowerCase();
+		const matchedEntry = Object.entries(userCourses).find(([key, course]) => {
+			const candidateCourseCodeIds = [
+				key,
+				course?.courseCodeId,
+				course?.CourseCodeId,
+				course?.course_code_id
+			];
+			return candidateCourseCodeIds.some(candidateCourseCodeId => (
+				String(candidateCourseCodeId || "").trim().toLowerCase() === normalizedCourseCodeId
+			));
+		});
+
+		return matchedEntry?.[1] || null;
+	}
+
+	static getCourseFieldValue(course, fieldNames = []) {
+		if (!course) return null;
+		if (typeof course === "string") return fieldNames.includes("courseToken") ? course : null;
+
+		return fieldNames
+			.map(fieldName => course?.[fieldName])
+			.find(value => value !== undefined && value !== null && value !== "") || null;
 	}
 	  
   /**
@@ -338,8 +378,12 @@ class Utils {
 	  return null;
 	}
 
-	const course = userCourses[courseCodeId];
-	return course?.courseTierAccess || "Free";
+	const course = this.getUserCourseFromUserCourses(userCourses, courseCodeId);
+	return this.getCourseFieldValue(course, [
+		"courseTierAccess",
+		"CourseTierAccess",
+		"course_tier_access"
+	]) || "Free";
 }
 
   /**
@@ -354,8 +398,18 @@ class Utils {
 		  return null;
 		}
 	
-		const course = userCourses[courseCodeId];
-		return course?.courseToken || null;
+		const course = this.getUserCourseFromUserCourses(userCourses, courseCodeId);
+		return this.getCourseFieldValue(course, [
+			"courseToken",
+			"CourseToken",
+			"course_token",
+			"courseAccessToken",
+			"CourseAccessToken",
+			"token",
+			"Token",
+			"accessToken",
+			"AccessToken"
+		]) || null;
 	}
 
 	/**
@@ -370,8 +424,12 @@ class Utils {
 		  return null;
 		}
 	
-		const course = userCourses[courseCodeId];
-		return course?.userLanguageProficiencyOrderIdForCourse || null;
+		const course = this.getUserCourseFromUserCourses(userCourses, courseCodeId);
+		return this.getCourseFieldValue(course, [
+			"userLanguageProficiencyOrderIdForCourse",
+			"UserLanguageProficiencyOrderIdForCourse",
+			"user_language_proficiency_order_id_for_course"
+		]) || null;
 	  }
 
 	/**
@@ -384,8 +442,17 @@ class Utils {
 		if (!userCourses || typeof userCourses !== "object") {
 		  return null;
 		}
-		const course = userCourses[courseCodeId];
-		return course?.userRoleIdForTheCourse || null;
+		const course = this.getUserCourseFromUserCourses(userCourses, courseCodeId);
+		return this.getCourseFieldValue(course, [
+			"userRoleIdForTheCourse",
+			"UserRoleIdForTheCourse",
+			"UserRoleId",
+			"userRoleId",
+			"RoleId",
+			"roleId",
+			"role",
+			"Role"
+		]) || null;
 	}
 
 	/**

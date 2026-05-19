@@ -12,6 +12,19 @@ import Loading from 'components/shared-components/Loading';
 import { env } from 'configs/EnvironmentConfig';
 import FacilitatorsLandingDashboard from 'components/admin-components/Insights/FacilitatorsLandingDashboard';
 
+const getUserCoursesSignature = (userCourses = {}) => {
+    if (!userCourses || typeof userCourses !== 'object') return '';
+
+    return Object.entries(userCourses)
+        .map(([key, course]) => [
+            course?.courseCodeId || course?.CourseCodeId || course?.course_code_id || key,
+            course?.courseToken ? '1' : '0',
+            course?.userRoleIdForTheCourse || ''
+        ].join(':'))
+        .sort()
+        .join('|');
+};
+
 class CourseLevel extends Component {
 
     loadCourseLandingData = () => {
@@ -52,22 +65,21 @@ class CourseLevel extends Component {
         const tokenChanged = this.props.token !== prevProps.token;
         const pathChanged = this.props.location?.pathname !== prevProps?.location?.pathname;
         const isAuthenticated = !!this.props.token;
-        const userCoursesChanged = this.props.user?.userCourses !== prevProps.user?.userCourses;
+        const userIdentityChanged = (
+            this.props.user?.emailId !== prevProps.user?.emailId ||
+            this.props.user?.yearOfBirth !== prevProps.user?.yearOfBirth
+        );
+        const userCoursesChanged = (
+            getUserCoursesSignature(this.props.user?.userCourses) !==
+            getUserCoursesSignature(prevProps.user?.userCourses)
+        );
 
-        if (isAuthenticated && pathChanged) {
-            // Logged in + navigating around
+        if (isAuthenticated && (tokenChanged || pathChanged || userIdentityChanged || userCoursesChanged)) {
+            // Logged in, navigating, or profile/course grants have arrived.
             this.loadCourseLandingData();
         } else if (!isAuthenticated && (tokenChanged || pathChanged)) {
             // Not logged in, either signed out or navigating
             this.loadPublicCourseLandingData();
-        }
-
-        // Re-resolve facilitador when user profile arrives or path changes
-        if (userCoursesChanged || pathChanged) {
-            const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname);
-            if (this.props?.user?.emailId) {
-                this.props.onResolvingFacilitadorForThemeCourse(pathTheme?.courseTheme, this.props.user?.emailId);
-            }
         }
       }
 

@@ -35,7 +35,6 @@ const getPreferenceAwareStorage = (key) => (
 const schedulePreferenceBackup = (key) => {
   if (
     WebsitePreferences.isWebsitePreferenceStorageKey(key) &&
-    !ImpersonationSession.hasActiveImpersonationProfile() &&
     !WebsitePreferences.isApplyingWebsitePreferences()
   ) {
     WebsitePreferences.scheduleWebsitePreferencesBackup(key);

@@ -10,6 +10,7 @@ import PageHeader from 'components/layout-components/PageHeader';
 import Footer from 'components/layout-components/Footer';
 import AuthViews from 'views/auth-views'
 import AuthenticatedProfileGate from 'components/layout-components/AuthenticatedProfileGate';
+import ImpersonationBanner from 'components/layout-components/ImpersonationBanner';
 import {
   Layout,
   Grid,
@@ -72,6 +73,7 @@ export const AuthLayout = ({ navCollapsed, navType, location, direction, dynamic
   return (           
 		<Layout>
 			<HeaderNav isMobile={isMobile} />
+      <ImpersonationBanner />
 			
 			{(isNavTop && !isMobile) ? <TopNav routeInfo={currentRouteInfo}/> : null}
 			

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
@@ -54,6 +54,9 @@ export const Views = (props) => {
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
     const preferencesHydrationKey = useRef(null);
+    const [isPreferenceHydrating, setIsPreferenceHydrating] = useState(() => (
+        ImpersonationSession.hasActiveImpersonationProfile()
+    ));
 
     // Load the cookie for Authentication if there was any
      useSupabaseSessionSync((session) => {
@@ -103,9 +106,15 @@ export const Views = (props) => {
     ]);
 
     useEffect(() => {
-        if (!user?.innerToken || !user?.emailId) return;
+        if (!user?.innerToken || !user?.emailId) {
+            if (!ImpersonationSession.hasActiveImpersonationProfile()) {
+                setIsPreferenceHydrating(false);
+            }
+            return;
+        }
 
         const isImpersonating = user?.impersonation?.isImpersonating === true;
+        const targetStorage = isImpersonating ? window.sessionStorage : window.localStorage;
         const hydrationKey = [
             user?.contactInternalId || user?.emailId,
             isImpersonating ? 'impersonating' : 'normal'
@@ -113,34 +122,53 @@ export const Views = (props) => {
 
         WebsitePreferences.configureWebsitePreferenceSync({
             token: user.innerToken,
-            readOnly: isImpersonating
+            readOnly: false,
+            storage: targetStorage
         });
 
-        if (preferencesHydrationKey.current === hydrationKey) return;
+        if (preferencesHydrationKey.current === hydrationKey) {
+            setIsPreferenceHydrating(false);
+            return;
+        }
         preferencesHydrationKey.current = hydrationKey;
 
+        let isActive = true;
         const hydratePreferences = async () => {
-            const result = await WebsitePreferences.hydrateWebsitePreferences({
-                token: user.innerToken,
-                targetStorage: isImpersonating ? window.sessionStorage : window.localStorage,
-                readOnly: isImpersonating,
-                whoCalledMe: 'Views.userPreferenceHydration'
-            });
+            setIsPreferenceHydrating(true);
+            try {
+                const result = await WebsitePreferences.hydrateWebsitePreferences({
+                    token: user.innerToken,
+                    targetStorage,
+                    readOnly: false,
+                    whoCalledMe: 'Views.userPreferenceHydration'
+                });
 
-            if (result?.appliedCount > 0) {
+                if (!isActive) return;
+
                 onLoadingUserSelectedTheme();
                 getIsLanguageConfiguredFlag();
                 getUserBaseLanguage();
                 getSelectedContentLanguage();
-            } else if (!isImpersonating && result?.success && result?.exists !== true) {
-                WebsitePreferences.saveWebsitePreferencesNow({
-                    token: user.innerToken,
-                    whoCalledMe: 'Views.initialPreferenceBackup'
-                });
+
+                if (!isImpersonating && result?.success && result?.exists !== true) {
+                    WebsitePreferences.saveWebsitePreferencesNow({
+                        token: user.innerToken,
+                        storage: targetStorage,
+                        whoCalledMe: 'Views.initialPreferenceBackup'
+                    });
+                }
+            } finally {
+                if (isActive) {
+                    setIsPreferenceHydrating(false);
+                }
             }
         };
 
         hydratePreferences();
+
+        return () => {
+            isActive = false;
+        };
     }, [
         getIsLanguageConfiguredFlag,
         getSelectedContentLanguage,
@@ -239,6 +267,10 @@ export const Views = (props) => {
             token: baseToken,
         };
     }, [currentTheme]);
+
+    if (isPreferenceHydrating) {
+        return <Loading cover="content" />;
+    }
 
     if(!isLanguageConfigured){
         return (

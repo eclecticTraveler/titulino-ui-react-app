@@ -13,6 +13,24 @@ import localLanguageCourses from "assets/data/lang-courses.data.json";
 import localCourseThemeRegistry from "assets/data/course-theme-registry.data.json";
 import localBadgeThemeRegistry from "assets/data/badge-theme-registry.data.json";
 import { env } from "configs/EnvironmentConfig";
+import ImpersonationSession from "lob/ImpersonationSession";
+
+const normalizeIdentifier = (value) => (
+  value == null ? "" : String(value).trim().toLowerCase()
+);
+
+const getCachedUserProfile = async (emailId) => {
+  const activeImpersonationProfile = ImpersonationSession.getActiveImpersonationProfile();
+  if (
+    activeImpersonationProfile?.emailId &&
+    normalizeIdentifier(activeImpersonationProfile.emailId) === normalizeIdentifier(emailId)
+  ) {
+    return activeImpersonationProfile;
+  }
+
+  const localStorageKey = `UserProfile_${emailId}`;
+  return LocalStorageService.getCachedObject(localStorageKey);
+};
 
 const getUserCourseProgress = async(courseCodeId, emailId) => {
   let courseFilteredProgress = [];
@@ -21,11 +39,9 @@ const getUserCourseProgress = async(courseCodeId, emailId) => {
 
   try {
     let courseProgress = [];
-    const localStorageKey = `UserProfile_${emailId}`;
+    const user = await getCachedUserProfile(emailId);
 
-    const user = await LocalStorageService.getCachedObject(localStorageKey);
-
-    const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
+    const token = await getCourseOperationToken(courseCodeId, emailId);
 
     if (token) {
       courseProgress = await TitulinoLrnAuthService.getCourseProgress(courseCodeId, token, "getUserCourseProgress");
@@ -51,23 +67,30 @@ const getUserCourseProgress = async(courseCodeId, emailId) => {
 }
 
 const upsertUserCourseProgress = async(courseProgress, courseCodeId, emailId) => {
-  const token = await getCourseToken(courseCodeId, emailId);
+  const token = await getCourseOperationToken(courseCodeId, emailId);
   courseProgress = await TitulinoLrnAuthService.upsertCourseProgress(courseProgress, token, "upsertUserCourseProgress");
   return courseProgress;
 }
 
 const getCourseToken = async(courseCodeId, emailId) => {
-  const localStorageKey = `UserProfile_${emailId}`;
-
-  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const user = await getCachedUserProfile(emailId);
 
   const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
   return token;
 }
 
-const normalizeIdentifier = (value) => (
-  value == null ? "" : String(value).trim().toLowerCase()
-);
+const getCourseOperationToken = async(courseCodeId, emailId) => {
+  const user = await getCachedUserProfile(emailId);
+  const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
+  if (token) return token;
+
+  const course = utils.getUserCourseFromUserCourses(user?.userCourses, courseCodeId);
+  if (course && user?.innerToken) {
+    return user.innerToken;
+  }
+
+  return null;
+}
 
 const shouldDebugEnrollmentProfilePicture = () => env.ENVIROMENT !== "prod";
 
@@ -233,8 +256,7 @@ const resolveEnrollmentProfileContext = async ({
 };
 
 const getUserUpperNavigationConfig = async (isAuthenticated, emailId) => { 
-  const localStorageKey = `UserProfile_${emailId}`;  
-  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const user = await getCachedUserProfile(emailId);
 
   const isUserAuthenticated = !!isAuthenticated;
   const selectedLanguageForCourse =  await LocalStorageService.getSelectedContentLanguage();
@@ -285,8 +307,7 @@ const getBadgeThemeRegistry = async () => {
 }
 
 const getGrammarClasses = async(levelNo, chapterNo, baseLanguage, contentLanguage, emailId) => {
-    const localStorageKey = `UserProfile_${emailId}`;  
-    const user = await LocalStorageService.getCachedObject(localStorageKey);
+    const user = await getCachedUserProfile(emailId);
     const urls = await GrammarClassService.getGrammarClassUrlsByChapter(levelNo, chapterNo, baseLanguage, contentLanguage);
     const registry = await getCourseThemeRegistry();
     const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelNo, registry);
@@ -313,8 +334,7 @@ const getCourseProgress = async(courseTheme, baseLanguage, contentLanguage) => {
 }
 
 const getUserCoursesForEnrollment = async(emailId) => {  
-    const localStorageKey = `UserProfile_${emailId}`;  
-    const user = await LocalStorageService.getCachedObject(localStorageKey);
+    const user = await getCachedUserProfile(emailId);
 
     const [countries, availableCourses, selfLanguageLevel] = await Promise.all([
       TitulinoRestService.getCountries("getUserCoursesForEnrollment"),
@@ -338,9 +358,7 @@ const getUserCoursesForEnrollment = async(emailId) => {
 }
 
 const getUserBookBaseUrl = async(levelTheme, baseLanguage, contentLanguage, emailId) => {  
-  const localStorageKey = `UserProfile_${emailId}`;  
-
-  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const user = await getCachedUserProfile(emailId);
 
   const registry = await getCourseThemeRegistry();
   const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme, registry);
@@ -353,9 +371,7 @@ const getUserBookBaseUrl = async(levelTheme, baseLanguage, contentLanguage, emai
 } 
 
 const getUserEBookChapterUrl = async(levelTheme, chapterNo, baseLanguage, contentLanguage, emailId) => {  
-  const localStorageKey = `UserProfile_${emailId}`;  
-
-  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const user = await getCachedUserProfile(emailId);
 
   const registry = await getCourseThemeRegistry();
   const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme, registry);
@@ -369,8 +385,7 @@ const getUserEBookChapterUrl = async(levelTheme, chapterNo, baseLanguage, conten
 
 
 const upsertKnowMeProfilePicture = async (fileToUpload, emailId) => {
-  const localStorageKey = `UserProfile_${emailId}`;
-  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const user = await getCachedUserProfile(emailId);
 
   if (!user?.contactInternalId || !fileToUpload) {
     console.warn("Missing contactInternalId or fileToUpload, skipping KnowMe upload.");
@@ -645,8 +660,7 @@ export const upsertUserKnowMeProgress = async (
   emailId,
   classNumber = 0
 ) => {
-  const localStorageKey = `UserProfile_${emailId}`;
-  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const user = await getCachedUserProfile(emailId);
 
   if (!user?.contactInternalId) {
     console.warn("No contactInternalId found, skipping KnowMe upsert.");
@@ -741,8 +755,7 @@ export const buildStudentKnowMeFileName = async (file, contactId, emailId, class
 
 
 const resolveFacilitadorCourseCodeId = async (courseTheme, emailId) => {
-  const localStorageKey = `UserProfile_${emailId}`;
-  const user = await LocalStorageService.getCachedObject(localStorageKey);
+  const user = await getCachedUserProfile(emailId);
   const userCourses = user?.userCourses;
   const registry = await getCourseThemeRegistry();
   const themeCourseCodeIds = registry[courseTheme?.toLowerCase()] || [];

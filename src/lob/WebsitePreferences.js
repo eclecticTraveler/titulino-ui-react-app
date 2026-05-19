@@ -23,6 +23,7 @@ let backupToken = null;
 let isBackupReadOnly = false;
 let backupTimer = null;
 let isApplyingPreferences = false;
+let backupStorage = typeof window !== 'undefined' ? window.localStorage : null;
 
 export const isWebsitePreferenceStorageKey = (key) => (
   EXACT_PREFERENCE_KEYS.has(key) ||
@@ -111,20 +112,23 @@ export const applyWebsitePreferencesBackup = (
 
 export const configureWebsitePreferenceSync = ({
   token,
-  readOnly = false
+  readOnly = false,
+  storage
 } = {}) => {
   backupToken = token || null;
   isBackupReadOnly = readOnly === true;
+  backupStorage = storage || backupStorage || window.localStorage;
 
   logPreferences('configureWebsitePreferenceSync', {
     hasToken: !!backupToken,
-    readOnly: isBackupReadOnly
+    readOnly: isBackupReadOnly,
+    storage: backupStorage === window.sessionStorage ? 'sessionStorage' : 'localStorage'
   });
 };
 
 export const saveWebsitePreferencesNow = async ({
   token = backupToken,
-  storage = window.localStorage,
+  storage = backupStorage || window.localStorage,
   whoCalledMe = 'saveWebsitePreferencesNow'
 } = {}) => {
   if (!token || isBackupReadOnly) {
@@ -173,11 +177,12 @@ export const hydrateWebsitePreferences = async ({
 
   const result = await TitulinoLrnNetService.getWebsitePreferences(token, whoCalledMe);
   if (!result?.success || result?.exists !== true || !result?.preferences) {
+    configureWebsitePreferenceSync({ token, readOnly, storage: targetStorage });
     return { ...result, appliedCount: 0 };
   }
 
   const applied = applyWebsitePreferencesBackup(result.preferences, targetStorage);
-  configureWebsitePreferenceSync({ token, readOnly });
+  configureWebsitePreferenceSync({ token, readOnly, storage: targetStorage });
 
   return {
     ...result,

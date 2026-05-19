@@ -21,14 +21,31 @@ import ProcessLogs from "lob/ProcessLogs";
 import AudienceMessaging from "lob/AudienceMessaging";
 import utils from 'utils';
 
-const getTokenFromEmail = async (emailId) => {
-  const user = await LocalStorageService.getCachedObject(`UserProfile_${emailId}`);
-  return user?.innerToken || null;
-};
-
 const normalizeIdentifier = (value) => (
   value == null ? '' : String(value).trim().toLowerCase()
 );
+
+const getActiveImpersonationProfileForEmail = (emailId) => {
+  const activeImpersonationProfile = ImpersonationSession.getActiveImpersonationProfile();
+  if (
+    activeImpersonationProfile?.innerToken &&
+    normalizeIdentifier(activeImpersonationProfile.emailId) === normalizeIdentifier(emailId)
+  ) {
+    return activeImpersonationProfile;
+  }
+
+  return null;
+};
+
+const getTokenFromEmail = async (emailId) => {
+  const activeImpersonationProfile = getActiveImpersonationProfileForEmail(emailId);
+  if (activeImpersonationProfile?.innerToken) {
+    return activeImpersonationProfile.innerToken;
+  }
+
+  const user = await LocalStorageService.getCachedObject(`UserProfile_${emailId}`);
+  return user?.innerToken || null;
+};
 
 const toIsoString = (value) => {
   if (!value) return null;
@@ -597,9 +614,6 @@ export const getContactCertificationHistory = async (emailId, filters = {}) => {
   ]);
 
   const normalizedRows = AudienceMessaging.normalizeCertificationHistoryRows(rows).map((row) => {
-    // We reach here in the GCP the import localCourseThemeRegistry from "assets/data/course-theme-registry.data.json";
-    //Also we reach import localBadgeThemeRegistry from "assets/data/badge-theme-registry.data.json";  and then we pass it to the lob files
-    
     const badgeMetadata = LrnConfiguration.getBadgeMetadataForCertification(
       row.courseCodeId,
       row.certificationKey,
@@ -1040,7 +1054,8 @@ export const upsertSelectedContactProfile = async (profileUpdate, adminEmailId) 
       success: false,
       submittedEnrollee: null,
       contactProfilePatch: null,
-      uploadedProfilePicture: null
+      uploadedProfilePicture: null,
+      hydratedProfilePicture: null
     };
   }
 
@@ -1051,6 +1066,7 @@ export const upsertSelectedContactProfile = async (profileUpdate, adminEmailId) 
   );
   const success = isUpsertApiResultSuccessful(submittedEnrollee);
   let uploadedProfilePicture = null;
+  let hydratedProfilePicture = null;
   let contactProfilePatch = profileUpdate.patch || null;
 
   const rawProfileFile = profileUpdate?.filesMap?.profilePictureUpload?.[0]?.originFileObj ||
@@ -1059,10 +1075,12 @@ export const upsertSelectedContactProfile = async (profileUpdate, adminEmailId) 
 
   if (success && rawProfileFile && contactProfilePatch?.ContactInternalId) {
     const emailId = profileUpdate?.payload?.[0]?.emailAddress || ContactProfileEditor.getPrimaryContactEmail(contactProfilePatch);
+    const activeImpersonationProfile = getActiveImpersonationProfileForEmail(adminEmailId);
+    const uploaderEmailId = activeImpersonationProfile?.impersonation?.realEmail || emailId;
     const fileToUpload = await LrnConfiguration.buildStudentKnowMeFileName(
       rawProfileFile,
       contactProfilePatch.ContactInternalId,
-      emailId,
+      uploaderEmailId,
       0
     );
 
@@ -1072,7 +1090,14 @@ export const upsertSelectedContactProfile = async (profileUpdate, adminEmailId) 
       'AdminToolsManager.upsertSelectedContactProfile'
     );
 
-    const profileUrl = uploadedProfilePicture?.profileUrl || uploadedProfilePicture?.ProfileUrl || null;
+    hydratedProfilePicture = await TitulinoNetService.getContactEnrolleeKnowMeProfileImage(
+      token,
+      emailId,
+      contactProfilePatch.ContactInternalId,
+      'AdminToolsManager.upsertSelectedContactProfile:hydrateProfileImage'
+    );
+
+    const profileUrl = hydratedProfilePicture?.profileUrl || hydratedProfilePicture?.ProfileUrl || null;
     if (profileUrl) {
       contactProfilePatch = {
         ...contactProfilePatch,
@@ -1086,7 +1111,8 @@ export const upsertSelectedContactProfile = async (profileUpdate, adminEmailId) 
     success,
     submittedEnrollee,
     contactProfilePatch,
-    uploadedProfilePicture
+    uploadedProfilePicture,
+    hydratedProfilePicture
   };
 };
 

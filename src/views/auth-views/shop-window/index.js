@@ -185,7 +185,6 @@ const ShopWindow = (props) => {
   ];
 
   const handlePurchase = async (priceId) => {
-        {/* Removed extra </Row> here to fix JSX error */}
     if (!user?.emailId) return;
   
     try {

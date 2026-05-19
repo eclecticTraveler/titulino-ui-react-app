@@ -139,6 +139,29 @@ export const getKnowMeProfileUrlMap = async (
   }, {});
 };
 
+export const getOwnKnowMeProfileUrlMap = async (
+  token,
+  emailId,
+  contactInternalId,
+  whoCalledMe
+) => {
+  const normalizedContactInternalId = normalizeContactInternalId(contactInternalId);
+
+  if (!token || !emailId || !normalizedContactInternalId) return {};
+
+  const response = await TitulinoNetService.getContactEnrolleeKnowMeProfileImage(
+    token,
+    emailId,
+    contactInternalId,
+    whoCalledMe
+  );
+
+  const profileUrl = response?.ProfileUrl || response?.profileUrl || '';
+  return {
+    [normalizedContactInternalId]: profileUrl || null
+  };
+};
+
 export const getMissingKnowMeProfileUrlMap = async (
   token,
   items = [],
@@ -247,6 +270,7 @@ const KnowMeProfiles = {
   buildKnowMeProfileUrlMap,
   mergeKnowMeProfileUrlsIntoItems,
   getKnowMeProfileUrlMap,
+  getOwnKnowMeProfileUrlMap,
   getMissingKnowMeProfileUrlMap,
   applyKnowMeProfileUrlMapToTableModel,
   enrichItemsWithKnowMeProfileUrls,

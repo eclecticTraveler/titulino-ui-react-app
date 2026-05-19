@@ -65,6 +65,9 @@ const ACCEPTED_PROFILE_PICTURE_TYPES = new Set(['image/jpeg', 'image/jpg', 'imag
 const getValue = (...values) => values.find(value => value !== undefined && value !== null && value !== '');
 const normalizeIdentifier = (value) => (value == null ? '' : String(value).trim().toLowerCase());
 const normalizeArray = (value) => (Array.isArray(value) ? value : []);
+const getRawUploadFile = (fileEntry) => (
+  fileEntry?.originFileObj || (fileEntry instanceof Blob ? fileEntry : null)
+);
 
 const formatDate = (value) => {
   if (!value) return '-';
@@ -512,6 +515,7 @@ const EnrolleeProfile = ({
   const [residencyDivisions, setResidencyDivisions] = useState([]);
   const [geoMaps, setGeoMaps] = useState({ birth: null, residency: null });
   const [hydratedAvatarUrl, setHydratedAvatarUrl] = useState(null);
+  const [localAvatarPreviewUrl, setLocalAvatarPreviewUrl] = useState(null);
   const [awardRows, setAwardRows] = useState([]);
   const [awardsLoading, setAwardsLoading] = useState(false);
   const [form] = Form.useForm();
@@ -598,6 +602,7 @@ const EnrolleeProfile = ({
   ]);
   const knowMeToken = getValue(profile?.innerToken, profile?.token, user?.innerToken);
   const avatarUrl = getValue(
+    localAvatarPreviewUrl,
     hydratedAvatarUrl,
     profile?.AvatarUrl,
     profile?.avatarUrl,
@@ -610,15 +615,24 @@ const EnrolleeProfile = ({
   );
 
   useEffect(() => {
+    return () => {
+      if (localAvatarPreviewUrl) {
+        URL.revokeObjectURL(localAvatarPreviewUrl);
+      }
+    };
+  }, [localAvatarPreviewUrl]);
+
+  useEffect(() => {
     if (!contactInternalId || !knowMeToken) {
       setHydratedAvatarUrl(null);
       return;
     }
 
     let isActive = true;
-    KnowMeProfiles.getKnowMeProfileUrlMap(
+    KnowMeProfiles.getOwnKnowMeProfileUrlMap(
       knowMeToken,
-      [contactInternalId],
+      user?.emailId,
+      contactInternalId,
       'EnrolleeProfile.avatarHydration'
     )
       .then((profileUrlMap) => {
@@ -632,7 +646,7 @@ const EnrolleeProfile = ({
     return () => {
       isActive = false;
     };
-  }, [contactInternalId, knowMeToken]);
+  }, [contactInternalId, knowMeToken, user?.emailId]);
 
   useEffect(() => {
     if (!contactInternalId) {
@@ -1065,6 +1079,7 @@ const EnrolleeProfile = ({
 
   const handleSave = async () => {
     const values = await form.validateFields();
+    const selectedProfileFile = getRawUploadFile(normalizeArray(values[PROFILE_PICTURE_FIELD_NAME])[0]);
     const nextEmails = normalizeArray(values.emails).map(normalizeIdentifier);
     const missingExistingEmails = emails.filter(email => !nextEmails.includes(normalizeIdentifier(email)));
 
@@ -1078,11 +1093,37 @@ const EnrolleeProfile = ({
       const result = action?.upsertResult;
 
       if (result?.success) {
+        if (selectedProfileFile) {
+          setLocalAvatarPreviewUrl(URL.createObjectURL(selectedProfileFile));
+        }
+
         const nextProfile = ContactProfileEditorLob.mergeContactProfilePatch(
           profile,
           action?.contactProfilePatch || result?.contactProfilePatch
         );
         setProfile(nextProfile);
+        const nextProfileUrl = getValue(
+          result?.hydratedProfilePicture?.profileUrl,
+          result?.hydratedProfilePicture?.ProfileUrl,
+          result?.contactProfilePatch?.AvatarUrl,
+          result?.contactProfilePatch?.avatarUrl
+        );
+        if (nextProfileUrl) {
+          setHydratedAvatarUrl(nextProfileUrl);
+          setLocalAvatarPreviewUrl(null);
+        } else if (selectedProfileFile && contactInternalId && knowMeToken && user?.emailId) {
+          const profileUrlMap = await KnowMeProfiles.getOwnKnowMeProfileUrlMap(
+            knowMeToken,
+            user.emailId,
+            contactInternalId,
+            'EnrolleeProfile.avatarHydrationAfterSave'
+          );
+          const refreshedProfileUrl = profileUrlMap?.[normalizeIdentifier(contactInternalId)] || null;
+          if (refreshedProfileUrl) {
+            setHydratedAvatarUrl(refreshedProfileUrl);
+            setLocalAvatarPreviewUrl(null);
+          }
+        }
         setEditOpen(false);
         message.success('Profile update saved.');
       } else {

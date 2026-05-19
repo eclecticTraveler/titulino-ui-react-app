@@ -50,6 +50,38 @@ export const QuickToFullEnrollment = (props) => {
     isFindMeSubmitted &&
     !returningEnrolleeCountryDivisionInfo?.personalCommunicationName
   );
+  const isReturningEnrolleeNotFound = (
+    !loading &&
+    isFindMeSubmitted &&
+    !returningEnrolleeCountryDivisionInfo?.personalCommunicationName
+  );
+
+  const getEnrollmentPayloadValidationErrors = (records = []) => {
+    const record = records?.[0] || {};
+    const requiredFields = [
+      ["emailAddress", "email"],
+      ["lastNames", "last names"],
+      ["names", "names"],
+      ["sex", "gender"],
+      ["dateOfBirth", "date of birth"],
+      ["countryOfResidence", "country of residence"],
+      ["countryOfBirth", "country of birth"],
+      ["termsVersion", "terms version"]
+    ];
+    const missingFields = requiredFields
+      .filter(([fieldName]) => !record?.[fieldName])
+      .map(([, label]) => label);
+
+    if (!Array.isArray(record?.coursesCodeIds) || record.coursesCodeIds.length === 0) {
+      missingFields.push("course");
+    }
+
+    if (!Array.isArray(record?.languageProficiencies) || record.languageProficiencies.length === 0) {
+      missingFields.push("language proficiency");
+    }
+
+    return missingFields;
+  };
 
     const setLocale = (isLocaleOn, localeKey) => {
       return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
@@ -390,6 +422,20 @@ useEffect(() => {
         !isToProceedToFullEnrollment,
         returningEnrolleeCountryDivisionInfo
       );
+      const payloadValidationErrors = getEnrollmentPayloadValidationErrors(formattedDatatoSubmit);
+
+      if (payloadValidationErrors.length > 0) {
+        console.warn("Enrollment payload blocked before submit", {
+          missingFields: payloadValidationErrors,
+          selectedCoursesToEnroll,
+          availableCourseIds: availableCourses?.map(course => course?.CourseCodeId),
+          payload: formattedDatatoSubmit
+        });
+        message.error(`Missing enrollment information: ${payloadValidationErrors.join(", ")}`);
+        return;
+      }
+
+      console.log("formattedDatatoSubmit", JSON.stringify(formattedDatatoSubmit, null, 2));
 
       const filesMap = {};
       const profilePicList = values?.[PROFILE_PICTURE_FIELD_NAME];
@@ -430,7 +476,6 @@ useEffect(() => {
         profilePictureContext,
         recaptchaToken
       });
-      console.log("formattedDatatoSubmit", formattedDatatoSubmit);
 
     } catch (error) {
       // Handle validation failure
@@ -480,6 +525,9 @@ useEffect(() => {
     
     if (isValid) {
       setFindMeVisible(true);
+      setReturningEnrolleeCountryDivisionInfo(null);
+      setIsFindMeSubmitted(false);
+      setIsToProceedToFullEnrollment(false);
     } else {
       setFindMeVisible(false);
       setReturningEnrolleeCountryDivisionInfo(null);
@@ -686,7 +734,7 @@ useEffect(() => {
 
                 {loading ? (
                   <Spin description={setLocale(locale, "enrollment.form.searchingRecord")} />
-                ) : isFindMeSubmitted && !returningEnrolleeCountryDivisionInfo?.personalCommunicationName ? (
+                ) : isReturningEnrolleeNotFound ? (
                   <h4>
                     {setLocale(locale, "enrollment.form.unableToFindRecord")}{` ${form.getFieldValue("emailAddress") || "N/A"} `}
                     {setLocale(locale, "enrollment.form.andYearOfBirth")} {` ${form.getFieldValue("yearOfBirth") ? form.getFieldValue("yearOfBirth").format("YYYY") : "N/A"}`}
@@ -694,14 +742,14 @@ useEffect(() => {
                 ) : null}
 
                 
-                {isFindMeVisible && (
+                {isFindMeVisible && !isReturningEnrolleeNotFound && (
                   <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
                     <Button type="primary" size="large" onClick={onFindMe}>{setLocale(locale, "enrollment.form.findMe")}</Button>
                     <Button type="default" size="large" onClick={resetQuickEnrollmentInputValues}>{setLocale(locale, "resources.myprogress.reset")}</Button>
                   </div>
                 )}
 
-                {!loading && isFindMeSubmitted && !returningEnrolleeCountryDivisionInfo?.personalCommunicationName && !isToProceedToFullEnrollment && (
+                {isReturningEnrolleeNotFound && !isToProceedToFullEnrollment && (
                   <div style={quickEnrollmentStyle}>
                     <h3>{setLocale(locale, "enrollment.form.noRecordsProceedEnrollment")}</h3>
                     <Button type="primary" size="large" onClick={onProceedForFullEnrollment}>{setLocale(locale, "enrollment.form.yes")}</Button>

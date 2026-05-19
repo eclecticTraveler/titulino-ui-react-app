@@ -73,6 +73,11 @@ import LrnManager from "managers/LrnManager";
 
 const COURSE_DATA_CACHE_TTL_MINUTES = env.COURSE_DATA_CACHE_TTL_MINUTES;
 
+const getCourseCodeIdForTheme = async (courseTheme) => {
+  const registry = await LrnManager.getCourseThemeRegistry();
+  return LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme, registry);
+};
+
 export const onRequestingGraphForLandingDashboard = async() => {
   const graph = await GraphService.getDashboardData();
   return {
@@ -318,7 +323,7 @@ export const onRequestingCourseProgressStructure = async (baseLanguage, contentL
     // It will handle the caching through REDIS, but for now its okay
     
     // Get `courseCodeId` for the given `courseTheme`
-    const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme);
+    const courseCodeId = await getCourseCodeIdForTheme(courseTheme);
   
     // Dynamic local storage key based on `courseCodeId`
     const localStorageKey = `EnrolleesByCourse_${courseCodeId}`;
@@ -619,7 +624,7 @@ export const onSubmittingUserAuthenticatedProgressForCourse = async (courseProgr
 export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) => {
 
   // Get courseId in Factory
- const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme);
+ const courseCodeId = await getCourseCodeIdForTheme(courseTheme);
  const userIsEnrolled = await TitulinoManager.getCourseToken(courseCodeId, emailId)
  
   return {

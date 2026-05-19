@@ -10,6 +10,19 @@ import { bindActionCreators } from 'redux';
 import utils from 'utils';
 import Loading from 'components/shared-components/Loading';
 
+const getUserCoursesSignature = (userCourses = {}) => {
+    if (!userCourses || typeof userCourses !== 'object') return '';
+
+    return Object.entries(userCourses)
+        .map(([key, course]) => [
+            course?.courseCodeId || course?.CourseCodeId || course?.course_code_id || key,
+            course?.courseToken ? '1' : '0',
+            course?.userRoleIdForTheCourse || ''
+        ].join(':'))
+        .sort()
+        .join('|');
+};
+
 class AuthCourseLevel extends Component {
 
     loadCourseLandingData = () => {
@@ -39,8 +52,19 @@ class AuthCourseLevel extends Component {
         this.loadCourseLandingData();
     }
 
-    componentDidUpdate(prevProps) {       
-        if (prevProps?.location?.pathname !== this.props.location?.pathname) {
+    componentDidUpdate(prevProps) {
+        const pathChanged = prevProps?.location?.pathname !== this.props.location?.pathname;
+        const tokenChanged = prevProps?.token !== this.props.token;
+        const userIdentityChanged = (
+            this.props.user?.emailId !== prevProps.user?.emailId ||
+            this.props.user?.yearOfBirth !== prevProps.user?.yearOfBirth
+        );
+        const userCoursesChanged = (
+            getUserCoursesSignature(this.props.user?.userCourses) !==
+            getUserCoursesSignature(prevProps.user?.userCourses)
+        );
+
+        if (pathChanged || tokenChanged || userIdentityChanged || userCoursesChanged) {
             this.loadCourseLandingData();
         }
       }
