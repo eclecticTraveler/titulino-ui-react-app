@@ -3,7 +3,6 @@ import {connect} from 'react-redux';
 import {getUserBaseLanguage}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import KnowMeV1 from 'components/layout-components/KnowMeV1';
-import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 import utils from 'utils';
 
 class KnowMe extends Component {
@@ -29,19 +28,11 @@ class KnowMe extends Component {
     const chapterNo = pathInfo?.chapterNo;
 
   if(this.props.token){
-      if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
-          return (
-              <div id="unathenticated-landing-page-margin">
-                  <EmailYearSearchForm/>
-              </div>
-          )
-      }else{
-        return (
-           <div id="unathenticated-landing-page-margin">
-            <KnowMeV1 levelTheme={levelTheme} chapterNo={chapterNo} />
-          </div>
-        );
-      } 
+      return (
+         <div id="unathenticated-landing-page-margin">
+          <KnowMeV1 levelTheme={levelTheme} chapterNo={chapterNo} />
+        </div>
+      );
     }else{
       return (
         <div>

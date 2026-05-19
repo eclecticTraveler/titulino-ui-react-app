@@ -2,7 +2,8 @@
 const levelMapping = {
   "supermarket": 4,
   "household":5,
-  "work-n-jobs":6
+  "work-n-jobs":6,
+  "speeches":7,
 };
 
 export const getThemeMappedLevelNo = (level) => {

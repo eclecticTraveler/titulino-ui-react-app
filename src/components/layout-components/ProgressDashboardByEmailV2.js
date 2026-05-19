@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { onSearchingForProgressByEmailIdAndCourseCodeId, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Card, Input, Button, Form, Row, Col, Divider, message, Tabs } from 'antd';
+import { App, Card, Input, Button, Form, Row, Col, Divider, Tabs } from 'antd';
 import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
@@ -22,6 +22,7 @@ export const ProgressDashboardByEmailV2 = (props) => {
   const { onSearchingForProgressByEmailIdAndCourseCodeId, registeredProgressByEmailId, submittedUserCourseProgress,
      baseLanguage, currentCourseCodeId, courseConfiguration, onSubmittingUserCourseProgress, onResetingProgressByEmailIdAndCourseCodeId,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, contentLanguage, selectedContentLanguage, courseTheme } = props;
+  const { message } = App.useApp();
 
   const [selectedLessonsForSubmission, setSelectedLessonsForSubmission] = useState({});
   const [selectedLessons, setSelectedLessons] = useState({});

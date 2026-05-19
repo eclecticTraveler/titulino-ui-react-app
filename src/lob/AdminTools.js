@@ -70,18 +70,25 @@ export const generateCourseCodeId = (courseName, startDate, existingIds = []) =>
 };
 
 /**
- * Build the upsert payload that matches the DB course_type:
- *   { CourseCodeId, CreationDate, StartDate, EndDate, CourseDetails (jsonb), NativeLanguageId, TargetLanguageId }
- *
+ * Build the upsert payload expected by the course API.
  * Returns the payload wrapped in an array (the endpoint expects an array).
  */
-export const buildCourseUpsertPayload = (formValues) => {
+export const buildCourseUpsertPayload = (formValues = {}) => {
   const {
     CourseCodeId,
+    courseCodeId,
+    CreationDate,
+    creationDate,
     StartDate,
+    startDate,
     EndDate,
+    endDate,
     NativeLanguageId,
+    nativeLanguageId,
     TargetLanguageId,
+    targetLanguageId,
+    CourseDetails,
+    courseDetails,
     course,
     teacher,
     imageUrl,
@@ -93,28 +100,66 @@ export const buildCourseUpsertPayload = (formValues) => {
     whatsAppLink,
     targetAudienceNativeLanguage
   } = formValues;
+  const details = CourseDetails || courseDetails || {};
 
   return [{
-    CourseCodeId,
-    CreationDate: new Date().toISOString(),
-    StartDate: StartDate || null,
-    EndDate: EndDate || null,
-    CourseDetails: {
-      course: course || '',
-      teacher: teacher || '',
-      imageUrl: imageUrl || '',
-      location: location || '',
-      gatheringDay: gatheringDay || '',
-      gatheringTime: gatheringTime || '',
-      gatheringStartingDate: gatheringStartingDate || '',
-      courseWeeksLength: courseWeeksLength ?? null,
-      whatsAppLink: whatsAppLink || '',
-      targetAudienceNativeLanguage: targetAudienceNativeLanguage || ''
-    },
-    NativeLanguageId: NativeLanguageId || '',
-    TargetLanguageId: TargetLanguageId || ''
+    courseCodeId: CourseCodeId || courseCodeId || '',
+    creationDate: CreationDate || creationDate || new Date().toISOString(),
+    startDate: StartDate || startDate || null,
+    endDate: EndDate || endDate || null,
+    nativeLanguageId: NativeLanguageId ?? nativeLanguageId ?? '',
+    targetLanguageId: TargetLanguageId ?? targetLanguageId ?? '',
+    courseDetails: {
+      course: course ?? details.course ?? '',
+      teacher: teacher ?? details.teacher ?? '',
+      imageUrl: imageUrl ?? details.imageUrl ?? '',
+      location: location ?? details.location ?? '',
+      gatheringDay: gatheringDay ?? details.gatheringDay ?? '',
+      gatheringTime: gatheringTime ?? details.gatheringTime ?? '',
+      gatheringStartingDate: gatheringStartingDate ?? details.gatheringStartingDate ?? '',
+      courseWeeksLength: courseWeeksLength ?? details.courseWeeksLength ?? null,
+      whatsAppLink: whatsAppLink ?? details.whatsAppLink ?? '',
+      targetAudienceNativeLanguage: targetAudienceNativeLanguage ?? details.targetAudienceNativeLanguage ?? ''
+    }
   }];
 };
+
+export const buildEnrollExistingContactToCoursePayload = ({
+  contactInternalId,
+  emailId,
+  courseCodeId,
+  roleId,
+  userRoleId
+} = {}) => ([{
+  contactInternalId: contactInternalId || '',
+  emailId: emailId || '',
+  courseCodeId: courseCodeId || '',
+  userRoleId: userRoleId || roleId || 'titulino_user'
+}]);
+
+export const buildUpsertUserRoleCoursePayload = ({
+  contactInternalId,
+  emailId,
+  courseCodeId,
+  roleId,
+  userRoleId
+} = {}) => ([{
+  contactInternalId: contactInternalId || '',
+  courseCodeId: courseCodeId || '',
+  userRoleId: userRoleId || roleId || 'titulino_user',
+  emailId: emailId || ''
+}]);
+
+export const buildUpsertUserRoleGlobalPayload = ({
+  contactInternalId,
+  roleId,
+  userRoleId,
+  isActive = true
+} = {}) => ([{
+  contactInternalId: contactInternalId || '',
+  userRoleId: userRoleId || roleId || '',
+  isActive: isActive === true
+}]);
 
 /**
  * Clone an existing raw course into a template for creation.
@@ -143,10 +188,46 @@ export const prefillFromTemplate = (rawCourse) => {
   };
 };
 
-const AdminToolsLob = {
-  generateCourseCodeId,
-  buildCourseUpsertPayload,
-  prefillFromTemplate
+/**
+ * Extract the public image URL from the /course-cover/upload response.
+ * Backend may return a string URL or an object with one of several shapes.
+ */
+export const extractUploadedCoverImageUrl = (uploadResult) => {
+  if (!uploadResult) return null;
+  if (typeof uploadResult === 'string') return uploadResult;
+  return (
+    uploadResult.url ||
+    uploadResult.Url ||
+    uploadResult.imageUrl ||
+    uploadResult.ImageUrl ||
+    uploadResult.publicUrl ||
+    uploadResult.PublicUrl ||
+    null
+  );
 };
 
-export default AdminToolsLob;
+/**
+ * Strict HTTP/HTTPS URL validation for the manual image-URL entry mode.
+ */
+export const isValidHttpUrl = (value) => {
+  if (!value || typeof value !== 'string') return false;
+  try {
+    const parsed = new URL(value.trim());
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+const AdminTools = {
+  generateCourseCodeId,
+  buildCourseUpsertPayload,
+  buildEnrollExistingContactToCoursePayload,
+  buildUpsertUserRoleCoursePayload,
+  buildUpsertUserRoleGlobalPayload,
+  prefillFromTemplate,
+  extractUploadedCoverImageUrl,
+  isValidHttpUrl
+};
+
+export default AdminTools;

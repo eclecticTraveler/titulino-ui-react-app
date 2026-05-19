@@ -9,7 +9,6 @@ import {
 	faBookReader,
 	faKeyboard,
 	faClone,
-	faDice,
 	faUserClock,
 	faChalkboard
    } from '@fortawesome/free-solid-svg-icons';
@@ -135,17 +134,6 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 				isRootMenuItem: false,				
 				submenu: [],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizlet')
-			},
-			{
-				key: `module-play-${levelNo}-${chapterNo}-${uuidv4()}`,	
-				path: `${commonPath}/${getLocalizedConfig(lang)?.play}`,
-				title: 'sidenav.match',
-				icon: faDice,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'play')
 			}
 		]
 	
@@ -198,4 +186,3 @@ export const getCoursePracticeResourcesInnerSubMenu = (lang, levelNo, chapterNo)
 		]
 	
 }
-

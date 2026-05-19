@@ -1,16 +1,11 @@
-import React, {Component, Suspense} from 'react'
+import React, {Component} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
 import { geteBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse }  from 'redux/actions/Lrn';
 import { onLoadingAuthenticatedLandingPage, onAuthenticatingWithSSO } from 'redux/actions/Grant';
-import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
-import InternalIFrame from 'components/layout-components/InternalIFrame';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 import utils from 'utils';
-import Loading from 'components/shared-components/Loading';
-
-import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
 
 class CourseLevel extends Component {
 

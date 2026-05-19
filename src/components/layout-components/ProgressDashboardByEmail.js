@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { onSearchingForProgressByEmailId, onRenderingCourseRegistration } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Card, Input, Button, Form, Row, Col, Divider, message } from 'antd';
+import { App, Card, Input, Button, Form, Row, Col, Divider } from 'antd';
 import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 import LiquidCirclePercent from "./LiquidCirclePercent";
@@ -14,6 +14,7 @@ import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/
 export const ProgressDashboardByEmail = (props) => {
   const { onSearchingForProgressByEmailId, registeredProgressByEmailId, onRenderingCourseRegistration,
      studentPercentagesForCourse, studentCategoriesCompletedForCourse, contentLanguage } = props;
+  const { message } = App.useApp();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   
@@ -200,4 +201,3 @@ const mapStateToProps = ({ lrn, theme }) => {
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ProgressDashboardByEmail));
-

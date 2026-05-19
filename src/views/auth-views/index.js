@@ -10,6 +10,7 @@ import { retry } from '../../helpers/index';
 
 // Lazy-loaded route components (hoisted to module scope for stable references)
 const Analytics = lazy(() => import(`./user/analytics`));
+const Profile = lazy(() => retry(() => import(`./user/profile`)));
 const GlobalAdminToolsView = lazy(() => retry(() => import(`./user/global-admin-tools`)));
 const SharedCourseLevel = lazy(() => retry(() => import(`../shared-views/course-level`)));
 const SharedCourseLevelResources = lazy(() => retry(() => import(`../shared-views/course-level/resources`)));
@@ -21,6 +22,7 @@ const AuthSpeaking = lazy(() => retry(() => import(`./course-level/chapter/speak
 const AuthPdfRender = lazy(() => retry(() => import(`./course-level/chapter/pdf-render`)));
 const SharedCourseLevelPractice = lazy(() => retry(() => import(`../shared-views/course-level/chapter/practice`)));
 const ShopWindow = lazy(() => retry(() => import(`./shop-window`)));
+const Enrollment = lazy(() => import(`../app-views/user/enrollment`));
 const Login2 = lazy(() => import(`./authentication/login-2`));
 const Register1 = lazy(() => import(`./authentication/register-1`));
 const Register2 = lazy(() => import(`./authentication/register-2`));
@@ -35,6 +37,7 @@ export const AuthViews = (props) => {
     <Suspense fallback={<Loading cover="page"/>}>
       <Routes>
         <Route path={`insight`} element={<RouteElement component={Analytics} />} />
+        <Route path={`profile`} element={<RouteElement component={Profile} />} />
         <Route path={`global-admin`} element={<RouteElement component={GlobalAdminToolsView} />} />
         <Route path={`${contentLanguage}/:${cfg?.level}`} element={<RouteElement component={SharedCourseLevel} />} />
         <Route path={`${contentLanguage}/:${cfg?.level}/${cfg?.resources}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelResources} />} />
@@ -47,6 +50,7 @@ export const AuthViews = (props) => {
         <Route path={`${contentLanguage}/:${cfg?.level}/:${cfg?.chapter}/:${cfg?.modality}`} element={<RouteElement component={SharedCourseLevelPractice} />} />
         <Route path={`terms-conditions`} element={<TermsConditionsCancelSubscription />} />
         <Route path={`shopping`} element={<RouteElement component={ShopWindow} />} />
+        <Route path={`enroll`} element={<RouteElement component={Enrollment} />} />
         {/* <Route path={`profile/edit-profile`} element={<RouteElement component={...} />} /> */}
         {/* <Route path={`login`} element={<Login />} /> */}
         <Route path={`login-2`} element={<RouteElement component={Login2} />} />
@@ -79,4 +83,3 @@ const mapStateToProps = ({ theme, auth, grant }) => {
 };
 
 export default React.memo(connect(mapStateToProps)(AuthViews));
-

@@ -1,6 +1,9 @@
 import { supabase } from 'auth/SupabaseAuth';
+import { env } from 'configs/EnvironmentConfig';
 import TitulinoNetService from "services/TitulinoNetService";
 import LocalStorageService from "services/LocalStorageService";
+
+const INTERNAL_TOKEN_CACHE_TTL_MINUTES = env.INTERNAL_TOKEN_CACHE_TTL_MINUTES;
 
 const SupabaseAuthService = {
   async isLoggedIn() {
@@ -57,7 +60,11 @@ const SupabaseAuthService = {
 
         const userProfile = await TitulinoNetService.getUserProfileByEmailAndYearOfBirth(email, dobOrYob);
         if (userProfile?.token) {          
-          LocalStorageService.storeEncryptedObjectWithExpiry("internal_token", userProfile?.token, 60); // e.g., 60 min TTL
+          LocalStorageService.storeEncryptedObjectWithExpiry(
+            "internal_token",
+            userProfile?.token,
+            INTERNAL_TOKEN_CACHE_TTL_MINUTES
+          );
         } else {
           console.warn("User profile loaded but token missing");
         }

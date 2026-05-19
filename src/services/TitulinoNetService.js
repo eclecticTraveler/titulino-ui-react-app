@@ -3,7 +3,14 @@ import { env } from '../configs/EnvironmentConfig';
 const titulinoNetEnrollmentApiUri = `${env.TITULINO_NET_API}/v1/enrollment`;
 const titulinoNetShopApiUri = `${env.TITULINO_NET_API}/v1/shop`;
 const titulinoNetLrnApiUri = `${env.TITULINO_NET_API}/v1/lrn`;
+const titulinoNetAdminApiUri = `${env.TITULINO_NET_API}/v1/admin`;
 let _results = [];
+
+const logKnowMeProfileDebug = (message, payload) => {
+  if (env.ENVIROMENT !== "prod") {
+    console.log(`[KnowMeProfileDebug] ${message}`, payload ?? "");
+  }
+};
 
 // Helper function to create the headers
 const getHeaders = (token, isFormData = false) => {
@@ -23,6 +30,11 @@ const getHeaders = (token, isFormData = false) => {
 
 
 export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, whoCalledMe) => {
+  logKnowMeProfileDebug("getUserProfileByEmailAndYearOfBirth:start", {
+    emailId: emailId || null,
+    dobOrYob: dobOrYob || null,
+    whoCalledMe
+  });
 
   if (!emailId || !dobOrYob) {
     console.error("Email ID or Year of Birth is missing");
@@ -61,6 +73,11 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
 
   try {
     const response = await fetch(loginUrl, requestOptions);
+    logKnowMeProfileDebug("getUserProfileByEmailAndYearOfBirth:response", {
+      status: response.status,
+      ok: response.ok,
+      whoCalledMe
+    });
     // If the API returns 404, return null early
     if (response.status === 404) {
       console.warn(`404 Not Found: ${loginUrl}`);
@@ -73,6 +90,12 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
     }
   
     const apiResult = await response.json();
+    logKnowMeProfileDebug("getUserProfileByEmailAndYearOfBirth:success", {
+      hasProfile: !!apiResult,
+      contactInternalId: apiResult?.contactInternalId || null,
+      hasToken: !!apiResult?.token,
+      whoCalledMe
+    });
     return apiResult;
 
   } catch (error) {
@@ -82,26 +105,226 @@ export const getUserProfileByEmailAndYearOfBirth = async (emailId, dobOrYob, who
   }
 }
 
-export const getRegistrationToken = async (whoCalledMe, userName) => {
- 
-const loginUrl = `${titulinoNetEnrollmentApiUri}/auth`;
-const myHeaders = new Headers();
-myHeaders.append("Content-Type", "application/json");
-const raw = JSON.stringify({
-  "userName": process.env.REACT_APP_BACKEND_NET_SERVICE_USERNAME
-});
+export const startContactImpersonation = async (
+  token,
+  { contactInternalId, selectedEmail, reason } = {},
+  whoCalledMe = 'startContactImpersonation'
+) => {
+  if (!token || !contactInternalId || !selectedEmail) {
+    return {
+      success: false,
+      status: 400,
+      errorMessage: 'Missing impersonation token, contact, or email.'
+    };
+  }
 
-const requestOptions = {
-  method: "POST",
-  headers: myHeaders,
-  body: raw,
-  redirect: "follow"
+  const impersonationUrl = `${titulinoNetAdminApiUri}/impersonation/start`;
+  const raw = JSON.stringify({
+    contactInternalId,
+    selectedEmail,
+    ...(reason ? { reason } : {})
+  });
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log('[TitulinoNetService.startContactImpersonation]', {
+      whoCalledMe,
+      url: impersonationUrl,
+      payload: JSON.parse(raw)
+    });
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: raw,
+    redirect: 'follow'
+  };
+
+  try {
+    const response = await fetch(impersonationUrl, requestOptions);
+    const text = await response.text();
+    let apiResult = null;
+
+    try {
+      apiResult = text ? JSON.parse(text) : null;
+    } catch (parseError) {
+      apiResult = null;
+    }
+
+    if (!response.ok) {
+      return {
+        success: false,
+        status: response.status,
+        errorMessage: apiResult?.message || apiResult?.error || text || response.statusText
+      };
+    }
+
+    return {
+      ...apiResult,
+      ...(apiResult?.UserProfile && !apiResult?.userProfile ? { userProfile: apiResult.UserProfile } : {}),
+      ...(apiResult?.ImpersonationSessionId && !apiResult?.impersonationSessionId
+        ? { impersonationSessionId: apiResult.ImpersonationSessionId }
+        : {}),
+      ...(apiResult?.ExpiresAt && !apiResult?.expiresAt ? { expiresAt: apiResult.ExpiresAt } : {}),
+      success: true,
+      status: response.status
+    };
+  } catch (error) {
+    console.log(`Error starting impersonation in startContactImpersonation: from ${whoCalledMe}`);
+    console.error(error);
+    return {
+      success: false,
+      status: 500,
+      errorMessage: error?.message || 'Unexpected impersonation error.'
+    };
+  }
 };
+
+export const sendAudienceMessage = async (
+  token,
+  payload = {},
+  whoCalledMe = 'sendAudienceMessage'
+) => {
+  const contactInternalIds = Array.isArray(payload?.contactInternalIds)
+    ? payload.contactInternalIds
+    : [];
+
+  if (!token || contactInternalIds.length === 0 || !payload?.message?.subject || !payload?.message?.bodyText) {
+    return {
+      success: false,
+      status: 400,
+      errorMessage: 'Missing token, recipients, subject, or message body.'
+    };
+  }
+
+  const sendUrl = `${titulinoNetAdminApiUri}/messaging/audience/send`;
+  const raw = JSON.stringify(payload);
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log('[TitulinoNetService.sendAudienceMessage]', {
+      whoCalledMe,
+      url: sendUrl,
+      payload
+    });
+  }
+
+  const requestOptions = {
+    method: 'POST',
+    headers: getHeaders(token),
+    body: raw,
+    redirect: 'follow'
+  };
+
+  try {
+    const response = await fetch(sendUrl, requestOptions);
+    const text = await response.text();
+    let apiResult = null;
+
+    try {
+      apiResult = text ? JSON.parse(text) : null;
+    } catch {
+      apiResult = text;
+    }
+
+    if (!response.ok) {
+      return {
+        success: false,
+        status: response.status,
+        data: apiResult,
+        errorMessage: apiResult?.message || apiResult?.error || text || response.statusText
+      };
+    }
+
+    return {
+      success: true,
+      status: response.status,
+      data: apiResult
+    };
+  } catch (error) {
+    console.log(`Error sending audience message in sendAudienceMessage: from ${whoCalledMe}`);
+    console.error(error);
+    return {
+      success: false,
+      status: 500,
+      errorMessage: error?.message || 'Unexpected audience messaging error.'
+    };
+  }
+};
+
+export const getMessageTemplateVariables = async (
+  token,
+  scope = 'audience',
+  whoCalledMe = 'getMessageTemplateVariables'
+) => {
+  if (!token) {
+    return {
+      version: 1,
+      variables: []
+    };
+  }
+
+  const variablesUrl = `${titulinoNetAdminApiUri}/messaging/template-variables?scope=${encodeURIComponent(scope || 'audience')}`;
+
+  if (env.ENVIROMENT !== 'prod') {
+    console.log('[TitulinoNetService.getMessageTemplateVariables]', {
+      whoCalledMe,
+      url: variablesUrl,
+      scope
+    });
+  }
+
+  const requestOptions = {
+    method: 'GET',
+    headers: getHeaders(token),
+    redirect: 'follow'
+  };
+
+  try {
+    const response = await fetch(variablesUrl, requestOptions);
+    const text = await response.text();
+
+    if (!response.ok) {
+      if (env.ENVIROMENT !== 'prod') {
+        console.warn(`[${whoCalledMe}] Message template variables failed with status ${response.status}`);
+        console.warn(`[${whoCalledMe}] Response body: ${text}`);
+      }
+
+      return {
+        version: 1,
+        variables: []
+      };
+    }
+
+    return text ? JSON.parse(text) : { version: 1, variables: [] };
+  } catch (error) {
+    console.log(`Error loading message template variables in getMessageTemplateVariables: from ${whoCalledMe}`);
+    console.error(error);
+    return {
+      version: 1,
+      variables: []
+    };
+  }
+};
+
+export const getRegistrationToken = async (whoCalledMe, userName) => {
+  const loginUrl = `${titulinoNetEnrollmentApiUri}/auth`;
+  const myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+  const raw = JSON.stringify({
+    "userName": process.env.REACT_APP_BACKEND_NET_SERVICE_USERNAME
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body: raw,
+    redirect: "follow"
+  };
 
   try {
     const response = await fetch(loginUrl, requestOptions);
     const apiResult = await response.json();
-    return apiResult?.token ?? "";      
+    return apiResult?.token ?? "";
   } catch (error) {
     console.log(`Error Retrieving API payload in getRegistrationToken: from ${whoCalledMe}`);
     console.error(error);
@@ -109,19 +332,23 @@ const requestOptions = {
   }
 }
 
-export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
+export const upsertEnrollment = async (token, enrolle, whoCalledMe, recaptchaToken) => {
   const recordsToSubmit = enrolle ? [...enrolle] : [];
   if (recordsToSubmit?.length > 0 && token) {
-    // Base URL
     const upsertEnrolleeUrl = `${titulinoNetEnrollmentApiUri}/enrollees`;
 
     const raw = JSON.stringify(
       recordsToSubmit,
     );
 
+    const headers = getHeaders(token);
+    if (recaptchaToken) {
+      headers.append("X-Recaptcha-Token", recaptchaToken);
+    }
+
     const requestOptions = {
       method: "POST",
-      headers: getHeaders(token),
+      headers,
       body: raw,
       redirect: "follow",
     };
@@ -129,18 +356,21 @@ export const upsertEnrollment = async (token, enrolle, whoCalledMe) => {
     try {
       const response = await fetch(upsertEnrolleeUrl, requestOptions);
 
-      // Check if the response is successful and has valid JSON
       if (!response.ok) {
-        throw new Error(`Failed to fetch: ${response.statusText}`);
+        const errorText = await response.text();
+        if (env.ENVIROMENT !== "prod") {
+          console.warn(`[${whoCalledMe}] upsertEnrollment failed with status ${response.status}`);
+          console.warn(`[${whoCalledMe}] upsertEnrollment response body: ${errorText}`);
+          console.warn(`[${whoCalledMe}] upsertEnrollment payload:`, recordsToSubmit);
+        }
+        throw new Error(`Failed to fetch: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ""}`);
       }
 
-      // Check if the response body is not empty
       const text = await response.text();
       if (!text) {
         throw new Error("Received empty response");
       }
 
-      // Attempt to parse JSON only if the response is not empty
       const apiResult = JSON.parse(text);
       return apiResult ? apiResult : _results;
     } catch (error) {
@@ -225,6 +455,12 @@ export const getUserPurchasedProducts = async (token, contactInternalId, whoCall
 
 export const getContactEnrolleeKnowMeProfileImage = async (token, email, contactInternalId, whoCalledMe) => {
   if (contactInternalId && email && token) {
+    logKnowMeProfileDebug("getContactEnrolleeKnowMeProfileImage:start", {
+      email,
+      contactInternalId,
+      hasToken: !!token,
+      whoCalledMe
+    });
     const knowMeUrl = `${titulinoNetLrnApiUri}/know-me/profile`;
 
     const raw = JSON.stringify({
@@ -241,12 +477,25 @@ export const getContactEnrolleeKnowMeProfileImage = async (token, email, contact
 
     try {
       const response = await fetch(knowMeUrl, requestOptions);
+      logKnowMeProfileDebug("getContactEnrolleeKnowMeProfileImage:response", {
+        status: response.status,
+        ok: response.ok,
+        email,
+        contactInternalId,
+        whoCalledMe
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);
       }
 
       const apiResult = await response.json();
+      logKnowMeProfileDebug("getContactEnrolleeKnowMeProfileImage:success", {
+        email,
+        contactInternalId,
+        profileUrl: apiResult?.profileUrl || apiResult?.ProfileUrl || null,
+        whoCalledMe
+      });
       return apiResult;
 
     } catch (error) {
@@ -255,25 +504,36 @@ export const getContactEnrolleeKnowMeProfileImage = async (token, email, contact
       return null;
     }
   }
+  logKnowMeProfileDebug("getContactEnrolleeKnowMeProfileImage:missingParams", {
+    email: email || null,
+    contactInternalId: contactInternalId || null,
+    hasToken: !!token,
+    whoCalledMe
+  });
   return "ERROR: Missing token, contactInternalId, courseCodeId, or email";
 };
 
 export const getContactEnrolleesKnowMeProfileImages = async (
   token,
-  knowMeProfileBatchRequest,
+  contactInternalIds,
   profileUrlAvailabilityUsageTimeInMinutes,
   whoCalledMe
 ) => {
-  if (!token || !Array.isArray(knowMeProfileBatchRequest) || knowMeProfileBatchRequest.length === 0) {
-    console.warn(`[${whoCalledMe}] Missing token or empty knowMeProfileBatchRequest`);
+  const normalizedContactInternalIds = Array.from(new Set(
+    (contactInternalIds || [])
+      .map(id => id == null ? '' : String(id).trim())
+      .filter(Boolean)
+  ));
+
+  if (!token || normalizedContactInternalIds.length === 0) {
+    console.warn(`[${whoCalledMe}] Missing token or empty contactInternalIds`);
     return null;
   }
 
   const knowMeUrl = `${titulinoNetLrnApiUri}/know-me/profiles`;
 
   const payload = JSON.stringify({
-    // ✅ Match property names exactly as in C#
-    KnowMeProfileBatchRequest: knowMeProfileBatchRequest,
+    ContactInternalIds: normalizedContactInternalIds,
     ProfileUrlAvailabilityUsageTimeInMinutes: profileUrlAvailabilityUsageTimeInMinutes ?? 128,
   });
 
@@ -299,11 +559,42 @@ export const getContactEnrolleesKnowMeProfileImages = async (
   }
 };
 
+export const getKnowMeProfilesByContactInternalIds = async (
+  token,
+  contactInternalIds,
+  profileUrlAvailabilityUsageTimeInMinutes,
+  whoCalledMe
+) => (
+  getContactEnrolleesKnowMeProfileImages(
+    token,
+    contactInternalIds,
+    profileUrlAvailabilityUsageTimeInMinutes,
+    whoCalledMe
+  )
+);
+
 
 export const upsertStudentKnowMeProfileImage = async (token, fileToSubmit, whoCalledMe) => {
-  if (!fileToSubmit || !token) return "ERROR no valid Token or File";
+  if (!fileToSubmit || !token) {
+    logKnowMeProfileDebug("upsertStudentKnowMeProfileImage:missingParams", {
+      hasToken: !!token,
+      hasFileToSubmit: !!fileToSubmit,
+      contactInternalId: fileToSubmit?.contactId || null,
+      emailId: fileToSubmit?.emailId || null,
+      whoCalledMe
+    });
+    return "ERROR no valid Token or File";
+  }
 
   const upsertUrl = `${titulinoNetLrnApiUri}/know-me/profile/upload`;
+
+  logKnowMeProfileDebug("upsertStudentKnowMeProfileImage:start", {
+    contactInternalId: fileToSubmit?.contactId || null,
+    emailId: fileToSubmit?.emailId || null,
+    fileName: fileToSubmit?.fileName || fileToSubmit?.file?.name || null,
+    hasToken: !!token,
+    whoCalledMe
+  });
 
   const formData = new FormData();
   formData.append("ContactInternalId", fileToSubmit.contactId);
@@ -312,22 +603,31 @@ export const upsertStudentKnowMeProfileImage = async (token, fileToSubmit, whoCa
 
   const requestOptions = {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`, // ✅ Let browser set multipart boundaries
-    },
+    headers: getHeaders(token, true),
     body: formData,
   };
 
   try {
     const response = await fetch(upsertUrl, requestOptions);
+    logKnowMeProfileDebug("upsertStudentKnowMeProfileImage:response", {
+      status: response.status,
+      ok: response.ok,
+      contactInternalId: fileToSubmit?.contactId || null,
+      whoCalledMe
+    });
     if (!response.ok) {
       throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
     }
 
-    const apiResult = await response.json(); // ✅ clean parse
+    const apiResult = await response.json();
+    logKnowMeProfileDebug("upsertStudentKnowMeProfileImage:success", {
+      contactInternalId: fileToSubmit?.contactId || null,
+      profileUrl: apiResult?.profileUrl || apiResult?.ProfileUrl || null,
+      whoCalledMe
+    });
     return apiResult;
   } catch (error) {
-    console.error(`❌ Error in upsertStudentKnowMeProfileImage (${whoCalledMe}):`, error);
+    console.error(`Error in upsertStudentKnowMeProfileImage (${whoCalledMe}):`, error);
     return null;
   }
 };
@@ -349,7 +649,7 @@ export const upsertStudentKnowMeClassFiles = async (token, filesToSubmit, whoCal
 
   // Append all files
   for (const f of filesToSubmit) {
-    formData.append("Files", f.file); // 👈 matches backend DTO
+    formData.append("Files", f.file); // Ã°Å¸â€˜Ë† matches backend DTO
   }
 
   const requestOptions = {
@@ -370,19 +670,18 @@ export const upsertStudentKnowMeClassFiles = async (token, filesToSubmit, whoCal
 
 
 
-export const uploadCourseCoverImage = async (token, file, whoCalledMe) => {
-  if (!file || !token) return null;
+export const uploadCourseCoverImage = async (token, file, courseCodeId, whoCalledMe) => {
+  if (!file || !token || !courseCodeId) return null;
 
-  const upsertUrl = `${titulinoNetEnrollmentApiUri}/course/cover/upload`;
+  const upsertUrl = `${titulinoNetLrnApiUri}/course/cover/upload`;
 
   const formData = new FormData();
+  formData.append("CourseCodeId", courseCodeId);
   formData.append("File", file);
 
   const requestOptions = {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: getHeaders(token, true),
     body: formData,
   };
 
@@ -401,6 +700,9 @@ export const uploadCourseCoverImage = async (token, file, whoCalledMe) => {
 
 const TitulinoNetService = {
   getRegistrationToken,
+  startContactImpersonation,
+  sendAudienceMessage,
+  getMessageTemplateVariables,
   upsertEnrollment,
   getUserProfileByEmailAndYearOfBirth,
   getPurchaseSessionUrl,
@@ -409,6 +711,7 @@ const TitulinoNetService = {
   getContactEnrolleeKnowMeProfileImage,
   upsertStudentKnowMeClassFiles,
   getContactEnrolleesKnowMeProfileImages,
+  getKnowMeProfilesByContactInternalIds,
   uploadCourseCoverImage
 };
 

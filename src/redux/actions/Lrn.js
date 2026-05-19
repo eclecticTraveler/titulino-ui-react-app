@@ -15,6 +15,7 @@ import TitulinoNetService from "services/TitulinoNetService";
 import StudentProgress from "lob/StudentProgress";
 import LrnConfiguration from "lob/LrnConfiguration"
 import TitulinoManager from "managers/LrnManager";
+import { env } from "configs/EnvironmentConfig";
 
 import { 
   GET_SELECTED_LEVEL_FROM_UPPER_NAV_ON_CLICK,
@@ -69,6 +70,13 @@ import {
   ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE
 } from "../constants/Lrn";
 import LrnManager from "managers/LrnManager";
+
+const COURSE_DATA_CACHE_TTL_MINUTES = env.COURSE_DATA_CACHE_TTL_MINUTES;
+
+const getCourseCodeIdForTheme = async (courseTheme) => {
+  const registry = await LrnManager.getCourseThemeRegistry();
+  return LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme, registry);
+};
 
 export const onRequestingGraphForLandingDashboard = async() => {
   const graph = await GraphService.getDashboardData();
@@ -254,38 +262,46 @@ export const onSubmittingUserCourseProgress = async (email, courseProgress) => {
   }
 }
 
-export const onSubmittingEnrollee = async (enrollees, isFullEnrollment) => {
-  let submittedEnrollee = [];
-  let wasSuccessful = false;
-  const token = await TitulinoNetService.getRegistrationToken("onLoginEnrolleeContact");
-  if(token){
-    submittedEnrollee = await TitulinoNetService.upsertEnrollment(token, enrollees, "onSubmittingEnrollee");
-    console.log("submittedEnrollee Net", submittedEnrollee?.length > 0);
-    if(submittedEnrollee?.length > 0){
-      wasSuccessful = true;
-    }else{
-      // Backup
-      submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
-      console.log("submittedEnrollee DW");
-      if(submittedEnrollee?.length > 0){
-        wasSuccessful = true;
-      }else{
-        wasSuccessful = false;
-      }
-    }
-  }else{
-    submittedEnrollee = await TitulinoRestService.upsertFullEnrollment(enrollees, "onSubmittingEnrollee");
-    console.log("submittedEnrollee 2nd DW");
-    if(submittedEnrollee){
-      wasSuccessful = true;
-    }else{
-      wasSuccessful = false;
-    }
-  }
+export const onSubmittingEnrollee = async (enrollees, isFullEnrollment, filesMap = {}, profilePictureContext = {}, recaptchaToken = null) => {
+  const {
+    submittedEnrollee,
+    wasSuccessful,
+    uploadResult
+  } = await LrnManager.submitUnauthenticatedEnrollment({
+    enrollees,
+    filesMap,
+    profilePictureContext,
+    isFullEnrollment,
+    recaptchaToken
+  });
+
   return {
     type: ON_SUBMITTING_ENROLLEE,
-    wasSubmittingEnrolleeSucessful: wasSuccessful
+    wasSubmittingEnrolleeSucessful: wasSuccessful,
+    submittedEnrollee,
+    uploadedProfilePicture: uploadResult
   }
+}
+
+// Authenticated Section
+export const onSubmittingAuthenticatedEnrollee = async (enrollees, filesMap = {}, user = {}, recaptchaToken = null) => {
+  const {
+    submittedEnrollee,
+    wasSuccessful,
+    uploadResult
+  } = await LrnManager.submitAuthenticatedEnrollment({
+    enrollees,
+    filesMap,
+    user,
+    recaptchaToken
+  });
+
+  return {
+    type: ON_SUBMITTING_ENROLLEE,
+    wasSubmittingEnrolleeSucessful: wasSuccessful,
+    submittedEnrollee,
+    uploadedProfilePicture: uploadResult
+  };
 }
 
 export const onResetSubmittingEnrollee = async (resetValue) => {
@@ -307,7 +323,7 @@ export const onRequestingCourseProgressStructure = async (baseLanguage, contentL
     // It will handle the caching through REDIS, but for now its okay
     
     // Get `courseCodeId` for the given `courseTheme`
-    const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme);
+    const courseCodeId = await getCourseCodeIdForTheme(courseTheme);
   
     // Dynamic local storage key based on `courseCodeId`
     const localStorageKey = `EnrolleesByCourse_${courseCodeId}`;
@@ -328,11 +344,11 @@ export const onRequestingCourseProgressStructure = async (baseLanguage, contentL
     const countByRegion = await TitulinoRestService.getEnrolleeCountryCountByCourseCodeId(courseCodeId, "onLoadingEnrolleeByRegion");
     const { transformedArray, totalEnrolleeCount } = await StudentProgress.transformEnrolleeGeographycalResidencyData(countByRegion);
   
-    // Save fetched and transformed data to local storage with expiry (e.g., 60 minutes)
+    // Save fetched and transformed data to local storage with the configured course-data TTL.
     await LocalStorageService.setEnrolleesByCourse(
-      { transformedArray, totalEnrolleeCount }, // Save both and set 60 min expiration     
+      { transformedArray, totalEnrolleeCount },
       localStorageKey,
-      60
+      COURSE_DATA_CACHE_TTL_MINUTES
     );
   
     // Return fresh data
@@ -608,7 +624,7 @@ export const onSubmittingUserAuthenticatedProgressForCourse = async (courseProgr
 export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) => {
 
   // Get courseId in Factory
- const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(courseTheme);
+ const courseCodeId = await getCourseCodeIdForTheme(courseTheme);
  const userIsEnrolled = await TitulinoManager.getCourseToken(courseCodeId, emailId)
  
   return {

@@ -29,7 +29,9 @@ const TermsModal = () => {
           </Button>,
         ]}
       >
-        <p>{setLocale(locale, "enrollment.form.termsAndConditionsContent") || "To display"}</p>
+        <p style={{ whiteSpace: "pre-wrap", marginBottom: 0 }}>
+          {setLocale(locale, "enrollment.form.termsAndConditionsContent") || "To display"}
+        </p>
        
       </Modal>
     </>

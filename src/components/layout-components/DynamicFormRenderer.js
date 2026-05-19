@@ -1,9 +1,10 @@
 import React from "react";
-import { Form, Input, Checkbox, Card, Upload, message } from "antd";
+import { App, Form, Input, Checkbox, Card, Upload } from "antd";
 import ConsentModal from "components/layout-components/Enrollment/ConsentModal";
 import { PlusOutlined } from "@ant-design/icons";
 
 export default function DynamicFormRenderer({ questions, locale = false, loading = false }) {
+  const { message } = App.useApp();
 
   return (
     <>

@@ -22,6 +22,65 @@
 .customerName {
 	text-align: left !important;
 }
+
+.impersonation-banner-container {
+	position: fixed;
+	top: 68px;
+	left: 0;
+	right: 0;
+	z-index: @zindex-modal - 1;
+	padding: 0 @layout-content-gutter;
+	pointer-events: none;
+
+	.ant-alert {
+		max-width: @content-max-width;
+		margin: 0 auto;
+		pointer-events: auto;
+	}
+
+	.impersonation-banner-details {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding-right: 42px;
+	}
+
+	.impersonation-banner-email {
+		overflow-wrap: anywhere;
+	}
+}
+
+.impersonation-collapsed-tab {
+	position: fixed;
+	top: 50%;
+	right: 0;
+	z-index: @zindex-modal - 1;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 7px;
+	border: 1px solid #ffd666;
+	border-right: 0;
+	border-radius: 6px 0 0 6px;
+	background: #fffbe6;
+	color: #8c5a00;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+	cursor: pointer;
+	writing-mode: vertical-rl;
+	transform: translateY(-50%);
+
+	&:hover,
+	&:focus {
+		background: #fff7cc;
+		color: #613400;
+		outline: none;
+	}
+
+	.anticon {
+		font-size: 16px;
+	}
+}
   
 /* Title and Icon alignment for mobile */
 .upperTitleConstruction {
@@ -48,6 +107,15 @@
   
 /* Responsive Design for Smaller Screens */
 @media (max-width: 768px) {
+	.impersonation-banner-container {
+		.impersonation-banner-details {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 8px;
+			padding-right: 0;
+		}
+	}
+
 	.titulino-modal-content {
 		width: 90%;  /* Make modal more responsive */
 	}

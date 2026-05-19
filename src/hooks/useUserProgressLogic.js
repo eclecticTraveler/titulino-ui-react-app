@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { message } from "antd";
+import { App } from "antd";
 
 export const useUserProgressLogic = ({
   categories,
@@ -9,6 +9,7 @@ export const useUserProgressLogic = ({
   onSubmit,
   existingProgressRows // ✅ NEW: pass raw progress rows here
 }) => {
+  const { message } = App.useApp();
   const [selectedLessons, setSelectedLessons] = useState({});
 
   const selectionKey = (categoryId, classNumber) => `${categoryId}-${classNumber}`;

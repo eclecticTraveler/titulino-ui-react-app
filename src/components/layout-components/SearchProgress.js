@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { onSearchingForProgressByEmailId } from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Card, Input, Button, Form, Row, Col, Divider, message } from 'antd';
+import { App, Card, Input, Button, Form, Row, Col, Divider } from 'antd';
 import { useIntl } from 'react-intl';
 import IntlMessage from "components/util-components/IntlMessage";
 
 export const SearchProgress = (props) => {
   const { onSearchingForProgressByEmailId, registeredProgressByEmailId, baseLanguage } = props;
+  const { message } = App.useApp();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   console.log("baseLanguage", baseLanguage)

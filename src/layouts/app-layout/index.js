@@ -9,6 +9,8 @@ import HeaderNav from '../../components/layout-components/HeaderNav';
 import PageHeader from '../../components/layout-components/PageHeader';
 import Footer from 'components/layout-components/Footer';
 import AppViews from '../../views/app-views';
+import AuthenticatedProfileGate from 'components/layout-components/AuthenticatedProfileGate';
+import ImpersonationBanner from 'components/layout-components/ImpersonationBanner';
 import {
   Layout,
   Grid,
@@ -31,7 +33,14 @@ const { Content } = Layout;
 const { useBreakpoint } = Grid;
 
 
-export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicUpperMainNavigation, onCurrentRouteInfo }) => {
+export const AppLayout = ({
+  navCollapsed,
+  navType,
+  location,
+  direction,
+  dynamicUpperMainNavigation,
+  onCurrentRouteInfo
+}) => {
   // Here we figure out the proper general submenu based on the url location we are hitting
   let currentRouteInfo;
   dynamicUpperMainNavigation?.forEach(singleFullMenu => {    
@@ -71,6 +80,7 @@ export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicU
   return (           
 		<Layout>
 			<HeaderNav isMobile={isMobile} />
+      <ImpersonationBanner />
 			
 			{(isNavTop && !isMobile) ? <TopNav routeInfo={currentRouteInfo}/> : null}
 			
@@ -80,7 +90,9 @@ export const AppLayout = ({ navCollapsed, navType, location, direction, dynamicU
 					<div className={`app-content ${isNavTop ? 'layout-top-nav' : ''}`}>
 						<PageHeader display={true} title={currentRouteInfo?.title} />				
 						<Content>
-							<AppViews />
+							<AuthenticatedProfileGate>
+								<AppViews />
+							</AuthenticatedProfileGate>
 						</Content>
 					</div>
           <Footer />
@@ -97,7 +109,7 @@ function mapDispatchToProps(dispatch){
 	}, dispatch)
 }
 
-const mapStateToProps = ({ theme, lrn }) => { 
+const mapStateToProps = ({ theme, lrn }) => {
   const {dynamicUpperMainNavigation} = lrn
   const { navCollapsed, navType, locale } =  theme;
   return { navCollapsed, navType, locale, dynamicUpperMainNavigation }

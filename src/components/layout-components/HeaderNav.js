@@ -4,20 +4,20 @@ import { Layout } from "antd";
 import LogoAlt from './LogoAlt';
 import NavSearch  from './NavSearch';
 import NavProfile from './NavProfile';
+import NavCourseSwitcher from './NavCourseSwitcher';
 import MenuContentTop  from './MenuContentTop';
 import IconAdapter from "components/util-components/IconAdapter";
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import Toggle from 'react-toggle';
 import "react-toggle/style.css";
 import { toggleCollapsedNav, onMobileNavToggle } from '../../redux/actions/Theme';
-import { NAV_TYPE_TOP, SIDE_NAV_COLLAPSED_WIDTH, SIDE_NAV_WIDTH } from '../../constants/ThemeConstant';
-import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
+import { SearchOutlined } from '@ant-design/icons';
 
 
 const { Header } = Layout;
 
 export const HeaderNav = props => {
-	const { navCollapsed, mobileNav, navType, toggleCollapsedNav, onMobileNavToggle, isMobile, 
+	const { navCollapsed, mobileNav, toggleCollapsedNav, onMobileNavToggle, isMobile,
 		    direction } = props;
 	const [searchActive, setSearchActive] = useState(false)
 
@@ -41,18 +41,6 @@ export const HeaderNav = props => {
 	}
 
 	const onExperienceToogle = (event) => {			
-	}
-
-	const isNavTop = navType === NAV_TYPE_TOP ? true : false
-	const mode = ()=> {
-		if(isNavTop || isMobile) {
-			return '0px'
-		}
-		if(navCollapsed) {
-			return `${SIDE_NAV_COLLAPSED_WIDTH}px`
-		} else {
-			return `${SIDE_NAV_WIDTH}px`
-		}
 	}
 
 	useEffect(() => {
@@ -79,7 +67,8 @@ export const HeaderNav = props => {
 							<SearchOutlined />
 						</span>
 					)}
-					<NavProfile direction={direction} isMobile={isMobile} mode={mode}/>
+					<NavCourseSwitcher />
+					<NavProfile direction={direction} />
          		 </div>
 
 			</div>

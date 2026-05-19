@@ -41,7 +41,7 @@ const EditableCell = ({
 };
 
 const EditableModalTable = props => {
-  const { tableData, tableColumns, isAllowedToEditTableData, onSelectingCorrectionToEdit, onCorrectionsModalChange, isToRenderActionButton, tableExpandables  } = props;
+  const { tableData, tableColumns, isAllowedToEditTableData, onSelectingCorrectionToEdit, onCorrectionsModalChange, isToRenderActionButton, tableExpandables, rowSelection, rowKey, loading, onChange  } = props;
 
   // console.log("isAllowedToEditTableData++++++++++++");
   // console.log(isAllowedToEditTableData);
@@ -145,6 +145,10 @@ return (
       dataSource={tableData}
       columns={mergedColumns}
       expandable={expandables}
+      rowSelection={rowSelection}
+      rowKey={rowKey}
+      loading={loading}
+      onChange={onChange}
       rowClassName="editable-row"
       pagination={{
         onChange: cancel,
@@ -168,4 +172,3 @@ const mapStateToProps = ({lrn}) => {
 };
 
 export default withRouter(connect(mapStateToProps, {onSelectingCorrectionToEdit, onCorrectionsModalChange})(EditableModalTable));
-

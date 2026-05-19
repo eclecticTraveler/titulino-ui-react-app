@@ -128,7 +128,7 @@ export const LoginForm = (props) => {
 					opacity: showMessage ? 1 : 0,
 					marginBottom: showMessage ? 20 : 0 
 				}}> 
-				<Alert type="error" showIcon message={message}></Alert>
+				<Alert type="error" showIcon title={message}></Alert>
 			</motion.div>
 			<Form 
 				layout="vertical" 

@@ -1,28 +1,83 @@
-import localCourseThemeRegistry from "assets/data/course-theme-registry.data.json";
+const normalizeIdentifier = (value) => (
+  value == null ? "" : String(value).trim().toLowerCase()
+);
+
+const EMPTY_REGISTRY = {};
 
 // Build reverse lookup: courseCodeId → theme
 export const buildCodeToTheme = (registry) =>
   Object.entries(registry || {}).reduce((acc, [theme, codes]) => {
-    (codes || []).forEach(code => { acc[code] = theme; });
+    (codes || []).forEach(code => { acc[normalizeIdentifier(code)] = theme; });
     return acc;
   }, {});
 
-// Module-level defaults built from the bundled JSON (keeps sync callers working)
-const DEFAULT_REGISTRY = localCourseThemeRegistry;
-const DEFAULT_CODE_TO_THEME = buildCodeToTheme(DEFAULT_REGISTRY);
+export const getCertificationDisplayKey = (certificationKey) => {
+  const normalizedKey = normalizeIdentifier(certificationKey);
+  if (!normalizedKey) return "";
+  if (normalizedKey.includes("gold")) return "Golden";
+  if (normalizedKey.includes("silver") || normalizedKey.includes("participation")) return "Participation";
+  return String(certificationKey).trim();
+};
+
+const getCourseCodeIdFromCourse = (course) => (
+  course?.courseCodeId ||
+  course?.CourseCodeId ||
+  course?.course_code_id ||
+  null
+);
+
+const getUserCourseByCode = (userCourses = {}, courseCodeId) => {
+  const normalizedCourseCodeId = normalizeIdentifier(courseCodeId);
+  if (!userCourses || typeof userCourses !== 'object' || !normalizedCourseCodeId) return null;
+
+  return Object.entries(userCourses).find(([key, course]) => (
+    [
+      key,
+      getCourseCodeIdFromCourse(course)
+    ].some(candidate => normalizeIdentifier(candidate) === normalizedCourseCodeId)
+  ))?.[1] || null;
+};
+
+export const getCourseThemeByCourseCodeId = (courseCodeId, registry) => {
+  const normalizedCourseCodeId = normalizeIdentifier(courseCodeId);
+  if (!normalizedCourseCodeId) return null;
+
+  return Object.entries(registry || EMPTY_REGISTRY).find(([, courseCodeIds]) => (
+    (courseCodeIds || []).some(code => normalizeIdentifier(code) === normalizedCourseCodeId)
+  ))?.[0] || null;
+};
+
+export const getBadgeMetadataForCertification = (
+  courseCodeId,
+  certificationKey,
+  courseThemeRegistry,
+  badgeThemeRegistry
+) => {
+  const theme = getCourseThemeByCourseCodeId(courseCodeId, courseThemeRegistry);
+  const displayCertificationKey = getCertificationDisplayKey(certificationKey);
+  const badgeRegistry = badgeThemeRegistry || EMPTY_REGISTRY;
+  const themeBadges = theme ? badgeRegistry?.[theme] : null;
+  const badgeMetadata = themeBadges?.[displayCertificationKey] || null;
+
+  return {
+    theme,
+    imageUrl: badgeMetadata?.imageUrl || badgeMetadata?.ImageUrl || null,
+    certificationKey: displayCertificationKey || certificationKey || null
+  };
+};
 
 export const mapUserCoursesByTheme = (userCourses = {}, registry) => {
-  const codeToTheme = registry ? buildCodeToTheme(registry) : DEFAULT_CODE_TO_THEME;
+  const codeToTheme = buildCodeToTheme(registry || EMPTY_REGISTRY);
   const map = {};
-  Object.values(userCourses).forEach(course => {
-    const theme = codeToTheme[course.courseCodeId];
+  Object.entries(userCourses || {}).forEach(([key, course]) => {
+    const theme = codeToTheme[normalizeIdentifier(getCourseCodeIdFromCourse(course) || key)];
     if (theme) map[theme] = course;
   });
   return map;
 };
 
 export const getCourseCodeIdByCourseTheme = async (courseTheme, registry) => {
-  const reg = registry || DEFAULT_REGISTRY;
+  const reg = registry || EMPTY_REGISTRY;
   const codes = reg[courseTheme?.toLowerCase()];
   return codes?.[0] ?? 'NOT_FOUND';
 };
@@ -48,11 +103,11 @@ export const getFacilitadorCourseCodeIdForTheme = (userCourses, courseCodeIds, i
   }
 
   if (isGlobalAccessUser) {
-    return courseCodeIds.find(courseCodeId => userCourses[courseCodeId]) || null;
+    return courseCodeIds.find(courseCodeId => getUserCourseByCode(userCourses, courseCodeId)) || null;
   }
 
   for (const courseCodeId of courseCodeIds) {
-    const course = userCourses[courseCodeId];
+    const course = getUserCourseByCode(userCourses, courseCodeId);
     const role = course?.userRoleIdForTheCourse;
     const isFacilitator = typeof role === 'string' && role.toLowerCase().includes('facilitat');
     if (isFacilitator) {
@@ -174,6 +229,9 @@ export const buildStudentKnowMeFileName = async (file, contactId, emailId, class
 
 const LrnConfiguration = {
   mapUserCoursesByTheme,
+  getCertificationDisplayKey,
+  getCourseThemeByCourseCodeId,
+  getBadgeMetadataForCertification,
   getCourseCodeIdByCourseTheme,
   getFacilitadorCourseCodeIdForTheme,
   buildSingleFullKnowMeProgressWithCourseCodeId,

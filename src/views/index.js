@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
@@ -18,6 +18,8 @@ import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
 import { authenticated, signIn, onResolvingAuthenticationWhenRefreshing } from "redux/actions/Auth";
 import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
 import Loading from 'components/shared-components/Loading';
+import ImpersonationSession from "lob/ImpersonationSession";
+import WebsitePreferences from "lob/WebsitePreferences";
  
 function RouteInterceptor({ children, isAuthenticated }) {
   const { pathname } = useLocation();
@@ -51,9 +53,17 @@ export const Views = (props) => {
         isLanguageConfigured, getIsLanguageConfiguredFlag, getSelectedContentLanguage, onContentLanguageChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
+    const preferencesHydrationKey = useRef(null);
+    const [isPreferenceHydrating, setIsPreferenceHydrating] = useState(() => (
+        ImpersonationSession.hasActiveImpersonationProfile()
+    ));
 
     // Load the cookie for Authentication if there was any
      useSupabaseSessionSync((session) => {
+        const isImpersonationLaunch = window.location.pathname === `${APP_PREFIX_PATH}/impersonate`;
+        if (isImpersonationLaunch || ImpersonationSession.hasActiveImpersonationProfile()) {
+            return;
+        }
         // console.log("🧠 Supabase session received in sync hook:", session);
         const userFromSession = session?.user;
 
@@ -72,6 +82,109 @@ export const Views = (props) => {
 
       
     useEffect(() => {
+        const activeImpersonationProfile = ImpersonationSession.getActiveImpersonationProfile();
+        if (!activeImpersonationProfile?.emailId) return;
+
+        if (!token || token?.email !== activeImpersonationProfile.emailId) {
+            authenticated({
+                email: activeImpersonationProfile.emailId,
+                impersonation: true
+            });
+        }
+
+        if (!user?.contactId || user?.emailId !== activeImpersonationProfile.emailId) {
+            onLoadingAuthenticatedLandingPage(activeImpersonationProfile.emailId);
+            onResolvingAuthenticationWhenRefreshing(true);
+        }
+    }, [
+        authenticated,
+        onLoadingAuthenticatedLandingPage,
+        onResolvingAuthenticationWhenRefreshing,
+        token,
+        user?.contactId,
+        user?.emailId
+    ]);
+
+    useEffect(() => {
+        if (!user?.innerToken || !user?.emailId) {
+            if (!ImpersonationSession.hasActiveImpersonationProfile()) {
+                setIsPreferenceHydrating(false);
+            }
+            return;
+        }
+
+        const isImpersonating = user?.impersonation?.isImpersonating === true;
+        const targetStorage = isImpersonating ? window.sessionStorage : window.localStorage;
+        const hydrationKey = [
+            user?.contactInternalId || user?.emailId,
+            isImpersonating ? 'impersonating' : 'normal'
+        ].join(':');
+
+        WebsitePreferences.configureWebsitePreferenceSync({
+            token: user.innerToken,
+            readOnly: false,
+            storage: targetStorage
+        });
+
+        if (preferencesHydrationKey.current === hydrationKey) {
+            setIsPreferenceHydrating(false);
+            return;
+        }
+        preferencesHydrationKey.current = hydrationKey;
+
+        let isActive = true;
+        const hydratePreferences = async () => {
+            setIsPreferenceHydrating(true);
+            try {
+                const result = await WebsitePreferences.hydrateWebsitePreferences({
+                    token: user.innerToken,
+                    targetStorage,
+                    readOnly: false,
+                    whoCalledMe: 'Views.userPreferenceHydration'
+                });
+
+                if (!isActive) return;
+
+                onLoadingUserSelectedTheme();
+                getIsLanguageConfiguredFlag();
+                getUserBaseLanguage();
+                getSelectedContentLanguage();
+
+                if (!isImpersonating && result?.success && result?.exists !== true) {
+                    WebsitePreferences.saveWebsitePreferencesNow({
+                        token: user.innerToken,
+                        storage: targetStorage,
+                        whoCalledMe: 'Views.initialPreferenceBackup'
+                    });
+                }
+            } finally {
+                if (isActive) {
+                    setIsPreferenceHydrating(false);
+                }
+            }
+        };
+
+        hydratePreferences();
+
+        return () => {
+            isActive = false;
+        };
+    }, [
+        getIsLanguageConfiguredFlag,
+        getSelectedContentLanguage,
+        getUserBaseLanguage,
+        onLoadingUserSelectedTheme,
+        user?.contactInternalId,
+        user?.emailId,
+        user?.impersonation?.isImpersonating,
+        user?.innerToken
+    ]);
+
+    useEffect(() => {
+        if (ImpersonationSession.hasActiveImpersonationProfile()) {
+            onResolvingAuthenticationWhenRefreshing(false);
+            return;
+        }
         if(token?.email && !user?.contactId){        
             onLoadingAuthenticatedLandingPage(token?.email);
             onResolvingAuthenticationWhenRefreshing(true);
@@ -154,6 +267,10 @@ export const Views = (props) => {
             token: baseToken,
         };
     }, [currentTheme]);
+
+    if (isPreferenceHydrating) {
+        return <Loading cover="content" />;
+    }
 
     if(!isLanguageConfigured){
         return (

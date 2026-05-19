@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useIntl } from 'react-intl';
-import { Card, Row, Col, Form, Input, Button, message } from "antd";
+import { App, Card, Row, Col, Form, Input, Button } from "antd";
 import { MailOutlined } from '@ant-design/icons';
 
 const backgroundStyle = {
@@ -11,6 +11,7 @@ const backgroundStyle = {
 
 const ForgotPassword = () => {
 	const intl = useIntl();
+	const { message } = App.useApp();
 	const [form] = Form.useForm();
 	const [loading, setLoading] = useState(false);
 
@@ -69,4 +70,3 @@ const ForgotPassword = () => {
 }
 
 export default ForgotPassword
-

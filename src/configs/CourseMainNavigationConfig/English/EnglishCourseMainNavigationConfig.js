@@ -3,10 +3,12 @@ import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationL
 import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
 import { CourseSubNavigationHouseholdTheme } from '../Submenus/CourseSubNavigationHouseholdTheme';
 import { CourseSubNavigationWorkNJobsTheme } from '../Submenus/CourseSubNavigationWorkNJobsTheme';
+import { CourseSubNavigationSpeechesTheme } from '../Submenus/CourseSubNavigationSpeechesTheme';
 import { CourseSubNavigationSupermarketTheme } from '../Submenus/CourseSubNavigationSupermarketTheme';
 import { AuthCourseSubNavigationHouseholdTheme } from '../Submenus/AuthCourseSubNavigationHouseholdTheme';
 import { AuthCourseSubNavigationSupermarketTheme } from '../Submenus/AuthCourseSubNavigationSupermarketTheme';
 import { AuthCourseSubNavigationWorkNJobsTheme } from '../Submenus/AuthCourseSubNavigationWorknJobsTheme';
+import { AuthCourseSubNavigationSpeechesTheme } from '../Submenus/AuthCourseSubNavigationSpeechesTheme';
 import { getTopSubmenuForEnglishConnect } from '../Submenus/Top-Submenus/EConnectTopSubmenus';
 import { COURSE_COLOR_CONFIG, COURSE_ICON_CONFIG, COURSE_TIERS_CONFIG } from 'configs/CourseThemeConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
@@ -55,6 +57,32 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 		topSubmenu: [],
 		submenu: [
 			...getCourseSubNavigationMidBasic("en")
+		]
+	},
+	{
+		key: 'level-speeches-part-eng',
+		nameToCourseCodeKey:"speeches",
+		path: `${APP_PREFIX_PATH}/en/level-speeches`,
+		title: 'main.upper.nav.theme.level.speeches',
+		sideTitle: 'Speeches',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
+		color: isAuthenticated && coursesByTheme['speeches']?.courseTierAccess === COURSE_TIERS_CONFIG.gold
+				? COURSE_COLOR_CONFIG.goldTier
+				: COURSE_COLOR_CONFIG.speechesTheme,
+		current: false,
+		isRootMenuItem: true,
+		iconPosition: "upperNav",
+		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: true,
+		isFree: false,
+		course: "English",
+		topSubmenu: [],
+		submenu: [
+			...(isAuthenticated 
+				? AuthCourseSubNavigationSpeechesTheme("en", coursesByTheme['speeches']) 
+				: CourseSubNavigationSpeechesTheme("en")
+			  )
 		]
 	},
 	{

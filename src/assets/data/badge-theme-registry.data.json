@@ -1,0 +1,18 @@
+{
+  "household": {
+    "Participation": {
+      "imageUrl": "https://storage.googleapis.com/titulino-bucket/titulino-certificate-badges/household/default.png"
+    },
+    "Golden": {
+      "imageUrl": "https://storage.googleapis.com/titulino-bucket/titulino-certificate-badges/household/golden.png"
+    }
+  },
+  "work-n-jobs": {
+    "Participation": {
+      "imageUrl": "https://storage.googleapis.com/titulino-bucket/titulino-certificate-badges/work-n-jobs/default.png"
+    },
+    "Golden": {
+      "imageUrl": "https://storage.googleapis.com/titulino-bucket/titulino-certificate-badges/work-n-jobs/golden.png"
+    }
+  }
+}

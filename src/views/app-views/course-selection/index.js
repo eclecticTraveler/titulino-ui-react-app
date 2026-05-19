@@ -38,7 +38,7 @@ const questionSlideStep1 = {
 		opacity: 1,
 		y: ["5vh", "5vh", "0vh"],
 		transition: {
-			y: { duration: 1.0, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.6, 1], delay: 0.8 },
+			y: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.6, 1], delay: 0.3 },
 			opacity: { duration: 0.01 }
 		}
 	}
@@ -52,7 +52,7 @@ const questionSlideStep2 = {
 		opacity: 1,
 		y: ["10vh", "12vh", "0vh"],
 		transition: {
-			y: { duration: 1.0, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.6, 1], delay: 0.8 },
+			y: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.6, 1], delay: 0.3 },
 			opacity: { duration: 0.01 }
 		}
 	}
@@ -63,7 +63,8 @@ const questionSlideStep2 = {
 // staggerChildren: each flag option fades in 0.1s after the previous one
 const optionsStagger = {
 	hidden: { opacity: 0 },
-	visible: { opacity: 1, transition: { delayChildren: 2.0, staggerChildren: 0.1, opacity: { delay: 2.0 } } }
+	visible: { opacity: 1, transition: { delayChildren: 1.0, staggerChildren: 0.1, 
+		opacity: { delay: 0.5, duration: 0.01 } } }
 };
 
 class CourseSelection extends Component {

@@ -746,6 +746,7 @@ export const getEnrolleeCountrylListByCourseCodeId = async (courseCodeId, countr
 
   }
 }
+
 const TitulinoRestService = {
   getCountries,
   getAvailableCourses,

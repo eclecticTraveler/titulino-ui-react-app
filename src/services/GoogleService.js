@@ -59,7 +59,7 @@ export const getChapterBookData = async (whoCalledMe) => {
       // await LocalStorageService.setChapterClassData(
       //   apiResult,   
       //   localStorageKey,
-      //   60
+      //   configured course-data TTL
       // );
 
       return apiResult ?? _objectResults;
@@ -232,6 +232,29 @@ export const getCourseThemeRegistryData = async (whoCalledMe) => {
   return _objectResults;
 };
 
+export const getBadgeThemeRegistryData = async (whoCalledMe) => {
+  if (whoCalledMe) {
+
+    const requestOptions = {
+      method: "GET"
+    };
+
+    const badgeThemeRegistryUrl = `${gcbucketBaseUrl}/${gcBucketName}/badge-theme-registry.data.json`;
+
+    try {
+      const response = await fetch(badgeThemeRegistryUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _objectResults;
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getBadgeThemeRegistryData: from ${whoCalledMe}`);
+      console.error(error);
+      return _objectResults;
+    }
+  }
+
+  return _objectResults;
+};
+
 
 export const getGeoMapResource = async (countryId, whoCalledMe) => {
   if (!whoCalledMe) return _results;
@@ -241,9 +264,20 @@ export const getGeoMapResource = async (countryId, whoCalledMe) => {
     redirect: "follow"
   };
 
-  // URLs for specific and default maps
-  const specificMapUrl = `${gcbucketBaseUrl}/maps/gadm41_${countryId}_1.json`;
   const defaultMapUrl = `${gcbucketBaseUrl}/maps/world-countries-sans-antarctica.json`;
+  const normalizedCountryId = countryId == null ? "" : String(countryId).trim();
+  const isMissingCountryId = (
+    !normalizedCountryId ||
+    normalizedCountryId.toLowerCase() === "undefined" ||
+    normalizedCountryId.toLowerCase() === "null"
+  );
+
+  if (isMissingCountryId) {
+    return fetchDefaultMap(defaultMapUrl, requestOptions);
+  }
+
+  // URLs for specific and default maps
+  const specificMapUrl = `${gcbucketBaseUrl}/maps/gadm41_${normalizedCountryId}_1.json`;
 
   try {
     // Attempt fetching the specific map
@@ -251,7 +285,7 @@ export const getGeoMapResource = async (countryId, whoCalledMe) => {
 
     // If response is not OK (e.g., 404), fetch the default map
     if (!response.ok) {
-      console.warn(`Map for ${countryId} not found. Fetching default map.`);
+      console.warn(`Map for ${normalizedCountryId} not found. Fetching default map.`);
       return await fetchDefaultMap(defaultMapUrl, requestOptions);
     }
 
@@ -259,7 +293,7 @@ export const getGeoMapResource = async (countryId, whoCalledMe) => {
     return apiResult ?? _results;
 
 } catch (error) {
-    console.error(`Error fetching map for ${countryId}.`, error);
+    console.error(`Error fetching map for ${normalizedCountryId}.`, error);
     return fetchDefaultMap(defaultMapUrl, requestOptions);
   }
 };
@@ -289,7 +323,8 @@ const GoogleService = {
   getGrammarClassData,
   getCourseShoppingCatalogData,
   getLanguageCoursesData,
-  getCourseThemeRegistryData
+  getCourseThemeRegistryData,
+  getBadgeThemeRegistryData
 };
 
 export default GoogleService;

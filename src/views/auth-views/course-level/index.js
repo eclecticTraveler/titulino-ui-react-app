@@ -1,4 +1,4 @@
-import React, {Component, Suspense} from 'react'
+import React, {Component} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
 import { geteBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse }  from 'redux/actions/Lrn';
@@ -9,7 +9,19 @@ import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux';
 import utils from 'utils';
 import Loading from 'components/shared-components/Loading';
-import EmailYearSearchForm from 'components/layout-components/EmailYearSearchForm';
+
+const getUserCoursesSignature = (userCourses = {}) => {
+    if (!userCourses || typeof userCourses !== 'object') return '';
+
+    return Object.entries(userCourses)
+        .map(([key, course]) => [
+            course?.courseCodeId || course?.CourseCodeId || course?.course_code_id || key,
+            course?.courseToken ? '1' : '0',
+            course?.userRoleIdForTheCourse || ''
+        ].join(':'))
+        .sort()
+        .join('|');
+};
 
 class AuthCourseLevel extends Component {
 
@@ -40,22 +52,26 @@ class AuthCourseLevel extends Component {
         this.loadCourseLandingData();
     }
 
-    componentDidUpdate(prevProps) {       
-        if (prevProps?.location?.pathname !== this.props.location?.pathname) {
+    componentDidUpdate(prevProps) {
+        const pathChanged = prevProps?.location?.pathname !== this.props.location?.pathname;
+        const tokenChanged = prevProps?.token !== this.props.token;
+        const userIdentityChanged = (
+            this.props.user?.emailId !== prevProps.user?.emailId ||
+            this.props.user?.yearOfBirth !== prevProps.user?.yearOfBirth
+        );
+        const userCoursesChanged = (
+            getUserCoursesSignature(this.props.user?.userCourses) !==
+            getUserCoursesSignature(prevProps.user?.userCourses)
+        );
+
+        if (pathChanged || tokenChanged || userIdentityChanged || userCoursesChanged) {
             this.loadCourseLandingData();
         }
       }
 
     render() {
         if(this.props.token){
-            if(this.props.user?.emailId && !this.props.user?.yearOfBirth){
-                return (
-                    <div id="unathenticated-landing-page-margin">
-                        <EmailYearSearchForm/>
-                    </div>
-                )
-            } else if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
-
+            if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
                 if (this.props.userIsEnrolledInCourse === true) {
                     return (
                         <div id="unathenticated-landing-page-margin">

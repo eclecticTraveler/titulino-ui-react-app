@@ -94,7 +94,7 @@ const DropdownInsightSelection = (props) => {
             >
               {CoursesOptions?.map((course) => (
                 <Option key={course?.index} value={course?.value}>
-                  {course?.name}
+                  {course?.name ? `${course.name} - ${course.value}` : course?.value}
                 </Option>
               ))}
             </Select>
