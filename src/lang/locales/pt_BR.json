@@ -713,6 +713,7 @@
 	"admin.tools.impersonation.launchInvalid": "Este link de impersonacao nao e mais valido.",
 	"admin.tools.impersonation.backToTitulino": "Voltar para Titulino",
 	"admin.tools.impersonation.banner": "Impersonando contato",
+	"admin.tools.impersonation.tab": "Impersonando",
 	"admin.tools.impersonation.stop": "Parar Impersonacao",
 	"admin.tools.optOutCommunication": "Excluir da Comunicacao",
 	"admin.tools.setContactInactive": "Marcar Contato Inativo",

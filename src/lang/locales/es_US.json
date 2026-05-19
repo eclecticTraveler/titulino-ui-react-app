@@ -713,6 +713,7 @@
 	"admin.tools.impersonation.launchInvalid": "Este enlace de impersonacion ya no es valido.",
 	"admin.tools.impersonation.backToTitulino": "Volver a Titulino",
 	"admin.tools.impersonation.banner": "Impersonando contacto",
+	"admin.tools.impersonation.tab": "Impersonando",
 	"admin.tools.impersonation.stop": "Detener Impersonacion",
 	"admin.tools.optOutCommunication": "Excluir de Comunicacion",
 	"admin.tools.setContactInactive": "Marcar Contacto Inactivo",

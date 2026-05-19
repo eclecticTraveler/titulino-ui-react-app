@@ -712,6 +712,7 @@
 	"admin.tools.impersonation.launchInvalid": "This impersonation launch link is no longer valid.",
 	"admin.tools.impersonation.backToTitulino": "Back to Titulino",
 	"admin.tools.impersonation.banner": "Impersonating contact",
+	"admin.tools.impersonation.tab": "Impersonating",
 	"admin.tools.impersonation.stop": "Stop Impersonation",
 	"admin.tools.optOutCommunication": "Opt Out of Communication",
 	"admin.tools.setContactInactive": "Set Contact Inactive",
