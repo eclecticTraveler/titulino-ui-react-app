@@ -567,7 +567,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [advancedContactSearchOpen, setAdvancedContactSearchOpen] = useState(false);
   const [advancedContactFilters, setAdvancedContactFilters] = useState(() => ({
     ...getAudienceDefaultFilters(),
-    limit: 100,
+    limit: 10,
     offset: 0
   }));
   const [advancedContactSearchLoading, setAdvancedContactSearchLoading] = useState(false);
@@ -1118,7 +1118,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const resetAdvancedContactFilters = useCallback(() => {
     setAdvancedContactFilters({
       ...getAudienceDefaultFilters(),
-      limit: 100,
+      limit: 10,
       offset: 0
     });
     setAdvancedContactSearchResult(null);
@@ -2659,6 +2659,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     setSelectedContact(resolvedContact);
     setSearchText(`${displayName}${firstEmailId ? ` - ${firstEmailId}` : ''}`);
+    setAdvancedContactSearchOpen(false);
   };
 
   const handleClearContact = () => {
@@ -4901,7 +4902,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <Col xs={12} sm={8} lg={3}>
             <Select
               value={advancedContactFilters.limit}
-              options={[20, 50, 100, 250].map(value => ({ value, label: String(value) }))}
+              options={[10, 20, 50, 100, 250].map(value => ({ value, label: String(value) }))}
               onChange={value => updateAdvancedContactFilter('limit', value)}
               style={{ width: '100%' }}
             />
@@ -5098,7 +5099,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               columns={contactResultColumns}
               dataSource={resultRows}
               pagination={{
-                pageSize: Math.min(Number(advancedContactFilters.limit || 100), 100),
+                pageSize: Math.min(Number(advancedContactFilters.limit || 10), 100),
                 showSizeChanger: false
               }}
               scroll={{ x: 1200 }}
