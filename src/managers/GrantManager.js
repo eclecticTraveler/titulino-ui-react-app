@@ -5,6 +5,7 @@ import TitulinoAdminAuthService from "services/Admin/TitulinoAdminAuthService";
 import AdminInsights from "lob/AdminInsights";
 import ShopPurchaseExperience from "lob/ShopPurchaseExperience";
 import ImpersonationSession from "lob/ImpersonationSession";
+import CourseRegistrationCatalog from "lob/CourseRegistrationCatalog";
 import { env } from "configs/EnvironmentConfig";
 
 const USER_PROFILE_CACHE_TTL_MINUTES = env.USER_PROFILE_CACHE_TTL_MINUTES;
@@ -43,6 +44,7 @@ const setCourseAccessForUserCourses = async(purchasedTierAccess, courseCodeIdOfP
   const updatedUser = {
     ...user,
     userCourses: updatedUserCourses,
+    userCoursesSignature: CourseRegistrationCatalog.buildUserCoursesSignature(updatedUserCourses)
   };
 
   await LocalStorageService.setCachedObject(
@@ -59,9 +61,11 @@ const normalizeResolvedUserProfile = (userProfile = {}, fallbackEmailId = null) 
   const globalRoles = Array.isArray(userProfile?.globalRoles)
     ? userProfile.globalRoles
     : [];
+  const userCourses = userProfile?.userCourses ?? null;
 
   return {
-    userCourses: userProfile?.userCourses ?? null,
+    userCourses,
+    userCoursesSignature: CourseRegistrationCatalog.buildUserCoursesSignature(userCourses),
     contactId: userProfile?.contactId ?? null,
     contactInternalId: userProfile?.contactInternalId ?? null,
     communicationName: userProfile?.communicationName ?? null,
@@ -269,12 +273,20 @@ const getUserProfile = async (emailId, dobOrYob) => {
 const getCachedUserProfile = async (emailId) => {
   const activeImpersonationProfile = ImpersonationSession.getActiveImpersonationProfile();
   if (activeImpersonationProfile?.emailId === emailId) {
-    return activeImpersonationProfile;
+    return {
+      ...activeImpersonationProfile,
+      userCoursesSignature: CourseRegistrationCatalog.buildUserCoursesSignature(activeImpersonationProfile?.userCourses)
+    };
   }
 
   const localStorageKey = `UserProfile_${emailId}`;
   const user = await LocalStorageService.getCachedObject(localStorageKey);
   return user
+    ? {
+      ...user,
+      userCoursesSignature: CourseRegistrationCatalog.buildUserCoursesSignature(user?.userCourses)
+    }
+    : user;
 };
 
 const getAuthenticatedEnrolleeProfile = async (emailId, dobOrYob) => {
@@ -322,13 +334,19 @@ const activateImpersonationProfile = async (userProfile) => {
   const user = ImpersonationSession.setActiveImpersonationProfile(userProfile);
   if (!user) return null;
 
-  return user;
+  return {
+    ...user,
+    userCoursesSignature: CourseRegistrationCatalog.buildUserCoursesSignature(user?.userCourses)
+  };
 };
 
 const stopImpersonationProfile = async () => {
   return ImpersonationSession.clearActiveImpersonationProfile();
 };
 
+const buildUserCoursesSignature = (userCourses) => {
+  return CourseRegistrationCatalog.buildUserCoursesSignature(userCourses);
+};
 
 const GrantManager = {
   getUserProfile,
@@ -337,6 +355,7 @@ const GrantManager = {
   activateImpersonationProfile,
   stopImpersonationProfile,
   normalizeResolvedUserProfile,
+  buildUserCoursesSignature,
   setCourseAccessForUserCourses
 };
 

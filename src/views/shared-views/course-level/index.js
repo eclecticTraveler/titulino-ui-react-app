@@ -12,19 +12,6 @@ import Loading from 'components/shared-components/Loading';
 import { env } from 'configs/EnvironmentConfig';
 import FacilitatorsLandingDashboard from 'components/admin-components/Insights/FacilitatorsLandingDashboard';
 
-const getUserCoursesSignature = (userCourses = {}) => {
-    if (!userCourses || typeof userCourses !== 'object') return '';
-
-    return Object.entries(userCourses)
-        .map(([key, course]) => [
-            course?.courseCodeId || course?.CourseCodeId || course?.course_code_id || key,
-            course?.courseToken ? '1' : '0',
-            course?.userRoleIdForTheCourse || ''
-        ].join(':'))
-        .sort()
-        .join('|');
-};
-
 class CourseLevel extends Component {
 
     loadCourseLandingData = () => {
@@ -70,8 +57,7 @@ class CourseLevel extends Component {
             this.props.user?.yearOfBirth !== prevProps.user?.yearOfBirth
         );
         const userCoursesChanged = (
-            getUserCoursesSignature(this.props.user?.userCourses) !==
-            getUserCoursesSignature(prevProps.user?.userCourses)
+            this.props.userCoursesSignature !== prevProps.userCoursesSignature
         );
 
         if (isAuthenticated && (tokenChanged || pathChanged || userIdentityChanged || userCoursesChanged)) {
@@ -86,23 +72,24 @@ class CourseLevel extends Component {
     render() {
         const isGlobalUser = this.props.user?.isGlobalAccessUser;
         const facilitatorDashboardCourseCodeId = this.props.facilitadorCourseCodeId || (isGlobalUser ? this.props.currentCourseCodeId : null);
-        const isFacilitatorOfCourse = !!facilitatorDashboardCourseCodeId;
+        const canManageCourse = !!facilitatorDashboardCourseCodeId;
         if(this.props.token){
             if(this.props.user?.emailId && this.props.user?.yearOfBirth) {
+                if (canManageCourse) {
+                    return (
+                        <div id="unathenticated-landing-page-margin">
+                            <FacilitatorsLandingDashboard
+                                courseCodeId={facilitatorDashboardCourseCodeId}
+                                showMyProgressTab={this.props.userIsEnrolledInCourse === true}
+                                ebookUrl={this.props.ebookUrl}
+                            />
+                        </div>
+                    );
+                }
+
                 if (this.props.userIsEnrolledInCourse === true) {
 
                     if(env.IS_TO_DISPLAY_PROGRESS_DASHBOARD) {
-                        if (isFacilitatorOfCourse) {
-                            return (
-                                <div id="unathenticated-landing-page-margin">
-                                    <FacilitatorsLandingDashboard
-                                        courseCodeId={facilitatorDashboardCourseCodeId}
-                                        showMyProgressTab={true}
-                                        ebookUrl={this.props.ebookUrl}
-                                    />
-                                </div>
-                            );
-                        }
                         return (
                             <div id="unathenticated-landing-page-margin">
                                 <ProgressDashboardByEmailV4 />
@@ -186,8 +173,9 @@ const mapStateToProps = ({lrn, theme, grant, auth}) => {
 	const { baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse, facilitadorCourseCodeId, currentCourseCodeId } = lrn;
     const { locale, direction, contentLanguage } =  theme;
     const { user } = grant;
+    const userCoursesSignature = user?.userCoursesSignature || '';
     const { token } = auth; 
-	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse, facilitadorCourseCodeId, currentCourseCodeId }
+	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, userCoursesSignature, token, userIsEnrolledInCourse, facilitadorCourseCodeId, currentCourseCodeId }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);

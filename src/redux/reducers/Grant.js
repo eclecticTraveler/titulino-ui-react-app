@@ -12,6 +12,7 @@ import {
 
 const emptyUser = {
   userCourses: null,
+  userCoursesSignature: '',
   contactId: null,
   contactInternalId: null,
   emailId: null,
@@ -49,7 +50,8 @@ const grant = (state = initState, action) => {
         ...state,
         user: {
           ...state.user,
-          userCourses: action.userCourses
+          userCourses: action.userCourses,
+          userCoursesSignature: action.userCoursesSignature
         }
       }
     case ON_AUTHENTICATING_WITH_SSO:

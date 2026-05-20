@@ -10,19 +10,6 @@ import { bindActionCreators } from 'redux';
 import utils from 'utils';
 import Loading from 'components/shared-components/Loading';
 
-const getUserCoursesSignature = (userCourses = {}) => {
-    if (!userCourses || typeof userCourses !== 'object') return '';
-
-    return Object.entries(userCourses)
-        .map(([key, course]) => [
-            course?.courseCodeId || course?.CourseCodeId || course?.course_code_id || key,
-            course?.courseToken ? '1' : '0',
-            course?.userRoleIdForTheCourse || ''
-        ].join(':'))
-        .sort()
-        .join('|');
-};
-
 class AuthCourseLevel extends Component {
 
     loadCourseLandingData = () => {
@@ -60,8 +47,7 @@ class AuthCourseLevel extends Component {
             this.props.user?.yearOfBirth !== prevProps.user?.yearOfBirth
         );
         const userCoursesChanged = (
-            getUserCoursesSignature(this.props.user?.userCourses) !==
-            getUserCoursesSignature(prevProps.user?.userCourses)
+            this.props.userCoursesSignature !== prevProps.userCoursesSignature
         );
 
         if (pathChanged || tokenChanged || userIdentityChanged || userCoursesChanged) {
@@ -145,8 +131,9 @@ const mapStateToProps = ({lrn, theme, grant, auth}) => {
 	const { baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse } = lrn;
     const { locale, direction, contentLanguage } =  theme;
     const { user } = grant;
+    const userCoursesSignature = user?.userCoursesSignature || '';
     const { token } = auth; 
-	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, token, userIsEnrolledInCourse }
+	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, userCoursesSignature, token, userIsEnrolledInCourse }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AuthCourseLevel);

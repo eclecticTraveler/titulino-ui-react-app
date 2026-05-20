@@ -333,6 +333,99 @@ class Utils {
 			.filter(Boolean);
 	}
 
+	static getCourseEnrollmentFlag(course) {
+		const value = this.getBooleanCourseFieldValue(course, [
+			"isEnrolled",
+			"IsEnrolled",
+			"is_enrolled",
+			"enrolled",
+			"Enrolled"
+		]);
+		return value;
+	}
+
+	static getCourseGlobalAccessFlag(course) {
+		return this.getBooleanCourseFieldValue(course, [
+			"isGlobalAccessUserRole",
+			"IsGlobalAccessUserRole",
+			"is_global_access_user_role"
+		]);
+	}
+
+	static getBooleanCourseFieldValue(course, fieldNames = []) {
+		const value = this.getCourseFieldValue(course, fieldNames);
+		if (typeof value === "boolean") return value;
+		if (typeof value === "string") {
+			const normalizedValue = value.trim().toLowerCase();
+			if (normalizedValue === "true") return true;
+			if (normalizedValue === "false") return false;
+		}
+		return value === 1 ? true : value === 0 ? false : null;
+	}
+
+	static getEnrolledCourseCodeIdsFromUserCourses(userCourses, options = {}) {
+		if (!userCourses || typeof userCourses !== "object") {
+		  console.warn("Invalid userCourses object.");
+		  return [];
+		}
+
+		const { treatImplicitCoursesAsEnrolled = true } = options;
+		const entries = Object.entries(userCourses);
+		const hasExplicitEnrollmentFlags = entries.some(([, course]) => (
+			this.getCourseEnrollmentFlag(course) !== null
+		));
+
+		if (!hasExplicitEnrollmentFlags) {
+			if (!treatImplicitCoursesAsEnrolled) {
+				return [];
+			}
+
+			return entries
+				.filter(([, course]) => this.getCourseGlobalAccessFlag(course) !== true)
+				.map(([key, course]) => (
+					course?.courseCodeId ||
+					course?.CourseCodeId ||
+					course?.course_code_id ||
+					key
+				))
+				.filter(Boolean);
+		}
+
+		return entries
+			.filter(([, course]) => this.getCourseEnrollmentFlag(course) === true)
+			.map(([key, course]) => (
+				course?.courseCodeId ||
+				course?.CourseCodeId ||
+				course?.course_code_id ||
+				key
+			))
+			.filter(Boolean);
+	}
+
+	static isUserEnrolledInCourse(userCourses, courseCodeId, options = {}) {
+		if (!userCourses || typeof userCourses !== "object" || !courseCodeId) {
+			return false;
+		}
+
+		const { treatImplicitCoursesAsEnrolled = true } = options;
+		const course = this.getUserCourseFromUserCourses(userCourses, courseCodeId);
+		const enrollmentFlag = this.getCourseEnrollmentFlag(course);
+
+		if (enrollmentFlag !== null) {
+			return enrollmentFlag === true;
+		}
+
+		if (this.getCourseGlobalAccessFlag(course) === true) {
+			return false;
+		}
+
+		if (!treatImplicitCoursesAsEnrolled) {
+			return false;
+		}
+
+		return !!course;
+	}
+
 	static getUserCourseFromUserCourses(userCourses, courseCodeId) {
 		if (!userCourses || typeof userCourses !== "object" || !courseCodeId) {
 		  return null;

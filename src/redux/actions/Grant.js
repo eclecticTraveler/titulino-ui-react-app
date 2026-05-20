@@ -14,9 +14,11 @@ ON_LOADING_AUTHENTICATED_ENROLLEE_PROFILE
 
 export const onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut = async (purchasedTierAccess, courseCodeIdOfPurchasedItem, emailId) => {   
   const userCourses = await TitulinoManager.setCourseAccessForUserCourses(purchasedTierAccess, courseCodeIdOfPurchasedItem, emailId);
+  const userCoursesSignature = TitulinoManager.buildUserCoursesSignature(userCourses);
     return {
       type: ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT,
-      userCourses: userCourses
+      userCourses: userCourses,
+      userCoursesSignature
     }
 }
 
