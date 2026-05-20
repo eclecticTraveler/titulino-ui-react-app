@@ -778,8 +778,7 @@ export const buildAudienceMessagePayload = (selectedRows = [], messageDraft = {}
     recipients,
     message: {
       subject: normalizeText(messageDraft.subject),
-      bodyHtml: normalizeText(messageDraft.bodyHtml),
-      bodyText: normalizeText(messageDraft.bodyText)
+      bodyText: normalizeText(messageDraft.bodyText || messageDraft.bodyHtml)
     },
     createdAt: new Date().toISOString()
   };
