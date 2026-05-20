@@ -53,6 +53,10 @@ import {
   onLoadingContactSegmentCountryDivisions,
   onLoadingContactSegment,
   onLoadingContactCertificationHistory,
+  onLoadingContactMergeDashboard,
+  onPreviewingContactMerge,
+  onExecutingContactMerge,
+  onRollingBackContactMerge,
   onLoadingAudienceMessageVariables,
   onSendingAudienceMessage,
   generateCourseCodeId,
@@ -80,7 +84,8 @@ import {
   buildAudienceTableColumns,
   buildAudienceSummary,
   buildAudienceMessageVariableOptions,
-  hasAudienceMessageContent
+  hasAudienceMessageContent,
+  isContactMergeMutationSuccessful
 } from "redux/actions/AdminTools";
 
 const normalizeContactInternalId = (value) => (
@@ -538,6 +543,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onLoadingContactSegmentCountryDivisions,
     onLoadingContactSegment,
     onLoadingContactCertificationHistory,
+    onLoadingContactMergeDashboard,
+    onPreviewingContactMerge,
+    onExecutingContactMerge,
+    onRollingBackContactMerge,
     onLoadingAudienceMessageVariables,
     onSendingAudienceMessage,
     shopRevenueDashboard,
@@ -546,6 +555,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     contactSegmentMetadata,
     contactSegmentCountryDivisions,
     contactSegment,
+    contactMergeDashboard,
+    contactMergePreview,
     audienceMessageVariables,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
@@ -556,7 +567,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [advancedContactSearchOpen, setAdvancedContactSearchOpen] = useState(false);
   const [advancedContactFilters, setAdvancedContactFilters] = useState(() => ({
     ...getAudienceDefaultFilters(),
-    limit: 20,
+    limit: 100,
     offset: 0
   }));
   const [advancedContactSearchLoading, setAdvancedContactSearchLoading] = useState(false);
@@ -627,6 +638,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     limit: 500,
     offset: 0
   });
+  const [stewardshipInnerTabKey, setStewardshipInnerTabKey] = useState('duplicates');
+  const [stewardshipLoading, setStewardshipLoading] = useState(false);
+  const [stewardshipPreviewLoading, setStewardshipPreviewLoading] = useState(false);
+  const [stewardshipMergeSubmitting, setStewardshipMergeSubmitting] = useState(false);
+  const [stewardshipRollbackSubmittingKey, setStewardshipRollbackSubmittingKey] = useState(null);
+  const [stewardshipPrimarySearchText, setStewardshipPrimarySearchText] = useState('');
+  const [stewardshipSecondarySearchText, setStewardshipSecondarySearchText] = useState('');
+  const [stewardshipPrimaryContact, setStewardshipPrimaryContact] = useState(null);
+  const [stewardshipSecondaryContact, setStewardshipSecondaryContact] = useState(null);
+  const [stewardshipMergeReason, setStewardshipMergeReason] = useState('');
   const [contactProfileSearchText, setContactProfileSearchText] = useState('');
   const [contactProfileMonitoringLoading, setContactProfileMonitoringLoading] = useState(false);
   const [selectedOptedOutEmailRowKeys, setSelectedOptedOutEmailRowKeys] = useState([]);
@@ -1097,7 +1118,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const resetAdvancedContactFilters = useCallback(() => {
     setAdvancedContactFilters({
       ...getAudienceDefaultFilters(),
-      limit: 20,
+      limit: 100,
       offset: 0
     });
     setAdvancedContactSearchResult(null);
@@ -1129,6 +1150,144 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       setAdvancedContactSearchLoading(false);
     }
   }, [advancedContactFilters, emailId, messageApi]);
+
+  const loadContactMergeDashboard = useCallback(async () => {
+    if (!emailId || !onLoadingContactMergeDashboard) return null;
+
+    setStewardshipLoading(true);
+    try {
+      return await onLoadingContactMergeDashboard(emailId, {
+        duplicateLimit: 50,
+        recentMergeLimit: 50
+      });
+    } finally {
+      setStewardshipLoading(false);
+    }
+  }, [emailId, onLoadingContactMergeDashboard]);
+
+  const handlePreviewContactMerge = useCallback(async (primaryContact, secondaryContact) => {
+    const primaryContactInternalId = getContactInternalIdValue(primaryContact);
+    const secondaryContactInternalId = getContactInternalIdValue(secondaryContact);
+
+    if (!emailId || !primaryContactInternalId || !secondaryContactInternalId) {
+      messageApi.warning(t('admin.tools.stewardship.msg.selectBothContacts'));
+      return null;
+    }
+
+    if (normalizeContactInternalId(primaryContactInternalId) === normalizeContactInternalId(secondaryContactInternalId)) {
+      messageApi.warning(t('admin.tools.stewardship.msg.sameContact'));
+      return null;
+    }
+
+    setStewardshipPrimaryContact(resolveSelectableContact(primaryContact, allEnrollees, avatarUrlMap));
+    setStewardshipSecondaryContact(resolveSelectableContact(secondaryContact, allEnrollees, avatarUrlMap));
+    setStewardshipInnerTabKey('preview');
+    setStewardshipPreviewLoading(true);
+
+    try {
+      return await onPreviewingContactMerge(emailId, primaryContactInternalId, secondaryContactInternalId);
+    } finally {
+      setStewardshipPreviewLoading(false);
+    }
+  }, [
+    allEnrollees,
+    avatarUrlMap,
+    emailId,
+    messageApi,
+    onPreviewingContactMerge,
+    t
+  ]);
+
+  const handleExecuteContactMerge = useCallback(async () => {
+    const primaryContactInternalId = getContactInternalIdValue(stewardshipPrimaryContact);
+    const secondaryContactInternalId = getContactInternalIdValue(stewardshipSecondaryContact);
+    const reason = stewardshipMergeReason.trim();
+
+    if (!emailId || !primaryContactInternalId || !secondaryContactInternalId || !reason) {
+      messageApi.warning(t('admin.tools.stewardship.msg.reasonRequired'));
+      return;
+    }
+
+    setStewardshipMergeSubmitting(true);
+    try {
+      const actionResult = await onExecutingContactMerge(emailId, {
+        primaryContactInternalId,
+        secondaryContactInternalId,
+        reason,
+        profileOverrides: {},
+        executedByContactInternalId: user?.contactInternalId || user?.ContactInternalId,
+        executedByEmailId: emailId
+      });
+      const result = actionResult?.contactMergeResult || actionResult;
+
+      if (!isContactMergeMutationSuccessful(result)) {
+        throw new Error(result?.errorMessage || 'Contact merge failed.');
+      }
+
+      messageApi.success(t('admin.tools.stewardship.msg.mergeSuccess'));
+      setStewardshipMergeReason('');
+      setStewardshipSecondaryContact(null);
+      setStewardshipSecondarySearchText('');
+      await loadContactMergeDashboard();
+      await onLoadingAdminToolsInit(emailId);
+    } catch (error) {
+      console.error(error);
+      messageApi.error(t('admin.tools.stewardship.msg.mergeError'));
+    } finally {
+      setStewardshipMergeSubmitting(false);
+    }
+  }, [
+    emailId,
+    loadContactMergeDashboard,
+    messageApi,
+    onExecutingContactMerge,
+    onLoadingAdminToolsInit,
+    stewardshipMergeReason,
+    stewardshipPrimaryContact,
+    stewardshipSecondaryContact,
+    t,
+    user
+  ]);
+
+  const handleRollbackContactMerge = useCallback(async (mergeRecord) => {
+    const mergeId = mergeRecord?.mergeId;
+    if (!emailId || !mergeId) {
+      messageApi.warning(t('admin.tools.stewardship.msg.rollbackMissing'));
+      return;
+    }
+
+    setStewardshipRollbackSubmittingKey(mergeRecord.key || mergeId);
+    try {
+      const actionResult = await onRollingBackContactMerge(emailId, {
+        mergeId,
+        reason: `Rollback requested from Contact Stewardship for merge ${mergeId}`,
+        executedByContactInternalId: user?.contactInternalId || user?.ContactInternalId,
+        executedByEmailId: emailId
+      });
+      const result = actionResult?.contactMergeRollbackResult || actionResult;
+
+      if (!isContactMergeMutationSuccessful(result)) {
+        throw new Error(result?.errorMessage || 'Rollback failed.');
+      }
+
+      messageApi.success(t('admin.tools.stewardship.msg.rollbackSuccess'));
+      await loadContactMergeDashboard();
+      await onLoadingAdminToolsInit(emailId);
+    } catch (error) {
+      console.error(error);
+      messageApi.error(t('admin.tools.stewardship.msg.rollbackError'));
+    } finally {
+      setStewardshipRollbackSubmittingKey(null);
+    }
+  }, [
+    emailId,
+    loadContactMergeDashboard,
+    messageApi,
+    onLoadingAdminToolsInit,
+    onRollingBackContactMerge,
+    t,
+    user
+  ]);
 
   const handleAudienceEditorInput = useCallback(() => {
     const bodyHtml = audienceEditorRef.current?.innerHTML || '';
@@ -1403,6 +1562,32 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   useEffect(() => {
     if (
+      activeOuterTabKey !== 'stewardship' ||
+      !emailId ||
+      contactMergeDashboard?.emailId === emailId
+    ) {
+      return;
+    }
+
+    loadContactMergeDashboard();
+  }, [
+    activeOuterTabKey,
+    contactMergeDashboard?.emailId,
+    emailId,
+    loadContactMergeDashboard
+  ]);
+
+  useEffect(() => {
+    if (activeOuterTabKey !== 'stewardship' || !selectedContact || stewardshipPrimaryContact) return;
+
+    setStewardshipPrimaryContact(selectedContact);
+    setStewardshipPrimarySearchText(
+      `${getContactDisplayName(selectedContact)}${getContactEmailIds(selectedContact)[0] ? ` - ${getContactEmailIds(selectedContact)[0]}` : ''}`
+    );
+  }, [activeOuterTabKey, selectedContact, stewardshipPrimaryContact]);
+
+  useEffect(() => {
+    if (
       activeOuterTabKey !== 'access' ||
       !advancedContactSearchOpen ||
       !emailId ||
@@ -1418,6 +1603,25 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     contactSegmentMetadata?.emailId,
     emailId,
     loadAudienceMetadata
+  ]);
+
+  useEffect(() => {
+    if (
+      activeOuterTabKey !== 'access' ||
+      !advancedContactSearchOpen ||
+      !emailId ||
+      advancedContactSearchResult?.emailId === emailId
+    ) {
+      return;
+    }
+
+    loadAdvancedContactSearch();
+  }, [
+    activeOuterTabKey,
+    advancedContactSearchOpen,
+    advancedContactSearchResult?.emailId,
+    emailId,
+    loadAdvancedContactSearch
   ]);
 
   useEffect(() => {
@@ -1549,11 +1753,62 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       .filter(contact => getContactInternalIdValue(contact))
   ), [advancedContactSearchResult?.rows, allEnrollees, avatarUrlMap]);
 
-  const advancedContactSearchOptions = useMemo(() => (
-    advancedContactResultsWithAvatarUrls.map(contact => (
-      buildContactAutocompleteOption(contact, { sourceLabel: 'Advanced' })
-    ))
-  ), [advancedContactResultsWithAvatarUrls]);
+  const buildStewardshipContactSearchOptions = useCallback((rawSearchText, excludedContactInternalId) => {
+    if (!rawSearchText || getMeaningfulCharacterCount(rawSearchText) < 2 || !allEnrollees?.length) return [];
+
+    return allEnrollees
+      .map(enrollee => ({
+        enrollee: resolveSelectableContact(enrollee, allEnrollees, avatarUrlMap),
+        score: scoreContactSearchMatch(enrollee, rawSearchText)
+      }))
+      .filter(result => (
+        result.score > 0 &&
+        normalizeContactInternalId(result.enrollee?.ContactInternalId) !== normalizeContactInternalId(excludedContactInternalId)
+      ))
+      .sort((left, right) => right.score - left.score)
+      .slice(0, 20)
+      .map(result => buildContactAutocompleteOption(result.enrollee));
+  }, [allEnrollees, avatarUrlMap]);
+
+  const stewardshipPrimarySearchOptions = useMemo(() => (
+    buildStewardshipContactSearchOptions(
+      stewardshipPrimarySearchText,
+      getContactInternalIdValue(stewardshipSecondaryContact)
+    )
+  ), [buildStewardshipContactSearchOptions, stewardshipPrimarySearchText, stewardshipSecondaryContact]);
+
+  const stewardshipSecondarySearchOptions = useMemo(() => (
+    buildStewardshipContactSearchOptions(
+      stewardshipSecondarySearchText,
+      getContactInternalIdValue(stewardshipPrimaryContact)
+    )
+  ), [buildStewardshipContactSearchOptions, stewardshipSecondarySearchText, stewardshipPrimaryContact]);
+
+  const resolveStewardshipContactById = useCallback((contactInternalId, fallback = {}) => {
+    const found = (allEnrollees || []).find(enrollee => (
+      normalizeContactInternalId(enrollee?.ContactInternalId) === normalizeContactInternalId(contactInternalId)
+    ));
+
+    return resolveSelectableContact(found || fallback, allEnrollees, avatarUrlMap);
+  }, [allEnrollees, avatarUrlMap]);
+
+  const resolveCandidateContact = useCallback((candidate = {}, side = 'primary') => {
+    const isPrimary = side === 'primary';
+    const contactInternalId = isPrimary
+      ? candidate.primaryContactInternalId
+      : candidate.secondaryContactInternalId;
+
+    return resolveStewardshipContactById(contactInternalId, {
+      ContactInternalId: contactInternalId,
+      FullName: isPrimary ? candidate.primaryFullName : candidate.secondaryFullName,
+      DateOfBirth: isPrimary ? candidate.primaryDateOfBirth : candidate.secondaryDateOfBirth,
+      Emails: [
+        {
+          EmailId: isPrimary ? candidate.primaryEmailId : candidate.secondaryEmailId
+        }
+      ].filter(email => email.EmailId)
+    });
+  }, [resolveStewardshipContactById]);
 
   const visibleContactIdsForAvatarHydration = useMemo(() => {
     const visibleIds = filteredEnrollees
@@ -1569,8 +1824,22 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       visibleIds.push(selectedContact.ContactInternalId);
     }
 
+    if (stewardshipPrimaryContact?.ContactInternalId) {
+      visibleIds.push(stewardshipPrimaryContact.ContactInternalId);
+    }
+
+    if (stewardshipSecondaryContact?.ContactInternalId) {
+      visibleIds.push(stewardshipSecondaryContact.ContactInternalId);
+    }
+
     return Array.from(new Set(visibleIds.map(normalizeContactInternalId).filter(Boolean)));
-  }, [advancedContactResultsWithAvatarUrls, filteredEnrollees, selectedContact?.ContactInternalId]);
+  }, [
+    advancedContactResultsWithAvatarUrls,
+    filteredEnrollees,
+    selectedContact?.ContactInternalId,
+    stewardshipPrimaryContact?.ContactInternalId,
+    stewardshipSecondaryContact?.ContactInternalId
+  ]);
 
   const filteredEnrolleesWithAvatarUrls = useMemo(() => (
     (filteredEnrollees || []).map((enrollee) => ({
@@ -1591,7 +1860,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   useEffect(() => {
     if (
-      activeOuterTabKey !== 'access' ||
+      !['access', 'stewardship'].includes(activeOuterTabKey) ||
       !emailId ||
       !allEnrollees?.length ||
       visibleContactIdsForAvatarHydration.length === 0
@@ -2379,12 +2648,17 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setSelectedContact(found ? resolveSelectableContact(found, allEnrollees, avatarUrlMap) : null);
   };
 
-  const handleAdvancedContactSelect = (value, option) => {
+  const handleAdvancedContactRowSelect = (row = {}) => {
+    const contactInternalId = row?.contactInternalId || row?.ContactInternalId;
     const found = advancedContactResultsWithAvatarUrls.find(contact => (
-      normalizeContactInternalId(contact?.ContactInternalId) === normalizeContactInternalId(option.key)
+      normalizeContactInternalId(contact?.ContactInternalId) === normalizeContactInternalId(contactInternalId)
     ));
-    setSelectedContact(found ? resolveSelectableContact(found, allEnrollees, avatarUrlMap) : null);
-    setSearchText(value || '');
+    const resolvedContact = found || resolveSelectableContact(row, allEnrollees, avatarUrlMap);
+    const displayName = getContactDisplayName(resolvedContact);
+    const firstEmailId = getContactEmailIds(resolvedContact)[0];
+
+    setSelectedContact(resolvedContact);
+    setSearchText(`${displayName}${firstEmailId ? ` - ${firstEmailId}` : ''}`);
   };
 
   const handleClearContact = () => {
@@ -4555,8 +4829,28 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   };
 
   const renderAdvancedContactSearch = () => {
-    const resultRows = advancedContactResultsWithAvatarUrls || [];
+    const resultRows = advancedContactSearchResult?.rows || [];
     const resultCount = advancedContactSearchResult?.count ?? resultRows.length;
+    const contactResultColumns = [
+      ...audienceColumns.filter(column => (
+        ['fullName', 'emailList', 'age', 'sex', 'languageLevel', 'residency', 'birth'].includes(column.key)
+      )),
+      {
+        title: '',
+        key: 'selectContact',
+        width: 120,
+        fixed: 'right',
+        render: (_, record) => (
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => handleAdvancedContactRowSelect(record)}
+          >
+            {setLocale(locale, 'admin.tools.selectContact')}
+          </Button>
+        )
+      }
+    ];
 
     return (
       <div
@@ -4607,7 +4901,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <Col xs={12} sm={8} lg={3}>
             <Select
               value={advancedContactFilters.limit}
-              options={[10, 20, 50, 100].map(value => ({ value, label: String(value) }))}
+              options={[20, 50, 100, 250].map(value => ({ value, label: String(value) }))}
               onChange={value => updateAdvancedContactFilter('limit', value)}
               style={{ width: '100%' }}
             />
@@ -4798,18 +5092,17 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             <div style={{ color: '#72849a', fontSize: 12, marginBottom: 6 }}>
               {resultRows.length} shown{resultCount != null ? ` of ${resultCount}` : ''}
             </div>
-            <AutoComplete
-              style={{ width: '100%' }}
-              options={advancedContactSearchOptions}
-              onSelect={handleAdvancedContactSelect}
-              filterOption={(input, option) => (
-                normalizeContactSearchText(option?.searchText || option?.value)
-                  .includes(normalizeContactSearchText(input))
-              )}
-              placeholder={t('admin.tools.searchPlaceholder')}
-            >
-              <Input prefix={<UserOutlined />} />
-            </AutoComplete>
+            <Table
+              size="small"
+              rowKey={record => record.contactInternalId || record.key}
+              columns={contactResultColumns}
+              dataSource={resultRows}
+              pagination={{
+                pageSize: Math.min(Number(advancedContactFilters.limit || 100), 100),
+                showSizeChanger: false
+              }}
+              scroll={{ x: 1200 }}
+            />
           </div>
         )}
       </div>
@@ -4859,15 +5152,405 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       {/* Step 2: Contact Summary (with Summary / Detailed / Access tabs) */}
       {renderContactSummary()}
 
-      {!selectedContact && !searchText && (
+      {!selectedContact && !searchText && !advancedContactSearchResult && (
         <Empty description={setLocale(locale, 'admin.tools.searchToGetStarted')} style={{ marginTop: 40 }} />
       )}
     </>
   );
 
+  const renderStewardshipContactCard = (contact, title, tagColor) => {
+    const contactInternalId = getContactInternalIdValue(contact);
+    const emailIds = getContactEmailIds(contact);
+
+    return (
+      <Card size="small" title={<span><UserOutlined /> {title}</span>} variant="outlined">
+        {contactInternalId ? (
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <Avatar size={56} src={contact?.AvatarUrl || contact?.avatarUrl} icon={<UserOutlined />} style={{ flexShrink: 0 }} />
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <Space wrap style={{ marginBottom: 6 }}>
+                <strong>{getContactDisplayName(contact)}</strong>
+                <Tag color={tagColor}>{title}</Tag>
+              </Space>
+              <Descriptions size="small" column={1} bordered>
+                <Descriptions.Item label={setLocale(locale, 'admin.tools.label.email')}>
+                  {emailIds.join(', ') || '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label={setLocale(locale, 'admin.tools.label.contactId')}>
+                  {contactInternalId}
+                </Descriptions.Item>
+                <Descriptions.Item label={setLocale(locale, 'admin.tools.label.dateOfBirth')}>
+                  {formatDateOnly(getFirstCourseValue(contact?.DateOfBirth, contact?.dateOfBirth))}
+                </Descriptions.Item>
+              </Descriptions>
+            </div>
+          </div>
+        ) : (
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={setLocale(locale, 'admin.tools.stewardship.selectContact')} />
+        )}
+      </Card>
+    );
+  };
+
+  const renderContactMergePreview = () => {
+    const primaryContactInternalId = getContactInternalIdValue(stewardshipPrimaryContact);
+    const secondaryContactInternalId = getContactInternalIdValue(stewardshipSecondaryContact);
+    const previewMatchesCurrentSelection = (
+      normalizeContactInternalId(contactMergePreview?.primaryContactInternalId) === normalizeContactInternalId(primaryContactInternalId) &&
+      normalizeContactInternalId(contactMergePreview?.secondaryContactInternalId) === normalizeContactInternalId(secondaryContactInternalId)
+    );
+    const currentPreview = previewMatchesCurrentSelection ? contactMergePreview?.preview : null;
+    const conflicts = toCourseArray(getFirstCourseValue(
+      currentPreview?.Conflicts,
+      currentPreview?.conflicts,
+      currentPreview?.ProfileConflicts,
+      currentPreview?.profileConflicts
+    ));
+    const summary = getFirstCourseValue(
+      currentPreview?.Summary,
+      currentPreview?.summary,
+      currentPreview?.MergeSummary,
+      currentPreview?.mergeSummary
+    );
+
+    return (
+      <div>
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+          title={setLocale(locale, 'admin.tools.stewardship.previewSafetyTitle')}
+          description={setLocale(locale, 'admin.tools.stewardship.previewSafetyDescription')}
+        />
+
+        <Row gutter={[16, 16]}>
+          <Col xs={24} lg={12}>
+            {renderStewardshipContactCard(stewardshipPrimaryContact, t('admin.tools.stewardship.primaryContact'), 'green')}
+          </Col>
+          <Col xs={24} lg={12}>
+            {renderStewardshipContactCard(stewardshipSecondaryContact, t('admin.tools.stewardship.secondaryContact'), 'orange')}
+          </Col>
+        </Row>
+
+        <Card size="small" variant="outlined" style={{ marginTop: 16 }} loading={stewardshipPreviewLoading}>
+          {currentPreview ? (
+            <>
+              {conflicts.length > 0 && (
+                <Alert
+                  type="error"
+                  showIcon
+                  style={{ marginBottom: 12 }}
+                  title={setLocale(locale, 'admin.tools.stewardship.conflictsDetected')}
+                  description={(
+                    <Space wrap>
+                      {conflicts.map((conflict, index) => (
+                        <Tag color="red" key={conflict?.field || conflict?.Field || index}>
+                          {conflict?.field || conflict?.Field || conflict?.name || conflict?.Name || JSON.stringify(conflict)}
+                        </Tag>
+                      ))}
+                    </Space>
+                  )}
+                />
+              )}
+
+              {summary && (
+                <Alert
+                  type="info"
+                  showIcon
+                  style={{ marginBottom: 12 }}
+                  title={setLocale(locale, 'admin.tools.stewardship.mergeSummary')}
+                  description={typeof summary === 'string' ? summary : (
+                    <JsonView value={summary} collapsed={1} displayDataTypes={false} enableClipboard style={{ background: 'transparent' }} />
+                  )}
+                />
+              )}
+
+              <div style={{ padding: 12, background: '#f6f8fa', border: '1px solid #e6ebf1', borderRadius: 6, maxHeight: 360, overflow: 'auto', marginBottom: 16 }}>
+                <JsonView value={currentPreview || {}} collapsed={2} displayDataTypes={false} enableClipboard style={{ background: 'transparent' }} />
+              </div>
+            </>
+          ) : (
+            <Empty description={setLocale(locale, 'admin.tools.stewardship.previewEmpty')} />
+          )}
+
+          <Row gutter={[16, 12]} align="bottom">
+            <Col xs={24} lg={18}>
+              <Input.TextArea
+                rows={2}
+                value={stewardshipMergeReason}
+                onChange={event => setStewardshipMergeReason(event.target.value)}
+                placeholder={t('admin.tools.stewardship.reasonPlaceholder')}
+              />
+            </Col>
+            <Col xs={24} lg={6}>
+              <Popconfirm
+                title={setLocale(locale, 'admin.tools.stewardship.confirmMergeTitle')}
+                description={setLocale(locale, 'admin.tools.stewardship.confirmMergeDescription')}
+                okText={setLocale(locale, 'admin.tools.confirmYes')}
+                cancelText={setLocale(locale, 'admin.tools.confirmNo')}
+                onConfirm={handleExecuteContactMerge}
+                disabled={!currentPreview || stewardshipMergeReason.trim().length < 4}
+              >
+                <Button type="primary" danger block loading={stewardshipMergeSubmitting} disabled={!currentPreview || stewardshipMergeReason.trim().length < 4}>
+                  {setLocale(locale, 'admin.tools.stewardship.confirmMerge')}
+                </Button>
+              </Popconfirm>
+            </Col>
+          </Row>
+        </Card>
+      </div>
+    );
+  };
+
   /* ══════════════════════════════════════════════════════
      COURSE MANAGEMENT TAB
      ══════════════════════════════════════════════════════ */
+
+  const renderContactStewardship = () => {
+    const duplicateRows = contactMergeDashboard?.possibleDuplicates || [];
+    const recentMergeRows = contactMergeDashboard?.recentMerges || [];
+    const generatedAt = contactMergeDashboard?.generatedAt;
+
+    const candidateColumns = [
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.confidence'),
+        dataIndex: 'confidenceScore',
+        width: 130,
+        sorter: (a, b) => (a.confidenceScore || 0) - (b.confidenceScore || 0),
+        defaultSortOrder: 'descend',
+        render: (value) => {
+          const score = Number(value || 0);
+          const percent = score <= 1 ? Math.round(score * 100) : Math.round(score);
+          const color = percent >= 90 ? 'green' : percent >= 75 ? 'gold' : 'orange';
+          return <Tag color={color}>{percent}%</Tag>;
+        }
+      },
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.primaryContact'),
+        dataIndex: 'primaryFullName',
+        render: (_, record) => (
+          <div>
+            <strong>{record.primaryFullName || record.primaryContactInternalId || '—'}</strong>
+            <div style={{ color: '#72849a', fontSize: 12 }}>{record.primaryEmailId || record.primaryContactInternalId}</div>
+          </div>
+        )
+      },
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.secondaryContact'),
+        dataIndex: 'secondaryFullName',
+        render: (_, record) => (
+          <div>
+            <strong>{record.secondaryFullName || record.secondaryContactInternalId || '—'}</strong>
+            <div style={{ color: '#72849a', fontSize: 12 }}>{record.secondaryEmailId || record.secondaryContactInternalId}</div>
+          </div>
+        )
+      },
+      {
+        title: setLocale(locale, 'admin.tools.label.dateOfBirth'),
+        width: 160,
+        render: (_, record) => (
+          <Space direction="vertical" size={0}>
+            <span>{formatDateOnly(record.primaryDateOfBirth)}</span>
+            <span style={{ color: '#72849a' }}>{formatDateOnly(record.secondaryDateOfBirth)}</span>
+          </Space>
+        )
+      },
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.matchReasons'),
+        dataIndex: 'matchReasons',
+        render: (reasons = []) => (
+          <Space wrap>
+            {toCourseArray(reasons).map((reason, index) => (
+              <Tag key={`${reason}-${index}`}>{reason}</Tag>
+            ))}
+          </Space>
+        )
+      },
+      {
+        title: '',
+        width: 120,
+        render: (_, record) => (
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => handlePreviewContactMerge(
+              resolveCandidateContact(record, 'primary'),
+              resolveCandidateContact(record, 'secondary')
+            )}
+          >
+            {setLocale(locale, 'admin.tools.stewardship.previewMerge')}
+          </Button>
+        )
+      }
+    ];
+
+    const historyColumns = [
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.mergedAt'),
+        dataIndex: 'mergedAt',
+        width: 160,
+        render: value => formatDateOnly(value)
+      },
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.primaryContact'),
+        dataIndex: 'primaryFullName',
+        render: (_, record) => record.primaryFullName || record.primaryContactInternalId || '—'
+      },
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.secondaryContact'),
+        dataIndex: 'secondaryFullName',
+        render: (_, record) => record.secondaryFullName || record.secondaryContactInternalId || '—'
+      },
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.mergedBy'),
+        dataIndex: 'mergedBy',
+        render: value => value || '—'
+      },
+      {
+        title: setLocale(locale, 'admin.tools.impersonation.reason'),
+        dataIndex: 'reason',
+        render: value => value || '—'
+      },
+      {
+        title: '',
+        width: 130,
+        render: (_, record) => (
+          <Popconfirm
+            title={setLocale(locale, 'admin.tools.stewardship.rollbackTitle')}
+            description={setLocale(locale, 'admin.tools.stewardship.rollbackDescription')}
+            okText={setLocale(locale, 'admin.tools.confirmYes')}
+            cancelText={setLocale(locale, 'admin.tools.confirmNo')}
+            onConfirm={() => handleRollbackContactMerge(record)}
+            disabled={!record.rollbackEligible || !record.mergeId}
+          >
+            <Button
+              size="small"
+              danger
+              disabled={!record.rollbackEligible || !record.mergeId}
+              loading={stewardshipRollbackSubmittingKey === (record.key || record.mergeId)}
+            >
+              {setLocale(locale, 'admin.tools.stewardship.rollback')}
+            </Button>
+          </Popconfirm>
+        )
+      }
+    ];
+
+    const stewardshipItems = [
+      {
+        key: 'duplicates',
+        label: <span><TeamOutlined /> {setLocale(locale, 'admin.tools.stewardship.duplicates')}</span>,
+        children: (
+          <>
+            <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+              <Col xs={24} md={8}>
+                <Statistic title={setLocale(locale, 'admin.tools.stewardship.duplicateCandidates')} value={duplicateRows.length} prefix={<TeamOutlined />} />
+              </Col>
+              <Col xs={24} md={8}>
+                <Statistic title={setLocale(locale, 'admin.tools.stewardship.recentMerges')} value={recentMergeRows.length} prefix={<SafetyCertificateOutlined />} />
+              </Col>
+              <Col xs={24} md={8}>
+                <Button icon={<ReloadOutlined />} loading={stewardshipLoading} onClick={loadContactMergeDashboard}>
+                  {setLocale(locale, 'admin.tools.revenue.refresh')}
+                </Button>
+                {generatedAt && (
+                  <div style={{ color: '#72849a', fontSize: 12, marginTop: 6 }}>
+                    {setLocale(locale, 'admin.tools.stewardship.generatedAt')}: {formatDateOnly(generatedAt)}
+                  </div>
+                )}
+              </Col>
+            </Row>
+            <Table size="small" rowKey="key" loading={stewardshipLoading} columns={candidateColumns} dataSource={duplicateRows} pagination={{ pageSize: 10 }} />
+          </>
+        )
+      },
+      {
+        key: 'preview',
+        label: <span><SolutionOutlined /> {setLocale(locale, 'admin.tools.stewardship.mergePreview')}</span>,
+        children: (
+          <>
+            <Card size="small" variant="outlined" style={{ marginBottom: 16 }}>
+              <Alert type="info" showIcon style={{ marginBottom: 16 }} title={setLocale(locale, 'admin.tools.stewardship.manualTitle')} description={setLocale(locale, 'admin.tools.stewardship.manualDescription')} />
+              <Row gutter={[16, 16]} align="bottom">
+                <Col xs={24} lg={10}>
+                  <div style={{ marginBottom: 6 }}><strong>{setLocale(locale, 'admin.tools.stewardship.primaryContact')}</strong></div>
+                  <AutoComplete
+                    style={{ width: '100%' }}
+                    options={stewardshipPrimarySearchOptions}
+                    value={stewardshipPrimarySearchText}
+                    showSearch
+                    onChange={setStewardshipPrimarySearchText}
+                    onSelect={(_, option) => {
+                      const contact = resolveStewardshipContactById(option.key);
+                      setStewardshipPrimaryContact(contact);
+                      setStewardshipPrimarySearchText(option.value);
+                    }}
+                    filterOption={false}
+                    placeholder={t('admin.tools.searchPlaceholder')}
+                  >
+                    <Input prefix={<SearchOutlined />} />
+                  </AutoComplete>
+                </Col>
+                <Col xs={24} lg={10}>
+                  <div style={{ marginBottom: 6 }}><strong>{setLocale(locale, 'admin.tools.stewardship.secondaryContact')}</strong></div>
+                  <AutoComplete
+                    style={{ width: '100%' }}
+                    options={stewardshipSecondarySearchOptions}
+                    value={stewardshipSecondarySearchText}
+                    showSearch
+                    onChange={setStewardshipSecondarySearchText}
+                    onSelect={(_, option) => {
+                      const contact = resolveStewardshipContactById(option.key);
+                      setStewardshipSecondaryContact(contact);
+                      setStewardshipSecondarySearchText(option.value);
+                    }}
+                    filterOption={false}
+                    placeholder={t('admin.tools.searchPlaceholder')}
+                  >
+                    <Input prefix={<SearchOutlined />} />
+                  </AutoComplete>
+                </Col>
+                <Col xs={24} lg={4}>
+                  <Button type="primary" icon={<SearchOutlined />} block loading={stewardshipPreviewLoading} onClick={() => handlePreviewContactMerge(stewardshipPrimaryContact, stewardshipSecondaryContact)}>
+                    {setLocale(locale, 'admin.tools.stewardship.previewMerge')}
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
+            {renderContactMergePreview()}
+          </>
+        )
+      },
+      {
+        key: 'history',
+        label: <span><TableOutlined /> {setLocale(locale, 'admin.tools.stewardship.mergeHistory')}</span>,
+        children: (
+          <Table
+            size="small"
+            rowKey="key"
+            loading={stewardshipLoading}
+            columns={historyColumns}
+            dataSource={recentMergeRows}
+            expandable={{
+              expandedRowRender: record => (
+                <div style={{ padding: 12, background: '#f6f8fa', border: '1px solid #e6ebf1', borderRadius: 6 }}>
+                  <JsonView value={record} collapsed={1} displayDataTypes={false} enableClipboard style={{ background: 'transparent' }} />
+                </div>
+              )
+            }}
+            pagination={{ pageSize: 10 }}
+          />
+        )
+      }
+    ];
+
+    return (
+      <Card size="small" variant="outlined">
+        <Alert type="warning" showIcon style={{ marginBottom: 16 }} title={setLocale(locale, 'admin.tools.stewardship.title')} description={setLocale(locale, 'admin.tools.stewardship.description')} />
+        <Tabs activeKey={stewardshipInnerTabKey} onChange={setStewardshipInnerTabKey} items={stewardshipItems} />
+      </Card>
+    );
+  };
 
   const langOptions = langData.map(l => ({
     value: l.langId,
@@ -7109,6 +7792,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const outerTabsConfig = [
     { key: 'access', tab: <span><UserOutlined /> {setLocale(locale, 'admin.tools.tab.accessManagement')}</span> },
+    { key: 'stewardship', tab: <span><TeamOutlined /> {setLocale(locale, 'admin.tools.tab.contactStewardship')}</span> },
     { key: 'courses', tab: <span><BookOutlined /> {setLocale(locale, 'admin.tools.tab.courseManagement')}</span> },
     { key: 'revenue', tab: <span><DollarOutlined /> {setLocale(locale, 'admin.tools.tab.revenue')}</span> },
     { key: 'messaging', tab: <span><MailOutlined /> {setLocale(locale, 'admin.tools.tab.messaging')}</span> },
@@ -7133,6 +7817,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         onTabChange={setActiveOuterTabKey}
       >
         {activeOuterTabKey === 'access' && renderAccessManagement()}
+        {activeOuterTabKey === 'stewardship' && renderContactStewardship()}
         {activeOuterTabKey === 'courses' && renderCourseManagement()}
         {activeOuterTabKey === 'revenue' && renderRevenueDashboard()}
         {activeOuterTabKey === 'messaging' && renderMessagingDashboard()}
@@ -7175,6 +7860,10 @@ function mapDispatchToProps(dispatch) {
     onLoadingContactSegmentCountryDivisions,
     onLoadingContactSegment,
     onLoadingContactCertificationHistory,
+    onLoadingContactMergeDashboard,
+    onPreviewingContactMerge,
+    onExecutingContactMerge,
+    onRollingBackContactMerge,
     onLoadingAudienceMessageVariables,
     onSendingAudienceMessage,
     onRenderingCourseRegistration,
@@ -7204,6 +7893,8 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     contactSegmentMetadata,
     contactSegmentCountryDivisions,
     contactSegment,
+    contactMergeDashboard,
+    contactMergePreview,
     audienceMessageVariables,
     lastAudienceMessageSendResult
   } = adminTools;
@@ -7229,6 +7920,8 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     contactSegmentMetadata,
     contactSegmentCountryDivisions,
     contactSegment,
+    contactMergeDashboard,
+    contactMergePreview,
     audienceMessageVariables,
     lastAudienceMessageSendResult
   };

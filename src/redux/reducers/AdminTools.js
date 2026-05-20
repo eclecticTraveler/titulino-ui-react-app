@@ -31,6 +31,10 @@ import {
   ON_LOADING_CONTACT_SEGMENT_COUNTRY_DIVISIONS,
   ON_LOADING_CONTACT_SEGMENT,
   ON_LOADING_CONTACT_CERTIFICATION_HISTORY,
+  ON_LOADING_CONTACT_MERGE_DASHBOARD,
+  ON_PREVIEWING_CONTACT_MERGE,
+  ON_EXECUTING_CONTACT_MERGE,
+  ON_ROLLING_BACK_CONTACT_MERGE,
   ON_LOADING_AUDIENCE_MESSAGE_VARIABLES,
   ON_SENDING_AUDIENCE_MESSAGE
 } from '../constants/AdminTools';
@@ -42,6 +46,10 @@ const initState = {
   contactSegmentCountryDivisions: null,
   contactSegment: null,
   contactCertificationHistory: null,
+  contactMergeDashboard: null,
+  contactMergePreview: null,
+  lastContactMergeResult: null,
+  lastContactMergeRollbackResult: null,
   audienceMessageVariables: null,
   lastAudienceMessageSendResult: null
 };
@@ -233,6 +241,14 @@ const adminTools = (state = initState, action) => {
       return { ...state, contactSegment: action.contactSegment };
     case ON_LOADING_CONTACT_CERTIFICATION_HISTORY:
       return { ...state, contactCertificationHistory: action.contactCertificationHistory };
+    case ON_LOADING_CONTACT_MERGE_DASHBOARD:
+      return { ...state, contactMergeDashboard: action.contactMergeDashboard };
+    case ON_PREVIEWING_CONTACT_MERGE:
+      return { ...state, contactMergePreview: action.contactMergePreview };
+    case ON_EXECUTING_CONTACT_MERGE:
+      return { ...state, lastContactMergeResult: action.contactMergeResult };
+    case ON_ROLLING_BACK_CONTACT_MERGE:
+      return { ...state, lastContactMergeRollbackResult: action.contactMergeRollbackResult };
     case ON_LOADING_AUDIENCE_MESSAGE_VARIABLES:
       return { ...state, audienceMessageVariables: action.audienceMessageVariables };
     case ON_SENDING_AUDIENCE_MESSAGE:
