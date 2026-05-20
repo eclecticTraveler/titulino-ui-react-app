@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
 import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, BoldOutlined, ItalicOutlined, UnderlineOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined } from '@ant-design/icons';
 import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
@@ -359,6 +359,11 @@ const getContactDisplayName = (contact = {}) => (
   ) || 'Unknown contact'
 );
 
+const getContactSearchDisplayValue = (contact = {}) => {
+  const emailText = getContactEmailIds(contact).join(', ');
+  return `${getContactDisplayName(contact)}${emailText ? ` - ${emailText}` : ''}`;
+};
+
 const getContactInternalIdValue = (contact = {}) => (
   getFirstCourseValue(contact?.ContactInternalId, contact?.contactInternalId)
 );
@@ -648,6 +653,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [stewardshipPrimaryContact, setStewardshipPrimaryContact] = useState(null);
   const [stewardshipSecondaryContact, setStewardshipSecondaryContact] = useState(null);
   const [stewardshipMergeReason, setStewardshipMergeReason] = useState('');
+  const [mergePreviewDetailTabKey, setMergePreviewDetailTabKey] = useState('actions');
   const [contactProfileSearchText, setContactProfileSearchText] = useState('');
   const [contactProfileMonitoringLoading, setContactProfileMonitoringLoading] = useState(false);
   const [selectedOptedOutEmailRowKeys, setSelectedOptedOutEmailRowKeys] = useState([]);
@@ -709,7 +715,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [courseTemplateId, setCourseTemplateId] = useState(null);
   // 'upload' (default) or 'url' — controls how the cover image is provided when creating a course.
   const [courseImageSourceMode, setCourseImageSourceMode] = useState('upload');
-  const audienceEditorRef = useRef(null);
+  const audienceSubjectInputRef = useRef(null);
+  const audienceSubjectSelectionRef = useRef({ start: 0, end: 0 });
+  const audienceBodyTextAreaRef = useRef(null);
+  const audienceBodySelectionRef = useRef({ start: 0, end: 0 });
 
   const locale = true;
   const intl = useIntl();
@@ -1182,6 +1191,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setStewardshipPrimaryContact(resolveSelectableContact(primaryContact, allEnrollees, avatarUrlMap));
     setStewardshipSecondaryContact(resolveSelectableContact(secondaryContact, allEnrollees, avatarUrlMap));
     setStewardshipInnerTabKey('preview');
+    setMergePreviewDetailTabKey('actions');
     setStewardshipPreviewLoading(true);
 
     try {
@@ -1196,6 +1206,22 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     messageApi,
     onPreviewingContactMerge,
     t
+  ]);
+
+  const handleSwapStewardshipContacts = useCallback(async () => {
+    if (!stewardshipPrimaryContact || !stewardshipSecondaryContact) return null;
+
+    const nextPrimaryContact = stewardshipSecondaryContact;
+    const nextSecondaryContact = stewardshipPrimaryContact;
+
+    setStewardshipPrimarySearchText(getContactSearchDisplayValue(nextPrimaryContact));
+    setStewardshipSecondarySearchText(getContactSearchDisplayValue(nextSecondaryContact));
+
+    return handlePreviewContactMerge(nextPrimaryContact, nextSecondaryContact);
+  }, [
+    handlePreviewContactMerge,
+    stewardshipPrimaryContact,
+    stewardshipSecondaryContact
   ]);
 
   const handleExecuteContactMerge = useCallback(async () => {
@@ -1289,36 +1315,103 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     user
   ]);
 
-  const handleAudienceEditorInput = useCallback(() => {
-    const bodyHtml = audienceEditorRef.current?.innerHTML || '';
-    const bodyText = audienceEditorRef.current?.innerText || '';
-    setAudienceMessageDraft(previousDraft => ({
-      ...previousDraft,
-      bodyHtml,
-      bodyText
-    }));
-  }, []);
+  const getAudienceSubjectInput = useCallback(() => (
+    audienceSubjectInputRef.current?.input || audienceSubjectInputRef.current || null
+  ), []);
 
-  const applyAudienceEditorCommand = useCallback((command, value = null) => {
-    audienceEditorRef.current?.focus();
-    document.execCommand(command, false, value);
-    handleAudienceEditorInput();
-  }, [handleAudienceEditorInput]);
+  const saveAudienceSubjectSelection = useCallback((event) => {
+    const input = event?.target || getAudienceSubjectInput();
+    if (!input || typeof input.selectionStart !== 'number') return;
+
+    audienceSubjectSelectionRef.current = {
+      start: input.selectionStart,
+      end: input.selectionEnd
+    };
+  }, [getAudienceSubjectInput]);
+
+  const getAudienceBodyTextArea = useCallback(() => (
+    audienceBodyTextAreaRef.current?.resizableTextArea?.textArea ||
+    audienceBodyTextAreaRef.current?.textArea ||
+    audienceBodyTextAreaRef.current ||
+    null
+  ), []);
+
+  const saveAudienceBodySelection = useCallback((event) => {
+    const textArea = event?.target || getAudienceBodyTextArea();
+    if (!textArea || typeof textArea.selectionStart !== 'number') return;
+
+    audienceBodySelectionRef.current = {
+      start: textArea.selectionStart,
+      end: textArea.selectionEnd
+    };
+  }, [getAudienceBodyTextArea]);
 
   const insertAudienceSubjectVariable = useCallback((variableToken) => {
     if (!variableToken) return;
 
     setAudienceMessageDraft(previousDraft => ({
       ...previousDraft,
-      subject: `${previousDraft.subject || ''}${variableToken}`
+      subject: (() => {
+        const subject = previousDraft.subject || '';
+        const selectionStart = Number.isFinite(audienceSubjectSelectionRef.current?.start)
+          ? audienceSubjectSelectionRef.current.start
+          : subject.length;
+        const selectionEnd = Number.isFinite(audienceSubjectSelectionRef.current?.end)
+          ? audienceSubjectSelectionRef.current.end
+          : selectionStart;
+        const safeStart = Math.max(0, Math.min(selectionStart, subject.length));
+        const safeEnd = Math.max(safeStart, Math.min(selectionEnd, subject.length));
+        const nextCursorPosition = safeStart + variableToken.length;
+
+        audienceSubjectSelectionRef.current = {
+          start: nextCursorPosition,
+          end: nextCursorPosition
+        };
+
+        window.setTimeout(() => {
+          const input = getAudienceSubjectInput();
+          input?.focus?.();
+          input?.setSelectionRange?.(nextCursorPosition, nextCursorPosition);
+        }, 0);
+
+        return `${subject.slice(0, safeStart)}${variableToken}${subject.slice(safeEnd)}`;
+      })()
     }));
-  }, []);
+  }, [getAudienceSubjectInput]);
 
   const insertAudienceBodyVariable = useCallback((variableToken) => {
     if (!variableToken) return;
 
-    applyAudienceEditorCommand('insertText', variableToken);
-  }, [applyAudienceEditorCommand]);
+    setAudienceMessageDraft(previousDraft => ({
+      ...previousDraft,
+      bodyHtml: '',
+      bodyText: (() => {
+        const bodyText = previousDraft.bodyText || '';
+        const selectionStart = Number.isFinite(audienceBodySelectionRef.current?.start)
+          ? audienceBodySelectionRef.current.start
+          : bodyText.length;
+        const selectionEnd = Number.isFinite(audienceBodySelectionRef.current?.end)
+          ? audienceBodySelectionRef.current.end
+          : selectionStart;
+        const safeStart = Math.max(0, Math.min(selectionStart, bodyText.length));
+        const safeEnd = Math.max(safeStart, Math.min(selectionEnd, bodyText.length));
+        const nextCursorPosition = safeStart + variableToken.length;
+
+        audienceBodySelectionRef.current = {
+          start: nextCursorPosition,
+          end: nextCursorPosition
+        };
+
+        window.setTimeout(() => {
+          const textArea = getAudienceBodyTextArea();
+          textArea?.focus?.();
+          textArea?.setSelectionRange?.(nextCursorPosition, nextCursorPosition);
+        }, 0);
+
+        return `${bodyText.slice(0, safeStart)}${variableToken}${bodyText.slice(safeEnd)}`;
+      })()
+    }));
+  }, [getAudienceBodyTextArea]);
 
   const handleSendAudienceMessage = useCallback(async () => {
     if (!emailId || selectedAudienceRows.length === 0 || !hasAudienceMessageContent(audienceMessageDraft)) return;
@@ -1335,9 +1428,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
       messageApi.success(t('admin.tools.messaging.sendSuccess'));
       setAudienceMessageDraft({ subject: '', bodyHtml: '', bodyText: '' });
-      if (audienceEditorRef.current) {
-        audienceEditorRef.current.innerHTML = '';
-      }
     } catch (error) {
       console.error(error);
       messageApi.error(t('admin.tools.messaging.sendError'));
@@ -5207,12 +5297,141 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       currentPreview?.ProfileConflicts,
       currentPreview?.profileConflicts
     ));
+    const warnings = toCourseArray(getFirstCourseValue(
+      currentPreview?.Warnings,
+      currentPreview?.warnings
+    ));
+    const mergeActions = toCourseArray(getFirstCourseValue(
+      currentPreview?.MergeActions,
+      currentPreview?.mergeActions
+    ));
+    const primaryProfile = getFirstCourseValue(
+      currentPreview?.PrimaryProfile,
+      currentPreview?.primaryProfile
+    );
+    const secondaryProfile = getFirstCourseValue(
+      currentPreview?.SecondaryProfile,
+      currentPreview?.secondaryProfile
+    );
     const summary = getFirstCourseValue(
       currentPreview?.Summary,
       currentPreview?.summary,
       currentPreview?.MergeSummary,
       currentPreview?.mergeSummary
     );
+    const hasJsonContent = (value) => {
+      if (Array.isArray(value)) return value.length > 0;
+      return value && typeof value === 'object' && Object.keys(value).length > 0;
+    };
+    const renderJsonPanel = (value, emptyDescription = setLocale(locale, 'admin.tools.stewardship.noDetails')) => (
+      hasJsonContent(value) ? (
+        <div style={{ padding: 12, background: '#f6f8fa', border: '1px solid #e6ebf1', borderRadius: 6, maxHeight: 360, overflow: 'auto' }}>
+          <JsonView value={value} collapsed={1} displayDataTypes={false} enableClipboard style={{ background: 'transparent' }} />
+        </div>
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={emptyDescription} />
+      )
+    );
+    const mergeActionColumns = [
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.action'),
+        key: 'action',
+        width: 220,
+        render: (_, record, index) => getFirstCourseValue(
+          record?.Action,
+          record?.action,
+          record?.ActionType,
+          record?.actionType,
+          record?.Operation,
+          record?.operation,
+          `Action ${index + 1}`
+        )
+      },
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.target'),
+        key: 'target',
+        width: 220,
+        render: (_, record) => getFirstCourseValue(
+          record?.Target,
+          record?.target,
+          record?.TableName,
+          record?.tableName,
+          record?.Entity,
+          record?.entity,
+          '-'
+        )
+      },
+      {
+        title: setLocale(locale, 'admin.tools.stewardship.details'),
+        key: 'details',
+        render: (_, record) => (
+          <div style={{ maxHeight: 220, overflow: 'auto' }}>
+            <JsonView value={record || {}} collapsed={1} displayDataTypes={false} enableClipboard style={{ background: 'transparent' }} />
+          </div>
+        )
+      }
+    ];
+    const mergePreviewDetailItems = [
+      {
+        key: 'actions',
+        label: <span><SolutionOutlined /> {setLocale(locale, 'admin.tools.stewardship.tab.mergeActions')}</span>,
+        children: mergePreviewDetailTabKey === 'actions' && (
+          mergeActions.length > 0 ? (
+            <Table
+              size="small"
+              rowKey={(record, index) => getFirstCourseValue(record?.ActionId, record?.actionId, record?.Key, record?.key, index)}
+              columns={mergeActionColumns}
+              dataSource={mergeActions}
+              pagination={false}
+              scroll={{ x: 900 }}
+            />
+          ) : (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={setLocale(locale, 'admin.tools.stewardship.noMergeActions')} />
+          )
+        )
+      },
+      {
+        key: 'divided',
+        label: <span><UserSwitchOutlined /> {setLocale(locale, 'admin.tools.stewardship.tab.divided')}</span>,
+        children: mergePreviewDetailTabKey === 'divided' && (
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={12}>
+              <Card size="small" title={setLocale(locale, 'admin.tools.stewardship.primaryProfile')} variant="outlined">
+                {renderJsonPanel(primaryProfile, setLocale(locale, 'admin.tools.stewardship.noPrimaryProfile'))}
+              </Card>
+            </Col>
+            <Col xs={24} lg={12}>
+              <Card size="small" title={setLocale(locale, 'admin.tools.stewardship.secondaryProfile')} variant="outlined">
+                {renderJsonPanel(secondaryProfile, setLocale(locale, 'admin.tools.stewardship.noSecondaryProfile'))}
+              </Card>
+            </Col>
+          </Row>
+        )
+      },
+      {
+        key: 'warnings',
+        label: <span><SafetyCertificateOutlined /> {setLocale(locale, 'admin.tools.stewardship.tab.warningsConflicts')}</span>,
+        children: mergePreviewDetailTabKey === 'warnings' && (
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={12}>
+              <Card size="small" title={setLocale(locale, 'admin.tools.stewardship.warnings')} variant="outlined">
+                {renderJsonPanel(warnings, setLocale(locale, 'admin.tools.stewardship.noWarnings'))}
+              </Card>
+            </Col>
+            <Col xs={24} lg={12}>
+              <Card size="small" title={setLocale(locale, 'admin.tools.stewardship.conflicts')} variant="outlined">
+                {renderJsonPanel(conflicts, setLocale(locale, 'admin.tools.stewardship.noConflicts'))}
+              </Card>
+            </Col>
+          </Row>
+        )
+      },
+      {
+        key: 'raw',
+        label: <span><TableOutlined /> {setLocale(locale, 'admin.tools.stewardship.tab.whole')}</span>,
+        children: mergePreviewDetailTabKey === 'raw' && renderJsonPanel(currentPreview || {}, setLocale(locale, 'admin.tools.stewardship.previewEmpty'))
+      }
+    ];
 
     return (
       <div>
@@ -5223,6 +5442,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           title={setLocale(locale, 'admin.tools.stewardship.previewSafetyTitle')}
           description={setLocale(locale, 'admin.tools.stewardship.previewSafetyDescription')}
         />
+
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+          <Button
+            icon={<UserSwitchOutlined />}
+            onClick={handleSwapStewardshipContacts}
+            disabled={!primaryContactInternalId || !secondaryContactInternalId || stewardshipPreviewLoading}
+          >
+            {setLocale(locale, 'admin.tools.stewardship.swapContacts')}
+          </Button>
+        </div>
 
         <Row gutter={[16, 16]}>
           <Col xs={24} lg={12}>
@@ -5266,9 +5495,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 />
               )}
 
-              <div style={{ padding: 12, background: '#f6f8fa', border: '1px solid #e6ebf1', borderRadius: 6, maxHeight: 360, overflow: 'auto', marginBottom: 16 }}>
-                <JsonView value={currentPreview || {}} collapsed={2} displayDataTypes={false} enableClipboard style={{ background: 'transparent' }} />
-              </div>
+              <Tabs
+                size="small"
+                activeKey={mergePreviewDetailTabKey}
+                onChange={setMergePreviewDetailTabKey}
+                items={mergePreviewDetailItems}
+                style={{ marginBottom: 16 }}
+              />
             </>
           ) : (
             <Empty description={setLocale(locale, 'admin.tools.stewardship.previewEmpty')} />
@@ -7138,11 +7371,20 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
         <Col xs={24} md={18}>
           <Input
+            ref={audienceSubjectInputRef}
             value={audienceMessageDraft.subject}
-            onChange={event => setAudienceMessageDraft(previousDraft => ({
-              ...previousDraft,
-              subject: event.target.value
-            }))}
+            onChange={event => {
+              saveAudienceSubjectSelection(event);
+              setAudienceMessageDraft(previousDraft => ({
+                ...previousDraft,
+                subject: event.target.value
+              }));
+            }}
+            onClick={saveAudienceSubjectSelection}
+            onFocus={saveAudienceSubjectSelection}
+            onKeyUp={saveAudienceSubjectSelection}
+            onSelect={saveAudienceSubjectSelection}
+            onBlur={saveAudienceSubjectSelection}
             placeholder={t('admin.tools.messaging.subjectPlaceholder')}
           />
         </Col>
@@ -7158,25 +7400,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </Col>
       </Row>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-        <Tooltip title={t('admin.tools.messaging.editor.bold')}>
-          <Button icon={<BoldOutlined />} onClick={() => applyAudienceEditorCommand('bold')} />
-        </Tooltip>
-        <Tooltip title={t('admin.tools.messaging.editor.italic')}>
-          <Button icon={<ItalicOutlined />} onClick={() => applyAudienceEditorCommand('italic')} />
-        </Tooltip>
-        <Tooltip title={t('admin.tools.messaging.editor.underline')}>
-          <Button icon={<UnderlineOutlined />} onClick={() => applyAudienceEditorCommand('underline')} />
-        </Tooltip>
-        <Select
-          value="3"
-          style={{ width: 120 }}
-          onChange={value => applyAudienceEditorCommand('fontSize', value)}
-          options={[
-            { value: '2', label: t('admin.tools.messaging.editor.small') },
-            { value: '3', label: t('admin.tools.messaging.editor.normal') },
-            { value: '4', label: t('admin.tools.messaging.editor.large') }
-          ]}
-        />
         <Select
           value={undefined}
           placeholder={t('admin.tools.messaging.editor.variable')}
@@ -7187,20 +7410,25 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           onChange={insertAudienceBodyVariable}
         />
       </div>
-      <div
-        ref={audienceEditorRef}
-        contentEditable
-        suppressContentEditableWarning
-        onInput={handleAudienceEditorInput}
-        style={{
-          minHeight: 220,
-          padding: 12,
-          border: '1px solid #d9d9d9',
-          borderRadius: 6,
-          background: '#fff',
-          marginBottom: 12,
-          overflow: 'auto'
+      <Input.TextArea
+        ref={audienceBodyTextAreaRef}
+        value={audienceMessageDraft.bodyText}
+        rows={10}
+        onChange={event => {
+          saveAudienceBodySelection(event);
+          setAudienceMessageDraft(previousDraft => ({
+            ...previousDraft,
+            bodyHtml: '',
+            bodyText: event.target.value
+          }));
         }}
+        onClick={saveAudienceBodySelection}
+        onFocus={saveAudienceBodySelection}
+        onKeyUp={saveAudienceBodySelection}
+        onSelect={saveAudienceBodySelection}
+        onBlur={saveAudienceBodySelection}
+        placeholder={t('admin.tools.messaging.bodyPlaceholder')}
+        style={{ marginBottom: 12 }}
       />
       <Tooltip title={audienceMessageSendDisabledHint}>
         <span style={{ display: 'inline-block' }}>
