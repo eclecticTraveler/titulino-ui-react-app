@@ -625,7 +625,7 @@ export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) 
 
   // Get courseId in Factory
  const courseCodeId = await getCourseCodeIdForTheme(courseTheme);
- const userIsEnrolled = await TitulinoManager.getCourseToken(courseCodeId, emailId)
+ const userIsEnrolled = await TitulinoManager.isUserEnrolledInCourse(courseCodeId, emailId)
  
   return {
     type: ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,

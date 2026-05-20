@@ -3,7 +3,7 @@ import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoNetService from "services/TitulinoNetService";
 import ShoppingCatalogService from "services/ShoppingCatalogService";
 import ShopPurchaseExperience from "lob/ShopPurchaseExperience"
-import utils from 'utils';
+import CourseRegistrationCatalog from "lob/CourseRegistrationCatalog";
 
 
 const getUserCoursesForEnrollment = async(emailId) => {  
@@ -16,12 +16,10 @@ const getUserCoursesForEnrollment = async(emailId) => {
       TitulinoRestService.getSelfDeterminedLanguageLevelCriteria("getUserCoursesForEnrollment")
     ]);
   
-    const userEnrolledCourseIds = utils.getAllCourseCodeIdsFromUserCourses(user?.userCourses);
-
-    const userCoursesAvailableForUserToRegistered = availableCourses?.map(course => ({
-      ...course,
-      alreadyEnrolled: userEnrolledCourseIds.includes(course.CourseCodeId)
-    }));
+    const userCoursesAvailableForUserToRegistered =
+      CourseRegistrationCatalog.buildAvailableCoursesForRegistration(availableCourses, user?.userCourses, {
+        treatImplicitCoursesAsEnrolled: user?.isGlobalAccessUser !== true
+      });
     
   
     return {

@@ -7,6 +7,7 @@ import DynamicNavigationRouter from "services/DynamicNavigationRouter";
 import TitulinoRestService from "services/TitulinoRestService";
 import StudentProgress from "lob/StudentProgress";
 import LrnConfiguration from "lob/LrnConfiguration";
+import CourseRegistrationCatalog from "lob/CourseRegistrationCatalog";
 import utils from 'utils';
 import GoogleService from "services/GoogleService";
 import localLanguageCourses from "assets/data/lang-courses.data.json";
@@ -77,6 +78,13 @@ const getCourseToken = async(courseCodeId, emailId) => {
 
   const token = utils.getCourseTokenFromUserCourses(user?.userCourses, courseCodeId);
   return token;
+}
+
+const isUserEnrolledInCourse = async(courseCodeId, emailId) => {
+  const user = await getCachedUserProfile(emailId);
+  return utils.isUserEnrolledInCourse(user?.userCourses, courseCodeId, {
+    treatImplicitCoursesAsEnrolled: user?.isGlobalAccessUser !== true
+  });
 }
 
 const getCourseOperationToken = async(courseCodeId, emailId) => {
@@ -342,12 +350,10 @@ const getUserCoursesForEnrollment = async(emailId) => {
       TitulinoRestService.getSelfDeterminedLanguageLevelCriteria("getUserCoursesForEnrollment")
     ]);
   
-    const userEnrolledCourseIds = utils.getAllCourseCodeIdsFromUserCourses(user?.userCourses);
-
-    const userCoursesAvailableForUserToRegistered = availableCourses?.map(course => ({
-      ...course,
-      alreadyEnrolled: userEnrolledCourseIds.includes(course.CourseCodeId)
-    }));
+    const userCoursesAvailableForUserToRegistered =
+      CourseRegistrationCatalog.buildAvailableCoursesForRegistration(availableCourses, user?.userCourses, {
+        treatImplicitCoursesAsEnrolled: user?.isGlobalAccessUser !== true
+      });
     
   
     return {
@@ -771,6 +777,7 @@ const LrnManager = {
   getUserCourseProgress,
   upsertUserCourseProgress,
   getCourseToken,
+  isUserEnrolledInCourse,
   getUserUpperNavigationConfig,
   getAllLanguageOptions,
   getCourseThemeRegistry,
