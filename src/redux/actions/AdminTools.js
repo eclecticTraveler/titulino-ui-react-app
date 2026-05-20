@@ -30,6 +30,10 @@ import {
   ON_LOADING_CONTACT_SEGMENT_COUNTRY_DIVISIONS,
   ON_LOADING_CONTACT_SEGMENT,
   ON_LOADING_CONTACT_CERTIFICATION_HISTORY,
+  ON_LOADING_CONTACT_MERGE_DASHBOARD,
+  ON_PREVIEWING_CONTACT_MERGE,
+  ON_EXECUTING_CONTACT_MERGE,
+  ON_ROLLING_BACK_CONTACT_MERGE,
   ON_LOADING_AUDIENCE_MESSAGE_VARIABLES,
   ON_SENDING_AUDIENCE_MESSAGE
 } from '../constants/AdminTools';
@@ -63,6 +67,7 @@ export const buildAudienceTableColumns = (...args) => AdminToolsManager.buildAud
 export const buildAudienceSummary = (...args) => AdminToolsManager.buildAudienceSummary(...args);
 export const buildAudienceMessageVariableOptions = (...args) => AdminToolsManager.buildAudienceMessageVariableOptions(...args);
 export const hasAudienceMessageContent = (...args) => AdminToolsManager.hasAudienceMessageContent(...args);
+export const isContactMergeMutationSuccessful = (...args) => AdminToolsManager.isContactMergeMutationSuccessful(...args);
 
 export const onLoadingAdminToolsInit = async (emailId) => {
   const { allCourses, allRoles, allEnrollees, allRawCourses } = await AdminToolsManager.initAdminTools(emailId);
@@ -177,6 +182,42 @@ export const onLoadingContactCertificationHistory = async (adminEmailId, filters
   return {
     type: ON_LOADING_CONTACT_CERTIFICATION_HISTORY,
     contactCertificationHistory
+  };
+};
+
+export const onLoadingContactMergeDashboard = async (adminEmailId, options) => {
+  const contactMergeDashboard = await AdminToolsManager.getContactMergeDashboard(adminEmailId, options);
+  return {
+    type: ON_LOADING_CONTACT_MERGE_DASHBOARD,
+    contactMergeDashboard
+  };
+};
+
+export const onPreviewingContactMerge = async (adminEmailId, primaryContactInternalId, secondaryContactInternalId) => {
+  const contactMergePreview = await AdminToolsManager.previewContactMerge(
+    adminEmailId,
+    primaryContactInternalId,
+    secondaryContactInternalId
+  );
+  return {
+    type: ON_PREVIEWING_CONTACT_MERGE,
+    contactMergePreview
+  };
+};
+
+export const onExecutingContactMerge = async (adminEmailId, mergeRequest) => {
+  const contactMergeResult = await AdminToolsManager.executeContactMerge(adminEmailId, mergeRequest);
+  return {
+    type: ON_EXECUTING_CONTACT_MERGE,
+    contactMergeResult
+  };
+};
+
+export const onRollingBackContactMerge = async (adminEmailId, rollbackRequest) => {
+  const contactMergeRollbackResult = await AdminToolsManager.rollbackContactMerge(adminEmailId, rollbackRequest);
+  return {
+    type: ON_ROLLING_BACK_CONTACT_MERGE,
+    contactMergeRollbackResult
   };
 };
 

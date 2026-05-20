@@ -19,6 +19,7 @@ import ShopAnalytics from "lob/ShopAnalytics";
 import ImpersonationSession from "lob/ImpersonationSession";
 import ProcessLogs from "lob/ProcessLogs";
 import AudienceMessaging from "lob/AudienceMessaging";
+import ContactStewardship from "lob/ContactStewardship";
 import utils from 'utils';
 
 const normalizeIdentifier = (value) => (
@@ -111,6 +112,7 @@ export const buildAudienceTableColumns = (...args) => AudienceMessaging.buildAud
 export const buildAudienceSummary = (...args) => AudienceMessaging.buildAudienceSummary(...args);
 export const buildAudienceMessageVariableOptions = (...args) => AudienceMessaging.buildMessageVariableOptions(...args);
 export const hasAudienceMessageContent = (...args) => AudienceMessaging.hasMessageContent(...args);
+export const isContactMergeMutationSuccessful = (...args) => ContactStewardship.isMergeMutationSuccessful(...args);
 
 export const initAdminTools = async (emailId) => {
   const token = await getTokenFromEmail(emailId);
@@ -638,6 +640,146 @@ export const getContactCertificationHistory = async (emailId, filters = {}) => {
     payload,
     rows: normalizedRows,
     rawRows: rows
+  };
+};
+
+export const getContactMergeDashboard = async (emailId, options = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = ContactStewardship.buildMergeDashboardPayload(options);
+
+  if (!token) {
+    return {
+      emailId,
+      payload,
+      ...ContactStewardship.normalizeMergeDashboard()
+    };
+  }
+
+  const dashboard = await TitulinoAdminAuthService.getContactMergeDashboard(
+    payload,
+    token,
+    'AdminToolsManager.getContactMergeDashboard'
+  );
+
+  return {
+    emailId,
+    payload,
+    ...ContactStewardship.normalizeMergeDashboard(dashboard)
+  };
+};
+
+export const detectPossibleDuplicateContacts = async (emailId, options = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = ContactStewardship.buildDuplicateDetectionPayload(options);
+
+  if (!token) {
+    return {
+      emailId,
+      payload,
+      rows: [],
+      rawRows: []
+    };
+  }
+
+  const rows = await TitulinoAdminAuthService.detectPossibleDuplicateContacts(
+    payload,
+    token,
+    'AdminToolsManager.detectPossibleDuplicateContacts'
+  );
+
+  return {
+    emailId,
+    payload,
+    rows: ContactStewardship.normalizeDuplicateCandidates(rows),
+    rawRows: rows
+  };
+};
+
+export const previewContactMerge = async (emailId, primaryContactInternalId, secondaryContactInternalId) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = ContactStewardship.buildMergePreviewPayload(primaryContactInternalId, secondaryContactInternalId);
+
+  if (!token || !primaryContactInternalId || !secondaryContactInternalId) {
+    return {
+      emailId,
+      payload,
+      primaryContactInternalId,
+      secondaryContactInternalId,
+      preview: null
+    };
+  }
+
+  const preview = await TitulinoAdminAuthService.previewContactMerge(
+    payload,
+    token,
+    'AdminToolsManager.previewContactMerge'
+  );
+
+  return {
+    emailId,
+    payload,
+    primaryContactInternalId,
+    secondaryContactInternalId,
+    preview,
+    rawPreview: preview
+  };
+};
+
+export const executeContactMerge = async (emailId, mergeRequest = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = ContactStewardship.buildMergeExecutionPayload({
+    ...mergeRequest,
+    executedByEmailId: mergeRequest.executedByEmailId || emailId
+  });
+
+  if (!token || !payload.p_primary_contact_internal_id || !payload.p_secondary_contact_internal_id || !payload.p_reason) {
+    return {
+      success: false,
+      payload,
+      result: null,
+      errorMessage: 'Missing merge parameters.'
+    };
+  }
+
+  const result = await TitulinoAdminAuthService.mergeContacts(
+    payload,
+    token,
+    'AdminToolsManager.executeContactMerge'
+  );
+
+  return {
+    success: ContactStewardship.isMergeMutationSuccessful(result),
+    payload,
+    result
+  };
+};
+
+export const rollbackContactMerge = async (emailId, rollbackRequest = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = ContactStewardship.buildRollbackPayload({
+    ...rollbackRequest,
+    executedByEmailId: rollbackRequest.executedByEmailId || emailId
+  });
+
+  if (!token || !payload.p_merge_id) {
+    return {
+      success: false,
+      payload,
+      result: null,
+      errorMessage: 'Missing merge id.'
+    };
+  }
+
+  const result = await TitulinoAdminAuthService.rollbackContactMerge(
+    payload,
+    token,
+    'AdminToolsManager.rollbackContactMerge'
+  );
+
+  return {
+    success: ContactStewardship.isMergeMutationSuccessful(result),
+    payload,
+    result
   };
 };
 
@@ -1174,6 +1316,11 @@ const AdminToolsManager = {
   getContactSegmentMetadata,
   getContactSegment,
   getContactCertificationHistory,
+  getContactMergeDashboard,
+  detectPossibleDuplicateContacts,
+  previewContactMerge,
+  executeContactMerge,
+  rollbackContactMerge,
   getCountryDivisions,
   getAudienceMessageVariables,
   sendAudienceMessage,
@@ -1212,6 +1359,7 @@ const AdminToolsManager = {
   buildAudienceSummary,
   buildAudienceMessageVariableOptions,
   hasAudienceMessageContent,
+  isContactMergeMutationSuccessful,
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,

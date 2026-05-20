@@ -126,6 +126,27 @@ export const getContactCertificationHistory = async (payload = {}, token, whoCal
   return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
 };
 
+export const detectPossibleDuplicateContacts = async (payload = {}, token, whoCalledMe = 'detectPossibleDuplicateContacts') => {
+  const apiResult = await postJsonEndpoint('DetectPossibleDuplicateContacts', payload, token, whoCalledMe);
+  return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
+};
+
+export const getContactMergeDashboard = async (payload = {}, token, whoCalledMe = 'getContactMergeDashboard') => (
+  postJsonEndpoint('GetContactMergeDashboard', payload, token, whoCalledMe, {})
+);
+
+export const previewContactMerge = async (payload = {}, token, whoCalledMe = 'previewContactMerge') => (
+  postJsonEndpoint('PreviewContactMerge', payload, token, whoCalledMe, null)
+);
+
+export const mergeContacts = async (payload = {}, token, whoCalledMe = 'mergeContacts') => (
+  postJsonEndpoint('MergeContacts', payload, token, whoCalledMe, false)
+);
+
+export const rollbackContactMerge = async (payload = {}, token, whoCalledMe = 'rollbackContactMerge') => (
+  postJsonEndpoint('RollbackContactMerge', payload, token, whoCalledMe, false)
+);
+
 export const getCountryDivisions = async (payload = {}, token, whoCalledMe = 'getCountryDivisions') => {
   const apiResult = await postJsonEndpoint('GetCountryDivisions', payload, token, whoCalledMe);
   return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
@@ -321,6 +342,11 @@ const TitulinoAdminAuthService = {
   getContactSegmentCount,
   getContactSegmentMetadata,
   getContactCertificationHistory,
+  detectPossibleDuplicateContacts,
+  getContactMergeDashboard,
+  previewContactMerge,
+  mergeContacts,
+  rollbackContactMerge,
   getCountryDivisions,
   toggleContactEmailOptOut,
   toggleContactActive,
