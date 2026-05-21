@@ -5308,7 +5308,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                   {emailIds.join(', ') || '—'}
                 </Descriptions.Item>
                 <Descriptions.Item label={setLocale(locale, 'admin.tools.label.contactId')}>
-                  {contactInternalId}
+                  <span style={{ marginRight: 8 }}>{contactInternalId}</span>
+                  <CopyOutlined
+                    style={{ cursor: 'pointer', color: '#1890ff' }}
+                    onClick={() => navigator.clipboard.writeText(contactInternalId || '').then(() => messageApi.success(t('admin.tools.msg.copied')))}
+                  />
                 </Descriptions.Item>
                 <Descriptions.Item label={setLocale(locale, 'admin.tools.label.dateOfBirth')}>
                   {formatDateOnly(getFirstCourseValue(contact?.DateOfBirth, contact?.dateOfBirth))}
