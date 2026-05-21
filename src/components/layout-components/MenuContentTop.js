@@ -30,7 +30,8 @@ const MenuContentTop = (props) => {
     toggleUpperNavigationLevelSelection, // eslint-disable-line no-unused-vars
     getUpperNavigationBasedOnUserConfig,
     user,
-    token
+    token,
+    contentLanguage
   } = props;
 
   useEffect(() => {
@@ -42,7 +43,7 @@ const MenuContentTop = (props) => {
   useEffect(() => {
     getUpperNavigationBasedOnUserConfig(((user?.contactId && token) ? true : false), user?.emailId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.contactId, token, user?.emailId]);
+  }, [user?.contactId, token, user?.emailId, contentLanguage]);
 
   toggleSelectedUpperNavigationTabOnLoad(
     useLocation()?.pathname,
@@ -161,11 +162,12 @@ function mapDispatchToProps(dispatch) {
   );
 }
 
-const mapStateToProps = ({ lrn, grant, auth }) => {
+const mapStateToProps = ({ lrn, grant, auth, theme }) => {
   const { dynamicUpperMainNavigation } = lrn;
   const { user } = grant;
   const { token } = auth;
-  return { dynamicUpperMainNavigation, user, token };
+  const { contentLanguage } = theme;
+  return { dynamicUpperMainNavigation, user, token, contentLanguage };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MenuContentTop);

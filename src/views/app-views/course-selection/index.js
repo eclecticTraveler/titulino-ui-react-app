@@ -6,6 +6,8 @@ import IconAdapter from 'components/util-components/IconAdapter';
 import { withRouter } from "utils/routerCompat";
 import { onLocaleChange, onContentLanguageChange } from 'redux/actions/Theme'
 import IntlMessage from "components/util-components/IntlMessage";
+import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from 'configs/AppConfig';
+import { getLocalizedConfig } from 'configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import { 
 	ArrowRightOutlined
 } from '@ant-design/icons';
@@ -77,16 +79,18 @@ class CourseSelection extends Component {
 		this.props.getAllLanguageOptions();
 	}
 
-	processSelectedContentLanguage = (contentLanguage) => {			
-		
-		if(this.props.baseLanguage){		
-			console.log("------>Course-selection", contentLanguage)
+	processSelectedContentLanguage = (contentLanguage) => {
+
+		if(this.props.baseLanguage){
 			this.props.onContentLanguageChange(contentLanguage?.contentLanguageCode);
 			this.props.setSelectedContentLanguage(contentLanguage);
 			this.props.onUserSelectingContentLanguage(contentLanguage);
-			
+
+			const cfg = getLocalizedConfig(contentLanguage?.contentLanguageCode);
+			const prefix = this.props.token ? AUTH_PREFIX_PATH : APP_PREFIX_PATH;
+			this.props.navigate(`${prefix}/${contentLanguage?.contentLanguageCode}/${cfg?.level}-${cfg?.defaultLanding}`);
 		}
-					
+
 	}
 
 	processUserBaseLanguage = (language) => {		
@@ -229,9 +233,10 @@ function mapDispatchToProps(dispatch){
 	}, dispatch)
 }
 
-const mapStateToProps = ({lrn}) => {
+const mapStateToProps = ({lrn, auth}) => {
 	const {languageOptions, baseLanguage, isLanguageConfigured} = lrn;
-	return {languageOptions, baseLanguage, isLanguageConfigured} 
+	const { token } = auth;
+	return {languageOptions, baseLanguage, isLanguageConfigured, token}
 };
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(CourseSelection));

@@ -2,7 +2,7 @@ import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { RouteElement } from "utils/routerCompat";
 import Loading from '../../components/shared-components/Loading';
-import { AUTH_PREFIX_PATH, APP_PREFIX_PATH, DEFAULT_LANDING_COURSE } from '../../configs/AppConfig'
+import { AUTH_PREFIX_PATH, APP_PREFIX_PATH } from '../../configs/AppConfig'
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 import { connect } from "react-redux";
@@ -61,7 +61,7 @@ export const AuthViews = (props) => {
         <Route path={`error-2`} element={<RouteElement component={ErrorPage2} />} />
         {/* Authenticated users go to landing course on root /lrn-auth */}
         { token ? 
-          <Route path="" element={<Navigate to={`${AUTH_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${DEFAULT_LANDING_COURSE}`} replace />} />
+          <Route path="" element={<Navigate to={`${AUTH_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${cfg?.defaultLanding}`} replace />} />
           :
           // Unauthenticated go to /lrn
           <Route path="" element={<Navigate to={`${APP_PREFIX_PATH}`} replace />} />

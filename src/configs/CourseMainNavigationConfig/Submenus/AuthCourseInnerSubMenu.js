@@ -14,7 +14,8 @@ import {
 	faMicrophone,
 	faPencilSquare,
 	faPeopleRoof,
-	faPersonWalkingArrowRight
+	faPersonWalkingArrowRight,
+	faBrain
    } from '@fortawesome/free-solid-svg-icons';
    import SearchAssociation from "configs/CourseMainNavigationConfig/English/SearchAssociation";
 
@@ -148,6 +149,28 @@ export const getAuthCourseInnerSubMenuV1 = (lang, levelNo, chapterNo) => {
 						submenu: [],
 						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'spell')
 					},
+					{
+						key: `module-learn-${levelNo}-${chapterNo}-${uuidv4()}`,
+						path: `${commonPath}/${getLocalizedConfig(lang)?.review}`,
+						title: 'sidenav.review',
+						icon: faBrain,
+						iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+						breadcrumb: false,
+						isRootMenuItem: false,				
+						submenu: [],
+						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'review')
+					},							
+					{
+						key: `module-test-${levelNo}-${chapterNo}-${uuidv4()}`,
+						path: `${commonPath}/${getLocalizedConfig(lang)?.test}`,
+						title: 'sidenav.test',
+						icon: faUserClock,
+						iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+						breadcrumb: false,
+						isRootMenuItem: false,				
+						submenu: [],
+						keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'test')
+					},
 		
 				],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'exercises')
@@ -257,6 +280,17 @@ export const getAuthCourseInnerSubMenuV2 = (lang, levelNo, chapterNo, tier) => {
 							keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'speaking')
 						},
 						{
+							key: `module-learn-${levelNo}-${chapterNo}-${uuidv4()}`,
+							path: `${commonPath}/${getLocalizedConfig(lang)?.review}`,
+							title: 'sidenav.review',
+							icon: faBrain,
+							iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+							breadcrumb: false,
+							isRootMenuItem: false,				
+							submenu: [],
+							keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'review')
+						},
+						{
 							key: `module-spell-${levelNo}-${chapterNo}-${uuidv4()}`,
 							path: `${commonPath}/${getLocalizedConfig(lang)?.spell}`,
 							title: 'sidenav.spell',
@@ -266,7 +300,19 @@ export const getAuthCourseInnerSubMenuV2 = (lang, levelNo, chapterNo, tier) => {
 							isRootMenuItem: false,				
 							submenu: [],
 							keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'spell')
-						}]
+						},
+						{
+							key: `module-test-${levelNo}-${chapterNo}-${uuidv4()}`,
+							path: `${commonPath}/${getLocalizedConfig(lang)?.test}`,
+							title: 'sidenav.test',
+							icon: faUserClock,
+							iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+							breadcrumb: false,
+							isRootMenuItem: false,				
+							submenu: [],
+							keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'test')
+						},
+						]
 						: []
 					),
 					{

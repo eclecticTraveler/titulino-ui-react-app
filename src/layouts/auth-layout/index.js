@@ -17,6 +17,7 @@ import {
 } from "antd";
 
 import {onCurrentRouteInfo} from 'redux/actions/Lrn';
+import { APP_PREFIX_PATH, AUTH_PREFIX_PATH } from 'configs/AppConfig';
 
 import { 
   SIDE_NAV_WIDTH, 
@@ -37,10 +38,13 @@ export const AuthLayout = ({ navCollapsed, navType, location, direction, dynamic
   // Here we figure out the proper general submenu based on the url location we are hitting
   let currentRouteInfo;
   dynamicUpperMainNavigation?.forEach(singleFullMenu => {
-	if(location?.pathname.includes(singleFullMenu?.path)){
-	  currentRouteInfo = singleFullMenu;
-	  onCurrentRouteInfo(currentRouteInfo);
-	}
+    const normalizedPath = singleFullMenu?.path
+      ?.replace(APP_PREFIX_PATH, '')
+      ?.replace(AUTH_PREFIX_PATH, '');
+    if (normalizedPath && location?.pathname.includes(normalizedPath)) {
+      currentRouteInfo = singleFullMenu;
+      onCurrentRouteInfo(currentRouteInfo);
+    }
   });
 
   const screens = utils.getBreakPoint(useBreakpoint());

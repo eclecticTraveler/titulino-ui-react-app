@@ -727,6 +727,24 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const setLocale = (isLocaleOn, localeKey) =>
     isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   const t = useCallback((key, values) => intl.formatMessage({ id: key }, values), [intl]);
+  const getSexTagColor = useCallback((sexValue) => {
+    const normalizedSex = String(sexValue || '').trim().toUpperCase();
+    if (normalizedSex === 'F') return 'pink';
+    if (normalizedSex === 'M') return 'blue';
+    return 'default';
+  }, []);
+  const getSexDisplayLabel = useCallback((sexValue) => {
+    const normalizedSex = String(sexValue || '').trim().toUpperCase();
+    if (normalizedSex === 'F') return t('admin.tools.value.sex.female');
+    if (normalizedSex === 'M') return t('admin.tools.value.sex.male');
+    if (normalizedSex === 'U' || normalizedSex === 'UNKNOWN') return t('admin.tools.value.sex.unknown');
+    return sexValue || '—';
+  }, [t]);
+  const renderSexTag = useCallback((sexValue) => {
+    const label = getSexDisplayLabel(sexValue);
+    if (label === '—') return label;
+    return <Tag color={getSexTagColor(sexValue)}>{label}</Tag>;
+  }, [getSexDisplayLabel, getSexTagColor]);
   const getCourseUpsertResult = (actionResult) => actionResult?.upsertResult || actionResult || null;
   const isCourseUpsertSuccessful = (actionResult) => getCourseUpsertResult(actionResult)?.success === true;
 
@@ -4185,12 +4203,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 {selectedContact.Age ?? '—'}
               </Descriptions.Item>
               <Descriptions.Item label={setLocale(locale, 'admin.tools.label.sex')}>
-                {selectedContact.Sex === 'F'
-                  ? <Tag color="pink">F</Tag>
-                  : selectedContact.Sex === 'M'
-                    ? <Tag color="blue">M</Tag>
-                    : (selectedContact.Sex || '—')
-                }
+                {renderSexTag(selectedContact.Sex)}
               </Descriptions.Item>
             </Descriptions>
           </Col>
@@ -5308,17 +5321,17 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                   {emailIds.join(', ') || '—'}
                 </Descriptions.Item>
                 <Descriptions.Item label={setLocale(locale, 'admin.tools.label.contactId')}>
-                  {contactInternalId}
+                  <span style={{ marginRight: 8 }}>{contactInternalId}</span>
+                  <CopyOutlined
+                    style={{ cursor: 'pointer', color: '#1890ff' }}
+                    onClick={() => navigator.clipboard.writeText(contactInternalId || '').then(() => messageApi.success(t('admin.tools.msg.copied')))}
+                  />
                 </Descriptions.Item>
                 <Descriptions.Item label={setLocale(locale, 'admin.tools.label.dateOfBirth')}>
                   {formatDateOnly(getFirstCourseValue(contact?.DateOfBirth, contact?.dateOfBirth))}
                 </Descriptions.Item>
                 <Descriptions.Item label={setLocale(locale, 'admin.tools.label.sex')}>
-                  {sex === 'F'
-                    ? <Tag color="pink">F</Tag>
-                    : sex === 'M'
-                      ? <Tag color="blue">M</Tag>
-                      : (sex || '—')}
+                  {renderSexTag(sex)}
                 </Descriptions.Item>
               </Descriptions>
             </div>
@@ -7280,8 +7293,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <Col xs={24} lg={12}>
             <Card size="small" title={setLocale(locale, 'admin.tools.messaging.genderSnapshot')}>
               {genderEntries.length > 0 ? genderEntries.map(([sex, count]) => (
-                <Tag key={sex} color={sex === 'F' ? 'magenta' : sex === 'M' ? 'blue' : 'default'}>
-                  {sex}: {count}
+                <Tag key={sex} color={getSexTagColor(sex)}>
+                  {getSexDisplayLabel(sex)}: {count}
                 </Tag>
               )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
             </Card>
