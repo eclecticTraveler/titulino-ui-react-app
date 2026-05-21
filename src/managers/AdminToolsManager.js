@@ -162,10 +162,19 @@ export const hydrateAdminToolAvatarUrls = async (
     }
   );
 
-  const nextAvatarUrlMap = {
+  const mergedAvatarUrlMap = {
     ...(existingAvatarUrlMap || {}),
     ...fetchedAvatarUrlMap
   };
+
+  // Contacts not found in allEnrollees (e.g. no-email contacts) are never marked
+  // by getMissingKnowMeProfileUrlMap, so the hydration effect would loop forever.
+  const unresolvedRequestedIds = Array.from(contactIdSet).filter(
+    id => !Object.prototype.hasOwnProperty.call(mergedAvatarUrlMap, id)
+  );
+  const nextAvatarUrlMap = unresolvedRequestedIds.length > 0
+    ? { ...mergedAvatarUrlMap, ...Object.fromEntries(unresolvedRequestedIds.map(id => [id, null])) }
+    : mergedAvatarUrlMap;
 
   return {
     avatarUrlMap: nextAvatarUrlMap,
