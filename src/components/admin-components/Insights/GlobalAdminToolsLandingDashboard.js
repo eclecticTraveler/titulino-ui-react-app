@@ -1848,7 +1848,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     return allEnrollees
       .map(enrollee => ({
-        enrollee: resolveSelectableContact(enrollee, allEnrollees, avatarUrlMap),
+        // Pass [] instead of allEnrollees — we already have the enrollee object,
+        // so there is no need for resolveSelectableContact to scan allEnrollees.find()
+        // again on every iteration. That was O(n²) with 242 prod contacts = 58K ops.
+        enrollee: resolveSelectableContact(enrollee, [], avatarUrlMap),
         score: scoreContactSearchMatch(enrollee, rawSearchText)
       }))
       .filter(result => (
@@ -5323,10 +5326,30 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       if (Array.isArray(value)) return value.length > 0;
       return value && typeof value === 'object' && Object.keys(value).length > 0;
     };
+    // JsonView traverses the full object tree on mount even with collapsed={1}.
+    // Large production contact profiles (courses history, language history, payments, etc.)
+    // can block the main thread for seconds. Cap at 80KB serialized — beyond that show
+    // a summary of top-level keys so the page stays responsive.
+    const JSON_RENDER_LIMIT = 80000;
+    const safeJsonValue = (value) => {
+      if (!hasJsonContent(value)) return value;
+      try {
+        if (JSON.stringify(value).length <= JSON_RENDER_LIMIT) return value;
+        return Object.fromEntries(
+          Object.entries(value).map(([k, v]) => {
+            if (Array.isArray(v)) return [k, `[ ${v.length} items — too large to preview ]`];
+            if (v && typeof v === 'object') return [k, `{ ${Object.keys(v).length} keys — too large to preview }`];
+            return [k, v];
+          })
+        );
+      } catch {
+        return { _error: 'Unable to render profile preview.' };
+      }
+    };
     const renderJsonPanel = (value, emptyDescription = setLocale(locale, 'admin.tools.stewardship.noDetails')) => (
       hasJsonContent(value) ? (
         <div style={{ padding: 12, background: '#f6f8fa', border: '1px solid #e6ebf1', borderRadius: 6, maxHeight: 360, overflow: 'auto' }}>
-          <JsonView value={value} collapsed={1} displayDataTypes={false} enableClipboard style={{ background: 'transparent' }} />
+          <JsonView value={safeJsonValue(value)} collapsed={1} displayDataTypes={false} enableClipboard style={{ background: 'transparent' }} />
         </div>
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={emptyDescription} />

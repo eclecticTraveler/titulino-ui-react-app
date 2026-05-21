@@ -427,8 +427,8 @@ export const AuthenticatedQuickEnrollment = (props) => {
   const getLanguageName = (id) => {
     const map = {
       en: "English",
-      es: "EspaÃ±ol",
-      pt: "PortuguÃªs"
+      es: "Español",
+      pt: "Português"
     };
     return map[id] || id;
   };
