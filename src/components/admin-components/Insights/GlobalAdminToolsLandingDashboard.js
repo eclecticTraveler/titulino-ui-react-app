@@ -1839,9 +1839,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const advancedContactResultsWithAvatarUrls = useMemo(() => (
     (advancedContactSearchResult?.rows || [])
-      .map(row => resolveSelectableContact(row, allEnrollees, avatarUrlMap))
+      // Same fix as buildStewardshipContactSearchOptions line 1854 — the row IS already the
+      // contact, passing allEnrollees causes resolveSelectableContact to do allEnrollees.find()
+      // on every iteration = O(rows × allEnrollees).
+      .map(row => resolveSelectableContact(row, [], avatarUrlMap))
       .filter(contact => getContactInternalIdValue(contact))
-  ), [advancedContactSearchResult?.rows, allEnrollees, avatarUrlMap]);
+  ), [advancedContactSearchResult?.rows, avatarUrlMap]);
 
   const buildStewardshipContactSearchOptions = useCallback((rawSearchText, excludedContactInternalId) => {
     if (!rawSearchText || getMeaningfulCharacterCount(rawSearchText) < 2 || !allEnrollees?.length) return [];
@@ -3287,13 +3290,28 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     };
   };
 
+  // Pre-build Maps so the loop below does O(1) lookups instead of allRoles.find()
+  // and allRawCourses.find() + CoursesHistory.find() on every iteration.
+  const rolesByIdMap = new Map((allRoles || []).map(r => [r.UserRoleId, r]));
+  const rawCoursesByIdMap = new Map((allRawCourses || []).map(c => [c.CourseCodeId, c]));
+  const contactCoursesByIdMap = new Map((selectedContact?.CoursesHistory || []).map(c => [c.CourseCodeId, c]));
+
   const selectedContactPermissionRows = (selectedContact?.UserCourseRoles || []).map((roleEntry, index) => {
     const roleId = roleEntry?.UserRoleId || roleEntry?.userRoleId || '';
     const courseCodeId = roleEntry?.CourseCodeId || roleEntry?.courseCodeId || '';
     const email = roleEntry?.EmailId || roleEntry?.emailId || '';
-    const roleName = getRoleDisplayName(roleId);
-    const rolePriority = getRolePriority(roleId);
-    const courseInfo = courseCodeId ? getCourseDisplayInfo(courseCodeId) : {};
+    const roleDef = rolesByIdMap.get(roleId);
+    const roleName = roleDef?.LocalizationKey ? t(roleDef.LocalizationKey) : roleId;
+    const parsedPriority = Number(roleDef?.UserRolePriority);
+    const rolePriority = Number.isFinite(parsedPriority) ? parsedPriority : Number.NEGATIVE_INFINITY;
+    const rawCourse = courseCodeId ? rawCoursesByIdMap.get(courseCodeId) : null;
+    const contactCourse = courseCodeId ? contactCoursesByIdMap.get(courseCodeId) : null;
+    const courseDetails = rawCourse?.CourseDetails || contactCourse?.CourseDetails || {};
+    const courseInfo = courseCodeId ? {
+      courseTitle: courseDetails?.course || selectedContactCourseLabels[courseCodeId] || courseCodeId,
+      imageUrl: courseDetails?.imageUrl,
+      targetLanguageId: rawCourse?.TargetLanguageId || contactCourse?.TargetLanguageId
+    } : {};
 
     return {
       key: `${roleId}-${courseCodeId || 'global'}-${email || index}-${index}`,
@@ -5818,8 +5836,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     )
   }));
 
+  const langDataById = new Map(langData.map(l => [l.langId, l]));
   const courseSearchOptions = filteredCourses.map(c => {
-    const langInfo = langData.find(l => l.langId === c.TargetLanguageId);
+    const langInfo = langDataById.get(c.TargetLanguageId);
     return {
       key: c.CourseCodeId,
       value: `${c.CourseDetails?.course || c.CourseCodeId} — ${c.CourseCodeId}`,
