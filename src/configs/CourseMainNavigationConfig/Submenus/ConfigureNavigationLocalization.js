@@ -1,3 +1,9 @@
+import {
+	DEFAULT_LANDING_COURSE_ENG,
+	DEFAULT_LANDING_COURSE_POR,
+	DEFAULT_LANDING_COURSE_SPA
+} from 'configs/AppConfig';
+
 export const getLocalizedConfig = (lang) => {
 	// spell  || flashcards -> Resources || Match --> play|| Learn --> pratica|| Test
 	let localization = {
@@ -22,11 +28,12 @@ export const getLocalizedConfig = (lang) => {
 		household:"household-items",
 		speaking:"speaking",
 		grammarClass: "grammar-class",
-		knowMe:"know-me"
+		knowMe:"know-me",
+		defaultLanding: DEFAULT_LANDING_COURSE_ENG
 	}
 
 	switch (lang) {
-		case "en":      
+		case "en":
 			return localization;
 		case "pt":
 			localization.chapter = "capitulo";
@@ -51,6 +58,7 @@ export const getLocalizedConfig = (lang) => {
 			localization.speaking = "pronúncia";
 			localization.grammarClass = "aula-de-gramática";
 			localization.knowMe = "me-conheça";
+			localization.defaultLanding = DEFAULT_LANDING_COURSE_POR;
 			return localization;
 		case "es":
 			localization.chapter = "capitulo";
@@ -75,9 +83,9 @@ export const getLocalizedConfig = (lang) => {
 			localization.speaking = "pronunciación";
 			localization.grammarClass = "clase-de-gramática";
 			localization.knowMe = "conóceme";
+			localization.defaultLanding = DEFAULT_LANDING_COURSE_SPA;
 			return localization;        
 		default:
 			return localization;
 		}		  	
 }
-

@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { RouteElement } from "utils/routerCompat";
 import { connect } from "react-redux";
 import Loading from '../../components/shared-components/Loading';
-import { APP_PREFIX_PATH, DEFAULT_LANDING_COURSE } from '../../configs/AppConfig';
+import { APP_PREFIX_PATH } from '../../configs/AppConfig';
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPolicy";
@@ -50,7 +50,7 @@ export const AppViews = (props) => {
 			<Route path={`impersonate`} element={<RouteElement component={ImpersonationLaunch} />} />
 			<Route path={`login`} element={<RouteElement component={LoginView} />} />
 			<Route path={`logout`} element={<RouteElement component={LogoutView} />} />
-			<Route path="" element={<Navigate to={`${APP_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${DEFAULT_LANDING_COURSE}`} replace />} />
+			<Route path="" element={<Navigate to={`${APP_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${cfg?.defaultLanding}`} replace />} />
 		</Routes>
 	</Suspense>
 	</>
