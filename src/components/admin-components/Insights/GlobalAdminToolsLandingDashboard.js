@@ -662,7 +662,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [selectedInactiveProfileRows, setSelectedInactiveProfileRows] = useState([]);
   const [contactProfileTableCounts, setContactProfileTableCounts] = useState({
     optedOut: { count: null, hasGridFilters: false },
-    inactive: { count: null, hasGridFilters: false }
+    inactive: { count: null, hasGridFilters: false },
+    noEmail: { count: null, hasGridFilters: false }
   });
   const [contactProfileSubmitLoading, setContactProfileSubmitLoading] = useState({
     optedOut: false,
@@ -2349,6 +2350,23 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       contactProfileSearchText
     ),
     [inactiveContactProfileTableModel?.tableData, contactProfileSearchText]
+  );
+  const noEmailContactProfileTableModel = useMemo(
+    () => buildContactProfileTableModel(
+      contactProfileMonitoring?.noEmailActiveContactProfiles || [],
+      {
+        onCopyInternalId: handleContactProfileInternalIdCopied,
+        copyInternalIdTitle
+      }
+    ),
+    [contactProfileMonitoring?.noEmailActiveContactProfiles, handleContactProfileInternalIdCopied, copyInternalIdTitle]
+  );
+  const filteredNoEmailContactProfileData = useMemo(
+    () => filterContactProfileTableData(
+      noEmailContactProfileTableModel?.tableData || [],
+      contactProfileSearchText
+    ),
+    [noEmailContactProfileTableModel?.tableData, contactProfileSearchText]
   );
   const isContactProfileMonitoringStale = (
     canManageContactProfileMonitoring &&
@@ -5270,9 +5288,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </>
   );
 
-  const renderStewardshipContactCard = (contact, title, tagColor) => {
+  const renderStewardshipContactCard = (contact, title, tagColor, profileData = null) => {
     const contactInternalId = getContactInternalIdValue(contact);
     const emailIds = getContactEmailIds(contact);
+    const sex = getFirstCourseValue(contact?.Sex, contact?.sex, profileData?.Sex, profileData?.sex);
 
     return (
       <Card size="small" title={<span><UserOutlined /> {title}</span>} variant="outlined">
@@ -5293,6 +5312,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 </Descriptions.Item>
                 <Descriptions.Item label={setLocale(locale, 'admin.tools.label.dateOfBirth')}>
                   {formatDateOnly(getFirstCourseValue(contact?.DateOfBirth, contact?.dateOfBirth))}
+                </Descriptions.Item>
+                <Descriptions.Item label={setLocale(locale, 'admin.tools.label.sex')}>
+                  {sex === 'F'
+                    ? <Tag color="pink">F</Tag>
+                    : sex === 'M'
+                      ? <Tag color="blue">M</Tag>
+                      : (sex || '—')}
                 </Descriptions.Item>
               </Descriptions>
             </div>
@@ -5496,10 +5522,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
         <Row gutter={[16, 16]}>
           <Col xs={24} lg={12}>
-            {renderStewardshipContactCard(stewardshipPrimaryContact, t('admin.tools.stewardship.primaryContact'), 'green')}
+            {renderStewardshipContactCard(stewardshipPrimaryContact, t('admin.tools.stewardship.primaryContact'), 'green', primaryProfile)}
           </Col>
           <Col xs={24} lg={12}>
-            {renderStewardshipContactCard(stewardshipSecondaryContact, t('admin.tools.stewardship.secondaryContact'), 'orange')}
+            {renderStewardshipContactCard(stewardshipSecondaryContact, t('admin.tools.stewardship.secondaryContact'), 'orange', secondaryProfile)}
           </Col>
         </Row>
 
@@ -5607,6 +5633,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <div>
             <strong>{record.primaryFullName || record.primaryContactInternalId || '—'}</strong>
             <div style={{ color: '#72849a', fontSize: 12 }}>{record.primaryEmailId || record.primaryContactInternalId}</div>
+            {(record.primaryHasCommunicationIdentity === false || record.primaryExistsInVmEnrollee === false) && (
+              <Space size={4} style={{ marginTop: 4 }}>
+                {record.primaryHasCommunicationIdentity === false && (
+                  <Tag color="red" style={{ fontSize: 11, lineHeight: '18px' }}>{setLocale(locale, 'admin.tools.stewardship.noCommsIdentity')}</Tag>
+                )}
+                {record.primaryExistsInVmEnrollee === false && (
+                  <Tag color="orange" style={{ fontSize: 11, lineHeight: '18px' }}>{setLocale(locale, 'admin.tools.stewardship.noEnrolleeRecord')}</Tag>
+                )}
+              </Space>
+            )}
           </div>
         )
       },
@@ -5617,6 +5653,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <div>
             <strong>{record.secondaryFullName || record.secondaryContactInternalId || '—'}</strong>
             <div style={{ color: '#72849a', fontSize: 12 }}>{record.secondaryEmailId || record.secondaryContactInternalId}</div>
+            {(record.secondaryHasCommunicationIdentity === false || record.secondaryExistsInVmEnrollee === false) && (
+              <Space size={4} style={{ marginTop: 4 }}>
+                {record.secondaryHasCommunicationIdentity === false && (
+                  <Tag color="red" style={{ fontSize: 11, lineHeight: '18px' }}>{setLocale(locale, 'admin.tools.stewardship.noCommsIdentity')}</Tag>
+                )}
+                {record.secondaryExistsInVmEnrollee === false && (
+                  <Tag color="orange" style={{ fontSize: 11, lineHeight: '18px' }}>{setLocale(locale, 'admin.tools.stewardship.noEnrolleeRecord')}</Tag>
+                )}
+              </Space>
+            )}
           </div>
         )
       },
@@ -5714,6 +5760,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     const stewardshipItems = [
       {
         key: 'duplicates',
+        destroyInactiveTabPane: true,
         label: <span><TeamOutlined /> {setLocale(locale, 'admin.tools.stewardship.duplicates')}</span>,
         children: (
           <>
@@ -5741,6 +5788,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       },
       {
         key: 'preview',
+        destroyInactiveTabPane: true,
         label: <span><SolutionOutlined /> {setLocale(locale, 'admin.tools.stewardship.mergePreview')}</span>,
         children: (
           <>
@@ -5798,6 +5846,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       },
       {
         key: 'history',
+        destroyInactiveTabPane: true,
         label: <span><TableOutlined /> {setLocale(locale, 'admin.tools.stewardship.mergeHistory')}</span>,
         children: (
           <Table
@@ -6434,6 +6483,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   );
 
   const renderContactProfilesMonitoring = () => {
+    const noEmailFilteredCount = getContactProfileFilteredCount(
+      'noEmail',
+      filteredNoEmailContactProfileData,
+      { showDefaultTotal: true }
+    );
     const optedOutFilteredCount = getContactProfileFilteredCount(
       'optedOut',
       filteredOptedOutContactProfileData
@@ -6488,6 +6542,29 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         )}
 
         <div style={{ opacity: canManageContactProfileMonitoring ? 1 : 0.55 }}>
+          <Divider titlePlacement="left">
+            <MailOutlined style={{ marginRight: 6 }} />
+            {setLocale(locale, 'admin.tools.monitoring.noEmailProfiles')}
+            {getContactProfileCountSuffix(noEmailFilteredCount)}
+          </Divider>
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginBottom: 12 }}
+            description={setLocale(locale, 'admin.tools.monitoring.noEmailProfiles.description')}
+          />
+          <AbstractTable
+            key={`no-email-${contactProfileSearchText}`}
+            tableData={filteredNoEmailContactProfileData}
+            tableColumns={noEmailContactProfileTableModel?.columns || []}
+            tableExpandables={noEmailContactProfileTableModel?.expandable}
+            isAllowedToEditTableData={false}
+            isToRenderActionButton={false}
+            rowKey="key"
+            loading={isContactProfileMonitoringTableLoading}
+            onChange={handleContactProfileTableChange('noEmail')}
+          />
+
           <Divider titlePlacement="left">
             <MessageOutlined style={{ marginRight: 6 }} />
             {setLocale(locale, 'admin.tools.monitoring.communicationOptOuts')}

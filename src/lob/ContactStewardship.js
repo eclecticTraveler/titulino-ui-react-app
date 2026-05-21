@@ -47,7 +47,11 @@ export const normalizeDuplicateCandidate = (candidate = {}, index = 0) => {
     primaryEmailId: getValue(candidate, 'PrimaryEmailId', 'primaryEmailId', 'PrimaryEmail', 'primaryEmail'),
     secondaryEmailId: getValue(candidate, 'SecondaryEmailId', 'secondaryEmailId', 'SecondaryEmail', 'secondaryEmail'),
     confidenceScore: Number(getValue(candidate, 'ConfidenceScore', 'confidenceScore', 'score') || 0),
-    matchReasons: toArray(getValue(candidate, 'MatchReasons', 'matchReasons', 'Reasons', 'reasons'))
+    matchReasons: toArray(getValue(candidate, 'MatchReasons', 'matchReasons', 'Reasons', 'reasons')),
+    primaryHasCommunicationIdentity: getValue(candidate, 'PrimaryHasCommunicationIdentity', 'primaryHasCommunicationIdentity'),
+    secondaryHasCommunicationIdentity: getValue(candidate, 'SecondaryHasCommunicationIdentity', 'secondaryHasCommunicationIdentity'),
+    primaryExistsInVmEnrollee: getValue(candidate, 'PrimaryExistsInVmEnrollee', 'primaryExistsInVmEnrollee'),
+    secondaryExistsInVmEnrollee: getValue(candidate, 'SecondaryExistsInVmEnrollee', 'secondaryExistsInVmEnrollee')
   };
 };
 

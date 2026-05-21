@@ -478,17 +478,22 @@ export const getContactProfileMonitoring = async (emailId) => {
       emailId,
       optedOutActiveContactProfiles: [],
       inactiveContactProfiles: [],
+      noEmailActiveContactProfiles: [],
       optedOutActiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel([]),
       inactiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel([])
     };
   }
 
-  const [optedOutActiveContactProfiles, inactiveContactProfiles] = await Promise.all([
+  const [optedOutActiveContactProfiles, inactiveContactProfiles, noEmailActiveContactProfiles] = await Promise.all([
     TitulinoAdminAuthService.getOptedOutActiveContactProfiles(
       token,
       'getContactProfileMonitoring'
     ),
     TitulinoAdminAuthService.getInactiveContactProfiles(
+      token,
+      'getContactProfileMonitoring'
+    ),
+    TitulinoAdminAuthService.getActiveContactProfilesWithoutCommunicationIdentity(
       token,
       'getContactProfileMonitoring'
     )
@@ -498,6 +503,7 @@ export const getContactProfileMonitoring = async (emailId) => {
     emailId,
     optedOutActiveContactProfiles,
     inactiveContactProfiles,
+    noEmailActiveContactProfiles,
     optedOutActiveContactProfileTableModel: ContactProfilesMonitoring.buildContactProfileTableModel(
       optedOutActiveContactProfiles
     ),

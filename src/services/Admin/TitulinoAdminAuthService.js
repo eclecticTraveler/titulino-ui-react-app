@@ -292,6 +292,10 @@ export const getInactiveContactProfiles = async (token, whoCalledMe = 'getInacti
   getArrayEndpoint('GetInactiveContactProfiles', token, whoCalledMe)
 );
 
+export const getActiveContactProfilesWithoutCommunicationIdentity = async (token, whoCalledMe = 'getActiveContactProfilesWithoutCommunicationIdentity') => (
+  getArrayEndpoint('GetActiveContactProfilesWithoutCommunicationIdentity', token, whoCalledMe)
+);
+
 export const toggleContactEmailOptOut = async (payload, token, whoCalledMe = 'toggleContactEmailOptOut') => {
   if (!token || !Array.isArray(payload) || payload.length === 0) {
     console.warn(`[${whoCalledMe}] Missing required params`);
@@ -337,6 +341,7 @@ const TitulinoAdminAuthService = {
   getUserLoginFootprintByContact,
   getOptedOutActiveContactProfiles,
   getInactiveContactProfiles,
+  getActiveContactProfilesWithoutCommunicationIdentity,
   getProcessLogEvents,
   getContactSegment,
   getContactSegmentCount,
