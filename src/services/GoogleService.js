@@ -232,6 +232,29 @@ export const getCourseThemeRegistryData = async (whoCalledMe) => {
   return _objectResults;
 };
 
+export const getKnowMeSurveyData = async (whoCalledMe) => {
+  if (whoCalledMe) {
+
+    const requestOptions = {
+      method: "GET"
+    };
+
+    const knowMeSurveyUrl = `${gcbucketBaseUrl}/${gcBucketName}/know-me-survey-data.json`;
+
+    try {
+      const response = await fetch(knowMeSurveyUrl, requestOptions);
+      const apiResult = await response.json();
+      return apiResult ?? _objectResults;
+    } catch (error) {
+      console.log(`Error Retrieving API payload in getKnowMeSurveyData: from ${whoCalledMe}`);
+      console.error(error);
+      return _objectResults;
+    }
+  }
+
+  return _objectResults;
+};
+
 export const getBadgeThemeRegistryData = async (whoCalledMe) => {
   if (whoCalledMe) {
 
@@ -324,7 +347,8 @@ const GoogleService = {
   getCourseShoppingCatalogData,
   getLanguageCoursesData,
   getCourseThemeRegistryData,
-  getBadgeThemeRegistryData
+  getBadgeThemeRegistryData,
+  getKnowMeSurveyData
 };
 
 export default GoogleService;

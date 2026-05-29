@@ -67,6 +67,7 @@ import {
   ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
   ON_USER_SELECTING_CONTENT_LANGUAGE,
   ON_UPSERTING_KNOW_ME_BY_CHAPTER,
+  ON_FETCHING_KNOW_ME_SURVEY_QUESTIONS,
   ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE
 } from "../constants/Lrn";
 import LrnManager from "managers/LrnManager";
@@ -689,11 +690,19 @@ export const onRenderingUserCoursesAvailableForRegistration = async (emailId) =>
       }
     }
 
-export const onUpsertingKnowMeByChapter = async (knowMeProgress, levelTheme, emailId, chapterNo) => {  
+export const onUpsertingKnowMeByChapter = async (knowMeProgress, levelTheme, emailId, chapterNo) => {
   const upsertedAnswers = await LrnManager.upsertUserKnowMeProgress(knowMeProgress, levelTheme, emailId, chapterNo = 0);
     return {
       type: ON_UPSERTING_KNOW_ME_BY_CHAPTER,
       upsertedAnswers: upsertedAnswers
   }
+}
+
+export const onFetchingKnowMeSurveyQuestions = async (levelTheme, chapterNo) => {
+  const questions = await LrnManager.getKnowMeSurveyQuestions(levelTheme, chapterNo);
+  return {
+    type: ON_FETCHING_KNOW_ME_SURVEY_QUESTIONS,
+    questions
+  };
 }
     
