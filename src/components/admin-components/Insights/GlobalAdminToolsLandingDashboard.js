@@ -7255,7 +7255,25 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           onChange: (keys, rows) => {
             setSelectedAudienceRowKeys(keys);
             setSelectedAudienceRows(rows);
-          }
+          },
+          selections: [
+            {
+              key: 'select-all-loaded',
+              text: `Select all ${audienceRows?.length ?? 0} loaded contacts`,
+              onSelect: () => {
+                setSelectedAudienceRowKeys((audienceRows ?? []).map(r => r.key));
+                setSelectedAudienceRows(audienceRows ?? []);
+              }
+            },
+            {
+              key: 'clear-all',
+              text: 'Clear selection',
+              onSelect: () => {
+                setSelectedAudienceRowKeys([]);
+                setSelectedAudienceRows([]);
+              }
+            }
+          ]
         }}
         pagination={{
           pageSize: 25,
