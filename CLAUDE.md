@@ -71,6 +71,7 @@ Full details: [docs/Architecture.md](docs/Architecture.md) · [docs/Coding Stand
 5. All API URLs come from `EnvironmentConfig.js` (`env.ENDPOINT`) — never hardcode.
 6. Do not test the service layer (REST calls). Test LOB files and Redux reducers.
 7. LESS changes require `compile-less.sh` — `npm start` alone does not recompile LESS.
+8. **Never filter, sort, or paginate data client-side as a substitute for backend filtering.** All business logic belongs in PostgreSQL. The frontend describes intent (parameters); the backend determines eligibility and results. If a filter is missing from the backend, add it to the stored procedure first — do not implement it in JavaScript. See [docs/audience-segmentation.md](docs/audience-segmentation.md) for the segmentation contract.
 
 ---
 
