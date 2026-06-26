@@ -2509,21 +2509,27 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       </span>
     ) : '-'
   ), []);
-  const audienceCountryOptions = useMemo(() => (
+  const audienceResidencyCountryOptions = useMemo(() => (
     buildAudienceCountryOptionsForLocation({
       metadataOptions: audienceMetadataCountryOptions,
       rows: audienceRows,
-      locationType: audienceFilters.locationType
+      locationType: 'residency'
     }).map(option => ({
       ...option,
       label: renderCountrySummary(option.label, option.alpha3)
     }))
-  ), [
-    audienceFilters.locationType,
-    audienceMetadataCountryOptions,
-    audienceRows,
-    renderCountrySummary
-  ]);
+  ), [audienceMetadataCountryOptions, audienceRows, renderCountrySummary]);
+
+  const audienceBirthCountryOptions = useMemo(() => (
+    buildAudienceCountryOptionsForLocation({
+      metadataOptions: audienceMetadataCountryOptions,
+      rows: audienceRows,
+      locationType: 'birth'
+    }).map(option => ({
+      ...option,
+      label: renderCountrySummary(option.label, option.alpha3)
+    }))
+  ), [audienceMetadataCountryOptions, audienceRows, renderCountrySummary]);
   const advancedContactCountryOptions = useMemo(() => (
     buildAudienceCountryOptionsForLocation({
       metadataOptions: audienceMetadataCountryOptions,
@@ -2539,33 +2545,49 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     audienceRows,
     renderCountrySummary
   ]);
-  const audienceCountryDivisionRows = useMemo(() => {
-    if (!audienceFilters.countryNameOrId) return [];
+  const audienceResidencyDivisionRows = useMemo(() => {
+    if (!audienceFilters.residencyCountry) return [];
     if (contactSegmentCountryDivisions?.emailId !== emailId) return [];
-    if (contactSegmentCountryDivisions?.payload?.p_countrynameorid !== audienceFilters.countryNameOrId) return [];
-    if (
-      (contactSegmentCountryDivisions?.payload?.p_locationtype || 'all') !==
-      (audienceFilters.locationType || 'all')
-    ) {
-      return [];
-    }
-
+    if (contactSegmentCountryDivisions?.payload?.p_locationtype !== 'residency') return [];
+    if (contactSegmentCountryDivisions?.payload?.p_countrynameorid !== audienceFilters.residencyCountry) return [];
     return contactSegmentCountryDivisions?.rows || [];
   }, [
-    audienceFilters.countryNameOrId,
-    audienceFilters.locationType,
+    audienceFilters.residencyCountry,
     contactSegmentCountryDivisions?.emailId,
     contactSegmentCountryDivisions?.payload?.p_countrynameorid,
     contactSegmentCountryDivisions?.payload?.p_locationtype,
     contactSegmentCountryDivisions?.rows,
     emailId
   ]);
-  const audienceRegionOptions = useMemo(() => (
+
+  const audienceBirthDivisionRows = useMemo(() => {
+    if (!audienceFilters.birthCountry) return [];
+    if (contactSegmentCountryDivisions?.emailId !== emailId) return [];
+    if (contactSegmentCountryDivisions?.payload?.p_locationtype !== 'birth') return [];
+    if (contactSegmentCountryDivisions?.payload?.p_countrynameorid !== audienceFilters.birthCountry) return [];
+    return contactSegmentCountryDivisions?.rows || [];
+  }, [
+    audienceFilters.birthCountry,
+    contactSegmentCountryDivisions?.emailId,
+    contactSegmentCountryDivisions?.payload?.p_countrynameorid,
+    contactSegmentCountryDivisions?.payload?.p_locationtype,
+    contactSegmentCountryDivisions?.rows,
+    emailId
+  ]);
+
+  const audienceResidencyRegionOptions = useMemo(() => (
     buildAudienceCountryDivisionOptions(
-      audienceCountryDivisionRows,
+      audienceResidencyDivisionRows,
       t('admin.tools.messaging.regionNotAvailable')
     )
-  ), [audienceCountryDivisionRows, t]);
+  ), [audienceResidencyDivisionRows, t]);
+
+  const audienceBirthRegionOptions = useMemo(() => (
+    buildAudienceCountryDivisionOptions(
+      audienceBirthDivisionRows,
+      t('admin.tools.messaging.regionNotAvailable')
+    )
+  ), [audienceBirthDivisionRows, t]);
   const advancedContactRegionOptions = useMemo(() => (
     buildAudienceCountryDivisionOptions(
       advancedContactCountryDivisions,
@@ -6979,64 +7001,103 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           title={setLocale(locale, 'admin.tools.messaging.filterSection.demographics')}
           style={{ marginBottom: 12 }}
         >
-        <Row gutter={[12, 12]}>
-          <Col xs={24} md={12} lg={4}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.locationType', (
-              <Select
-                value={audienceFilters.locationType}
-                options={audienceOptions.locationTypes}
-                onChange={(value) => {
-                  setAudienceFilters(previousFilters => ({
-                    ...previousFilters,
-                    locationType: value,
-                    countryNameOrId: null,
-                    locationRegionName: null,
-                    offset: 0
-                  }));
-                }}
-                style={{ width: '100%' }}
-              />
-            ))}
+        <Row gutter={[12, 8]} align="middle" style={{ marginBottom: 8 }}>
+          <Col xs={24} md={3} lg={3}>
+            <span style={{ fontWeight: 500, opacity: audienceFilters.residencyCountry ? 1 : 0.45 }}>Residency</span>
           </Col>
-          <Col xs={24} md={12} lg={5}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.country', (
-              <Select
-                allowClear
-                showSearch
-                value={audienceFilters.countryNameOrId}
-                placeholder={t('admin.tools.messaging.countryPlaceholder')}
-                options={audienceCountryOptions}
-                optionFilterProp="searchText"
-                onChange={(value) => {
-                  setAudienceFilters(previousFilters => ({
-                    ...previousFilters,
-                    countryNameOrId: value || null,
-                    locationRegionName: null,
-                    offset: 0
-                  }));
-                }}
-                loading={audienceMetadataLoading}
-                style={{ width: '100%' }}
-              />
-            ))}
+          <Col xs={24} md={6} lg={6}>
+            <Select
+              allowClear
+              showSearch
+              value={audienceFilters.residencyCountry}
+              placeholder={t('admin.tools.messaging.countryPlaceholder')}
+              options={audienceResidencyCountryOptions}
+              optionFilterProp="searchText"
+              onChange={(value) => {
+                setAudienceFilters(prev => ({ ...prev, residencyCountry: value || null, residencyRegion: null, offset: 0 }));
+                if (value) loadAudienceCountryDivisions({ locationType: 'residency', countryNameOrId: value });
+              }}
+              loading={audienceMetadataLoading}
+              style={{ width: '100%' }}
+            />
           </Col>
-          <Col xs={24} md={12} lg={5}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.region', (
-              <Select
-                allowClear
-                showSearch
-                disabled={!audienceFilters.countryNameOrId}
-                value={audienceFilters.locationRegionName}
-                placeholder={t('admin.tools.messaging.regionPlaceholder')}
-                options={audienceRegionOptions}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('locationRegionName', value || null)}
-                loading={audienceCountryDivisionsLoading}
-                style={{ width: '100%' }}
-              />
-            ))}
+          <Col xs={24} md={6} lg={6}>
+            <Select
+              allowClear
+              showSearch
+              disabled={!audienceFilters.residencyCountry}
+              value={audienceFilters.residencyRegion}
+              placeholder={t('admin.tools.messaging.regionPlaceholder')}
+              options={audienceResidencyRegionOptions}
+              optionFilterProp="searchText"
+              onChange={value => updateAudienceFilter('residencyRegion', value || null)}
+              loading={audienceCountryDivisionsLoading}
+              style={{ width: '100%' }}
+            />
           </Col>
-          <Col xs={24} md={12} lg={5}>
+          <Col xs={24} md={4} lg={4}>
+            <Select
+              disabled={!audienceFilters.residencyCountry}
+              value={audienceFilters.residencyExclude ? 'exclude' : 'include'}
+              options={[
+                { value: 'include', label: 'Include' },
+                { value: 'exclude', label: 'Exclude' }
+              ]}
+              onChange={value => updateAudienceFilter('residencyExclude', value === 'exclude')}
+              style={{ width: '100%' }}
+            />
+          </Col>
+        </Row>
+        <Row gutter={[12, 8]} align="middle" style={{ marginBottom: 8 }}>
+          <Col xs={24} md={3} lg={3}>
+            <span style={{ fontWeight: 500, opacity: audienceFilters.birthCountry ? 1 : 0.45 }}>Birth</span>
+          </Col>
+          <Col xs={24} md={6} lg={6}>
+            <Select
+              allowClear
+              showSearch
+              value={audienceFilters.birthCountry}
+              placeholder={t('admin.tools.messaging.countryPlaceholder')}
+              options={audienceBirthCountryOptions}
+              optionFilterProp="searchText"
+              onChange={(value) => {
+                setAudienceFilters(prev => ({ ...prev, birthCountry: value || null, birthRegion: null, offset: 0 }));
+                if (value) loadAudienceCountryDivisions({ locationType: 'birth', countryNameOrId: value });
+              }}
+              loading={audienceMetadataLoading}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={6} lg={6}>
+            <Select
+              allowClear
+              showSearch
+              disabled={!audienceFilters.birthCountry}
+              value={audienceFilters.birthRegion}
+              placeholder={t('admin.tools.messaging.regionPlaceholder')}
+              options={audienceBirthRegionOptions}
+              optionFilterProp="searchText"
+              onChange={value => updateAudienceFilter('birthRegion', value || null)}
+              loading={audienceCountryDivisionsLoading}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={4} lg={4}>
+            <Select
+              disabled={!audienceFilters.birthCountry}
+              value={audienceFilters.birthExclude ? 'exclude' : 'include'}
+              options={[
+                { value: 'include', label: 'Include' },
+                { value: 'exclude', label: 'Exclude' }
+              ]}
+              onChange={value => updateAudienceFilter('birthExclude', value === 'exclude')}
+              style={{ width: '100%' }}
+            />
+          </Col>
+        </Row>
+        <Row gutter={[12, 8]}>
+          <Col xs={24} md={3} lg={3} />
+          <Col xs={24} md={6} lg={6}>
             {renderFilterTooltip('admin.tools.messaging.tooltip.language', (
               <Select
                 allowClear
@@ -7054,7 +7115,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               />
             ))}
           </Col>
-          <Col xs={24} md={12} lg={5}>
+          <Col xs={24} md={6} lg={6}>
             {renderFilterTooltip('admin.tools.messaging.tooltip.languageLevel', (
               <Select
                 allowClear
