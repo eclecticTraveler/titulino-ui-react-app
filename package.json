@@ -69,6 +69,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:ci": "react-scripts test --watchAll=false --passWithNoTests --forceExit",
     "eject": "react-scripts eject",
     "dev": "concurrently \"npm run start\" \"npx gulp watch\"",
     "afterEachReleaseManual": "git push --follow-tags origin <ADD_BRANCHNAME>",
