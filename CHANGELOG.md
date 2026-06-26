@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.221](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.220...v0.1.221) (2026-06-26)
+
+
+### Bug Fixes
+
+* **audience:** always send exclude flags to resolve PostgREST function overload ambiguity ([4a73ecd](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/4a73ecd13e8696bc815f6e7b55305580bc4d9999))
+
 ### [0.1.220](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.219...v0.1.220) (2026-06-26)
 
 
