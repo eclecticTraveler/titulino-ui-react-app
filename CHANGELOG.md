@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.220](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.219...v0.1.220) (2026-06-26)
+
+
+### Features
+
+* **admin:** add select-all across pages in audience segment table ([16539f8](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/16539f867766e99820ea7da366e3c077e385f0a9))
+* **admin:** dual location filter with include/exclude for audience segmentation ([2e56b24](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/2e56b24d78a22659722dca61926211d3a14d20cd))
+* **ci:** add parallel test job to GitHub Actions workflow ([db4a25a](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/db4a25a345352a08b247d28f6e44cac02c8ab43b))
+
+
+### Bug Fixes
+
+* **admin:** Roles & Courses summary now shows all enrolled courses ([79a354c](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/79a354c79ec86b0704d5fc7c66480544db65331f))
+
 ### [0.1.219](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.218...v0.1.219) (2026-06-26)
 
 ### [0.1.218](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.217...v0.1.218) (2026-05-29)
