@@ -2,9 +2,11 @@ Run the full release workflow: bump version, update service worker cache, push b
 
 ## Before doing anything
 
-Ask the user: "Have you run `ssh-add` in your terminal this session? The push will hang without it."
+1. Run `git status`. If there are any modified or untracked files that are not version files (package.json, package-lock.json, CHANGELOG.md, service-worker.js), **stop and tell the user**: "You have uncommitted changes — run `/cpc` first to commit your feature work, then run `/rc` to release. The release script only commits version files, not your code."
 
-Wait for confirmation before proceeding.
+2. Ask the user: "Have you run `ssh-add` in your terminal this session? The push will hang without it."
+
+Wait for confirmation on both before proceeding.
 
 ## Steps
 
