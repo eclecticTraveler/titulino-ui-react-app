@@ -40,6 +40,7 @@ Run without `bash` prefix, from the project root.
 | `run-tests-coverage.sh` | `.claude/support-scripts/run-tests-coverage.sh` | Run tests with coverage report output to `coverage/` |
 | `run-build.sh` | `.claude/support-scripts/run-build.sh` | Production build — fails loudly on errors |
 | `compile-less.sh` | `.claude/support-scripts/compile-less.sh` | Compile LESS → CSS. Run after any `.less` file change |
+| `release.sh` | `.claude/support-scripts/release.sh` | Full release: bump version → update service worker cache → push branch + tags |
 
 ---
 
@@ -89,6 +90,22 @@ Agents in `.claude/agents/` are invoked with `@<agent-name>` in a conversation.
 2. Stage specific files: `git add <file1> <file2>` — never `git add -A`
 3. Commit using the filled template
 4. Never force-push to `main`. Never use `--no-verify`.
+
+## Release workflow (agent cannot run this alone)
+
+The release push requires an SSH key passphrase. Claude Code's shell is non-interactive and cannot accept password prompts — the push will hang if the passphrase is not already cached.
+
+**Human must run this first in their terminal (once per session):**
+```
+ssh-add
+```
+
+After that, the agent can run `.claude/support-scripts/release.sh` which does:
+1. `standard-version` — bumps version in package.json, updates CHANGELOG.md, commits, creates git tag
+2. `bumpCacheVersion.js` — syncs the new version into `public/service-worker.js` cache name and asset paths
+3. `git push --follow-tags origin <current-branch>` — pushes commits and tags
+
+**Never run release.sh without confirming ssh-add has been run.** Ask the user to confirm before executing.
 
 ---
 
