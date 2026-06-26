@@ -205,7 +205,12 @@ const buildContactCourseHistoryRows = (contact = {}, rawCourses = []) => {
     if (seen.has(key)) return null;
     seen.add(key);
     return { key, courseCodeId, title, imageUrl, targetLanguageId, audienceLanguageId, startDate, endDate, roleId };
-  }).filter(Boolean);
+  }).filter(Boolean).sort((a, b) => {
+    if (!a.startDate && !b.startDate) return 0;
+    if (!a.startDate) return 1;
+    if (!b.startDate) return -1;
+    return new Date(b.startDate) - new Date(a.startDate);
+  });
 };
 
 const normalizeAwardTier = (value) => {
@@ -3609,69 +3614,78 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     }
   };
 
-  const renderRolesAndCourses = (roles, courses) => (
-    <div>
-      <strong>{setLocale(locale, 'admin.tools.label.rolesAndCourses')}: </strong>
-      {roles.length > 0
-        ? (() => {
-            const grouped = {};
-            roles.forEach(r => {
-              if (!grouped[r.UserRoleId]) grouped[r.UserRoleId] = [];
-              grouped[r.UserRoleId].push(r);
-            });
+  const renderRolesAndCourses = (roles, mergedCourseRows) => {
+    const totalCount = (mergedCourseRows || []).length;
+
+    if (totalCount === 0) {
+      return (
+        <div>
+          <strong>{setLocale(locale, 'admin.tools.label.rolesAndCourses')}: </strong>
+          <span style={{ color: '#999' }}>{setLocale(locale, 'admin.tools.label.none')}</span>
+        </div>
+      );
+    }
+
+    const rolePriorityById = (roles || []).reduce((acc, r) => {
+      if (r.UserRoleId) acc[r.UserRoleId] = (allRoles || []).find(def => def.UserRoleId === r.UserRoleId)?.UserRolePriority ?? 999;
+      return acc;
+    }, {});
+
+    const grouped = {};
+    (mergedCourseRows || []).forEach(course => {
+      const groupKey = course.roleId || '__unassigned__';
+      if (!grouped[groupKey]) grouped[groupKey] = [];
+      grouped[groupKey].push(course);
+    });
+
+    const sortedGroups = Object.entries(grouped).sort(([aId], [bId]) => {
+      if (aId === '__unassigned__') return 1;
+      if (bId === '__unassigned__') return -1;
+      return (rolePriorityById[aId] ?? 999) - (rolePriorityById[bId] ?? 999);
+    });
+
+    return (
+      <div>
+        <strong>{setLocale(locale, 'admin.tools.label.rolesAndCourses')} ({totalCount}): </strong>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+          {sortedGroups.map(([groupKey, groupCourses]) => {
+            const roleDef = (allRoles || []).find(r => r.UserRoleId === groupKey);
+            const roleName = groupKey === '__unassigned__'
+              ? 'Student'
+              : (roleDef?.LocalizationKey ? t(roleDef.LocalizationKey) : groupKey);
+            const isGlobal = (roles || []).some(r => r.UserRoleId === groupKey && r.IsGlobalAccessUserRole);
 
             return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-                {Object.entries(grouped).sort(([aId], [bId]) => {
-                  const pa = (allRoles || []).find(r => r.UserRoleId === aId)?.UserRolePriority ?? 999;
-                  const pb = (allRoles || []).find(r => r.UserRoleId === bId)?.UserRolePriority ?? 999;
-                  return pa - pb;
-                }).map(([roleId, entries]) => {
-                  const roleDef = (allRoles || []).find(r => r.UserRoleId === roleId);
-                  const roleName = roleDef?.LocalizationKey ? t(roleDef.LocalizationKey) : roleId;
-                  const isGlobal = entries.some(e => e.IsGlobalAccessUserRole);
-                  const courseEntries = entries.filter(e => e.CourseCodeId);
-
-                  return (
-                    <div key={roleId}>
-                      <Tag color="blue" style={{ width: 'fit-content', fontWeight: 600 }}>
-                        {roleName}
-                        {isGlobal && (
-                          <span style={{ marginLeft: 6, fontWeight: 400, opacity: 0.8 }}>
-                            ({t('admin.tools.label.global')})
-                          </span>
-                        )}
-                      </Tag>
-                      {courseEntries.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2, marginLeft: 20 }}>
-                          {courseEntries.map((ce, i) => {
-                            const courseDef = courses.find(c => c.CourseCodeId === ce.CourseCodeId);
-                            const friendlyName = courseDef?.CourseDetails?.course;
-                            return (
-                              <Tooltip title={ce.CourseCodeId} key={i}>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                  <Tag color="green" style={{ width: 'fit-content', cursor: 'default', marginRight: 0 }}>
-                                    {friendlyName || ce.CourseCodeId}
-                                  </Tag>
-                                  <Tag color="geekblue" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
-                                    {ce.CourseCodeId}
-                                  </Tag>
-                                </span>
-                              </Tooltip>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+              <div key={groupKey}>
+                <Tag color="blue" style={{ width: 'fit-content', fontWeight: 600 }}>
+                  {roleName}
+                  {isGlobal && (
+                    <span style={{ marginLeft: 6, fontWeight: 400, opacity: 0.8 }}>
+                      ({t('admin.tools.label.global')})
+                    </span>
+                  )}
+                </Tag>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2, marginLeft: 20 }}>
+                  {groupCourses.map((course, i) => (
+                    <Tooltip title={course.courseCodeId} key={i}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <Tag color="green" style={{ width: 'fit-content', cursor: 'default', marginRight: 0 }}>
+                          {course.title || course.courseCodeId}
+                        </Tag>
+                        <Tag color="geekblue" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
+                          {course.courseCodeId}
+                        </Tag>
+                      </span>
+                    </Tooltip>
+                  ))}
+                </div>
               </div>
             );
-          })()
-        : <span style={{ color: '#999' }}>{setLocale(locale, 'admin.tools.label.none')}</span>
-      }
-    </div>
-  );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   const renderLanguageHistory = (langHistory) => {
     if (!langHistory || langHistory.length === 0) return <span style={{ color: '#999' }}>{setLocale(locale, 'admin.tools.label.none')}</span>;
@@ -4109,7 +4123,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     const emails = (selectedContact.Emails || []).map(e => e.EmailId);
     const roles = selectedContact.UserCourseRoles || [];
-    const courses = selectedContact.CoursesHistory || [];
+    const mergedCourseRows = buildContactCourseHistoryRows(selectedContact, allRawCourses);
     const residencyCode = selectedContact?.Location?.ResidencyLocation?.CountryOfResidency;
     const residencyRegion = selectedContact?.Location?.ResidencyLocation?.CountryDivisionResidencyName;
     const birthCode = selectedContact?.Location?.BirthLocation?.CountryOfBirth;
@@ -4160,7 +4174,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             {renderGlobalAccessTag()}
           </div>
         )}
-        {renderRolesAndCourses(roles, courses)}
+        {renderRolesAndCourses(roles, mergedCourseRows)}
       </>
     );
 
