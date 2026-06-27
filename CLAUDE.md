@@ -25,6 +25,7 @@ Before reading any source file, before running grep, before spawning an Explore 
 | How to add a feature | [docs/Feature Workflow.md](docs/Feature%20Workflow.md) |
 | How to build/deploy | [docs/Deployment.md](docs/Deployment.md) |
 | What was done last session | [docs/work-logs/](docs/work-logs/) most recent file |
+| Known unfixed bugs | [docs/known-bugs.md](docs/known-bugs.md) |
 | Test batch status | [docs/testing/PROGRESS.md](docs/testing/PROGRESS.md) |
 
 ---
