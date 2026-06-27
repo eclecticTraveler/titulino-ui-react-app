@@ -3678,7 +3678,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                             {course.courseCodeId}
                           </Tag>
                           {courseYear && (
-                            <Tag style={{ width: 'fit-content', cursor: 'default', fontSize: 11, marginRight: 0 }}>
+                            <Tag color="orange" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, marginRight: 0 }}>
                               {courseYear}
                             </Tag>
                           )}
@@ -4003,7 +4003,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                   <span>
                     <span style={{ fontWeight: 600 }}>{record.title || '—'}</span>
                     {courseYear && (
-                      <Tag style={{ marginLeft: 6, fontSize: 11, cursor: 'default' }}>{courseYear}</Tag>
+                      <Tag color="orange" style={{ marginLeft: 6, fontSize: 11, cursor: 'default' }}>{courseYear}</Tag>
                     )}
                   </span>
                 </Space>
@@ -4286,7 +4286,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                       <EnrolleeByRegionWidget
                         enrolleeRegionData={[{
                           name: birthRegion || birthName || birthNativeName,
-                          nativeName: birthNativeName || birthName,
+                          nativeName: null,
                           countryId: birthCode,
                           color: '#f5222d',
                           value: ''
@@ -4318,7 +4318,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                       <EnrolleeByRegionWidget
                         enrolleeRegionData={[{
                           name: residencyRegion || residencyName || residencyNativeName,
-                          nativeName: residencyNativeName || residencyName,
+                          nativeName: null,
                           countryId: residencyCode,
                           color: '#1890ff',
                           value: ''
