@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.222](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.221...v0.1.222) (2026-06-27)
+
+
+### Features
+
+* **insights:** group courses by year across dropdown and admin views ([d5b3089](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/d5b3089eedc37b0aa37c45fad72fd2c06315e7a2))
+
 ### [0.1.221](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.220...v0.1.221) (2026-06-26)
 
 
