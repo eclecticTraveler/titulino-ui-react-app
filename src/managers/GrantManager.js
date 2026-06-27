@@ -12,7 +12,7 @@ const USER_PROFILE_CACHE_TTL_MINUTES = env.USER_PROFILE_CACHE_TTL_MINUTES;
 const COURSE_DATA_CACHE_TTL_MINUTES = env.COURSE_DATA_CACHE_TTL_MINUTES;
 
 export const getAllCourses = async() => {
-  const localStorageKey = `adminAllCourses_v2`;
+  const localStorageKey = `adminAllCourses`;
   const user = await LocalStorageService.getCachedObject(localStorageKey);
   if (user) {
     return user;

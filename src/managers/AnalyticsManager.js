@@ -123,7 +123,7 @@ const normalizeShopPurchaserOverviewPayload = (overview) => {
 };
 
 export const getAllCourses = async () => {
-  const key = `adminAllCourses_v2`;
+  const key = `adminAllCourses`;
   const cached = await getCached(key);
   if (cached) return cached;
 
