@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.223](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.222...v0.1.223) (2026-06-27)
+
+
+### Bug Fixes
+
+* **map+insights:** resolve Estado de México false positive and stale course cache ([6d706ff](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/6d706ff1aa2e41a7a55eb3738330034939c80b18))
+
 ### [0.1.222](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.221...v0.1.222) (2026-06-27)
 
 
