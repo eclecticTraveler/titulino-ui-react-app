@@ -99,35 +99,37 @@ localStorage.removeItem('postLoginRedirect');
 
 ## BUG-003 — CDMX shows no map highlight (DistritoFederal / Ciudad de México name mismatch)
 
-**Status:** `OPEN` — fix identified, requires change in a different repository  
+**Status:** `FIXED` — committed `e2b1524` in `titulino-bucket-spine` on 2026-06-27  
 **Severity:** Medium — contacts from Mexico City get no region highlight in the Geography map  
 **Discovered:** 2026-06-26  
 **Work log:** [docs/work-logs/2026-06-27.md](work-logs/2026-06-27.md)
 
 ### Symptom
 
-In Admin Tools → contact detail → Geography tab, contacts whose `CountryDivisionBirthName` or `CountryDivisionResidencyName` is `"Ciudad de México"` show no highlighted region on the Mexico map. The rest of the map renders correctly.
+In Admin Tools → contact detail → Geography tab, contacts whose `CountryDivisionBirthName` or `CountryDivisionResidencyName` is `"Ciudad de México"` showed no highlighted region on the Mexico map. Enrollee Insights aggregate map showed tooltip `"México - DistritoFederal - 0"` instead of `"Ciudad de Mexico"`.
 
 ### Root cause
 
-The GADM GeoJSON file used for the Mexico map (`gadm41_MX_1.json` in the `titulino-bucket-spine` repo) still uses the pre-2016 name for the CDMX feature:
+The GADM GeoJSON file (`gadm41_MX_1.json` in `titulino-bucket-spine`) used the pre-2016 name for CDMX:
 
 ```json
-{ "NAME_1": "DistritoFederal", ... }
+{ "NAME_1": "DistritoFederal", "VARNAME_1": "NA" }
 ```
 
-The database stores the current official name `"Ciudad de México"`. `RegiondataWidget` normalizes both strings and looks for a match — `"ciudaddemxico"` does not match `"distritofederal"`, so no feature is highlighted.
+The DB stores `"Ciudad de Mexico"`. `RegiondataWidget` normalizes both — `"ciudaddemexico"` did not match `"distritofederal"`.
 
-### Fix (not yet applied)
+### Fix applied
 
-**Repository:** `titulino-bucket-spine`  
-**File:** `titulino-spine-data/maps/gadm41_MX_1.json`
+**Repository:** `titulino-bucket-spine` — `titulino-spine-data/maps/gadm41_MX_1.json`
 
-For the CDMX feature entry:
-1. Change `NAME_1` from `"DistritoFederal"` → `"CiudaddeMéxico"` (normalized form matches DB value)
-2. Add or set `VARNAME_1: "DistritoFederal"` — `RegiondataWidget` includes `VARNAME_1` in its alias lookup, so old contacts stored with the pre-2016 name continue to match
+| Feature | Property | Before | After |
+|---|---|---|---|
+| MEX.9_1 (CDMX) | `NAME_1` | `"DistritoFederal"` | `"Ciudad de Mexico"` |
+| MEX.9_1 (CDMX) | `VARNAME_1` | `"NA"` | `"DistritoFederal"` |
+| MEX.9_1 (CDMX) | `TYPE_1` | `"DistritoFederal"` | `"Distrito Federal"` |
+| MEX.15_1 (Estado de México) | `NAME_1` | `"México"` | `"EstadodeMéxico"` *(prior edit)* |
 
-This is a pure data change, no code change required.
+`VARNAME_1: "DistritoFederal"` is kept so any DB records still using the pre-2016 name continue to match via the alias lookup.
 
 ### Related
 
