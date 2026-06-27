@@ -3666,18 +3666,26 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                   )}
                 </Tag>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2, marginLeft: 20 }}>
-                  {groupCourses.map((course, i) => (
-                    <Tooltip title={course.courseCodeId} key={i}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        <Tag color="green" style={{ width: 'fit-content', cursor: 'default', marginRight: 0 }}>
-                          {course.title || course.courseCodeId}
-                        </Tag>
-                        <Tag color="geekblue" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
-                          {course.courseCodeId}
-                        </Tag>
-                      </span>
-                    </Tooltip>
-                  ))}
+                  {groupCourses.map((course, i) => {
+                    const courseYear = course.startDate ? new Date(course.startDate).getFullYear() : null;
+                    return (
+                      <Tooltip title={course.courseCodeId} key={i}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <Tag color="green" style={{ width: 'fit-content', cursor: 'default', marginRight: 0 }}>
+                            {course.title || course.courseCodeId}
+                          </Tag>
+                          <Tag color="geekblue" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
+                            {course.courseCodeId}
+                          </Tag>
+                          {courseYear && (
+                            <Tag style={{ width: 'fit-content', cursor: 'default', fontSize: 11, marginRight: 0 }}>
+                              {courseYear}
+                            </Tag>
+                          )}
+                        </span>
+                      </Tooltip>
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -3981,18 +3989,26 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             title: setLocale(locale, 'admin.tools.monitoring.contactProfile.course'),
             dataIndex: 'title',
             key: 'title',
-            render: (_, record) => (
-              <Space>
-                <Avatar
-                  shape="square"
-                  size={42}
-                  src={record.imageUrl}
-                  icon={<BookOutlined />}
-                  style={{ borderRadius: 8, flexShrink: 0 }}
-                />
-                <span style={{ fontWeight: 600 }}>{record.title || '—'}</span>
-              </Space>
-            )
+            render: (_, record) => {
+              const courseYear = record.startDate ? new Date(record.startDate).getFullYear() : null;
+              return (
+                <Space>
+                  <Avatar
+                    shape="square"
+                    size={42}
+                    src={record.imageUrl}
+                    icon={<BookOutlined />}
+                    style={{ borderRadius: 8, flexShrink: 0 }}
+                  />
+                  <span>
+                    <span style={{ fontWeight: 600 }}>{record.title || '—'}</span>
+                    {courseYear && (
+                      <Tag style={{ marginLeft: 6, fontSize: 11, cursor: 'default' }}>{courseYear}</Tag>
+                    )}
+                  </span>
+                </Space>
+              );
+            }
           },
           {
             title: setLocale(locale, 'admin.tools.monitoring.contactProfile.courseCodeId'),
