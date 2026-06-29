@@ -48,7 +48,7 @@ The `titulino-communication` C# library is used by the worker/email service, NOT
 
 ### TRACK B — Wire dual-location filter to Supabase (Supabase only)
 
-- [ ] **B1** `Supabase` → stored procedure `TitulinoApi_v1.GetContactSegment` (and its count variant `GetContactSegmentCount`)
+- [x] **B1** `Supabase` → stored procedure `TitulinoApi_v1.GetContactSegment` (and its count variant `GetContactSegmentCount`)
   — Add parameters `p_residency_country`, `p_residency_region`, `p_residency_exclude`, `p_birth_country`, `p_birth_region`, `p_birth_exclude`. Apply WHERE conditions for each pair independently. Keep old `p_locationtype` / `p_countrynameorid` parameters until confirmed the UI no longer sends them.
 
   **Difficulty:** Medium — SQL nullable parameter branching; must be tested against all filter combinations.
@@ -66,7 +66,7 @@ The `titulino-communication` C# library is used by the worker/email service, NOT
 
   **Difficulty:** Medium-hard — JOIN across contact/enrollment tables, NULL sentinel row, ordering.
 
-- [ ] **C2** `GlobalAdminToolsLandingDashboard.js` + `src/lob/AudienceMessaging.js`
+- [x] **C2** `GlobalAdminToolsLandingDashboard.js` + `src/lob/AudienceMessaging.js`
   — When user selects "Unknown" in the region dropdown, store `residencyRegion = '__unknown__'` (or `birthRegion`).
   — `buildContactSegmentPayload` detects the sentinel and sends it to the SP so it can match `WHERE division IS NULL`.
   — The dropdown label shows "Unknown" but the value is the sentinel.
