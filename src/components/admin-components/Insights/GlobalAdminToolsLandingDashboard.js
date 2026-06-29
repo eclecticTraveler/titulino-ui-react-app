@@ -2583,14 +2583,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const audienceResidencyRegionOptions = useMemo(() => (
     buildAudienceCountryDivisionOptions(
       audienceResidencyDivisionRows,
-      t('admin.tools.messaging.regionNotAvailable')
+      t('admin.tools.messaging.regionNotAvailable'),
+      t('admin.tools.messaging.regionUnknown')
     )
   ), [audienceResidencyDivisionRows, t]);
 
   const audienceBirthRegionOptions = useMemo(() => (
     buildAudienceCountryDivisionOptions(
       audienceBirthDivisionRows,
-      t('admin.tools.messaging.regionNotAvailable')
+      t('admin.tools.messaging.regionNotAvailable'),
+      t('admin.tools.messaging.regionUnknown')
     )
   ), [audienceBirthDivisionRows, t]);
   const advancedContactRegionOptions = useMemo(() => (
@@ -7031,6 +7033,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           title={setLocale(locale, 'admin.tools.messaging.filterSection.demographics')}
           style={{ marginBottom: 12 }}
         >
+        {!audienceFilters.residencyCountry && !audienceFilters.birthCountry && (
+          <Row style={{ marginBottom: 8 }}>
+            <Col>
+              <span style={{ color: 'rgba(0,0,0,0.45)', fontSize: 13 }}>
+                {t('admin.tools.messaging.allLocations')}
+              </span>
+            </Col>
+          </Row>
+        )}
         <Row gutter={[12, 8]} align="middle" style={{ marginBottom: 8 }}>
           <Col xs={24} md={3} lg={3}>
             <span style={{ fontWeight: 500, opacity: audienceFilters.residencyCountry ? 1 : 0.45 }}>Residency</span>
@@ -7053,14 +7064,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           </Col>
           <Col xs={24} md={6} lg={6}>
             <Select
+              mode="multiple"
               allowClear
               showSearch
               disabled={!audienceFilters.residencyCountry}
-              value={audienceFilters.residencyRegion}
+              value={audienceFilters.residencyRegion || []}
               placeholder={t('admin.tools.messaging.regionPlaceholder')}
               options={audienceResidencyRegionOptions}
               optionFilterProp="searchText"
-              onChange={value => updateAudienceFilter('residencyRegion', value || null)}
+              onChange={values => updateAudienceFilter('residencyRegion', values?.length ? values : null)}
               loading={audienceCountryDivisionsLoading}
               style={{ width: '100%' }}
             />
@@ -7100,14 +7112,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           </Col>
           <Col xs={24} md={6} lg={6}>
             <Select
+              mode="multiple"
               allowClear
               showSearch
               disabled={!audienceFilters.birthCountry}
-              value={audienceFilters.birthRegion}
+              value={audienceFilters.birthRegion || []}
               placeholder={t('admin.tools.messaging.regionPlaceholder')}
               options={audienceBirthRegionOptions}
               optionFilterProp="searchText"
-              onChange={value => updateAudienceFilter('birthRegion', value || null)}
+              onChange={values => updateAudienceFilter('birthRegion', values?.length ? values : null)}
               loading={audienceCountryDivisionsLoading}
               style={{ width: '100%' }}
             />

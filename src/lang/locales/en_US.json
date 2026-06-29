@@ -543,6 +543,8 @@
 	"admin.tools.messaging.countryPlaceholder": "Country name or code",
 	"admin.tools.messaging.regionPlaceholder": "Region",
 	"admin.tools.messaging.regionNotAvailable": "N/A",
+	"admin.tools.messaging.allLocations": "All locations (no country filter)",
+	"admin.tools.messaging.regionUnknown": "Unknown",
 	"admin.tools.messaging.languagePlaceholder": "Language",
 	"admin.tools.messaging.languageLevelPlaceholder": "Language level",
 	"admin.tools.messaging.includeCoursesPlaceholder": "Enrolled in selected courses",

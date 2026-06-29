@@ -182,10 +182,10 @@ export const buildContactSegmentPayload = (filters = {}) => {
     p_countrynameorid: toNullable(filters.countryNameOrId),
     p_countrydivisionnameorid: toNullable(filters.locationRegionName),
     p_residency_country: toNullable(filters.residencyCountry),
-    p_residency_region: toNullable(filters.residencyRegion),
+    p_residency_region: toStringArrayOrNull(filters.residencyRegion),
     p_residency_exclude: filters.residencyCountry ? Boolean(filters.residencyExclude) : null,
     p_birth_country: toNullable(filters.birthCountry),
-    p_birth_region: toNullable(filters.birthRegion),
+    p_birth_region: toStringArrayOrNull(filters.birthRegion),
     p_birth_exclude: filters.birthCountry ? Boolean(filters.birthExclude) : null,
     p_languageid: toNullable(filters.languageId),
     p_languagelevel: toNullable(filters.languageLevel),
@@ -516,7 +516,7 @@ export const buildCountryOptionsForLocation = ({
     .sort((a, b) => String(a.label || '').localeCompare(String(b.label || '')));
 };
 
-export const buildCountryDivisionOptions = (countryDivisions = [], notAvailableLabel = 'N/A') => {
+export const buildCountryDivisionOptions = (countryDivisions = [], notAvailableLabel = 'N/A', unknownLabel = null) => {
   const optionMap = new Map();
 
   (Array.isArray(countryDivisions) ? countryDivisions : []).forEach((division, index) => {
@@ -570,7 +570,9 @@ export const buildCountryDivisionOptions = (countryDivisions = [], notAvailableL
       'label'
     );
     const value = normalizeText(rawValue) || notAvailableLabel;
-    const label = normalizeText(rawLabel) || notAvailableLabel;
+    const label = value === '__unknown__'
+      ? (unknownLabel || notAvailableLabel)
+      : (normalizeText(rawLabel) || notAvailableLabel);
     const key = value || `division-${index}`;
 
     if (optionMap.has(key)) return;
