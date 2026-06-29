@@ -13,6 +13,7 @@ import GoogleService from "services/GoogleService";
 import localLanguageCourses from "assets/data/lang-courses.data.json";
 import localCourseThemeRegistry from "assets/data/course-theme-registry.data.json";
 import localBadgeThemeRegistry from "assets/data/badge-theme-registry.data.json";
+import localKnowMeSurveyData from "assets/data/know-me-survey-data.json";
 import { env } from "configs/EnvironmentConfig";
 import ImpersonationSession from "lob/ImpersonationSession";
 
@@ -313,6 +314,24 @@ const getBadgeThemeRegistry = async () => {
     ? remoteRegistry
     : localRegistry;
 }
+
+const getKnowMeSurveyQuestions = async (theme, chapterNo) => {
+  const localData = localKnowMeSurveyData && typeof localKnowMeSurveyData === 'object' ? localKnowMeSurveyData : {};
+
+  let surveyData;
+  if (env.IS_TO_USE_LOCAL_KNOW_ME_SURVEY_DATA) {
+    surveyData = localData;
+  } else {
+    const remote = await GoogleService.getKnowMeSurveyData("getKnowMeSurveyQuestions");
+    surveyData = remote && typeof remote === 'object' && Object.keys(remote).length > 0
+      ? remote
+      : localData;
+  }
+
+  const themeKey = (theme || "").toLowerCase();
+  const chapterKey = String(chapterNo);
+  return surveyData?.[themeKey]?.[chapterKey]?.questions ?? null;
+};
 
 const getGrammarClasses = async(levelNo, chapterNo, baseLanguage, contentLanguage, emailId) => {
     const user = await getCachedUserProfile(emailId);
@@ -677,29 +696,39 @@ export const upsertUserKnowMeProgress = async (
   const registry = await getCourseThemeRegistry();
   const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme, registry);
 
-  // 2. Upload all files in filesMap (if any)
+  // 2. Upload all files in filesMap (if any) — stored under contactInternalId/courseCodeId/classNumber
+  const actualClassNumber = knowMeProgress.record?.classNumber ?? classNumber;
   const uploadedFileMap = {};
+  const filesToUpload = [];
+  const fileQuestionIds = [];
+
   for (const [questionId, files] of Object.entries(knowMeProgress.filesMap || {})) {
     for (const file of files) {
-      // build file wrapper (renames for consistency)
       const fileToUpload = await LrnConfiguration.buildStudentKnowMeFileName(
         file,
         user.contactInternalId,
         user?.emailId,
-        classNumber
+        actualClassNumber
       );
-      // TODO: REFACTOR TO ITS ONE METHOD FAR FROM PROFILE RATHER A METHOD THAT STORES IMAGES FOR GIVEN TEST:
-      //  but for now we can use upsertKnowMeProfilePicture but later it has to have its own method in relation to classes
-      const uploadedUrl = await upsertKnowMeProfilePicture(
-        fileToUpload,
-        emailId
-      );
-
-      if (uploadedUrl) {
-        if (!uploadedFileMap[questionId]) uploadedFileMap[questionId] = [];
-        uploadedFileMap[questionId].push(uploadedUrl);
-      }
+      filesToUpload.push({ ...fileToUpload, courseCodeId });
+      fileQuestionIds.push(questionId);
     }
+  }
+
+  if (filesToUpload.length > 0) {
+    const uploadResult = await TitulinoNetService.upsertStudentKnowMeClassFiles(
+      user.innerToken,
+      filesToUpload,
+      "upsertUserKnowMeProgress"
+    );
+    const fileUrls = uploadResult?.fileUrls ?? uploadResult?.FileUrls ?? [];
+    fileUrls.forEach((url, i) => {
+      const questionId = fileQuestionIds[i];
+      if (questionId && url) {
+        if (!uploadedFileMap[questionId]) uploadedFileMap[questionId] = [];
+        uploadedFileMap[questionId].push(url);
+      }
+    });
   }
 
   // 3. Merge uploadedFileMap into answers
@@ -782,6 +811,7 @@ const LrnManager = {
   getAllLanguageOptions,
   getCourseThemeRegistry,
   getBadgeThemeRegistry,
+  getKnowMeSurveyQuestions,
   getGrammarClasses,
   getCourseProgress,
   getUserCoursesForEnrollment,

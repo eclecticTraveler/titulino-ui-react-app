@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onGettingCountriesByLocationToDashboard, onLoadingAllDashboardContents } from "redux/actions/Analytics";
 
-const { Option } = Select;
+const { Option, OptGroup } = Select;
 
 const DropdownInsightSelection = (props) => {
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -18,6 +18,20 @@ const DropdownInsightSelection = (props) => {
   const { allCourses, locationTypes, onGettingCountriesByLocationToDashboard, onLoadingAllDashboardContents, setLoading, user } = props;
 
   const CoursesOptions = allCourses ? [...allCourses] : [];
+
+  const coursesByYear = CoursesOptions.reduce((acc, course) => {
+    const year = course.startDate
+      ? String(new Date(course.startDate).getFullYear())
+      : 'General';
+    if (!acc[year]) acc[year] = [];
+    acc[year].push(course);
+    return acc;
+  }, {});
+
+  const sortedYears = Object.keys(coursesByYear)
+    .filter(y => y !== 'General')
+    .sort((a, b) => Number(b) - Number(a));
+  if (coursesByYear['General']) sortedYears.push('General');
   const LocationTypeOptions = locationTypes ? [...locationTypes] : [];
   const CountryOptions = [...countriesBySelectedLocationType];
   const intl = useIntl();
@@ -92,10 +106,14 @@ const DropdownInsightSelection = (props) => {
               size="medium"
               onChange={(value) => handleCourseSelection(value)}
             >
-              {CoursesOptions?.map((course) => (
-                <Option key={course?.index} value={course?.value}>
-                  {course?.name ? `${course.name} - ${course.value}` : course?.value}
-                </Option>
+              {sortedYears.map(year => (
+                <OptGroup key={year} label={year}>
+                  {coursesByYear[year].map(course => (
+                    <Option key={course?.index} value={course?.value}>
+                      {course?.name ? `${course.name} - ${course.value}` : course?.value}
+                    </Option>
+                  ))}
+                </OptGroup>
               ))}
             </Select>
           </Col>

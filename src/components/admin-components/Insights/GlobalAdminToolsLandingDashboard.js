@@ -205,7 +205,12 @@ const buildContactCourseHistoryRows = (contact = {}, rawCourses = []) => {
     if (seen.has(key)) return null;
     seen.add(key);
     return { key, courseCodeId, title, imageUrl, targetLanguageId, audienceLanguageId, startDate, endDate, roleId };
-  }).filter(Boolean);
+  }).filter(Boolean).sort((a, b) => {
+    if (!a.startDate && !b.startDate) return 0;
+    if (!a.startDate) return 1;
+    if (!b.startDate) return -1;
+    return new Date(b.startDate) - new Date(a.startDate);
+  });
 };
 
 const normalizeAwardTier = (value) => {
@@ -2509,21 +2514,27 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       </span>
     ) : '-'
   ), []);
-  const audienceCountryOptions = useMemo(() => (
+  const audienceResidencyCountryOptions = useMemo(() => (
     buildAudienceCountryOptionsForLocation({
       metadataOptions: audienceMetadataCountryOptions,
       rows: audienceRows,
-      locationType: audienceFilters.locationType
+      locationType: 'residency'
     }).map(option => ({
       ...option,
       label: renderCountrySummary(option.label, option.alpha3)
     }))
-  ), [
-    audienceFilters.locationType,
-    audienceMetadataCountryOptions,
-    audienceRows,
-    renderCountrySummary
-  ]);
+  ), [audienceMetadataCountryOptions, audienceRows, renderCountrySummary]);
+
+  const audienceBirthCountryOptions = useMemo(() => (
+    buildAudienceCountryOptionsForLocation({
+      metadataOptions: audienceMetadataCountryOptions,
+      rows: audienceRows,
+      locationType: 'birth'
+    }).map(option => ({
+      ...option,
+      label: renderCountrySummary(option.label, option.alpha3)
+    }))
+  ), [audienceMetadataCountryOptions, audienceRows, renderCountrySummary]);
   const advancedContactCountryOptions = useMemo(() => (
     buildAudienceCountryOptionsForLocation({
       metadataOptions: audienceMetadataCountryOptions,
@@ -2539,33 +2550,51 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     audienceRows,
     renderCountrySummary
   ]);
-  const audienceCountryDivisionRows = useMemo(() => {
-    if (!audienceFilters.countryNameOrId) return [];
+  const audienceResidencyDivisionRows = useMemo(() => {
+    if (!audienceFilters.residencyCountry) return [];
     if (contactSegmentCountryDivisions?.emailId !== emailId) return [];
-    if (contactSegmentCountryDivisions?.payload?.p_countrynameorid !== audienceFilters.countryNameOrId) return [];
-    if (
-      (contactSegmentCountryDivisions?.payload?.p_locationtype || 'all') !==
-      (audienceFilters.locationType || 'all')
-    ) {
-      return [];
-    }
-
+    if (contactSegmentCountryDivisions?.payload?.p_locationtype !== 'residency') return [];
+    if (contactSegmentCountryDivisions?.payload?.p_countrynameorid !== audienceFilters.residencyCountry) return [];
     return contactSegmentCountryDivisions?.rows || [];
   }, [
-    audienceFilters.countryNameOrId,
-    audienceFilters.locationType,
+    audienceFilters.residencyCountry,
     contactSegmentCountryDivisions?.emailId,
     contactSegmentCountryDivisions?.payload?.p_countrynameorid,
     contactSegmentCountryDivisions?.payload?.p_locationtype,
     contactSegmentCountryDivisions?.rows,
     emailId
   ]);
-  const audienceRegionOptions = useMemo(() => (
+
+  const audienceBirthDivisionRows = useMemo(() => {
+    if (!audienceFilters.birthCountry) return [];
+    if (contactSegmentCountryDivisions?.emailId !== emailId) return [];
+    if (contactSegmentCountryDivisions?.payload?.p_locationtype !== 'birth') return [];
+    if (contactSegmentCountryDivisions?.payload?.p_countrynameorid !== audienceFilters.birthCountry) return [];
+    return contactSegmentCountryDivisions?.rows || [];
+  }, [
+    audienceFilters.birthCountry,
+    contactSegmentCountryDivisions?.emailId,
+    contactSegmentCountryDivisions?.payload?.p_countrynameorid,
+    contactSegmentCountryDivisions?.payload?.p_locationtype,
+    contactSegmentCountryDivisions?.rows,
+    emailId
+  ]);
+
+  const audienceResidencyRegionOptions = useMemo(() => (
     buildAudienceCountryDivisionOptions(
-      audienceCountryDivisionRows,
-      t('admin.tools.messaging.regionNotAvailable')
+      audienceResidencyDivisionRows,
+      t('admin.tools.messaging.regionNotAvailable'),
+      t('admin.tools.messaging.regionUnknown')
     )
-  ), [audienceCountryDivisionRows, t]);
+  ), [audienceResidencyDivisionRows, t]);
+
+  const audienceBirthRegionOptions = useMemo(() => (
+    buildAudienceCountryDivisionOptions(
+      audienceBirthDivisionRows,
+      t('admin.tools.messaging.regionNotAvailable'),
+      t('admin.tools.messaging.regionUnknown')
+    )
+  ), [audienceBirthDivisionRows, t]);
   const advancedContactRegionOptions = useMemo(() => (
     buildAudienceCountryDivisionOptions(
       advancedContactCountryDivisions,
@@ -3587,69 +3616,86 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     }
   };
 
-  const renderRolesAndCourses = (roles, courses) => (
-    <div>
-      <strong>{setLocale(locale, 'admin.tools.label.rolesAndCourses')}: </strong>
-      {roles.length > 0
-        ? (() => {
-            const grouped = {};
-            roles.forEach(r => {
-              if (!grouped[r.UserRoleId]) grouped[r.UserRoleId] = [];
-              grouped[r.UserRoleId].push(r);
-            });
+  const renderRolesAndCourses = (roles, mergedCourseRows) => {
+    const totalCount = (mergedCourseRows || []).length;
+
+    if (totalCount === 0) {
+      return (
+        <div>
+          <strong>{setLocale(locale, 'admin.tools.label.rolesAndCourses')}: </strong>
+          <span style={{ color: '#999' }}>{setLocale(locale, 'admin.tools.label.none')}</span>
+        </div>
+      );
+    }
+
+    const rolePriorityById = (roles || []).reduce((acc, r) => {
+      if (r.UserRoleId) acc[r.UserRoleId] = (allRoles || []).find(def => def.UserRoleId === r.UserRoleId)?.UserRolePriority ?? 999;
+      return acc;
+    }, {});
+
+    const grouped = {};
+    (mergedCourseRows || []).forEach(course => {
+      const groupKey = course.roleId || '__unassigned__';
+      if (!grouped[groupKey]) grouped[groupKey] = [];
+      grouped[groupKey].push(course);
+    });
+
+    const sortedGroups = Object.entries(grouped).sort(([aId], [bId]) => {
+      if (aId === '__unassigned__') return 1;
+      if (bId === '__unassigned__') return -1;
+      return (rolePriorityById[aId] ?? 999) - (rolePriorityById[bId] ?? 999);
+    });
+
+    return (
+      <div>
+        <strong>{setLocale(locale, 'admin.tools.label.rolesAndCourses')} ({totalCount}): </strong>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+          {sortedGroups.map(([groupKey, groupCourses]) => {
+            const roleDef = (allRoles || []).find(r => r.UserRoleId === groupKey);
+            const roleName = groupKey === '__unassigned__'
+              ? 'Student'
+              : (roleDef?.LocalizationKey ? t(roleDef.LocalizationKey) : groupKey);
+            const isGlobal = (roles || []).some(r => r.UserRoleId === groupKey && r.IsGlobalAccessUserRole);
 
             return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-                {Object.entries(grouped).sort(([aId], [bId]) => {
-                  const pa = (allRoles || []).find(r => r.UserRoleId === aId)?.UserRolePriority ?? 999;
-                  const pb = (allRoles || []).find(r => r.UserRoleId === bId)?.UserRolePriority ?? 999;
-                  return pa - pb;
-                }).map(([roleId, entries]) => {
-                  const roleDef = (allRoles || []).find(r => r.UserRoleId === roleId);
-                  const roleName = roleDef?.LocalizationKey ? t(roleDef.LocalizationKey) : roleId;
-                  const isGlobal = entries.some(e => e.IsGlobalAccessUserRole);
-                  const courseEntries = entries.filter(e => e.CourseCodeId);
-
-                  return (
-                    <div key={roleId}>
-                      <Tag color="blue" style={{ width: 'fit-content', fontWeight: 600 }}>
-                        {roleName}
-                        {isGlobal && (
-                          <span style={{ marginLeft: 6, fontWeight: 400, opacity: 0.8 }}>
-                            ({t('admin.tools.label.global')})
-                          </span>
-                        )}
-                      </Tag>
-                      {courseEntries.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2, marginLeft: 20 }}>
-                          {courseEntries.map((ce, i) => {
-                            const courseDef = courses.find(c => c.CourseCodeId === ce.CourseCodeId);
-                            const friendlyName = courseDef?.CourseDetails?.course;
-                            return (
-                              <Tooltip title={ce.CourseCodeId} key={i}>
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                  <Tag color="green" style={{ width: 'fit-content', cursor: 'default', marginRight: 0 }}>
-                                    {friendlyName || ce.CourseCodeId}
-                                  </Tag>
-                                  <Tag color="geekblue" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
-                                    {ce.CourseCodeId}
-                                  </Tag>
-                                </span>
-                              </Tooltip>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+              <div key={groupKey}>
+                <Tag color="blue" style={{ width: 'fit-content', fontWeight: 600 }}>
+                  {roleName}
+                  {isGlobal && (
+                    <span style={{ marginLeft: 6, fontWeight: 400, opacity: 0.8 }}>
+                      ({t('admin.tools.label.global')})
+                    </span>
+                  )}
+                </Tag>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2, marginLeft: 20 }}>
+                  {groupCourses.map((course, i) => {
+                    const courseYear = course.startDate ? new Date(course.startDate).getFullYear() : null;
+                    return (
+                      <Tooltip title={course.courseCodeId} key={i}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <Tag color="green" style={{ width: 'fit-content', cursor: 'default', marginRight: 0 }}>
+                            {course.title || course.courseCodeId}
+                          </Tag>
+                          <Tag color="geekblue" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
+                            {course.courseCodeId}
+                          </Tag>
+                          {courseYear && (
+                            <Tag color="orange" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, marginRight: 0 }}>
+                              {courseYear}
+                            </Tag>
+                          )}
+                        </span>
+                      </Tooltip>
+                    );
+                  })}
+                </div>
               </div>
             );
-          })()
-        : <span style={{ color: '#999' }}>{setLocale(locale, 'admin.tools.label.none')}</span>
-      }
-    </div>
-  );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   const renderLanguageHistory = (langHistory) => {
     if (!langHistory || langHistory.length === 0) return <span style={{ color: '#999' }}>{setLocale(locale, 'admin.tools.label.none')}</span>;
@@ -3945,18 +3991,26 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             title: setLocale(locale, 'admin.tools.monitoring.contactProfile.course'),
             dataIndex: 'title',
             key: 'title',
-            render: (_, record) => (
-              <Space>
-                <Avatar
-                  shape="square"
-                  size={42}
-                  src={record.imageUrl}
-                  icon={<BookOutlined />}
-                  style={{ borderRadius: 8, flexShrink: 0 }}
-                />
-                <span style={{ fontWeight: 600 }}>{record.title || '—'}</span>
-              </Space>
-            )
+            render: (_, record) => {
+              const courseYear = record.startDate ? new Date(record.startDate).getFullYear() : null;
+              return (
+                <Space>
+                  <Avatar
+                    shape="square"
+                    size={42}
+                    src={record.imageUrl}
+                    icon={<BookOutlined />}
+                    style={{ borderRadius: 8, flexShrink: 0 }}
+                  />
+                  <span>
+                    <span style={{ fontWeight: 600 }}>{record.title || '—'}</span>
+                    {courseYear && (
+                      <Tag color="orange" style={{ marginLeft: 6, fontSize: 11, cursor: 'default' }}>{courseYear}</Tag>
+                    )}
+                  </span>
+                </Space>
+              );
+            }
           },
           {
             title: setLocale(locale, 'admin.tools.monitoring.contactProfile.courseCodeId'),
@@ -4087,7 +4141,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     const emails = (selectedContact.Emails || []).map(e => e.EmailId);
     const roles = selectedContact.UserCourseRoles || [];
-    const courses = selectedContact.CoursesHistory || [];
+    const mergedCourseRows = buildContactCourseHistoryRows(selectedContact, allRawCourses);
     const residencyCode = selectedContact?.Location?.ResidencyLocation?.CountryOfResidency;
     const residencyRegion = selectedContact?.Location?.ResidencyLocation?.CountryDivisionResidencyName;
     const birthCode = selectedContact?.Location?.BirthLocation?.CountryOfBirth;
@@ -4138,7 +4192,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             {renderGlobalAccessTag()}
           </div>
         )}
-        {renderRolesAndCourses(roles, courses)}
+        {renderRolesAndCourses(roles, mergedCourseRows)}
       </>
     );
 
@@ -4234,7 +4288,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                       <EnrolleeByRegionWidget
                         enrolleeRegionData={[{
                           name: birthRegion || birthName || birthNativeName,
-                          nativeName: birthNativeName || birthName,
+                          nativeName: null,
                           countryId: birthCode,
                           color: '#f5222d',
                           value: ''
@@ -4266,7 +4320,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                       <EnrolleeByRegionWidget
                         enrolleeRegionData={[{
                           name: residencyRegion || residencyName || residencyNativeName,
-                          nativeName: residencyNativeName || residencyName,
+                          nativeName: null,
                           countryId: residencyCode,
                           color: '#1890ff',
                           value: ''
@@ -6979,64 +7033,114 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           title={setLocale(locale, 'admin.tools.messaging.filterSection.demographics')}
           style={{ marginBottom: 12 }}
         >
-        <Row gutter={[12, 12]}>
-          <Col xs={24} md={12} lg={4}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.locationType', (
-              <Select
-                value={audienceFilters.locationType}
-                options={audienceOptions.locationTypes}
-                onChange={(value) => {
-                  setAudienceFilters(previousFilters => ({
-                    ...previousFilters,
-                    locationType: value,
-                    countryNameOrId: null,
-                    locationRegionName: null,
-                    offset: 0
-                  }));
-                }}
-                style={{ width: '100%' }}
-              />
-            ))}
+        {!audienceFilters.residencyCountry && !audienceFilters.birthCountry && (
+          <Row style={{ marginBottom: 8 }}>
+            <Col>
+              <span style={{ color: 'rgba(0,0,0,0.45)', fontSize: 13 }}>
+                {t('admin.tools.messaging.allLocations')}
+              </span>
+            </Col>
+          </Row>
+        )}
+        <Row gutter={[12, 8]} align="middle" style={{ marginBottom: 8 }}>
+          <Col xs={24} md={3} lg={3}>
+            <span style={{ fontWeight: 500, opacity: audienceFilters.residencyCountry ? 1 : 0.45 }}>Residency</span>
           </Col>
-          <Col xs={24} md={12} lg={5}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.country', (
-              <Select
-                allowClear
-                showSearch
-                value={audienceFilters.countryNameOrId}
-                placeholder={t('admin.tools.messaging.countryPlaceholder')}
-                options={audienceCountryOptions}
-                optionFilterProp="searchText"
-                onChange={(value) => {
-                  setAudienceFilters(previousFilters => ({
-                    ...previousFilters,
-                    countryNameOrId: value || null,
-                    locationRegionName: null,
-                    offset: 0
-                  }));
-                }}
-                loading={audienceMetadataLoading}
-                style={{ width: '100%' }}
-              />
-            ))}
+          <Col xs={24} md={6} lg={6}>
+            <Select
+              allowClear
+              showSearch
+              value={audienceFilters.residencyCountry}
+              placeholder={t('admin.tools.messaging.countryPlaceholder')}
+              options={audienceResidencyCountryOptions}
+              optionFilterProp="searchText"
+              onChange={(value) => {
+                setAudienceFilters(prev => ({ ...prev, residencyCountry: value || null, residencyRegion: null, offset: 0 }));
+                if (value) loadAudienceCountryDivisions({ locationType: 'residency', countryNameOrId: value });
+              }}
+              loading={audienceMetadataLoading}
+              style={{ width: '100%' }}
+            />
           </Col>
-          <Col xs={24} md={12} lg={5}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.region', (
-              <Select
-                allowClear
-                showSearch
-                disabled={!audienceFilters.countryNameOrId}
-                value={audienceFilters.locationRegionName}
-                placeholder={t('admin.tools.messaging.regionPlaceholder')}
-                options={audienceRegionOptions}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('locationRegionName', value || null)}
-                loading={audienceCountryDivisionsLoading}
-                style={{ width: '100%' }}
-              />
-            ))}
+          <Col xs={24} md={6} lg={6}>
+            <Select
+              mode="multiple"
+              allowClear
+              showSearch
+              disabled={!audienceFilters.residencyCountry}
+              value={audienceFilters.residencyRegion || []}
+              placeholder={t('admin.tools.messaging.regionPlaceholder')}
+              options={audienceResidencyRegionOptions}
+              optionFilterProp="searchText"
+              onChange={values => updateAudienceFilter('residencyRegion', values?.length ? values : null)}
+              loading={audienceCountryDivisionsLoading}
+              style={{ width: '100%' }}
+            />
           </Col>
-          <Col xs={24} md={12} lg={5}>
+          <Col xs={24} md={4} lg={4}>
+            <Select
+              disabled={!audienceFilters.residencyCountry}
+              value={audienceFilters.residencyExclude ? 'exclude' : 'include'}
+              options={[
+                { value: 'include', label: 'Include' },
+                { value: 'exclude', label: 'Exclude' }
+              ]}
+              onChange={value => updateAudienceFilter('residencyExclude', value === 'exclude')}
+              style={{ width: '100%' }}
+            />
+          </Col>
+        </Row>
+        <Row gutter={[12, 8]} align="middle" style={{ marginBottom: 8 }}>
+          <Col xs={24} md={3} lg={3}>
+            <span style={{ fontWeight: 500, opacity: audienceFilters.birthCountry ? 1 : 0.45 }}>Birth</span>
+          </Col>
+          <Col xs={24} md={6} lg={6}>
+            <Select
+              allowClear
+              showSearch
+              value={audienceFilters.birthCountry}
+              placeholder={t('admin.tools.messaging.countryPlaceholder')}
+              options={audienceBirthCountryOptions}
+              optionFilterProp="searchText"
+              onChange={(value) => {
+                setAudienceFilters(prev => ({ ...prev, birthCountry: value || null, birthRegion: null, offset: 0 }));
+                if (value) loadAudienceCountryDivisions({ locationType: 'birth', countryNameOrId: value });
+              }}
+              loading={audienceMetadataLoading}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={6} lg={6}>
+            <Select
+              mode="multiple"
+              allowClear
+              showSearch
+              disabled={!audienceFilters.birthCountry}
+              value={audienceFilters.birthRegion || []}
+              placeholder={t('admin.tools.messaging.regionPlaceholder')}
+              options={audienceBirthRegionOptions}
+              optionFilterProp="searchText"
+              onChange={values => updateAudienceFilter('birthRegion', values?.length ? values : null)}
+              loading={audienceCountryDivisionsLoading}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={4} lg={4}>
+            <Select
+              disabled={!audienceFilters.birthCountry}
+              value={audienceFilters.birthExclude ? 'exclude' : 'include'}
+              options={[
+                { value: 'include', label: 'Include' },
+                { value: 'exclude', label: 'Exclude' }
+              ]}
+              onChange={value => updateAudienceFilter('birthExclude', value === 'exclude')}
+              style={{ width: '100%' }}
+            />
+          </Col>
+        </Row>
+        <Row gutter={[12, 8]}>
+          <Col xs={24} md={3} lg={3} />
+          <Col xs={24} md={6} lg={6}>
             {renderFilterTooltip('admin.tools.messaging.tooltip.language', (
               <Select
                 allowClear
@@ -7054,7 +7158,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               />
             ))}
           </Col>
-          <Col xs={24} md={12} lg={5}>
+          <Col xs={24} md={6} lg={6}>
             {renderFilterTooltip('admin.tools.messaging.tooltip.languageLevel', (
               <Select
                 allowClear
@@ -7255,7 +7359,25 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           onChange: (keys, rows) => {
             setSelectedAudienceRowKeys(keys);
             setSelectedAudienceRows(rows);
-          }
+          },
+          selections: [
+            {
+              key: 'select-all-loaded',
+              text: `Select all ${audienceRows?.length ?? 0} loaded contacts`,
+              onSelect: () => {
+                setSelectedAudienceRowKeys((audienceRows ?? []).map(r => r.key));
+                setSelectedAudienceRows(audienceRows ?? []);
+              }
+            },
+            {
+              key: 'clear-all',
+              text: 'Clear selection',
+              onSelect: () => {
+                setSelectedAudienceRowKeys([]);
+                setSelectedAudienceRows([]);
+              }
+            }
+          ]
         }}
         pagination={{
           pageSize: 25,

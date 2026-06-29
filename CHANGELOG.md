@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.224](///compare/v0.1.223...v0.1.224) (2026-06-29)
+
+### [0.1.223](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.222...v0.1.223) (2026-06-27)
+
+
+### Bug Fixes
+
+* **map+insights:** resolve Estado de México false positive and stale course cache ([6d706ff](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/6d706ff1aa2e41a7a55eb3738330034939c80b18))
+
+### [0.1.222](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.221...v0.1.222) (2026-06-27)
+
+
+### Features
+
+* **insights:** group courses by year across dropdown and admin views ([d5b3089](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/d5b3089eedc37b0aa37c45fad72fd2c06315e7a2))
+
+### [0.1.221](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.220...v0.1.221) (2026-06-26)
+
+
+### Bug Fixes
+
+* **audience:** always send exclude flags to resolve PostgREST function overload ambiguity ([4a73ecd](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/4a73ecd13e8696bc815f6e7b55305580bc4d9999))
+
+### [0.1.220](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.219...v0.1.220) (2026-06-26)
+
+
+### Features
+
+* **admin:** add select-all across pages in audience segment table ([16539f8](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/16539f867766e99820ea7da366e3c077e385f0a9))
+* **admin:** dual location filter with include/exclude for audience segmentation ([2e56b24](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/2e56b24d78a22659722dca61926211d3a14d20cd))
+* **ci:** add parallel test job to GitHub Actions workflow ([db4a25a](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/db4a25a345352a08b247d28f6e44cac02c8ab43b))
+
+
+### Bug Fixes
+
+* **admin:** Roles & Courses summary now shows all enrolled courses ([79a354c](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/commit/79a354c79ec86b0704d5fc7c66480544db65331f))
+
+### [0.1.219](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.218...v0.1.219) (2026-06-26)
+
+### [0.1.218](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.217...v0.1.218) (2026-05-29)
+
 ### [0.1.217](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.216...v0.1.217) (2026-05-21)
 
 ### [0.1.216](https://github.com-personal/eclecticTraveler/titulino-ui-react-app/compare/v0.1.215...v0.1.216) (2026-05-21)

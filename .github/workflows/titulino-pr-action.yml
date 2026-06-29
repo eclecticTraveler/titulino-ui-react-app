@@ -28,6 +28,54 @@ env:
   GCP_BUCKET_NAME: ${{ github.ref == 'refs/heads/main' && 'titulino.com' || 'dev.titulino.com' }}
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.1
+
+      - name: Authenticate with GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Setup Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Cache npm modules
+        run: |
+          if gsutil -q stat gs://${CACHE_BUCKET_NAME}/cip/npm_cache.tgz; then
+            echo "✨ Cache found. Restoring from GCS..."
+            gsutil cp gs://${CACHE_BUCKET_NAME}/cip/npm_cache.tgz npm_cache.tgz
+            tar -xzf npm_cache.tgz
+          else
+            echo "No cache found. Skipping."
+          fi
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm run test:ci
+
+      - name: Report test results
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "### ✅ Tests passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚠️ Tests failed — deployment was not blocked" >> $GITHUB_STEP_SUMMARY
+          fi
+
   publish:
     runs-on: ubuntu-latest
 

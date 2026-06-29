@@ -143,7 +143,8 @@ export const courseSelectionConverter = async(data) => {
     index: index,
     name: item?.CourseDetails?.course,
     value: item?.CourseCodeId,
-    isInProgress: item?.OnGoing
+    isInProgress: item?.OnGoing,
+    startDate: item?.StartDate ?? null
   }));
 
   return transformedArray;

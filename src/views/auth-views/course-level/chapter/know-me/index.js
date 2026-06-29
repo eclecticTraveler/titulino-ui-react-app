@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import {connect} from 'react-redux';
 import {getUserBaseLanguage}  from 'redux/actions/Lrn';
 import { bindActionCreators } from 'redux';
-import KnowMeV1 from 'components/layout-components/KnowMeV1';
+import KnowMeV3 from 'components/layout-components/KnowMeV3';
 import utils from 'utils';
 
 class KnowMe extends Component {
@@ -30,7 +30,7 @@ class KnowMe extends Component {
   if(this.props.token){
       return (
          <div id="unathenticated-landing-page-margin">
-          <KnowMeV1 levelTheme={levelTheme} chapterNo={chapterNo} />
+          <KnowMeV3 levelTheme={levelTheme} chapterNo={chapterNo} />
         </div>
       );
     }else{
