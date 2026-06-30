@@ -15,7 +15,8 @@ export class AbstractTable extends Component {
                           rowSelection={this.props.rowSelection}
                           rowKey={this.props.rowKey}
                           loading={this.props.loading}
-                          onChange={this.props.onChange}/>
+                          onChange={this.props.onChange}
+                          paginationConfig={this.props.paginationConfig}/>
     )
   }
 }

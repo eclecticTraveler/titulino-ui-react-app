@@ -41,7 +41,7 @@ const EditableCell = ({
 };
 
 const EditableModalTable = props => {
-  const { tableData, tableColumns, isAllowedToEditTableData, onSelectingCorrectionToEdit, onCorrectionsModalChange, isToRenderActionButton, tableExpandables, rowSelection, rowKey, loading, onChange  } = props;
+  const { tableData, tableColumns, isAllowedToEditTableData, onSelectingCorrectionToEdit, onCorrectionsModalChange, isToRenderActionButton, tableExpandables, rowSelection, rowKey, loading, onChange, paginationConfig = {}  } = props;
 
   // console.log("isAllowedToEditTableData++++++++++++");
   // console.log(isAllowedToEditTableData);
@@ -152,6 +152,7 @@ return (
       rowClassName="editable-row"
       pagination={{
         onChange: cancel,
+        ...paginationConfig,
       }}
       scroll={{
         x: 'calc(700px + 50%)',
