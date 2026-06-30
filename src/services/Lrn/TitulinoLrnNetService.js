@@ -110,9 +110,53 @@ export const putWebsitePreferences = async (token, preferences, whoCalledMe = 'p
   }
 };
 
+export const getKnowMeAiResult = async (token, courseCodeId, classNumber, whoCalledMe = 'getKnowMeAiResult') => {
+  if (!token) {
+    return { success: false, status: 401, errorMessage: 'Missing token.' };
+  }
+
+  const url = `${titulinoNetLrnApiUri}/know-me/ai-result?courseCodeId=${encodeURIComponent(courseCodeId)}&classNumber=${classNumber}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getHeaders(token),
+      redirect: 'follow'
+    });
+    const result = await parseJsonResponse(response);
+
+    if (!response.ok) {
+      return {
+        success: false,
+        status: response.status,
+        errorMessage: result?.message || result?.error || result?.raw || response.statusText
+      };
+    }
+
+    return {
+      success: true,
+      status: response.status,
+      aiStatus: result?.status ?? 'not_found',
+      correctedEssays: result?.correctedEssays ?? null,
+      feedback: result?.feedback ?? null,
+      errorMessage: result?.errorMessage ?? null
+    };
+  } catch (error) {
+    if (env.ENVIROMENT !== 'prod') {
+      console.error(`[TitulinoLrnNetService.getKnowMeAiResult] ${whoCalledMe}`, error);
+    }
+    return {
+      success: false,
+      status: 500,
+      errorMessage: error?.message || 'Unable to fetch AI result.'
+    };
+  }
+};
+
 const TitulinoLrnNetService = {
   getWebsitePreferences,
-  putWebsitePreferences
+  putWebsitePreferences,
+  getKnowMeAiResult
 };
 
 export default TitulinoLrnNetService;

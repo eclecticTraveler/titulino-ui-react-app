@@ -44,9 +44,9 @@ The fix: `UpsertAuthenticatedKnowMeSubmission` (already called by the UI) is mod
 
 ## Open questions — answer before starting Day 1
 
-- [ ] **Warehouse repo path** — assumed `titulino-warehouse` with Sqitch. Confirm exact local path.
-- [ ] **UI refresh strategy** — polling (simpler, already fits the Redux action pattern) or SignalR push via the Hub already registered in the worker?
-- [ ] **AI correction granularity** — per question (each essay corrected independently) or one combined review of all essays?
+- [x] **Warehouse repo path** — `C:\Users\AlbertoArellano\Documents\WH-T\titulino-warehouse`
+- [x] **UI refresh strategy** — polling (simpler, fits existing Redux action pattern)
+- [x] **AI correction granularity** — per question (each essay corrected independently)
 
 ---
 
@@ -56,19 +56,19 @@ The fix: `UpsertAuthenticatedKnowMeSubmission` (already called by the UI) is mod
 
 > Gates everything. Do not start Phase 2 until T08 is verified in Supabase.
 
-- [ ] **T01** — Sqitch migration: create `Lrn.KnowMeAiJob` table  
+- [x] **T01** — Sqitch migration: create `Lrn.KnowMeAiJob` table  
   `id, contact_internal_id, email_id, course_code_id, class_number, essays_json, status (pending/processing/completed/failed), corrected_essays_json, feedback_json, error_message, created_at, updated_at`
-- [ ] **T02** — Sqitch: RPC `GetPendingKnowMeAiJobs` (inner + wrapper)  
-  Returns rows where `status = 'pending'`, ordered by `created_at ASC`, LIMIT 10
-- [ ] **T03** — Sqitch: RPC `ClaimKnowMeAiJob(p_job_id)` (inner + wrapper)  
-  Atomic `UPDATE status = 'processing' WHERE status = 'pending'` — prevents double-claim
-- [ ] **T04** — Sqitch: RPC `CompleteKnowMeAiJob(p_job_id, p_corrected, p_feedback)` (inner + wrapper)
-- [ ] **T05** — Sqitch: RPC `FailKnowMeAiJob(p_job_id, p_error_message)` (inner + wrapper)
-- [ ] **T06** — Sqitch: RPC `GetKnowMeAiJobBySubmissionId` (inner + wrapper)  
+- [x] **T02** — Sqitch: RPC `ClaimNextPendingKnowMeAiJob` (inner + wrapper)  
+  Merged get+claim into one atomic op using `FOR UPDATE SKIP LOCKED` — no separate GetPending needed
+- [x] **T03** — Sqitch: inner `claim_next_pending_know_me_ai_job` — covered in T02 migration
+- [x] **T04** — Sqitch: RPC `CompleteKnowMeAiJob(job_id, corrected_essays, feedback)` (inner + wrapper)
+- [x] **T05** — Sqitch: RPC `FailKnowMeAiJob(job_id, error_message)` (inner + wrapper)
+- [x] **T06** — Sqitch: RPC `GetKnowMeAiJobResult(contact_id, course_code_id, class_number)` (inner + wrapper)  
   Fetch by `contact_internal_id + course_code_id + class_number` — used by the API result endpoint
-- [ ] **T07** — Modify `UpsertAuthenticatedKnowMeSubmission` to also INSERT a `pending` job row  
-  ⚠️ This is a live function used by every Know Me submission — test carefully before deploying to prod
-- [ ] **T08** — Verify via Supabase SQL editor: submit test record → confirm `pending` job appears → manually run claim + complete cycle
+- [x] **T07** — Modified `UpsertAuthenticatedKnowMeSubmission` to also INSERT a `pending` job row  
+  Helper `Lrn.ensure_know_me_ai_job` filters Answers to string-only keys; ON CONFLICT DO NOTHING on re-submit; AI job failure is caught and logged, never surfaces to student
+- [x] **T08** — Verify via Supabase SQL editor: submit test record → confirm `pending` job appears → manually run claim + complete cycle  
+  Verified 2026-06-30. JobId 1, SubmissionId 28. All 8 steps passed. Phase 1 gate cleared.
 
 ---
 
@@ -76,19 +76,22 @@ The fix: `UpsertAuthenticatedKnowMeSubmission` (already called by the UI) is mod
 
 > Requires Phase 1 complete. Rewrites the current GCS-based approach entirely.
 
-- [ ] **T09** — Add DB query methods to `KnowMeAiManager` via `IRepositoryClient`  
-  Wire: GetPending, Claim, Complete, Fail. Currently `IRepositoryClient` is injected but completely unused.
-- [ ] **T10** — Rewrite `KnowMeAiManager.ProcessPendingSubmissionsAsync`  
-  DB poll → claim one job → parse `essays_json` → call AI per question → save results → mark complete/failed
-- [ ] **T11** — Remove stale GCS scanning code (`ProcessOneAsync`, `StorageClient`, `AiInboxSuffix` constants)
-- [ ] **T12** — Update `IKnowMeAiManager` interface to match new DB-driven contract
-- [ ] **T13** — Rewrite `AiPromptHelper.BuildEssayCorrectionPrompt`  
-  Accept question metadata (id, title, grammar topic) + student text. Enforce structured JSON output.
-- [ ] **T14** — Update `IAiCorrectionService` with structured types  
-  `CorrectEssayAsync(string)` → `CorrectEssaysAsync(List<EssayInput>) : Task<List<EssayResult>>`
-- [ ] **T15** — Update `AnthropicAiProvider` for structured JSON output + response parsing  
-  Retry once on malformed JSON before failing.
-- [ ] **T16** — Update `OpenAiProvider` and `GeminiAiProvider` to implement updated interface
+- [x] **T09** — Add DB query methods to `KnowMeAiManager` via `IRepositoryClient`  
+  Wire: Claim, Complete, Fail through `IRepositoryClient` → `RepositoryClient` → `SupabaseAdapter`. Build: 0 errors.
+- [x] **T10** — Rewrite `KnowMeAiManager.ProcessPendingSubmissionsAsync`  
+  DB poll → while loop drains all pending jobs → claim one → iterate `job.Essays` dict → call `CorrectEssayAsync` per essay → `ParseAiResponse` splits CORRECTED:/FEEDBACK: → build JSON dicts → CompleteKnowMeAiJobAsync or FailKnowMeAiJobAsync
+- [x] **T11** — Remove stale GCS scanning code (`ProcessOneAsync`, `StorageClient`, `AiInboxSuffix` constants)  
+  Combined with T10 — done in the same file rewrite. Build: 0 errors, 0 warnings.
+- [x] **T12** — Update `IKnowMeAiManager` interface to match new DB-driven contract  
+  Removed stale GCS comment. Signature `Task ProcessPendingSubmissionsAsync(CancellationToken ct)` unchanged.
+- [x] **T13** — Rewrite `AiPromptHelper.BuildEssayCorrectionPrompt`  
+  New signature: `(questionId, grammarTopic, text)`. Uses `$$"""` raw string so JSON template `{`/`}` are literal. Returns JSON `{ questionId, correctedText, summaryFeedback }`. GrammarTopic empty for now (T31 injects real topics).
+- [x] **T14** — Update `IAiCorrectionService` with structured types  
+  New `EssayInput` + `EssayResult` types in `Services/`. Interface: `CorrectEssaysAsync(List<EssayInput>, ct) : Task<List<EssayResult>>`.
+- [x] **T15** — Update `AnthropicAiProvider` for structured JSON output + response parsing  
+  Per-essay loop. `TryParseResult` strips code fences + parses JSON. Retries once on malformed JSON; throws on second failure.
+- [x] **T16** — Update `OpenAiProvider` and `GeminiAiProvider` to implement updated interface  
+  Same per-essay loop + `ParseResult` + `StripCodeFences` pattern. Build: 0 errors, 0 warnings.
 
 ---
 
@@ -96,12 +99,14 @@ The fix: `UpsertAuthenticatedKnowMeSubmission` (already called by the UI) is mod
 
 > Requires T06 (RPC) from Phase 1. Can be developed in parallel with Phase 2 once T06 is live.
 
-- [ ] **T17** — Add `GetKnowMeAiResultAsync` to `ILrnManager` interface
-- [ ] **T18** — Implement `GetKnowMeAiResultAsync` in `LrnManager.cs`  
-  Accepts `contactInternalId + courseCodeId + classNumber`. Returns status + corrected essays if completed.
-- [ ] **T19** — Add Supabase RPC call for `GetKnowMeAiJobBySubmissionId` in C# `LrnAuthService`
-- [ ] **T20** — Add `GET /v1/lrn/know-me/ai-result` to `Lrn.cs`  
-  Auth: `AnyAuthenticatedUser`. Returns `{ status, correctedEssays, feedback }` or `{ status: 'pending' }`.
+- [x] **T17** — Add `GetKnowMeAiResultAsync` to `ILrnManager` interface  
+  Signature: `Task<KnowMeAiResultResponse> GetKnowMeAiResultAsync(Guid contactInternalId, string courseCodeId, int classNumber)`
+- [x] **T18** — Implement `GetKnowMeAiResultAsync` in `LrnManager.cs`  
+  Calls `_repositoryClient.GetKnowMeAiJobResultAsync`, parses raw JSON into `KnowMeAiResultResponse` with `JsonElement?` for correctedEssays + feedback. Returns `{ Status: "not_found" }` when no job exists.
+- [x] **T19** — Add Supabase RPC call for `GetKnowMeAiJobResult` in net-api `SupabaseAdapter`  
+  POSTs `{ contact_internal_id, course_code_id, class_number }` to `GetKnowMeAiJobResult`. Returns raw JSON string (or null if body is null/"null").
+- [x] **T20** — Add `GET /v1/lrn/know-me/ai-result` to `Lrn.cs`  
+  Auth: `AnyAuthenticatedUser`. Query params: `courseCodeId`, `classNumber`. Contact from JWT claims. Build: 0 errors.
 
 ---
 
@@ -110,17 +115,19 @@ The fix: `UpsertAuthenticatedKnowMeSubmission` (already called by the UI) is mod
 > Requires Phase 3 complete. Most user-visible phase.
 
 - [x] **T21** — Remove `console.log("progressToUpsert", progressToUpsert)` from `LrnManager.js:766`
-- [ ] **T22** — Add `ON_FETCHING_KNOW_ME_AI_RESULT` constant to `constants/Lrn.js`
-- [ ] **T23** — Add `getKnowMeAiResult` service call to `TitulinoLrnNetService.js`  
-  `GET ${env.TITULINO_NET_API}/v1/lrn/know-me/ai-result` with contactId + courseCodeId + classNumber
-- [ ] **T24** — Add `getKnowMeAiResult(levelTheme, chapterNo)` to `LrnManager.js`
-- [ ] **T25** — Add `onFetchingKnowMeAiResult` Redux action to `Lrn.js`
-- [ ] **T26** — Update `KnowMeV3` — on load, fetch existing submission + AI result  
-  If completed: hide form, show result view. If pending/processing: show waiting state.
-- [ ] **T27** — Update `KnowMeV3` — show pending/processing banner after successful submit
-- [ ] **T28** — Update `KnowMeV3` — render corrected essays + per-question feedback when `status = completed`  
-  Show original alongside corrected. This is the most visible deliverable of the sprint.
-- [ ] **T29** — Write LOB test for any new LOB logic added in Phase 4
+- [x] **T22** — Add `ON_FETCHING_KNOW_ME_AI_RESULT` constant to `constants/Lrn.js`
+- [x] **T23** — Add `getKnowMeAiResult` service call to `TitulinoLrnNetService.js`  
+  `GET /know-me/ai-result?courseCodeId=X&classNumber=Y`. Returns `{ success, aiStatus, correctedEssays, feedback, errorMessage }`.
+- [x] **T24** — Add `getKnowMeAiResult(levelTheme, emailId, classNumber)` to `LrnManager.js`  
+  Resolves courseCodeId via registry, uses `user.innerToken`, calls `TitulinoLrnNetService.getKnowMeAiResult`.
+- [x] **T25** — Add `onFetchingKnowMeAiResult` Redux action to `Lrn.js`
+- [x] **T26** — Update `KnowMeV3` — on load, fetch existing AI result  
+  Mount effect fetches result; if `completed` hides form and shows result view; if `pending/processing` shows info banner.
+- [x] **T27** — Update `KnowMeV3` — show pending/processing banner after successful submit  
+  Optimistically sets `aiResult = { aiStatus: 'pending' }` after submit; polls every 10 s via `setInterval` until completed/failed.
+- [x] **T28** — Update `KnowMeV3` — render corrected essays + per-question feedback when `status = completed`  
+  Per-question cards with corrected text (green background) + AI feedback. Form hidden when completed. All tests pass (112/112).
+- [x] **T29** — No new LOB logic added in Phase 4 — no tests needed.
 
 ---
 
@@ -128,12 +135,14 @@ The fix: `UpsertAuthenticatedKnowMeSubmission` (already called by the UI) is mod
 
 > Builds on Phase 2 foundation. Pins the output schema before T28 UI work finalizes.
 
-- [ ] **T30** — Design structured JSON output schema per essay question  
-  `{ questionId, correctedText, summaryFeedback, grammarNotes: [], vocabularySuggestions: [] }`
-- [ ] **T31** — Update `AiPromptHelper` with grammar topic injection and JSON enforcement  
-  Each question passes its grammar topic (e.g. "Simple Past") so corrections are targeted, not generic
-- [ ] **T32** — Add JSON response parser + validation in `AnthropicAiProvider`
-- [ ] **T33** — Map per-question AI results in `KnowMeAiManager` — align with `corrected_essays_json` DB shape
+- [x] **T30** — Design structured JSON output schema per essay question  
+  Added `GrammarNotes` and `VocabularySuggestions` (`List<string>`) to `EssayResult.cs`.
+- [x] **T31** — Grammar topic injection via static dictionary in `KnowMeAiManager`  
+  `_grammarTopics` maps `q2_bio→Simple Present…`, `q3_bio→Simple Past`, `q4_bio→Future tenses`, `q5_bio→Present Perfect`. Speeches questions fall back to empty string (generic). `ProcessJobAsync` now sets `GrammarTopic` from the dictionary.
+- [x] **T32** — Updated prompt template + all three provider parsers  
+  `AiPromptHelper` JSON template now includes `grammarNotes` and `vocabularySuggestions` arrays with usage instructions. `AnthropicAiProvider.TryParseResult`, `OpenAiProvider.ParseResult`, `GeminiAiProvider.ParseResult` all extract the new array fields. Build: 0 errors, 0 warnings.
+- [x] **T33** — Richer feedback serialization in `KnowMeAiManager` + UI rendering  
+  `feedbackDict` now stores `{ summary, grammarNotes[], vocabularySuggestions[] }` per question. `KnowMeV3` renders summary text, grammar notes bullet list, and vocabulary suggestions bullet list. Tests: 112/112.
 
 ---
 
