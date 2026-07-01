@@ -78,13 +78,17 @@
 | P0 Foundation | 9 | ✅ Done |
 | P1 Content | 3 | ✅ Done |
 | P2 CI/CD | 1 | ✅ Done |
-| P3 GCP infra | 4 | ⏳ Waiting for quota (D02–D04, D11) |
-| P4 User actions | 4 | 🙋 User (D05, D08, D09, D10) |
-| P5 Starter docs | 5 | 🔜 Can do now |
-| P6 Sync actions | 5 | 🔜 After site live |
-| P7 Polish | 2 | 🔜 After site live |
+| P3 GCP infra | 4 | ✅ Done |
+| P4 User actions | 4 | ✅ Done |
+| P5 Starter docs | 5 | ✅ Done |
+| P6 Sync actions | 5 | 🔜 After site confirmed working |
+| P7 Polish | 2 | 🔜 After site confirmed working |
 
-**Remaining: 20 tasks total (4 blocked, 4 user, 12 me)**
+**Remaining: 7 tasks total (P6 + P7)**
+
+### Blocking issues before P6/P7
+
+- [ ] **SUPABASE_URL_PROD** in titulino-docs GitHub secrets must be bare domain only: `https://dollxabphvcafglmixns.supabase.co` — currently has `/rest/v1/rpc` path appended which breaks Google OAuth redirect. User must fix in GitHub → titulino-docs → Settings → Secrets.
 
 ---
 
