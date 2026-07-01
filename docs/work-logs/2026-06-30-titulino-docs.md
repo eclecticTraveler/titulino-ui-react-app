@@ -37,27 +37,31 @@ Workflow (`deploy-docs.yml`) uses `_DEV`/`_PROD` secret split:
 - Old cert `titulino-all-pd-domains` removed from proxy and deleted
 - Namecheap DNS A record `dev.docs` → `34.8.75.161` added
 
-#### TitulinoWorkerService deploy pipeline
+#### TitulinoWorkerService deploy pipeline ✅
 
-Fixed two issues:
+Fixed three issues end-to-end:
 1. **Wrong SSH key secret** — `PD_SERVER_SSH_KEY` had GCP SA JSON pasted instead of SSH private key. Correct key is `C:\Users\AlbertoArellano\Documents\CIP KEYS\lang-private-key.pem` (RSA PEM, same key as `backend-server_lang-private-key.ppk` in MobaXterm keys). Same secret names and server used by `titulino-net-api`.
-2. **Permission denied on scp copy** — `sudo mkdir -p` in "Clean Target Directory" step created the target dir owned by root; scp then failed writing as `admin`. Fixed by adding `sudo chown -R $USER:$USER` after mkdir. Committed to `ai` branch — needs PR/merge to `master`.
+2. **Permission denied on scp copy** — `sudo mkdir -p` in "Clean Target Directory" step created the target dir owned by root; scp then failed writing as `admin`. Fixed by adding `sudo chown -R $USER:$USER` after mkdir.
+3. **systemd service not found** — `titulino-worker-dev` and `titulino-worker` services did not exist on the server. Created manually via SSH. Files land in `publish/` subdir inside target dir (scp-action behavior); service `ExecStart` points to `net9.0/publish/TitulinoWorkerService`.
+
+Both services created on server at `34.83.204.4`:
+- `/etc/systemd/system/titulino-worker-dev.service` — enabled, running ✅
+- `/etc/systemd/system/titulino-worker.service` — enabled, starts on prod deploy
+
+Full pipeline confirmed working: build → publish → SSH → copy → restart → running.
 
 ---
 
-### Pending items
+### Site confirmed working ✅
 
-| Item | Action needed |
-|------|---------------|
-| `SUPABASE_URL_PROD` secret in `titulino-docs` repo | Change to `https://dollxabphvcafglmixns.supabase.co` — currently has `/rest/v1/rpc` suffix which breaks Google OAuth. GitHub → titulino-docs → Settings → Secrets. |
-| TitulinoWorkerService `ai` branch | Open PR `ai` → `master` and merge, or manually trigger Actions run to test the chown fix. |
-| `.env` local key | `TITULINO_NET_API_KEY` in `titulino-docs/.env` still has placeholder. Set to real dev API key for local testing. |
+- `docs.titulino.com` live — user logged in and reached the hub successfully 2026-07-01
+- Auth gate: Supabase login → year of birth → `.NET API isGlobalAccessUser` → access granted
+- TitulinoWorkerService deploy pipeline working end-to-end
 
 ---
 
 ### Next session
 
-Once `SUPABASE_URL_PROD` is fixed and Google OAuth is confirmed working end-to-end, proceed to:
 - **P6** — GitHub sync actions: 5 source repos push `docs/**/*.md` → `titulino-docs` on merge to main
 - **P7** — Docusaurus local search plugin + HTML sprint artifacts in `static/`
 

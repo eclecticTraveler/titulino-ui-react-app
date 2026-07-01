@@ -81,14 +81,16 @@
 | P3 GCP infra | 4 | ✅ Done |
 | P4 User actions | 4 | ✅ Done |
 | P5 Starter docs | 5 | ✅ Done |
-| P6 Sync actions | 5 | 🔜 After site confirmed working |
-| P7 Polish | 2 | 🔜 After site confirmed working |
+| P6 Sync actions | 5 | 🔜 Ready to start |
+| P7 Polish | 2 | 🔜 Ready to start |
 
 **Remaining: 7 tasks total (P6 + P7)**
 
-### Blocking issues before P6/P7
+### Site status — confirmed working ✅ 2026-07-01
 
-- [ ] **SUPABASE_URL_PROD** in titulino-docs GitHub secrets must be bare domain only: `https://dollxabphvcafglmixns.supabase.co` — currently has `/rest/v1/rpc` path appended which breaks Google OAuth redirect. User must fix in GitHub → titulino-docs → Settings → Secrets.
+- Auth gate working: login → year of birth → `.NET API isGlobalAccessUser` → hub access
+- `docs.titulino.com` live and accessible to authenticated admin users
+- TitulinoWorkerService deploy pipeline working end-to-end
 
 ---
 
