@@ -97,6 +97,77 @@ localStorage.removeItem('postLoginRedirect');
 
 ---
 
+## BUG-004 — npm audit: uuid buffer-bounds warning in dev toolchain (accepted risk)
+
+**Status:** `OPEN` — accepted, no production exposure  
+**Severity:** Low — dev-only dependency, not in production bundle  
+**Discovered:** 2026-06-30  
+**Advisory:** [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)
+
+### What `npm audit` reports
+
+```
+uuid  <11.1.1  — moderate
+  node_modules/sockjs/node_modules/uuid
+  node_modules/uuid
+    react-tooltip  4.1.5 - 4.5.1  (removed 2026-06-30)
+    sockjs  >=0.3.17
+      webpack-dev-server  *
+        @pmmmwh/react-refresh-webpack-plugin  0.3.1 - 0.5.11
+        react-scripts  >=0.1.0
+```
+
+### Why this is accepted risk
+
+- `sockjs`, `webpack-dev-server`, and `@pmmmwh/react-refresh-webpack-plugin` are **build toolchain only** — they run during `npm start` / `npm run build` but are **never included in the production bundle output**. Confirmed by inspecting the `build/` output: no sockjs or webpack-dev-server code ships to GCS.
+- Note: `npm audit --omit=dev` still shows these because CRA (a CRA quirk) lists `react-scripts` under `dependencies`, not `devDependencies`. The flag is not the right signal here — what matters is that these packages do not appear in the `build/` bundle.
+- The uuid buffer-bounds vulnerability (GHSA-w5hq-g745-h8pq) requires explicitly passing a custom `buf` argument to the uuid v3/v5/v6 functions; webpack-dev-server's sockjs usage calls `uuid()` with no buffer, so the vulnerable code path is never reached
+
+### Why it cannot be fixed easily
+
+These packages live inside `react-scripts` (Create React App, now deprecated). Fixing requires either:
+- Ejecting CRA (high maintenance cost)
+- Migrating to Vite (future roadmap item — see `docs/plans/`)
+- Using `npm overrides` to force `uuid@^11.1.1` (risky: may break webpack HMR during development)
+
+### Resolution path
+
+Will be resolved when the project migrates away from CRA. Until then, `npm audit --omit=dev` is the correct command to verify production security posture.
+
+---
+
+## BUG-005 — Chile O'Higgins region tooltip shows corrupted name
+
+**Status:** `FIXED` — committed in `titulino-bucket-spine` on 2026-06-30  
+**Severity:** Medium — tooltip displayed `"Libertador General Bernardo O'Higgins'Hi"` (spurious `'Hi` suffix)  
+**Discovered:** 2026-06-30  
+**Work log:** [docs/work-logs/2026-06-30-phase5.md](work-logs/2026-06-30-phase5.md)
+
+### Symptom
+
+Map tooltip showed `"Chile - Libertador General Bernardo O'Higgins'Hi - 0"` for Chile's 6th region. The region also failed to match against the DB value `"Libertador General Bernardo O'Higgins"`.
+
+### Root cause
+
+`gadm41_CL_1.json` in `titulino-bucket-spine` had a data entry error for `GID_1: CHL.8_1`:
+
+```json
+{ "NAME_1": "Libertador General Bernardo O'Higgins'Hi", "VARNAME_1": "Libertador" }
+```
+
+The `NAME_1` had a spurious `'Hi` appended (likely a copy-paste truncation artifact from GADM source data). `VARNAME_1` was also truncated to just `"Libertador"`.
+
+### Fix applied
+
+**Repository:** `titulino-bucket-spine` — `titulino-spine-data/maps/gadm41_CL_1.json`
+
+| Feature | Property | Before | After |
+|---|---|---|---|
+| CHL.8_1 (O'Higgins) | `NAME_1` | `"Libertador General Bernardo O'Higgins'Hi"` | `"Libertador General Bernardo O'Higgins"` |
+| CHL.8_1 (O'Higgins) | `VARNAME_1` | `"Libertador"` | `"NA"` |
+
+---
+
 ## BUG-003 — CDMX shows no map highlight (DistritoFederal / Ciudad de México name mismatch)
 
 **Status:** `FIXED` — committed `e2b1524` in `titulino-bucket-spine` on 2026-06-27  

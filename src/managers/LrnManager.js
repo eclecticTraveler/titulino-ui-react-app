@@ -1,5 +1,6 @@
 import LocalStorageService from "services/LocalStorageService";
 import TitulinoLrnAuthService from "services/Lrn/TitulinoLrnAuthService";
+import TitulinoLrnNetService from "services/Lrn/TitulinoLrnNetService";
 import TitulinoNetService from "services/TitulinoNetService";
 import GrammarClassService from "services/GrammarClassService";
 import BookChapterService  from "services/BookChapterService";
@@ -748,22 +749,6 @@ export const upsertUserKnowMeProgress = async (
     "upsertUserKnowMeProgress"
   );
 
-  // TESTING TO REMOVE TODO
-    // const payloadArray = [
-    //     { EmailId: user?.emailId, ContactInternalId: user?.contactInternalId },
-    //     { EmailId: 'solorzano2020@gmail.com', ContactInternalId: '0053bc40-9b5b-485c-8ae0-d3de0dec389b'}
-    //   ];
-
-
-    // const ttt = await TitulinoNetService.getContactEnrolleesKnowMeProfileImages(
-    //   user?.innerToken,
-    //   payloadArray,
-    //   180,
-    //   "getEnrolleeKnowMeProfilePictureForCourse"
-    // );
-
-    // console.log("user profile after upsert", user);
-    console.log("progressToUpsert", progressToUpsert);
   return progressToUpsert;
 };
 
@@ -788,6 +773,17 @@ export const buildStudentKnowMeFileName = async (file, contactId, emailId, class
   };
 };
 
+
+const getKnowMeAiResult = async (levelTheme, emailId, classNumber = 0) => {
+  const user = await getCachedUserProfile(emailId);
+  if (!user?.contactInternalId) return null;
+
+  const registry = await getCourseThemeRegistry();
+  const courseCodeId = await LrnConfiguration.getCourseCodeIdByCourseTheme(levelTheme, registry);
+  if (!courseCodeId) return null;
+
+  return await TitulinoLrnNetService.getKnowMeAiResult(user.innerToken, courseCodeId, classNumber);
+};
 
 const resolveFacilitadorCourseCodeId = async (courseTheme, emailId) => {
   const user = await getCachedUserProfile(emailId);
@@ -819,6 +815,7 @@ const LrnManager = {
   getUserEBookChapterUrl,
   upsertUserKnowMeProgress,
   upsertKnowMeProfilePicture,
+  getKnowMeAiResult,
   getEnrollmentProfilePictureRequirement,
   ensureEnrollmentProfilePicture,
   submitAuthenticatedEnrollment,

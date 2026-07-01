@@ -486,6 +486,7 @@ const InsightsLandingDashboard = (props) => {
             tableExpandables={enrolleDashboardData?.expandable}
             isAllowedToEditTableData={false}
             isToRenderActionButton={false}
+            paginationConfig={{ pageSize: 50, showSizeChanger: true, pageSizeOptions: ['25', '50'] }}
           />
         ) : (
           <p>{setLocale(locale, "admin.dashboard.insights.progress.noMatchingRecords")}</p>

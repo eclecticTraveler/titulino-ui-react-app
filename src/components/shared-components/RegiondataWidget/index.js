@@ -3,7 +3,6 @@ import { Card, Row, Col, Badge, Grid, Button } from "antd";
 import PropTypes from "prop-types";
 import { geoMercator, geoPath } from "d3-geo";
 import { feature as topojsonFeature } from "topojson-client";
-import ReactTooltip from "react-tooltip";
 import WorldMap from "assets/maps/world-countries-sans-antarctica.json";
 import utils from "utils";
 import Flag from "react-world-flags";
@@ -337,7 +336,7 @@ const getFeatureRegionName = (geoFeature, mapType) => {
   return props.NAME_1 || props.VARNAME_1 || props.name || "";
 };
 
-const MapChart = ({ setTooltipContent, data, mapSource, mapType, zoomable = true }) => {
+const MapChart = ({ setTooltipContent, setMousePos, data, mapSource, mapType, zoomable = true }) => {
   const [hoveredRegionKey, setHoveredRegionKey] = useState("");
   const [mapTransform, setMapTransform] = useState(defaultMapTransform);
   const [isPanning, setIsPanning] = useState(false);
@@ -460,7 +459,6 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType, zoomable = true
         </div>
       )}
       <svg
-        data-tip=""
         width="100%"
         height={mapHeight}
         viewBox={`0 0 ${mapWidth} ${mapHeight}`}
@@ -472,6 +470,7 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType, zoomable = true
         onPointerUp={zoomable ? handlePointerUp : undefined}
         onPointerCancel={zoomable ? handlePointerUp : undefined}
         onPointerLeave={zoomable ? handlePointerUp : undefined}
+        onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
         style={{
           cursor: zoomable && mapTransform.scale > minZoom ? (isPanning ? "grabbing" : "grab") : "default",
           touchAction: zoomable ? "none" : "auto"
@@ -521,10 +520,36 @@ const MapChart = ({ setTooltipContent, data, mapSource, mapType, zoomable = true
 const RegionMap = (props) => {
   const { data, mapSource, mapType, zoomable } = props;
   const [content, setContent] = useState("");
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
   return (
     <>
-      <MapChart data={data} mapSource={mapSource} mapType={mapType} zoomable={zoomable} setTooltipContent={setContent} />
-      <ReactTooltip>{content}</ReactTooltip>
+      <MapChart
+        data={data}
+        mapSource={mapSource}
+        mapType={mapType}
+        zoomable={zoomable}
+        setTooltipContent={setContent}
+        setMousePos={setMouse}
+      />
+      {content && (
+        <div style={{
+          position: "fixed",
+          left: mouse.x + 14,
+          top: mouse.y + 14,
+          background: "#fff",
+          border: "1px solid #d9d9d9",
+          borderRadius: 4,
+          padding: "4px 10px",
+          fontSize: 12,
+          color: "#333",
+          pointerEvents: "none",
+          zIndex: 9999,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          whiteSpace: "nowrap",
+        }}>
+          {content}
+        </div>
+      )}
     </>
   );
 };
