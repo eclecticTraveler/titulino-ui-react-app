@@ -32,6 +32,7 @@
 - [x] Write `.github/workflows/deploy-docs.yml`:
   - PR opened → `DOCS_ENV=development` → deploy to `gs://dev.docs.titulino.com` → PR comment with URL
   - Push to main → `DOCS_ENV=production` → deploy to `gs://docs.titulino.com`
+- [x] Add `workflow_dispatch` dev/prod dropdown (2026-07-01) — manual deploy from Actions tab without needing a PR or push
 
 ### P3 — GCP infrastructure ✅ COMPLETE
 
