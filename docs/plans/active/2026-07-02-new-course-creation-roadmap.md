@@ -44,7 +44,7 @@ When running `/new-course` or creating a course via the admin UI, the user is pr
 
 ### Progress
 
-- [ ] **T1** — Write `.claude/commands/new-course.md` with Phase 0 prompts, step-by-step instructions, and file templates
+- [x] **T1** — Write `.claude/commands/new-course.md` with Phase 0 prompts, step-by-step instructions, and file templates
 - [ ] **T2** — Phase 1 code changes: `CourseThemeConfig.js`, `CentralCourseThemeService.js`, `course-theme-registry.data.json`, `badge-theme-registry.data.json`; optional `AppConfig.js` for default landing
 - [ ] **T3** — Phase 2 i18n: add `main.upper.nav.theme.level.<camelCase>` to `en_US.json`, `es_US.json`, `pt_BR.json`
 - [ ] **T4** — Phase 3 new files: generate `CourseSubNavigation<Name>Theme.js` (unauthenticated, N chapters) and `AuthCourseSubNavigation<Name>Theme.js` (authenticated, tier-aware, intro + resources)
