@@ -172,7 +172,16 @@ Titulino is a multi-repo system. This UI app connects to:
 
 | Codebase | Role |
 |---|---|
-| Titulino .NET API | Backend REST API for enrollment, profile upload, impersonation, email |
-| Supabase / DB Migrations | Database schema and RPC functions |
+| `titulino-net-api` | Backend REST API for enrollment, profile upload, impersonation, email, AI result endpoint |
+| `TitulinoWorkerService` | Background .NET worker — polls `Lrn.KnowMeAiJob` and processes AI essay corrections; deployed via GitHub Actions on push to `master` (auto build + copy + `systemctl restart titulino-worker`) |
+| `titulino-warehouse` | Database schema and Sqitch migrations — must deploy before dependent services |
+| `titulino-communication` | Communication service — shares Models/Repository libs with the worker; rebuild when shared interfaces change |
+
+### Deployment order when all layers change
+
+1. **titulino-warehouse** — `sqitch deploy` on prod DB *(gates everything)*
+2. **TitulinoWorkerService** — push to `master` → GitHub Actions handles the rest automatically
+3. **titulino-net-api** — build + deploy to prod
+4. **titulino-ui** — `ssh-add` → `.claude/support-scripts/release.sh`
 
 Ensure backend services are deployed and environment variables point to the correct endpoints before deploying the UI.

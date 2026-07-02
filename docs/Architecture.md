@@ -128,7 +128,7 @@ Tokens are injected into every HTTP request via the `HttpService` Axios intercep
 | Personal analytics | `src/views/app-views/user/analytics/` |
 | Enrollment flow | `src/views/app-views/user/enrollment/` |
 | Admin dashboard | `src/views/app-views/admin-*` |
-| KnowMe (user profile) | `src/components/layout-components/KnowMeV1.js` |
+| KnowMe survey + AI essay review | `src/components/layout-components/KnowMeV3.js` |
 | Admin impersonation | `src/views/app-views/user/impersonation/` |
 
 ---
@@ -138,10 +138,51 @@ Tokens are injected into every HTTP request via the `HttpService` Axios intercep
 | Integration | Purpose |
 |---|---|
 | Supabase REST (PostgREST) | Primary data API (`/rest/v1/rpc`) |
-| TitulinoNet (.NET backend) | Enrollment, profile upload, email, impersonation |
+| TitulinoNet (.NET backend) | Enrollment, profile upload, email, impersonation, AI result endpoint |
+| TitulinoWorkerService (.NET background worker) | Polls `Lrn.KnowMeAiJob` table every 30 s; calls Gemini/OpenAI to correct Know Me essays; writes results back to DB |
 | Google Sheets / Drive | Course themes, badge metadata, survey questions |
 | Stripe | Payment processing |
 | Firebase | (referenced, exact usage TBD) |
+
+---
+
+## AI Essay Review — Background Job Flow
+
+The Know Me survey triggers an AI correction job when a student submits. The full flow spans four systems:
+
+```
+UI submits → Supabase RPC UpsertAuthenticatedKnowMeSubmission
+  └─► RPC also inserts Lrn.KnowMeAiJob row (status = pending)
+
+TitulinoWorkerService polls DB every 30 s
+  → claims next pending job atomically (FOR UPDATE SKIP LOCKED)
+  → derives NativeLanguageId from Enrollment.Course at claim time
+  → calls Gemini (with OpenAI fallback) per essay question
+  → prompt requests: corrected text + English feedback + native language feedback
+  → writes CorrectedEssaysJson + FeedbackJson to KnowMeAiJob row
+  → marks status = completed (or failed)
+
+UI polls GET /v1/lrn/know-me/ai-result every 10 s
+  → TitulinoNet API calls Supabase RPC GetKnowMeAiJobResult
+  → returns: Status, OriginalEssays, CorrectedEssaysJson, FeedbackJson
+  → KnowMeV3 renders per-question cards: original → corrected → EN feedback → native feedback
+```
+
+`FeedbackJson` shape per question:
+```json
+{
+  "q2_bio": {
+    "summary": "…",
+    "grammarNotes": ["…"],
+    "vocabularySuggestions": ["…"],
+    "nativeSummary": "…",
+    "nativeGrammarNotes": ["…"],
+    "nativeVocabularySuggestions": ["…"]
+  }
+}
+```
+
+`NativeLanguageId` is stored as an ISO code (`"es"`, `"pt"`) on `Enrollment.Course`. The worker maps it to a full language name before injecting into the AI prompt.
 
 ---
 
