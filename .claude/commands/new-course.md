@@ -22,6 +22,31 @@ Use `AskUserQuestion` to collect the following. Ask all questions in one call (u
 - **Should this course be the default landing** for its language(s)? — Yes / No. Default: No.
 - **Course color** — Hex code (e.g. `#3a7bd5`). Leave blank to auto-assign. Cannot reuse an existing color.
 
+**Call 3 — Nav visibility (only if Spanish or Portuguese is selected):**
+
+After reading the current language config(s) in Step 1, present the existing nav items per language and ask:
+
+> For each language config you selected, here are the current visible items (isToDisplayInNavigation: true) and hidden items (false). Which items should be toggled?
+
+Show a list like:
+```
+Spanish nav (current state):
+  ✅ VISIBLE  level-1-spa     — Iniciante Simple
+  ✅ VISIBLE  level-2-spa     — Iniciante Medio
+  ✅ VISIBLE  level-3-spa     — Iniciante Completo
+  + <new-course> will be added as VISIBLE
+
+Portuguese nav (current state):
+  ✅ VISIBLE  level-1-por     — Iniciante Basico
+  ❌ HIDDEN   level-2-por     — Iniciante Inter
+  ✅ VISIBLE  level-3-por     — Iniciante Superior
+  + <new-course> will be added as VISIBLE
+```
+
+Ask: "Which of these existing items should be toggled? List keys to flip, or say 'none'."
+
+The user's answer determines additional `isToDisplayInNavigation` changes applied in Phase 4c.
+
 ---
 
 ## Step 1 — Read current state (before writing anything)
@@ -32,6 +57,15 @@ Read these files to understand existing values before making changes:
 2. `src/services/CentralCourseThemeService.js` — note the highest existing level number in `levelMapping`
 3. `src/assets/data/course-theme-registry.data.json` — note existing theme keys
 4. `src/configs/AppConfig.js` — note current `DEFAULT_LANDING_COURSE_ENG`, `_SPA`, `_POR`
+5. If Spanish selected: read `SpanishCourseMainNavigationConfig.js` — note each item's `key`, `sideTitle`, `isToDisplayInNavigation`, and whether `topSubmenu` / `nameToCourseCodeKey` are present
+6. If Portuguese selected: read `PortugueseCourseMainNavigationConfig.js` — same inventory
+
+**Wiring gap detection:** For each Spanish/Portuguese item, note any of these missing fields that English items have:
+- `topSubmenu: []` — required by `MenuContentTop.js` (optional chaining means absence works but is inconsistent)
+- `nameToCourseCodeKey` — required for `coursesByTheme` tier lookup
+- `COURSE_TIERS_CONFIG` import — required for tier-conditional color logic
+
+These gaps will be patched in Phase 4c.
 
 **Color validation:** If the user provided a color, confirm it does not already exist in `COURSE_COLOR_CONFIG`. If it does, ask for a different one. If blank, generate a visually distinct hex color that doesn't clash with the existing palette.
 
@@ -48,6 +82,7 @@ New course: <theme-name>
 courseCodeId: <id or TODO>
 Languages: <list>
 Chapters: <N> + intro: <yes/no> + resources: <yes/no>
+Nav visibility changes: <list items being toggled, or "none">
 Tiers: <none / Silver / Gold / Silver+Gold>
 Color: #<hex>
 Level number: <N>
@@ -67,8 +102,12 @@ Files to modify:
   MOD  src/configs/CourseMainNavigationConfig/English/EnglishCourseMainNavigationConfig.js  (if English)
   MOD  src/configs/CourseMainNavigationConfig/Spanish/SpanishCourseMainNavigationConfig.js  (if Spanish)
   MOD  src/configs/CourseMainNavigationConfig/Portuguese/PortugueseCourseMainNavigationConfig.js  (if Portuguese)
-  MOD  src/services/DynamicNavigationRouter.js  (if Spanish + tiers selected — fixes coursesByTheme passthrough)
+  MOD  src/services/DynamicNavigationRouter.js  (if Spanish — fixes coursesByTheme passthrough, always)
   MOD  src/configs/AppConfig.js              (if default landing)
+
+Wiring fixes applied to existing items (Spanish/Portuguese only):
+  <for each language: list items getting topSubmenu / nameToCourseCodeKey added>
+  <list items getting isToDisplayInNavigation toggled>
 
 Spine data entries to generate (manual fill required for dates/URLs):
   <list each of the 12 spine files>
@@ -426,6 +465,77 @@ Same pattern as English but with:
 - `course`: `"Português"` (check existing items to confirm)
 - Pass `"pt"` as lang code
 - `coursesByTheme` is already passed for Portuguese (no router fix needed)
+
+---
+
+### Phase 4c — Wire Spanish and Portuguese to English capabilities
+
+**Run this phase whenever Spanish or Portuguese is in the selected languages.** It brings existing items in those configs up to parity with English and applies any `isToDisplayInNavigation` changes the user requested.
+
+#### 4c-1: DynamicNavigationRouter.js — Spanish `coursesByTheme` passthrough
+
+Always apply this fix when Spanish is selected, regardless of whether tiers are chosen:
+
+```js
+// src/services/DynamicNavigationRouter.js  line ~12
+// Before:
+case "es":
+  return SpanishCourseMainNavigationConfig(isAuthenticated);
+// After:
+case "es":
+  return SpanishCourseMainNavigationConfig(isAuthenticated, coursesByTheme);
+```
+
+Portuguese already passes `coursesByTheme` — no change needed there.
+
+#### 4c-2: Add missing imports to the language config file
+
+For each language config that is missing them, add to the import block at the top:
+
+```js
+import { COURSE_TIERS_CONFIG } from '../../CourseThemeConfig';  // add if not present
+```
+
+`COURSE_COLOR_CONFIG`, `COURSE_ICON_CONFIG`, and `ICON_LIBRARY_TYPE_CONFIG` are already imported in both Spanish and Portuguese configs — do not duplicate them.
+
+#### 4c-3: Patch existing items — add missing structural fields
+
+For each existing item in the language config that is missing any of these fields, add them:
+
+**`topSubmenu: []`** — add after `course: "<Language>"` if absent:
+```js
+topSubmenu: [],
+```
+
+**`nameToCourseCodeKey`** — for level-based items (Nivel 1 / 2 / 3), derive from their existing path slug. Examples:
+- `level-1-spa` → `nameToCourseCodeKey: "english-connect-1"` (match the English pattern)
+- `level-2-spa` → `nameToCourseCodeKey: "english-connect-2"`
+- `level-3-spa` → `nameToCourseCodeKey: "english-connect-3"`
+
+For Portuguese: same logic with `level-1-por`, `level-2-por`, `level-3-por`.
+
+If the correct courseCodeKey is uncertain for an item, add it as a comment `// TODO: confirm nameToCourseCodeKey` and leave the field out rather than guessing.
+
+#### 4c-4: Apply isToDisplayInNavigation changes
+
+For each item the user asked to toggle in Phase 0 Call 3, flip its `isToDisplayInNavigation` value.
+
+**Rules:**
+- An item set to `false` is still kept in the config array — it provides routing for the side nav when a user visits that course path.
+- An item set to `true` will appear in the top nav; its position in the array controls its left-to-right display order.
+- If toggling an item to `false` would leave the language with **zero visible items**, warn the user and ask for confirmation before proceeding.
+
+**Example diff for Spanish:**
+```js
+// Before:
+isToDisplayInNavigation: true,   // level-1-spa — being hidden
+// After:
+isToDisplayInNavigation: false,  // level-1-spa — hidden; kept for side-nav routing
+```
+
+#### 4c-5: Update tier-conditional color logic on existing items (optional)
+
+If tiers are selected for the new course AND the user wants existing items to also show tier colors, add the same conditional color logic to those items. Only do this if explicitly requested — do not change existing items' color logic unless asked.
 
 ---
 
