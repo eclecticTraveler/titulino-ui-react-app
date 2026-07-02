@@ -10,6 +10,9 @@ const { Title, Paragraph, Text } = Typography;
 const AI_POLL_INTERVAL_MS = 10000;
 const ACTIVE_STATUSES = new Set(['pending', 'processing']);
 
+const getStorageKey = (levelTheme, chapterNo, emailId) =>
+  `knowme_answers_${levelTheme}_${chapterNo}_${emailId}`;
+
 const KnowMeV3 = (props) => {
   const { user, onUpsertingKnowMeByChapter, onFetchingKnowMeSurveyQuestions, onFetchingKnowMeAiResult, chapterNo, levelTheme } = props;
   const { message } = App.useApp();
@@ -47,7 +50,21 @@ const KnowMeV3 = (props) => {
 
   const fetchAiResult = async () => {
     const result = await onFetchingKnowMeAiResult(levelTheme, user?.emailId, chapterNo);
-    setAiResult(result?.aiResult ?? null);
+    const fetched = result?.aiResult ?? null;
+    setAiResult(fetched);
+
+    // Pre-populate form with saved answers when AI failed so student can resubmit
+    if (fetched?.aiStatus === 'failed') {
+      try {
+        const saved = localStorage.getItem(getStorageKey(levelTheme, chapterNo, user?.emailId));
+        if (saved) form.setFieldsValue(JSON.parse(saved));
+      } catch {}
+    }
+
+    // Clear saved answers once AI review completes successfully
+    if (fetched?.aiStatus === 'completed') {
+      try { localStorage.removeItem(getStorageKey(levelTheme, chapterNo, user?.emailId)); } catch {}
+    }
   };
 
   // Poll while AI is in progress (T27)
@@ -82,6 +99,14 @@ const KnowMeV3 = (props) => {
         answers[key] = val;
       }
     }
+
+    // Save text answers so they can be restored if AI fails or student navigates away
+    try {
+      localStorage.setItem(
+        getStorageKey(levelTheme, chapterNo, user.emailId),
+        JSON.stringify(answers)
+      );
+    } catch {}
 
     const record = {
       contactId: user.contactInternalId,
@@ -137,10 +162,11 @@ const KnowMeV3 = (props) => {
   const aiStatus = aiResult?.aiStatus;
   const isCompleted = aiStatus === 'completed';
   const isPending = ACTIVE_STATUSES.has(aiStatus);
+  const isFailed = aiStatus === 'failed';
 
   return (
     <>
-      {/* T27: pending/processing banner */}
+      {/* T27: pending/processing banner — form is hidden while AI works */}
       {isPending && (
         <Alert
           type="info"
@@ -148,6 +174,17 @@ const KnowMeV3 = (props) => {
           style={{ marginBottom: 24, maxWidth: 700, margin: "0 auto 24px" }}
           title="AI Review in Progress"
           description="Your answers have been submitted. The AI is reviewing your essays — this usually takes under a minute. This page will update automatically."
+        />
+      )}
+
+      {/* failed banner — answers are restored below for resubmission */}
+      {isFailed && (
+        <Alert
+          type="error"
+          showIcon
+          style={{ marginBottom: 24, maxWidth: 700, margin: "0 auto 24px" }}
+          message="AI Review Failed"
+          description="The AI could not process your submission. Your answers have been restored below — please review and resubmit."
         />
       )}
 
@@ -212,13 +249,13 @@ const KnowMeV3 = (props) => {
         </div>
       )}
 
-      {/* Hide form when completed; always show when not */}
-      {!isCompleted && (
+      {/* Show form only when not pending (AI working) and not completed */}
+      {!isCompleted && !isPending && (
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <DynamicFormRenderer questions={questions} />
           <Card variant="outlined" style={{ maxWidth: 700, margin: "20px auto", textAlign: "center" }}>
-            <Button type="primary" size="large" htmlType="submit" loading={loading} disabled={isPending}>
-              Submit
+            <Button type="primary" size="large" htmlType="submit" loading={loading}>
+              {isFailed ? 'Resubmit' : 'Submit'}
             </Button>
           </Card>
         </Form>
