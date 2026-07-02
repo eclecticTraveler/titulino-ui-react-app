@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.230](///compare/v0.1.229...v0.1.230) (2026-07-02)
+
+
+### Features
+
+* add /new-course skill (T1) eb9ab93
+* add meditaciones course nav and config fa4b332
+* extend /new-course with Phase 4c nav wiring for ES/PT efc8b07
+
 ### [0.1.229](///compare/v0.1.228...v0.1.229) (2026-07-02)
 
 ### [0.1.228](///compare/v0.1.227...v0.1.228) (2026-07-02)
