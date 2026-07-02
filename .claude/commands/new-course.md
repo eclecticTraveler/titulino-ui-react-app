@@ -47,6 +47,12 @@ Ask: "Which of these existing items should be toggled? List keys to flip, or say
 
 The user's answer determines additional `isToDisplayInNavigation` changes applied in Phase 4c.
 
+Also ask in the same call (as separate questions):
+- **Spanish search keywords** — 2–3 Spanish words or phrases a user might search to find this course (e.g. `discurso`, `habla`, `pronunciación`). Leave blank to skip.
+- **Portuguese search keywords** (only if Portuguese selected) — same format in Portuguese (e.g. `discurso`, `fala`, `pronúncia`). Leave blank to skip.
+
+These answers drive Phase 4b.
+
 ---
 
 ## Step 1 — Read current state (before writing anything)
@@ -103,6 +109,7 @@ Files to modify:
   MOD  src/configs/CourseMainNavigationConfig/Spanish/SpanishCourseMainNavigationConfig.js  (if Spanish)
   MOD  src/configs/CourseMainNavigationConfig/Portuguese/PortugueseCourseMainNavigationConfig.js  (if Portuguese)
   MOD  src/services/DynamicNavigationRouter.js  (if Spanish — fixes coursesByTheme passthrough, always)
+  MOD  src/configs/CourseMainNavigationConfig/English/SearchAssociation.js  (if ES or PT keywords provided)
   MOD  src/configs/AppConfig.js              (if default landing)
 
 Wiring fixes applied to existing items (Spanish/Portuguese only):
@@ -465,6 +472,30 @@ Same pattern as English but with:
 - `course`: `"Português"` (check existing items to confirm)
 - Pass `"pt"` as lang code
 - `coursesByTheme` is already passed for Portuguese (no router fix needed)
+
+---
+
+### Phase 4b — Search keywords (`SearchAssociation.js`)
+
+**Run only when Spanish or Portuguese is selected AND the user provided keywords in Call 3.**
+
+File: `src/configs/CourseMainNavigationConfig/English/SearchAssociation.js`
+
+For each language where keywords were provided, add an entry inside `localizedKeywords`:
+
+**Spanish** — add to `es.themeKeywords`:
+```js
+'<theme-slug>': ['<keyword1>', '<keyword2>'], // add more if provided
+```
+
+**Portuguese** — add to `pt.themeKeywords`:
+```js
+'<theme-slug>': ['<keyword1>', '<keyword2>'],
+```
+
+**English** — only add to `en.themeKeywords` if English was selected AND the user provided EN keywords. Leave the `en` block untouched if no EN keywords were given.
+
+Keep the format consistent with existing entries — plain string arrays, no trailing commas on the last item in the object. The static keywords supplement `SearchIndexService`, which auto-extracts chapter titles, PDF titles, and vocabulary words from JSON data files — good keywords are terms a user might search that don't appear verbatim in those titles (synonyms, topic categories, colloquial terms).
 
 ---
 

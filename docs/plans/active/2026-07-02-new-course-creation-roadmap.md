@@ -50,7 +50,7 @@ When running `/new-course` or creating a course via the admin UI, the user is pr
 - [ ] **T4** — Phase 3 new files: generate `CourseSubNavigation<Name>Theme.js` (unauthenticated, N chapters) and `AuthCourseSubNavigation<Name>Theme.js` (authenticated, tier-aware, intro + resources)
 - [ ] **T5** — Phase 4 nav config: add import + nav item object to `EnglishCourseMainNavigationConfig.js`; mirror to Spanish / Portuguese configs if selected
 - [ ] **T5c** — Phase 4c wiring: for Spanish/Portuguese configs, fix `DynamicNavigationRouter` passthrough, add missing `topSubmenu`/`nameToCourseCodeKey` fields to existing items, apply `isToDisplayInNavigation` toggles requested by user
-- [ ] **T6** — Phase 4b search: add keywords to `SearchAssociation.js` for ES and PT
+- [x] **T6** — Phase 4b search: add keywords to `SearchAssociation.js` for ES and PT
 - [ ] **T7** — Phase 7 spine data: generate copy-ready JSON entries for all 12 spine files, prompt for speaking-practice words, note which fields need manual fill (dates, URLs, Quizlet IDs)
 - [ ] **T8** — Phase 8 finish: run `.claude/support-scripts/run-tests.sh`, create PR, print summary of manual steps remaining
 
