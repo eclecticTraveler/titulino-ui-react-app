@@ -146,7 +146,138 @@ The fix: `UpsertAuthenticatedKnowMeSubmission` (already called by the UI) is mod
 
 ---
 
-## Token / session budget
+### Phase 6 — Bilingual Feedback + UI Polish
+
+> Requires Phase 5 complete. Adds native-language feedback alongside English and redesigns the result card layout.
+
+**Goal:** Language learners should be able to read their AI feedback in their own language (Spanish, Portuguese, etc.) as well as English. The current result view also has two visual bugs: grammar notes render raw `**markdown**` instead of bold text, and the student's original answer is not shown — there is no contrast between what they wrote and the correction.
+
+**Design target (per question card):**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Question title                                          │
+│                                                          │
+│  YOUR ANSWER  (neutral gray)                            │
+│  ┌─ original text ─────────────────────────────────┐   │
+│  └────────────────────────────────────────────────┘   │
+│                                                          │
+│  CORRECTED VERSION  (green — as now)                     │
+│  ┌─ corrected text ────────────────────────────────┐   │
+│  └────────────────────────────────────────────────┘   │
+│                                                          │
+│  🇺🇸  ENGLISH FEEDBACK                                  │
+│  Summary paragraph.                                      │
+│  Grammar notes:  1. …  2. …                             │
+│  Vocabulary:  • …                                       │
+│                                                          │
+│  🇪🇸  RETROALIMENTACIÓN EN ESPAÑOL  (or 🇧🇷 / other)   │
+│  Same structure, translated by the AI.                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+The language of the second section is driven entirely by the `NativeLanguageId` on the course — no hardcoding. If a job has no native language (legacy rows), only the English section renders.
+
+---
+
+#### Layer 1 — Database · `titulino-warehouse`
+
+> No schema change to `KnowMeAiJob`. `NativeLanguageId` is derived at claim time via a JOIN — no denormalization needed.
+
+- [x] **T34** *(15 min)* — Update `ClaimNextPendingKnowMeAiJob` wrapper to derive `NativeLanguageId` from `Enrollment.Course` at claim time  
+  After claiming the job row, do a secondary `SELECT "NativeLanguageId" INTO v_native_language FROM "Enrollment"."Course" WHERE "CourseCodeId" = v_job."CourseCodeId"` then include it in the `jsonb_build_object(…, 'NativeLanguageId', v_native_language)` return value. Returns NULL cleanly when course has no language set. No `ALTER TABLE` required.
+
+- [x] **T35** *(15 min)* — Update `GetKnowMeAiJobResult` wrapper to also return `OriginalEssays`  
+  Add `'OriginalEssays', j."EssaysJson"` to the result. This enables the UI to show the student's original answer without a second query.
+
+---
+
+#### Layer 2 — Worker · `TitulinoWorkerService`
+
+- [x] **T36** *(15 min)* — Add `NativeLanguageId` to `IKnowMeAiJob` interface and its model  
+  `string? NativeLanguageId { get; }` — nullable because legacy DB rows have NULL.
+
+- [x] **T37** *(30 min)* — Pass `NativeLanguageId` into the AI prompt  
+  `KnowMeAiManager.ProcessJobAsync` passes `job.NativeLanguageId` to `CorrectEssaysAsync`.  
+  `IAiCorrectionService.CorrectEssaysAsync` gains `string? nativeLanguageId` parameter.  
+  All three providers pass it to `AiPromptHelper.BuildEssayCorrectionPrompt`.
+
+- [x] **T38** *(45 min)* — Update `AiPromptHelper` prompt template for bilingual output  
+  When `nativeLanguageId` is non-null/non-empty, the prompt instructs the AI to provide a second `feedbackNative` block identical in structure to `feedback` but written entirely in the native language.  
+  **Plain text rule added:** instruct the AI to NOT use markdown syntax (`**bold**`, `_italic_`) in any text fields — use plain sentences only.  
+  New output schema per essay:
+  ```json
+  {
+    "questionId": "…",
+    "correctedText": "…",
+    "feedback": {
+      "summary": "…",
+      "grammarNotes": ["…"],
+      "vocabularySuggestions": ["…"]
+    },
+    "feedbackNative": {           // omitted if nativeLanguageId is null
+      "summary": "…",
+      "grammarNotes": ["…"],
+      "vocabularySuggestions": ["…"]
+    }
+  }
+  ```
+
+- [x] **T39** *(45 min)* — Update `EssayResult` model + all three provider parsers  
+  Add `FeedbackNative` property (nullable `EssayFeedback?` object with same fields as the existing feedback). All three providers (`Gemini`, `OpenAi`, `Anthropic`) parse `feedbackNative` from the response. Falls back to null cleanly if field is absent.
+
+- [x] **T40** *(20 min)* — Update `KnowMeAiManager` feedback serialization  
+  `feedbackDict` per question now serializes both `feedback` and `feedbackNative` (when present).  
+  DB column `FeedbackJson` format becomes:
+  ```json
+  {
+    "q1_intro": {
+      "summary": "…",
+      "grammarNotes": ["…"],
+      "vocabularySuggestions": ["…"],
+      "native": {
+        "languageId": "es",
+        "summary": "…",
+        "grammarNotes": ["…"],
+        "vocabularySuggestions": ["…"]
+      }
+    }
+  }
+  ```
+  Note: `native.languageId` is stored so the UI can resolve the correct flag without knowing the course.
+
+---
+
+#### Layer 3 — .NET API · `titulino-net-api`
+
+- [x] **T41** *(20 min)* — Add `OriginalEssays` to `KnowMeAiResultResponse`  
+  `public JsonElement? OriginalEssays { get; set; }` — maps from `OriginalEssays` field returned by `GetKnowMeAiJobResult`.  
+  `LrnManager.GetKnowMeAiResultAsync` maps the new field alongside the existing ones. No schema migration needed — the DB RPC already returns it after T36.
+
+---
+
+#### Layer 4 — React UI · `titulino-ui`
+
+- [x] **T42** *(30 min)* — Add `originalEssays` to `TitulinoLrnNetService.getKnowMeAiResult`  
+  Map `result?.originalEssays` → pass through manager → Redux action → component state.
+
+- [x] **T43** *(90 min)* — Redesign completed result view in `KnowMeV3.js`  
+  Per-question card layout (in render order):
+  1. Question title  
+  2. **Your Answer** — neutral gray box, `originalEssays[q.id]` (hidden if null for legacy jobs)  
+  3. **Corrected Version** — existing green box  
+  4. **🇺🇸 English Feedback** — summary + numbered grammar notes + vocabulary  
+  5. **Native language section** — rendered only when `feedback[q.id].native` is non-null; flag emoji + section label driven by `native.languageId` via a small static map (`es` → `🇪🇸 Español`, `pt` → `🇧🇷 Português`, etc.)  
+  Grammar notes use a numbered `<ol>` instead of a bullet `<ul>` to make them feel like structured lessons, not a loose list.  
+  No markdown parsing needed — T39 removes markdown from AI output entirely.
+
+---
+
+#### Known bug fixed by this phase
+
+- **Raw `**markdown**` in grammar notes** — visible in current production output. Caused by the AI prompt not specifying plain-text output. Fixed by T39 (prompt rule) plus the fact that new jobs will no longer contain markdown. Existing completed jobs with markdown will still show raw `**` — acceptable since they are test data.
+
+---
 
 | Phase | Tasks | Est. hours | Strategy |
 |---|---|---|---|

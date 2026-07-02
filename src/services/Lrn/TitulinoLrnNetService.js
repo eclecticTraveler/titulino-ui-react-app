@@ -137,6 +137,7 @@ export const getKnowMeAiResult = async (token, courseCodeId, classNumber, whoCal
       success: true,
       status: response.status,
       aiStatus: result?.status ?? 'not_found',
+      originalEssays: result?.originalEssays ?? null,
       correctedEssays: result?.correctedEssays ?? null,
       feedback: result?.feedback ?? null,
       errorMessage: result?.errorMessage ?? null
