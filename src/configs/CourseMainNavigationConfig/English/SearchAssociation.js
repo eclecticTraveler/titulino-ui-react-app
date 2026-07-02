@@ -11,6 +11,7 @@ const localizedKeywords = {
 	  },
 	es: {
 	  themeKeywords: {
+		meditaciones: ['meditación', 'reflexión', 'mindfulness'],
 		supermarket: ['mercado', 'compras'],
 		household: ['suministros de limpieza', 'mantenimiento del hogar'],
 		'work-n-jobs': ['trabajo', 'empleos'],

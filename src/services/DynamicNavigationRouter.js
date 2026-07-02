@@ -9,7 +9,7 @@ export const loadMenu = async (contentLanguageCode, isAuthenticated = false, cou
     case "pt":
       return PortugueseCourseMainNavigationConfig(isAuthenticated, coursesByTheme);
     case "es":
-      return SpanishCourseMainNavigationConfig(isAuthenticated);
+      return SpanishCourseMainNavigationConfig(isAuthenticated, coursesByTheme);
     default:
       return getEnglishCourseMainNavigationConfig(isAuthenticated, coursesByTheme);
   }
