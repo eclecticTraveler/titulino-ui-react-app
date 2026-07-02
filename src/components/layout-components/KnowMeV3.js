@@ -188,36 +188,56 @@ const KnowMeV3 = (props) => {
         />
       )}
 
-      {/* T28: completed result view */}
+      {/* T28/T43: completed result view */}
       {isCompleted && (
         <div style={{ maxWidth: 700, margin: "0 auto 32px" }}>
           <Alert
             type="success"
             showIcon
-            title="AI Review Complete"
+            description="AI Review Complete"
             style={{ marginBottom: 24 }}
           />
           {questions
             .filter((q) => q.type === 'textarea' || q.type === 'text')
             .map((q) => {
+              const original  = aiResult?.originalEssays?.[q.id];
               const corrected = aiResult?.correctedEssays?.[q.id];
               const feedback  = aiResult?.feedback?.[q.id];
-              if (!corrected && !feedback) return null;
+              if (!original && !corrected && !feedback) return null;
+
+              const hasEnFeedback = feedback && (feedback.summary || feedback.grammarNotes?.length > 0 || feedback.vocabularySuggestions?.length > 0);
+              const hasNativeFeedback = feedback && (feedback.nativeSummary || feedback.nativeGrammarNotes?.length > 0 || feedback.nativeVocabularySuggestions?.length > 0);
+
               return (
                 <Card key={q.id} style={{ marginBottom: 20 }} variant="outlined">
                   <Title level={5} style={{ marginTop: 0 }}>{q.label || q.id}</Title>
+
+                  {/* Original answer */}
+                  {original && (
+                    <>
+                      <Text type="secondary">Your answer</Text>
+                      <Paragraph style={{ background: '#fafafa', border: '1px solid #d9d9d9', borderRadius: 6, padding: '10px 14px', marginTop: 6 }}>
+                        {original}
+                      </Paragraph>
+                    </>
+                  )}
+
+                  {/* Corrected version */}
                   {corrected && (
                     <>
+                      <Divider style={{ margin: '12px 0' }} />
                       <Text type="secondary">Corrected version</Text>
                       <Paragraph style={{ background: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 6, padding: '10px 14px', marginTop: 6 }}>
                         {corrected}
                       </Paragraph>
                     </>
                   )}
-                  {feedback && (
+
+                  {/* English feedback */}
+                  {hasEnFeedback && (
                     <>
                       <Divider style={{ margin: '12px 0' }} />
-                      <Text type="secondary">AI Feedback</Text>
+                      <Text strong>Feedback</Text>
                       {feedback.summary && (
                         <Paragraph style={{ marginTop: 6 }}>{feedback.summary}</Paragraph>
                       )}
@@ -236,6 +256,37 @@ const KnowMeV3 = (props) => {
                           <Text type="secondary" style={{ fontSize: 12 }}>Vocabulary suggestions</Text>
                           <ul style={{ marginTop: 4, paddingLeft: 20 }}>
                             {feedback.vocabularySuggestions.map((s, i) => (
+                              <li key={i}><Paragraph style={{ margin: 0 }}>{s}</Paragraph></li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {/* Native language feedback */}
+                  {hasNativeFeedback && (
+                    <>
+                      <Divider style={{ margin: '12px 0' }} />
+                      <Text strong>Retroalimentación</Text>
+                      {feedback.nativeSummary && (
+                        <Paragraph style={{ marginTop: 6 }}>{feedback.nativeSummary}</Paragraph>
+                      )}
+                      {feedback.nativeGrammarNotes?.length > 0 && (
+                        <>
+                          <Text type="secondary" style={{ fontSize: 12 }}>Notas de gramática</Text>
+                          <ul style={{ marginTop: 4, paddingLeft: 20 }}>
+                            {feedback.nativeGrammarNotes.map((note, i) => (
+                              <li key={i}><Paragraph style={{ margin: 0 }}>{note}</Paragraph></li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                      {feedback.nativeVocabularySuggestions?.length > 0 && (
+                        <>
+                          <Text type="secondary" style={{ fontSize: 12 }}>Sugerencias de vocabulario</Text>
+                          <ul style={{ marginTop: 4, paddingLeft: 20 }}>
+                            {feedback.nativeVocabularySuggestions.map((s, i) => (
                               <li key={i}><Paragraph style={{ margin: 0 }}>{s}</Paragraph></li>
                             ))}
                           </ul>
