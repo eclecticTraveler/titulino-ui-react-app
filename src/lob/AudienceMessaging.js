@@ -924,6 +924,17 @@ export const buildCommunicationTrackingHistoryCategoryTotals = (rows = []) => {
     .sort((a, b) => b.count - a.count);
 };
 
+export const buildCommunicationTrackingHistoryCourseTotals = (rows = []) => {
+  const counts = {};
+  (Array.isArray(rows) ? rows : []).forEach(row => {
+    if (!row?.courseCodeId) return;
+    counts[row.courseCodeId] = (counts[row.courseCodeId] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([courseCodeId, count]) => ({ courseCodeId, count }))
+    .sort((a, b) => b.count - a.count);
+};
+
 const AudienceMessaging = {
   getDefaultAudienceFilters,
   buildContactSegmentPayload,
@@ -947,7 +958,8 @@ const AudienceMessaging = {
   buildCommunicationTrackingHistoryTableModel,
   buildHistoryCourseOptions,
   buildCommunicationTrackingHistoryTrendData,
-  buildCommunicationTrackingHistoryCategoryTotals
+  buildCommunicationTrackingHistoryCategoryTotals,
+  buildCommunicationTrackingHistoryCourseTotals
 };
 
 export default AudienceMessaging;

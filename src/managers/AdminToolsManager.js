@@ -116,6 +116,7 @@ export const isContactMergeMutationSuccessful = (...args) => ContactStewardship.
 export const buildHistoryCourseOptions = (...args) => AudienceMessaging.buildHistoryCourseOptions(...args);
 export const buildCommunicationTrackingHistoryTrendData = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryTrendData(...args);
 export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCategoryTotals(...args);
+export const buildCommunicationTrackingHistoryCourseTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCourseTotals(...args);
 
 export const initAdminTools = async (emailId) => {
   const token = await getTokenFromEmail(emailId);
@@ -1381,6 +1382,10 @@ const AdminToolsManager = {
   buildHistoryCourseOptions,
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
+  buildCommunicationTrackingHistoryCourseTotals,
+  getCommunicationCategories: (...args) => getCommunicationCategories(...args),
+  getCommunicationTrackingHistory: (...args) => getCommunicationTrackingHistory(...args),
+  updateCommunicationCategory: (...args) => updateCommunicationCategory(...args),
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,

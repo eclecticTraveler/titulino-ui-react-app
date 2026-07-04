@@ -11,6 +11,7 @@ import IntlMessage from 'components/util-components/IntlMessage';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
+import { Area } from '@ant-design/plots';
 import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/LoginFootprintHeatmapGraph';
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import ContactProfileEditor from 'components/shared-components/ContactProfileEditor';
@@ -91,7 +92,8 @@ import {
   isContactMergeMutationSuccessful,
   buildHistoryCourseOptions,
   buildCommunicationTrackingHistoryTrendData,
-  buildCommunicationTrackingHistoryCategoryTotals
+  buildCommunicationTrackingHistoryCategoryTotals,
+  buildCommunicationTrackingHistoryCourseTotals
 } from "redux/actions/AdminTools";
 
 const normalizeContactInternalId = (value) => (
@@ -4480,9 +4482,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           onChange={(e) => setContactTabKey(e.target.value)}
           style={{ marginBottom: 16 }}
         >
-          <Radio.Button value="summary">{setLocale(locale, 'admin.tools.tab.summary')}</Radio.Button>
-          <Radio.Button value="detailed">{setLocale(locale, 'admin.tools.tab.detailed')}</Radio.Button>
-          <Radio.Button value="access">{setLocale(locale, 'admin.tools.tab.access')}</Radio.Button>
+          <Radio.Button value="summary"><SolutionOutlined /> {setLocale(locale, 'admin.tools.tab.summary')}</Radio.Button>
+          <Radio.Button value="detailed"><UserOutlined /> {setLocale(locale, 'admin.tools.tab.detailed')}</Radio.Button>
+          <Radio.Button value="access"><SafetyCertificateOutlined /> {setLocale(locale, 'admin.tools.tab.access')}</Radio.Button>
         </Radio.Group>
 
         {contactTabKey === 'summary' && summaryContent}
@@ -7006,9 +7008,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         onChange={(event) => setMonitoringInnerTabKey(event.target.value)}
         style={{ marginBottom: 16 }}
       >
-        <Radio.Button value="general-access">{setLocale(locale, 'admin.tools.monitoring.tab.generalAccess')}</Radio.Button>
-        <Radio.Button value="contact-profiles">{setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}</Radio.Button>
-        <Radio.Button value="process-logs">{setLocale(locale, 'admin.tools.monitoring.tab.processLogs')}</Radio.Button>
+        <Radio.Button value="general-access"><LoginOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.generalAccess')}</Radio.Button>
+        <Radio.Button value="contact-profiles"><UserOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}</Radio.Button>
+        <Radio.Button value="process-logs"><UnorderedListOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.processLogs')}</Radio.Button>
       </Radio.Group>
 
       {monitoringInnerTabKey === 'general-access' && renderGeneralAccessMonitoring()}
@@ -7726,11 +7728,20 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     const historyRows = communicationTrackingHistory?.rows || [];
     const trendData = buildCommunicationTrackingHistoryTrendData(historyRows);
     const categoryTotals = buildCommunicationTrackingHistoryCategoryTotals(historyRows);
+    const courseTotals = buildCommunicationTrackingHistoryCourseTotals(historyRows);
 
     return (
       <div>
+        <Radio.Group
+          value={historyViewMode}
+          onChange={e => setHistoryViewMode(e.target.value)}
+          style={{ marginBottom: 16 }}
+        >
+          <Radio.Button value="grid"><TableOutlined /> {t('admin.tools.messaging.history.viewGrid')}</Radio.Button>
+          <Radio.Button value="chart"><BarChartOutlined /> {t('admin.tools.messaging.history.viewChart')}</Radio.Button>
+        </Radio.Group>
         <Row gutter={[8, 8]} style={{ marginBottom: 12 }} align="middle">
-          <Col xs={24} md={8}>
+          <Col xs={24} md={7}>
             <Select
               value={messagingHistoryFilters.categoryId ?? null}
               placeholder={t('admin.tools.messaging.history.filterCategory')}
@@ -7742,7 +7753,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               loading={!communicationCategories}
             />
           </Col>
-          <Col xs={24} md={8}>
+          <Col xs={24} md={9}>
             <Select
               value={messagingHistoryFilters.courseCodeId || null}
               onChange={value => setMessagingHistoryFilters(prev => ({ ...prev, courseCodeId: value || '', offset: 0 }))}
@@ -7754,7 +7765,23 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               style={{ width: '100%' }}
             />
           </Col>
-          <Col xs={12} md={4}>
+          <Col xs={24} md={4}>
+            <Select
+              value={messagingHistoryFilters.limit}
+              onChange={value => {
+                const updated = { ...messagingHistoryFilters, limit: value, offset: 0 };
+                setMessagingHistoryFilters(updated);
+                loadMessagingHistory(updated);
+              }}
+              options={[
+                { value: 50, label: 'Last 50' },
+                { value: 200, label: 'Last 200' },
+                { value: 1000, label: 'Last 1,000' },
+              ]}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={4}>
             <Button
               type="primary"
               icon={<SearchOutlined />}
@@ -7764,25 +7791,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             >
               {t('admin.tools.messaging.applyFilters')}
             </Button>
-          </Col>
-          <Col xs={12} md={4} style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Radio.Group
-              value={historyViewMode}
-              onChange={e => setHistoryViewMode(e.target.value)}
-              buttonStyle="solid"
-              size="small"
-            >
-              <Radio.Button value="grid">
-                <Tooltip title={t('admin.tools.messaging.history.viewGrid')}>
-                  <TableOutlined />
-                </Tooltip>
-              </Radio.Button>
-              <Radio.Button value="chart">
-                <Tooltip title={t('admin.tools.messaging.history.viewChart')}>
-                  <BarChartOutlined />
-                </Tooltip>
-              </Radio.Button>
-            </Radio.Group>
           </Col>
         </Row>
         {historyViewMode === 'grid' && (
@@ -7800,25 +7808,42 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 dataIndex: 'emailId',
                 key: 'emailId',
                 width: 240,
-                ellipsis: true
+                ellipsis: true,
+                filters: [...new Set((historyRows || []).map(r => r.emailId).filter(Boolean))].sort().map(e => ({ text: e, value: e })),
+                filterSearch: true,
+                filterMode: 'menu',
+                onFilter: (value, record) => record.emailId === value,
               },
               {
                 title: t('admin.tools.messaging.history.col.category'),
                 dataIndex: 'categoryName',
                 key: 'categoryName',
-                width: 180
+                width: 180,
+                filters: [...new Set((historyRows || []).map(r => r.categoryName).filter(Boolean))].sort().map(c => ({ text: c, value: c })),
+                filterSearch: true,
+                filterMode: 'menu',
+                onFilter: (value, record) => record.categoryName === value,
               },
               {
                 title: t('admin.tools.messaging.history.col.courseCode'),
                 dataIndex: 'courseCodeId',
                 key: 'courseCodeId',
-                width: 200
+                width: 200,
+                filters: [...new Set((historyRows || []).map(r => r.courseCodeId).filter(Boolean))].sort().map(c => ({ text: c, value: c })),
+                filterSearch: true,
+                filterMode: 'menu',
+                onFilter: (value, record) => record.courseCodeId === value,
               },
               {
                 title: t('admin.tools.messaging.history.col.status'),
                 dataIndex: 'wasSentSuccessful',
                 key: 'wasSentSuccessful',
                 width: 100,
+                filters: [
+                  { text: t('admin.tools.messaging.history.sent'), value: true },
+                  { text: t('admin.tools.messaging.history.failed'), value: false },
+                ],
+                onFilter: (value, record) => record.wasSentSuccessful === value,
                 render: value => (
                   <Tag color={value ? 'success' : 'error'}>
                     {value ? t('admin.tools.messaging.history.sent') : t('admin.tools.messaging.history.failed')}
@@ -7830,6 +7855,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 dataIndex: 'sentAt',
                 key: 'sentAt',
                 width: 180,
+                defaultSortOrder: 'descend',
                 sorter: (a, b) => new Date(a.sentAt || 0) - new Date(b.sentAt || 0),
                 render: value => (value ? new Date(value).toLocaleString() : '-')
               }
@@ -7838,18 +7864,34 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         )}
         {historyViewMode === 'chart' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <TimelineTrendGraph
-              trendData={trendData}
-              seriesField="categoryName"
-              localizedTitle="admin.tools.messaging.history.chart.trend"
-              emptyDescriptionKey="admin.tools.messaging.history.empty"
-              legendPosition="top-right"
-            />
+            <Card variant="outlined" title={<IntlMessage id="admin.tools.messaging.history.chart.trend" />}>
+              {trendData.length === 0
+                ? <p style={{ textAlign: 'center', color: '#999', padding: 40 }}><IntlMessage id="admin.tools.messaging.history.empty" /></p>
+                : <Area
+                    data={trendData}
+                    xField="date"
+                    yField="count"
+                    colorField="categoryName"
+                    shapeField="smooth"
+                    slider={{ x: { labelFormatter: d => d } }}
+                    axis={{ x: { title: false }, y: { title: false } }}
+                    legend={{ color: { position: 'top-right' } }}
+                    style={{ fillOpacity: 0.15 }}
+                    point={{ shapeField: 'circle', sizeField: 4 }}
+                  />
+              }
+            </Card>
             <BarGraph
               graphData={categoryTotals}
               passedType="categoryName"
               passedValue="count"
               localizedTitle="admin.tools.messaging.history.chart.totals"
+            />
+            <BarGraph
+              graphData={courseTotals}
+              passedType="courseCodeId"
+              passedValue="count"
+              localizedTitle="admin.tools.messaging.history.chart.courseTotals"
             />
           </div>
         )}
@@ -7890,10 +7932,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           </div>
         </Col>
         <Col xs={24} md={12}>
-          <Input
-            value={audienceMessageDraft.courseCodeId}
-            onChange={event => setAudienceMessageDraft(prev => ({ ...prev, courseCodeId: event.target.value }))}
+          <Select
+            value={audienceMessageDraft.courseCodeId || undefined}
+            onChange={value => setAudienceMessageDraft(prev => ({ ...prev, courseCodeId: value || '' }))}
             placeholder={t('admin.tools.messaging.courseCodeIdPlaceholder')}
+            options={historyCourseOptions}
+            showSearch
+            allowClear
+            optionFilterProp="searchText"
+            style={{ width: '100%' }}
           />
         </Col>
       </Row>

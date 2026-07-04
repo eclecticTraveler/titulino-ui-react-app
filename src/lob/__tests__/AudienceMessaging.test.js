@@ -465,7 +465,8 @@ describe('buildCommunicationCategoryTableModel', () => {
 const {
   buildHistoryCourseOptions,
   buildCommunicationTrackingHistoryTrendData,
-  buildCommunicationTrackingHistoryCategoryTotals
+  buildCommunicationTrackingHistoryCategoryTotals,
+  buildCommunicationTrackingHistoryCourseTotals
 } = AudienceMessaging;
 
 describe('buildHistoryCourseOptions', () => {
@@ -604,5 +605,56 @@ describe('buildCommunicationTrackingHistoryCategoryTotals', () => {
     const rows = [{ sentAt: '2026-01-01' }];
     const [entry] = buildCommunicationTrackingHistoryCategoryTotals(rows);
     expect(entry.categoryName).toBe('—');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildCommunicationTrackingHistoryCourseTotals
+// ---------------------------------------------------------------------------
+describe('buildCommunicationTrackingHistoryCourseTotals', () => {
+  it('returns empty array for empty input', () => {
+    expect(buildCommunicationTrackingHistoryCourseTotals([])).toEqual([]);
+  });
+
+  it('returns empty array for non-array input', () => {
+    expect(buildCommunicationTrackingHistoryCourseTotals(null)).toEqual([]);
+  });
+
+  it('counts by courseCodeId', () => {
+    const rows = [
+      { courseCodeId: 'COURSE_A' },
+      { courseCodeId: 'COURSE_A' },
+      { courseCodeId: 'COURSE_B' }
+    ];
+    const result = buildCommunicationTrackingHistoryCourseTotals(rows);
+    const a = result.find(r => r.courseCodeId === 'COURSE_A');
+    const b = result.find(r => r.courseCodeId === 'COURSE_B');
+    expect(a.count).toBe(2);
+    expect(b.count).toBe(1);
+  });
+
+  it('sorts by count descending', () => {
+    const rows = [
+      { courseCodeId: 'C1' },
+      { courseCodeId: 'C2' },
+      { courseCodeId: 'C2' },
+      { courseCodeId: 'C2' }
+    ];
+    const [first, second] = buildCommunicationTrackingHistoryCourseTotals(rows);
+    expect(first.courseCodeId).toBe('C2');
+    expect(first.count).toBe(3);
+    expect(second.courseCodeId).toBe('C1');
+    expect(second.count).toBe(1);
+  });
+
+  it('skips rows with no courseCodeId', () => {
+    const rows = [
+      { courseCodeId: 'C1' },
+      { categoryName: 'welcome' },
+      { courseCodeId: null }
+    ];
+    const result = buildCommunicationTrackingHistoryCourseTotals(rows);
+    expect(result).toHaveLength(1);
+    expect(result[0].courseCodeId).toBe('C1');
   });
 });

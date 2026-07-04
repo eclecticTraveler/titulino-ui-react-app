@@ -74,6 +74,7 @@ export const isContactMergeMutationSuccessful = (...args) => AdminToolsManager.i
 export const buildHistoryCourseOptions = (...args) => AdminToolsManager.buildHistoryCourseOptions(...args);
 export const buildCommunicationTrackingHistoryTrendData = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryTrendData(...args);
 export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryCategoryTotals(...args);
+export const buildCommunicationTrackingHistoryCourseTotals = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryCourseTotals(...args);
 
 export const onLoadingAdminToolsInit = async (emailId) => {
   const { allCourses, allRoles, allEnrollees, allRawCourses } = await AdminToolsManager.initAdminTools(emailId);
