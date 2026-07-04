@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.231](///compare/v0.1.230...v0.1.231) (2026-07-04)
+
+
+### Features
+
+* add CourseFeatureConfig and apply meditaciones submenu flags 6081607
+
+
+### Bug Fixes
+
+* add horizontal scroll to stewardship tables on mobile fbe8f26
+* add missing EN and PT i18n keys for meditaciones nav theme d8bb6f0
+* prevent courseCodeId overflow in Admin Tools mobile view b6074ea
+
 ### [0.1.230](///compare/v0.1.229...v0.1.230) (2026-07-02)
 
 
