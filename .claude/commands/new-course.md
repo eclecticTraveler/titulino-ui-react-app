@@ -23,6 +23,8 @@ Use `AskUserQuestion` to collect the following. Ask all questions in one call (u
 - **Number of chapters** — How many chapters does this course have? Default: 11
 - **Include intro chapter (Chapter 0)?** — Yes / No. Default: Yes. Intro appears only in the authenticated submenu with a TV icon.
 - **Include resources section?** — Yes / No. Default: Yes. Resources appended at the end of authenticated submenu.
+- **Has Grammar Class?** — Yes / No. Default: Yes. When No, the Class submenu shows only General Gathering (Grammar Class child is hidden via `CourseFeatureConfig.js`).
+- **Has Quizlet & Exercises?** — Yes / No. Default: Yes. When No, Quizlet and Exercises items are hidden from the chapter submenu (both authenticated and unauthenticated) via `CourseFeatureConfig.js`.
 - **Course tiers** — Does this course have paid tiers? Options: None / Silver only / Gold only / Silver and Gold. Default: None.
 - **Should this course be the default landing** for its language(s)? — Yes / No. Default: No.
 - **Course color** — Hex code (e.g. `#3a7bd5`). Leave blank to auto-assign. Cannot reuse an existing color.
@@ -204,6 +206,17 @@ Update the relevant constant:
 - Spanish: `DEFAULT_LANDING_COURSE_SPA = '<theme-name>'`
 - Portuguese: `DEFAULT_LANDING_COURSE_POR = '<theme-name>'`
 
+**`src/configs/CourseFeatureConfig.js`** *(new theme only, and only if hasGrammarClass = No or hasQuizletAndExercises = No)*
+
+Add an entry to `COURSE_FEATURE_FLAGS`. Only include the flags that differ from the default (true):
+```js
+'<theme-name>': {
+    hasGrammarClass: false,        // include only if No was answered
+    hasQuizletAndExercises: false, // include only if No was answered
+}
+```
+If both answers were Yes (defaults), skip this step entirely — the helper `getCourseFeatureFlags` returns `true` for any unregistered theme.
+
 ---
 
 ### Phase 2 — i18n *(new theme only — skip if existing theme)*
@@ -234,6 +247,7 @@ ch9: faMoneyBill ch10: faBreadSlice ch11+: faMedal
 import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 import { getCoursePracticeInnerSubMenuV2 } from './CoursePracticeInnerSubMenu';
+import { getCourseFeatureFlags } from 'configs/CourseFeatureConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
     fa<Icon1>, fa<Icon2>, /* one per chapter used */
@@ -241,6 +255,7 @@ import {
 
 export const CourseSubNavigation<PascalName>Theme = (lang) => {
     const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-<theme-slug>/${getLocalizedConfig(lang)?.chapter}`;
+    const flags = getCourseFeatureFlags('<theme-slug>');
     return [
         // repeat for each chapter 1..N
         {
@@ -251,7 +266,7 @@ export const CourseSubNavigation<PascalName>Theme = (lang) => {
             iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
             breadcrumb: false,
             submenu: [
-                ...getCoursePracticeInnerSubMenuV2(lang, '<theme-slug>', <N>)
+                ...getCoursePracticeInnerSubMenuV2(lang, '<theme-slug>', <N>, flags)
             ]
         },
     ]
@@ -277,6 +292,7 @@ import {
     getAuthCourseInnerSubMenuNoClassV3,
     getCoursePracticeInnerSubMenuV2Light
 } from './AuthCourseInnerSubMenu';
+import { getCourseFeatureFlags } from 'configs/CourseFeatureConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
     fa<Icon1>, fa<Icon2>, /* one per chapter used */
@@ -285,6 +301,7 @@ import {
 
 export const AuthCourseSubNavigation<PascalName>Theme = (lang, course) => {
     const commonPath = `${AUTH_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-<theme-slug>/${getLocalizedConfig(lang)?.chapter}`;
+    const flags = getCourseFeatureFlags('<theme-slug>');
     const baseMenu = [
         // intro (only if intro chapter = yes)
         {
@@ -307,9 +324,9 @@ export const AuthCourseSubNavigation<PascalName>Theme = (lang, course) => {
             iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
             breadcrumb: false,
             submenu: [
-                ...getAuthCourseInnerSubMenuV3(lang, '<theme-slug>', <ch>, course?.courseTierAccess) // odd
+                ...getAuthCourseInnerSubMenuV3(lang, '<theme-slug>', <ch>, course?.courseTierAccess, flags) // odd
                 // or:
-                ...getAuthCourseInnerSubMenuV2(lang, '<theme-slug>', <ch>, course?.courseTierAccess) // even
+                ...getAuthCourseInnerSubMenuV2(lang, '<theme-slug>', <ch>, course?.courseTierAccess, flags) // even
             ]
         },
         // last chapter always uses NoClassV3 + faMedal
@@ -321,7 +338,7 @@ export const AuthCourseSubNavigation<PascalName>Theme = (lang, course) => {
             iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
             breadcrumb: false,
             submenu: [
-                ...getAuthCourseInnerSubMenuNoClassV3(lang, '<theme-slug>', <N>)
+                ...getAuthCourseInnerSubMenuNoClassV3(lang, '<theme-slug>', <N>, flags)
             ]
         },
     ]

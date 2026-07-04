@@ -1,6 +1,7 @@
 import { APP_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 import { getCoursePracticeInnerSubMenuV2 } from './CoursePracticeInnerSubMenu';
+import { getCourseFeatureFlags } from 'configs/CourseFeatureConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
 	faCarrot,
@@ -18,6 +19,7 @@ import {
 
 export const CourseSubNavigationMeditacionesTheme = (lang) => {
 	const commonPath = `${APP_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-meditaciones/${getLocalizedConfig(lang)?.chapter}`;
+	const flags = getCourseFeatureFlags('meditaciones');
 	return [
 		{
 			key: 'chapter-sidenav-theme-meditaciones-1',
@@ -27,7 +29,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 1)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 1, flags)
 			]
 		},
 		{
@@ -38,7 +40,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 2)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 2, flags)
 			]
 		},
 		{
@@ -49,7 +51,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 3)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 3, flags)
 			]
 		},
 		{
@@ -60,7 +62,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 4)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 4, flags)
 			]
 		},
 		{
@@ -71,7 +73,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 5)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 5, flags)
 			]
 		},
 		{
@@ -82,7 +84,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 6)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 6, flags)
 			]
 		},
 		{
@@ -93,7 +95,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 7)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 7, flags)
 			]
 		},
 		{
@@ -104,7 +106,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 8)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 8, flags)
 			]
 		},
 		{
@@ -115,7 +117,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 9)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 9, flags)
 			]
 		},
 		{
@@ -126,7 +128,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 10)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 10, flags)
 			]
 		},
 		{
@@ -137,7 +139,7 @@ export const CourseSubNavigationMeditacionesTheme = (lang) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 11)
+				...getCoursePracticeInnerSubMenuV2(lang, 'meditaciones', 11, flags)
 			]
 		}
 	]

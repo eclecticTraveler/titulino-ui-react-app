@@ -1,6 +1,7 @@
 import { AUTH_PREFIX_PATH } from '../../AppConfig';
 import { getLocalizedConfig } from './ConfigureNavigationLocalization';
 import { getAuthCourseInnerSubMenuV2, getAuthCourseInnerSubMenuV3, getAuthCourseInnerSubMenuNoClassV3 } from './AuthCourseInnerSubMenu';
+import { getCourseFeatureFlags } from 'configs/CourseFeatureConfig';
 import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import {
 	faCarrot,
@@ -18,6 +19,7 @@ import {
 
 export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 	const commonPath = `${AUTH_PREFIX_PATH}/${lang}/${getLocalizedConfig(lang)?.level}-meditaciones/${getLocalizedConfig(lang)?.chapter}`;
+	const flags = getCourseFeatureFlags('meditaciones');
 	const baseMenu = [
 		{
 			key: 'chapter-sidenav-theme-meditaciones-1',
@@ -27,7 +29,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV3(lang, 'meditaciones', 1, course?.courseTierAccess)
+				...getAuthCourseInnerSubMenuV3(lang, 'meditaciones', 1, course?.courseTierAccess, flags)
 			]
 		},
 		{
@@ -38,7 +40,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV2(lang, 'meditaciones', 2, course?.courseTierAccess)
+				...getAuthCourseInnerSubMenuV2(lang, 'meditaciones', 2, course?.courseTierAccess, flags)
 			]
 		},
 		{
@@ -49,7 +51,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV3(lang, 'meditaciones', 3, course?.courseTierAccess)
+				...getAuthCourseInnerSubMenuV3(lang, 'meditaciones', 3, course?.courseTierAccess, flags)
 			]
 		},
 		{
@@ -60,7 +62,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV2(lang, 'meditaciones', 4, course?.courseTierAccess)
+				...getAuthCourseInnerSubMenuV2(lang, 'meditaciones', 4, course?.courseTierAccess, flags)
 			]
 		},
 		{
@@ -71,7 +73,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV3(lang, 'meditaciones', 5, course?.courseTierAccess)
+				...getAuthCourseInnerSubMenuV3(lang, 'meditaciones', 5, course?.courseTierAccess, flags)
 			]
 		},
 		{
@@ -82,7 +84,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV2(lang, 'meditaciones', 6, course?.courseTierAccess)
+				...getAuthCourseInnerSubMenuV2(lang, 'meditaciones', 6, course?.courseTierAccess, flags)
 			]
 		},
 		{
@@ -93,7 +95,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV3(lang, 'meditaciones', 7, course?.courseTierAccess)
+				...getAuthCourseInnerSubMenuV3(lang, 'meditaciones', 7, course?.courseTierAccess, flags)
 			]
 		},
 		{
@@ -104,7 +106,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV2(lang, 'meditaciones', 8, course?.courseTierAccess)
+				...getAuthCourseInnerSubMenuV2(lang, 'meditaciones', 8, course?.courseTierAccess, flags)
 			]
 		},
 		{
@@ -115,7 +117,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV3(lang, 'meditaciones', 9, course?.courseTierAccess)
+				...getAuthCourseInnerSubMenuV3(lang, 'meditaciones', 9, course?.courseTierAccess, flags)
 			]
 		},
 		{
@@ -126,7 +128,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuV2(lang, 'meditaciones', 10, course?.courseTierAccess)
+				...getAuthCourseInnerSubMenuV2(lang, 'meditaciones', 10, course?.courseTierAccess, flags)
 			]
 		},
 		{
@@ -137,7 +139,7 @@ export const AuthCourseSubNavigationMeditacionesTheme = (lang, course) => {
 			iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 			breadcrumb: false,
 			submenu: [
-				...getAuthCourseInnerSubMenuNoClassV3(lang, 'meditaciones', 11)
+				...getAuthCourseInnerSubMenuNoClassV3(lang, 'meditaciones', 11, flags)
 			]
 		}
 	]

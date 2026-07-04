@@ -98,7 +98,7 @@ export const getCoursePracticeInnerSubMenu = (lang, levelNo, chapterNo) => {
 
 }
 
-export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {	
+export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo, featureFlags = {}) => {
 	const commonPath = getCommonUrl(lang, levelNo, chapterNo);
 	// spell  || flashcards -> Resources || Match || Learn --> pratica|| Test
 		  return [
@@ -109,7 +109,7 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 				icon: faBookReader,
 				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 				breadcrumb: false,
-				isRootMenuItem: false,				
+				isRootMenuItem: false,
 				submenu: [],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'book')
 			},
@@ -120,23 +120,26 @@ export const getCoursePracticeInnerSubMenuV2 = (lang, levelNo, chapterNo) => {
 				icon: faChalkboard,
 				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
 				breadcrumb: false,
-				isRootMenuItem: false,				
+				isRootMenuItem: false,
 				submenu: [],
 				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'class')
 			},
-			{
-				key: `module-quizlet-${levelNo}-${chapterNo}-${uuidv4()}`,
-				path: `${commonPath}/${getLocalizedConfig(lang)?.quizlet}`,
-				title: 'sidenav.quizlet',
-				icon: faClone,
-				iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
-				breadcrumb: false,
-				isRootMenuItem: false,				
-				submenu: [],
-				keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizlet')
-			}
+			...(featureFlags.hasQuizletAndExercises !== false
+				? [{
+					key: `module-quizlet-${levelNo}-${chapterNo}-${uuidv4()}`,
+					path: `${commonPath}/${getLocalizedConfig(lang)?.quizlet}`,
+					title: 'sidenav.quizlet',
+					icon: faClone,
+					iconType: ICON_LIBRARY_TYPE_CONFIG.fontAwesome,
+					breadcrumb: false,
+					isRootMenuItem: false,
+					submenu: [],
+					keywords: SearchAssociation.generateSearchKeywords(lang, levelNo, chapterNo, 'quizlet')
+				}]
+				: []
+			)
 		]
-	
+
 }
 
 export const getCoursePracticeInnerSubMenuV2Light = (lang, levelNo, chapterNo) => {
