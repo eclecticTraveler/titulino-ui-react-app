@@ -5858,7 +5858,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 )}
               </Col>
             </Row>
-            <Table size="small" rowKey="key" loading={stewardshipLoading} columns={candidateColumns} dataSource={duplicateRows} pagination={{ pageSize: 10 }} />
+            <Table size="small" rowKey="key" loading={stewardshipLoading} columns={candidateColumns} dataSource={duplicateRows} pagination={{ pageSize: 10 }} scroll={{ x: 900 }} />
           </>
         )
       },
@@ -5939,6 +5939,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               )
             }}
             pagination={{ pageSize: 10 }}
+            scroll={{ x: 900 }}
           />
         )
       }
