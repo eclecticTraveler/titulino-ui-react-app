@@ -11,7 +11,7 @@ import IntlMessage from 'components/util-components/IntlMessage';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
-import { Area } from '@ant-design/plots';
+import { Area, Heatmap } from '@ant-design/plots';
 import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/LoginFootprintHeatmapGraph';
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import ContactProfileEditor from 'components/shared-components/ContactProfileEditor';
@@ -93,7 +93,8 @@ import {
   buildHistoryCourseOptions,
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
-  buildCommunicationTrackingHistoryCourseTotals
+  buildCommunicationTrackingHistoryCourseTotals,
+  buildCommunicationTrackingHistoryHeatmapData
 } from "redux/actions/AdminTools";
 
 const normalizeContactInternalId = (value) => (
@@ -657,6 +658,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [messagingHistoryLoading, setMessagingHistoryLoading] = useState(false);
   const [messagingHistoryFilters, setMessagingHistoryFilters] = useState({ limit: 50, offset: 0 });
   const [historyViewMode, setHistoryViewMode] = useState('grid');
+  const [chartDimensionTab, setChartDimensionTab] = useState('category');
   const [categoryManagerVisible, setCategoryManagerVisible] = useState(false);
   const [categoryEdits, setCategoryEdits] = useState({});
   const [categoryManagerSavingId, setCategoryManagerSavingId] = useState(null);
@@ -7729,6 +7731,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     const trendData = buildCommunicationTrackingHistoryTrendData(historyRows);
     const categoryTotals = buildCommunicationTrackingHistoryCategoryTotals(historyRows);
     const courseTotals = buildCommunicationTrackingHistoryCourseTotals(historyRows);
+    const heatmapData = buildCommunicationTrackingHistoryHeatmapData(historyRows);
 
     return (
       <div>
@@ -7863,37 +7866,71 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           />
         )}
         {historyViewMode === 'chart' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <Card variant="outlined" title={<IntlMessage id="admin.tools.messaging.history.chart.trend" />}>
-              {trendData.length === 0
-                ? <p style={{ textAlign: 'center', color: '#999', padding: 40 }}><IntlMessage id="admin.tools.messaging.history.empty" /></p>
-                : <Area
-                    data={trendData}
-                    xField="date"
-                    yField="count"
-                    colorField="categoryName"
-                    shapeField="smooth"
-                    slider={{ x: { labelFormatter: d => d } }}
-                    axis={{ x: { title: false }, y: { title: false } }}
-                    legend={{ color: { position: 'top-right' } }}
-                    style={{ fillOpacity: 0.15 }}
-                    point={{ shapeField: 'circle', sizeField: 4 }}
-                  />
-              }
-            </Card>
-            <BarGraph
-              graphData={categoryTotals}
-              passedType="categoryName"
-              passedValue="count"
-              localizedTitle="admin.tools.messaging.history.chart.totals"
-            />
-            <BarGraph
-              graphData={courseTotals}
-              passedType="courseCodeId"
-              passedValue="count"
-              localizedTitle="admin.tools.messaging.history.chart.courseTotals"
-            />
-          </div>
+          <Tabs
+            activeKey={chartDimensionTab}
+            onChange={setChartDimensionTab}
+            items={[
+              {
+                key: 'category',
+                label: t('admin.tools.messaging.history.chart.tab.category'),
+                children: (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <Card variant="outlined" title={<IntlMessage id="admin.tools.messaging.history.chart.trend" />}>
+                      {trendData.length === 0
+                        ? <p style={{ textAlign: 'center', color: '#999', padding: 40 }}><IntlMessage id="admin.tools.messaging.history.empty" /></p>
+                        : <Area
+                            data={trendData}
+                            xField="date"
+                            yField="count"
+                            colorField="categoryName"
+                            shapeField="smooth"
+                            slider={{ x: { labelFormatter: d => d } }}
+                            axis={{ x: { title: false }, y: { title: false } }}
+                            legend={{ color: { position: 'top-right' } }}
+                            style={{ fillOpacity: 0.15 }}
+                            point={{ shapeField: 'circle', sizeField: 4 }}
+                          />
+                      }
+                    </Card>
+                    <BarGraph
+                      graphData={categoryTotals}
+                      passedType="categoryName"
+                      passedValue="count"
+                      localizedTitle="admin.tools.messaging.history.chart.totals"
+                    />
+                  </div>
+                ),
+              },
+              {
+                key: 'course',
+                label: t('admin.tools.messaging.history.chart.tab.course'),
+                children: (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <BarGraph
+                      graphData={courseTotals}
+                      passedType="courseCodeId"
+                      passedValue="count"
+                      localizedTitle="admin.tools.messaging.history.chart.courseTotals"
+                    />
+                    <Card variant="outlined" title={<IntlMessage id="admin.tools.messaging.history.chart.heatmap" />}>
+                      {heatmapData.length === 0
+                        ? <p style={{ textAlign: 'center', color: '#999', padding: 40 }}><IntlMessage id="admin.tools.messaging.history.empty" /></p>
+                        : <Heatmap
+                            data={heatmapData}
+                            xField="category"
+                            yField="course"
+                            colorField="count"
+                            axis={{ x: { title: false }, y: { title: false } }}
+                            legend={{ color: { position: 'top-right' } }}
+                            label={{ text: 'count', style: { fontSize: 11 } }}
+                          />
+                      }
+                    </Card>
+                  </div>
+                ),
+              },
+            ]}
+          />
         )}
       </div>
     );

@@ -935,6 +935,19 @@ export const buildCommunicationTrackingHistoryCourseTotals = (rows = []) => {
     .sort((a, b) => b.count - a.count);
 };
 
+export const buildCommunicationTrackingHistoryHeatmapData = (rows = []) => {
+  const counts = {};
+  (Array.isArray(rows) ? rows : []).forEach(row => {
+    if (!row?.courseCodeId || !row?.categoryName) return;
+    const key = `${row.courseCodeId}||${row.categoryName}`;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return Object.entries(counts).map(([key, count]) => {
+    const [course, category] = key.split('||');
+    return { course, category, count };
+  });
+};
+
 const AudienceMessaging = {
   getDefaultAudienceFilters,
   buildContactSegmentPayload,
@@ -959,7 +972,8 @@ const AudienceMessaging = {
   buildHistoryCourseOptions,
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
-  buildCommunicationTrackingHistoryCourseTotals
+  buildCommunicationTrackingHistoryCourseTotals,
+  buildCommunicationTrackingHistoryHeatmapData
 };
 
 export default AudienceMessaging;
