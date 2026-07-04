@@ -88,7 +88,10 @@ import {
   buildAudienceSummary,
   buildAudienceMessageVariableOptions,
   hasAudienceMessageContent,
-  isContactMergeMutationSuccessful
+  isContactMergeMutationSuccessful,
+  buildHistoryCourseOptions,
+  buildCommunicationTrackingHistoryTrendData,
+  buildCommunicationTrackingHistoryCategoryTotals
 } from "redux/actions/AdminTools";
 
 const normalizeContactInternalId = (value) => (
@@ -651,6 +654,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [audienceMessageSending, setAudienceMessageSending] = useState(false);
   const [messagingHistoryLoading, setMessagingHistoryLoading] = useState(false);
   const [messagingHistoryFilters, setMessagingHistoryFilters] = useState({ limit: 50, offset: 0 });
+  const [historyViewMode, setHistoryViewMode] = useState('grid');
   const [categoryManagerVisible, setCategoryManagerVisible] = useState(false);
   const [categoryEdits, setCategoryEdits] = useState({});
   const [categoryManagerSavingId, setCategoryManagerSavingId] = useState(null);
@@ -1812,6 +1816,14 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }, [activeOuterTabKey, communicationCategories?.emailId, emailId, loadCommunicationCategories]);
 
   useEffect(() => {
+    if (activeOuterTabKey !== 'messaging' || !emailId) return;
+    if (!communicationTrackingHistory?.emailId || communicationTrackingHistory.emailId !== emailId) {
+      loadMessagingHistory({ limit: 50, offset: 0 });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeOuterTabKey, communicationTrackingHistory?.emailId, emailId]);
+
+  useEffect(() => {
     if (
       activeOuterTabKey !== 'messaging' ||
       !emailId ||
@@ -2754,6 +2766,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       .filter(row => row.id != null && row.displayName)
       .map(row => ({ value: row.id, label: row.displayName }))
   ), [communicationCategories]);
+  const historyCourseOptions = useMemo(
+    () => buildHistoryCourseOptions(allRawCourses),
+    [allRawCourses]
+  );
   const hasAudienceMessageDraftContent = hasAudienceMessageContent(audienceMessageDraft);
   const canSendAudienceMessage = (
     selectedAudienceRows.length > 0 &&
@@ -7708,9 +7724,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const renderMessagingHistory = () => {
     const historyRows = communicationTrackingHistory?.rows || [];
+    const trendData = buildCommunicationTrackingHistoryTrendData(historyRows);
+    const categoryTotals = buildCommunicationTrackingHistoryCategoryTotals(historyRows);
+
     return (
       <div>
-        <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+        <Row gutter={[8, 8]} style={{ marginBottom: 12 }} align="middle">
           <Col xs={24} md={8}>
             <Select
               value={messagingHistoryFilters.categoryId ?? null}
@@ -7719,17 +7738,23 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               onChange={value => setMessagingHistoryFilters(prev => ({ ...prev, categoryId: value, offset: 0 }))}
               style={{ width: '100%' }}
               allowClear
+              showSearch
+              loading={!communicationCategories}
             />
           </Col>
           <Col xs={24} md={8}>
-            <Input
-              value={messagingHistoryFilters.courseCodeId || ''}
-              onChange={event => setMessagingHistoryFilters(prev => ({ ...prev, courseCodeId: event.target.value, offset: 0 }))}
+            <Select
+              value={messagingHistoryFilters.courseCodeId || null}
+              onChange={value => setMessagingHistoryFilters(prev => ({ ...prev, courseCodeId: value || '', offset: 0 }))}
               placeholder={t('admin.tools.messaging.history.filterCourseCode')}
+              options={historyCourseOptions}
+              optionFilterProp="searchText"
+              showSearch
               allowClear
+              style={{ width: '100%' }}
             />
           </Col>
-          <Col xs={24} md={4}>
+          <Col xs={12} md={4}>
             <Button
               type="primary"
               icon={<SearchOutlined />}
@@ -7740,56 +7765,94 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               {t('admin.tools.messaging.applyFilters')}
             </Button>
           </Col>
+          <Col xs={12} md={4} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Radio.Group
+              value={historyViewMode}
+              onChange={e => setHistoryViewMode(e.target.value)}
+              buttonStyle="solid"
+              size="small"
+            >
+              <Radio.Button value="grid">
+                <Tooltip title={t('admin.tools.messaging.history.viewGrid')}>
+                  <TableOutlined />
+                </Tooltip>
+              </Radio.Button>
+              <Radio.Button value="chart">
+                <Tooltip title={t('admin.tools.messaging.history.viewChart')}>
+                  <BarChartOutlined />
+                </Tooltip>
+              </Radio.Button>
+            </Radio.Group>
+          </Col>
         </Row>
-        <Table
-          size="small"
-          rowKey="key"
-          loading={messagingHistoryLoading}
-          dataSource={historyRows}
-          pagination={{ pageSize: 50, showSizeChanger: true }}
-          scroll={{ x: 900 }}
-          locale={{ emptyText: t('admin.tools.messaging.history.empty') }}
-          columns={[
-            {
-              title: t('admin.tools.messaging.history.col.email'),
-              dataIndex: 'emailId',
-              key: 'emailId',
-              width: 240,
-              ellipsis: true
-            },
-            {
-              title: t('admin.tools.messaging.history.col.category'),
-              dataIndex: 'categoryName',
-              key: 'categoryName',
-              width: 180
-            },
-            {
-              title: t('admin.tools.messaging.history.col.courseCode'),
-              dataIndex: 'courseCodeId',
-              key: 'courseCodeId',
-              width: 200
-            },
-            {
-              title: t('admin.tools.messaging.history.col.status'),
-              dataIndex: 'wasSentSuccessful',
-              key: 'wasSentSuccessful',
-              width: 100,
-              render: value => (
-                <Tag color={value ? 'success' : 'error'}>
-                  {value ? t('admin.tools.messaging.history.sent') : t('admin.tools.messaging.history.failed')}
-                </Tag>
-              )
-            },
-            {
-              title: t('admin.tools.messaging.history.col.sentAt'),
-              dataIndex: 'sentAt',
-              key: 'sentAt',
-              width: 180,
-              sorter: (a, b) => new Date(a.sentAt || 0) - new Date(b.sentAt || 0),
-              render: value => (value ? new Date(value).toLocaleString() : '-')
-            }
-          ]}
-        />
+        {historyViewMode === 'grid' && (
+          <Table
+            size="small"
+            rowKey="key"
+            loading={messagingHistoryLoading}
+            dataSource={historyRows}
+            pagination={{ pageSize: 50, showSizeChanger: true }}
+            scroll={{ x: 900 }}
+            locale={{ emptyText: t('admin.tools.messaging.history.empty') }}
+            columns={[
+              {
+                title: t('admin.tools.messaging.history.col.email'),
+                dataIndex: 'emailId',
+                key: 'emailId',
+                width: 240,
+                ellipsis: true
+              },
+              {
+                title: t('admin.tools.messaging.history.col.category'),
+                dataIndex: 'categoryName',
+                key: 'categoryName',
+                width: 180
+              },
+              {
+                title: t('admin.tools.messaging.history.col.courseCode'),
+                dataIndex: 'courseCodeId',
+                key: 'courseCodeId',
+                width: 200
+              },
+              {
+                title: t('admin.tools.messaging.history.col.status'),
+                dataIndex: 'wasSentSuccessful',
+                key: 'wasSentSuccessful',
+                width: 100,
+                render: value => (
+                  <Tag color={value ? 'success' : 'error'}>
+                    {value ? t('admin.tools.messaging.history.sent') : t('admin.tools.messaging.history.failed')}
+                  </Tag>
+                )
+              },
+              {
+                title: t('admin.tools.messaging.history.col.sentAt'),
+                dataIndex: 'sentAt',
+                key: 'sentAt',
+                width: 180,
+                sorter: (a, b) => new Date(a.sentAt || 0) - new Date(b.sentAt || 0),
+                render: value => (value ? new Date(value).toLocaleString() : '-')
+              }
+            ]}
+          />
+        )}
+        {historyViewMode === 'chart' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <TimelineTrendGraph
+              trendData={trendData}
+              seriesField="categoryName"
+              localizedTitle="admin.tools.messaging.history.chart.trend"
+              emptyDescriptionKey="admin.tools.messaging.history.empty"
+              legendPosition="top-right"
+            />
+            <BarGraph
+              graphData={categoryTotals}
+              passedType="categoryName"
+              passedValue="count"
+              localizedTitle="admin.tools.messaging.history.chart.totals"
+            />
+          </div>
+        )}
       </div>
     );
   };

@@ -71,6 +71,9 @@ export const buildAudienceSummary = (...args) => AdminToolsManager.buildAudience
 export const buildAudienceMessageVariableOptions = (...args) => AdminToolsManager.buildAudienceMessageVariableOptions(...args);
 export const hasAudienceMessageContent = (...args) => AdminToolsManager.hasAudienceMessageContent(...args);
 export const isContactMergeMutationSuccessful = (...args) => AdminToolsManager.isContactMergeMutationSuccessful(...args);
+export const buildHistoryCourseOptions = (...args) => AdminToolsManager.buildHistoryCourseOptions(...args);
+export const buildCommunicationTrackingHistoryTrendData = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryTrendData(...args);
+export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryCategoryTotals(...args);
 
 export const onLoadingAdminToolsInit = async (emailId) => {
   const { allCourses, allRoles, allEnrollees, allRawCourses } = await AdminToolsManager.initAdminTools(emailId);

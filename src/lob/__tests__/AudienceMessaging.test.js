@@ -458,3 +458,151 @@ describe('buildCommunicationCategoryTableModel', () => {
     expect(row.ExtraField).toBe('extra');
   });
 });
+
+// ---------------------------------------------------------------------------
+// buildHistoryCourseOptions
+// ---------------------------------------------------------------------------
+const {
+  buildHistoryCourseOptions,
+  buildCommunicationTrackingHistoryTrendData,
+  buildCommunicationTrackingHistoryCategoryTotals
+} = AudienceMessaging;
+
+describe('buildHistoryCourseOptions', () => {
+  it('returns empty array for empty input', () => {
+    expect(buildHistoryCourseOptions([])).toEqual([]);
+  });
+
+  it('returns empty array for non-array input', () => {
+    expect(buildHistoryCourseOptions(null)).toEqual([]);
+  });
+
+  it('groups courses by year extracted from StartDate', () => {
+    const courses = [
+      { CourseCodeId: 'COURSE_A', CourseDetails: { course: 'Course A' }, StartDate: '2025-01-01' },
+      { CourseCodeId: 'COURSE_B', CourseDetails: { course: 'Course B' }, StartDate: '2026-03-01' }
+    ];
+    const options = buildHistoryCourseOptions(courses);
+    expect(options.map(g => g.label)).toEqual(['2026', '2025']);
+    expect(options[0].options[0].value).toBe('COURSE_B');
+    expect(options[1].options[0].value).toBe('COURSE_A');
+  });
+
+  it('extracts year from courseCodeId when no date available', () => {
+    const courses = [{ CourseCodeId: 'WORK_AND_JOBS_JULY_2024_COU', CourseDetails: { course: 'Work' } }];
+    const [group] = buildHistoryCourseOptions(courses);
+    expect(group.label).toBe('2024');
+  });
+
+  it('includes label with course name and courseCodeId', () => {
+    const courses = [{ CourseCodeId: 'MY_COURSE', CourseDetails: { course: 'My Course' }, StartDate: '2026-01-01' }];
+    const [[group]] = [buildHistoryCourseOptions(courses)];
+    expect(group.options[0].label).toBe('My Course — MY_COURSE');
+  });
+
+  it('skips courses with no CourseCodeId', () => {
+    const courses = [{ CourseDetails: { course: 'No Code' }, StartDate: '2026-01-01' }];
+    expect(buildHistoryCourseOptions(courses)).toEqual([]);
+  });
+
+  it('uses CourseCodeId as label when no course name available', () => {
+    const courses = [{ CourseCodeId: 'BARE_CODE', StartDate: '2025-06-01' }];
+    const [group] = buildHistoryCourseOptions(courses);
+    expect(group.options[0].label).toBe('BARE_CODE — BARE_CODE');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildCommunicationTrackingHistoryTrendData
+// ---------------------------------------------------------------------------
+describe('buildCommunicationTrackingHistoryTrendData', () => {
+  it('returns empty array for empty input', () => {
+    expect(buildCommunicationTrackingHistoryTrendData([])).toEqual([]);
+  });
+
+  it('returns empty array for non-array input', () => {
+    expect(buildCommunicationTrackingHistoryTrendData(null)).toEqual([]);
+  });
+
+  it('groups by date and categoryName', () => {
+    const rows = [
+      { sentAt: '2026-01-10T12:00:00', categoryName: 'welcome' },
+      { sentAt: '2026-01-10T14:00:00', categoryName: 'welcome' },
+      { sentAt: '2026-01-10T10:00:00', categoryName: 'birthday' }
+    ];
+    const result = buildCommunicationTrackingHistoryTrendData(rows);
+    const welcome = result.find(r => r.categoryName === 'welcome');
+    const birthday = result.find(r => r.categoryName === 'birthday');
+    expect(welcome).toEqual({ date: '2026-01-10', count: 2, categoryName: 'welcome' });
+    expect(birthday).toEqual({ date: '2026-01-10', count: 1, categoryName: 'birthday' });
+  });
+
+  it('skips rows with no sentAt', () => {
+    const rows = [{ categoryName: 'welcome' }, { sentAt: '2026-02-01', categoryName: 'na' }];
+    const result = buildCommunicationTrackingHistoryTrendData(rows);
+    expect(result).toHaveLength(1);
+    expect(result[0].date).toBe('2026-02-01');
+  });
+
+  it('sorts results by date ascending', () => {
+    const rows = [
+      { sentAt: '2026-03-01', categoryName: 'welcome' },
+      { sentAt: '2026-01-01', categoryName: 'welcome' }
+    ];
+    const result = buildCommunicationTrackingHistoryTrendData(rows);
+    expect(result[0].date).toBe('2026-01-01');
+    expect(result[1].date).toBe('2026-03-01');
+  });
+
+  it('uses em-dash as categoryName when categoryName is absent', () => {
+    const rows = [{ sentAt: '2026-01-05' }];
+    const [entry] = buildCommunicationTrackingHistoryTrendData(rows);
+    expect(entry.categoryName).toBe('—');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildCommunicationTrackingHistoryCategoryTotals
+// ---------------------------------------------------------------------------
+describe('buildCommunicationTrackingHistoryCategoryTotals', () => {
+  it('returns empty array for empty input', () => {
+    expect(buildCommunicationTrackingHistoryCategoryTotals([])).toEqual([]);
+  });
+
+  it('returns empty array for non-array input', () => {
+    expect(buildCommunicationTrackingHistoryCategoryTotals(null)).toEqual([]);
+  });
+
+  it('counts by categoryName', () => {
+    const rows = [
+      { categoryName: 'welcome' },
+      { categoryName: 'welcome' },
+      { categoryName: 'birthday' }
+    ];
+    const result = buildCommunicationTrackingHistoryCategoryTotals(rows);
+    const welcome = result.find(r => r.categoryName === 'welcome');
+    const birthday = result.find(r => r.categoryName === 'birthday');
+    expect(welcome.count).toBe(2);
+    expect(birthday.count).toBe(1);
+  });
+
+  it('sorts by count descending', () => {
+    const rows = [
+      { categoryName: 'a' },
+      { categoryName: 'b' },
+      { categoryName: 'b' },
+      { categoryName: 'b' }
+    ];
+    const [first, second] = buildCommunicationTrackingHistoryCategoryTotals(rows);
+    expect(first.categoryName).toBe('b');
+    expect(first.count).toBe(3);
+    expect(second.categoryName).toBe('a');
+    expect(second.count).toBe(1);
+  });
+
+  it('uses em-dash for rows with no categoryName', () => {
+    const rows = [{ sentAt: '2026-01-01' }];
+    const [entry] = buildCommunicationTrackingHistoryCategoryTotals(rows);
+    expect(entry.categoryName).toBe('—');
+  });
+});

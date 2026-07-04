@@ -865,6 +865,65 @@ export const buildCommunicationTrackingHistoryTableModel = (rows = []) => (
   })
 );
 
+export const buildHistoryCourseOptions = (courses = []) => {
+  const byYear = {};
+  (Array.isArray(courses) ? courses : []).forEach(course => {
+    const courseCodeId = course?.CourseCodeId || course?.courseCodeId || '';
+    const courseName = course?.CourseDetails?.course || course?.CourseName || course?.courseName || courseCodeId;
+    if (!courseCodeId) return;
+
+    let year = null;
+    const startDate = course?.StartDate || course?.startDate;
+    const endDate = course?.EndDate || course?.endDate;
+    if (startDate) year = new Date(startDate).getUTCFullYear();
+    else if (endDate) year = new Date(endDate).getUTCFullYear();
+
+    if (!year || isNaN(year)) {
+      const match = courseCodeId.match(/20\d{2}/);
+      year = match ? parseInt(match[0], 10) : 0;
+    }
+
+    if (!byYear[year]) byYear[year] = [];
+    byYear[year].push({
+      value: courseCodeId,
+      label: `${courseName} — ${courseCodeId}`,
+      searchText: `${courseName} ${courseCodeId}`
+    });
+  });
+
+  return Object.keys(byYear)
+    .map(Number)
+    .sort((a, b) => b - a)
+    .map(year => ({
+      label: year > 0 ? String(year) : 'Unknown',
+      options: byYear[year]
+    }));
+};
+
+export const buildCommunicationTrackingHistoryTrendData = (rows = []) => {
+  const counts = {};
+  (Array.isArray(rows) ? rows : []).forEach(row => {
+    const day = row?.sentAt ? String(row.sentAt).substring(0, 10) : null;
+    if (!day) return;
+    const category = row?.categoryName || '—';
+    const key = `${day}|${category}`;
+    if (!counts[key]) counts[key] = { date: day, count: 0, categoryName: category };
+    counts[key].count += 1;
+  });
+  return Object.values(counts).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+};
+
+export const buildCommunicationTrackingHistoryCategoryTotals = (rows = []) => {
+  const counts = {};
+  (Array.isArray(rows) ? rows : []).forEach(row => {
+    const category = row?.categoryName || '—';
+    counts[category] = (counts[category] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([categoryName, count]) => ({ categoryName, count }))
+    .sort((a, b) => b.count - a.count);
+};
+
 const AudienceMessaging = {
   getDefaultAudienceFilters,
   buildContactSegmentPayload,
@@ -885,7 +944,10 @@ const AudienceMessaging = {
   buildMessageVariableOptions,
   buildCommunicationCategoryTableModel,
   buildCommunicationTrackingHistoryPayload,
-  buildCommunicationTrackingHistoryTableModel
+  buildCommunicationTrackingHistoryTableModel,
+  buildHistoryCourseOptions,
+  buildCommunicationTrackingHistoryTrendData,
+  buildCommunicationTrackingHistoryCategoryTotals
 };
 
 export default AudienceMessaging;

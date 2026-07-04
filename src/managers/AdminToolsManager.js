@@ -113,6 +113,9 @@ export const buildAudienceSummary = (...args) => AudienceMessaging.buildAudience
 export const buildAudienceMessageVariableOptions = (...args) => AudienceMessaging.buildMessageVariableOptions(...args);
 export const hasAudienceMessageContent = (...args) => AudienceMessaging.hasMessageContent(...args);
 export const isContactMergeMutationSuccessful = (...args) => ContactStewardship.isMergeMutationSuccessful(...args);
+export const buildHistoryCourseOptions = (...args) => AudienceMessaging.buildHistoryCourseOptions(...args);
+export const buildCommunicationTrackingHistoryTrendData = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryTrendData(...args);
+export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCategoryTotals(...args);
 
 export const initAdminTools = async (emailId) => {
   const token = await getTokenFromEmail(emailId);
@@ -1375,6 +1378,9 @@ const AdminToolsManager = {
   buildAudienceMessageVariableOptions,
   hasAudienceMessageContent,
   isContactMergeMutationSuccessful,
+  buildHistoryCourseOptions,
+  buildCommunicationTrackingHistoryTrendData,
+  buildCommunicationTrackingHistoryCategoryTotals,
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,
