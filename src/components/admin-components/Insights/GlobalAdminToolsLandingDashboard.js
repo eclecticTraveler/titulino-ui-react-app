@@ -3672,15 +3672,17 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                     const courseYear = course.startDate ? new Date(course.startDate).getFullYear() : null;
                     return (
                       <Tooltip title={course.courseCodeId} key={i}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                          <Tag color="green" style={{ width: 'fit-content', cursor: 'default', marginRight: 0 }}>
+                        <span style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4, minWidth: 0 }}>
+                          <Tag color="green" style={{ cursor: 'default', marginRight: 0 }}>
                             {course.title || course.courseCodeId}
                           </Tag>
-                          <Tag color="geekblue" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
-                            {course.courseCodeId}
+                          <Tag color="geekblue" style={{ cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
+                            <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>
+                              {course.courseCodeId}
+                            </span>
                           </Tag>
                           {courseYear && (
-                            <Tag color="orange" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, marginRight: 0 }}>
+                            <Tag color="orange" style={{ cursor: 'default', fontSize: 11, marginRight: 0 }}>
                               {courseYear}
                             </Tag>
                           )}
@@ -4498,7 +4500,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       title: setLocale(locale, 'admin.tools.course.label.courseCodeId'),
       dataIndex: 'courseCodeId',
       key: 'courseCodeId',
-      render: courseCodeId => courseCodeId || '—'
+      width: 200,
+      ellipsis: { showTitle: false },
+      render: courseCodeId => (
+        <Tooltip title={courseCodeId || '—'} placement="topLeft">
+          <span>{courseCodeId || '—'}</span>
+        </Tooltip>
+      )
     },
     {
       title: setLocale(locale, 'admin.tools.label.email'),
@@ -4561,6 +4569,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       pagination={false}
       locale={{ emptyText: setLocale(locale, 'admin.tools.label.none') }}
       style={{ marginTop: 12 }}
+      scroll={{ x: 520 }}
     />
   );
 
