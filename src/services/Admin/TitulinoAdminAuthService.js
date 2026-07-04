@@ -126,6 +126,20 @@ export const getContactCertificationHistory = async (payload = {}, token, whoCal
   return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
 };
 
+export const getCommunicationCategories = async (token, whoCalledMe = 'getCommunicationCategories') => {
+  const apiResult = await postJsonEndpoint('GetCommunicationCategories', {}, token, whoCalledMe, EMPTY_RESULT);
+  return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
+};
+
+export const getCommunicationTrackingHistory = async (payload = {}, token, whoCalledMe = 'getCommunicationTrackingHistory') => {
+  const apiResult = await postJsonEndpoint('GetCommunicationTrackingHistory', payload, token, whoCalledMe);
+  return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
+};
+
+export const updateCommunicationCategory = async (payload = {}, token, whoCalledMe = 'updateCommunicationCategory') => (
+  postJsonEndpoint('UpdateCommunicationCategory', payload, token, whoCalledMe, false)
+);
+
 export const detectPossibleDuplicateContacts = async (payload = {}, token, whoCalledMe = 'detectPossibleDuplicateContacts') => {
   const apiResult = await postJsonEndpoint('DetectPossibleDuplicateContacts', payload, token, whoCalledMe);
   return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
@@ -347,6 +361,9 @@ const TitulinoAdminAuthService = {
   getContactSegmentCount,
   getContactSegmentMetadata,
   getContactCertificationHistory,
+  getCommunicationCategories,
+  getCommunicationTrackingHistory,
+  updateCommunicationCategory,
   detectPossibleDuplicateContacts,
   getContactMergeDashboard,
   previewContactMerge,

@@ -113,6 +113,10 @@ export const buildAudienceSummary = (...args) => AudienceMessaging.buildAudience
 export const buildAudienceMessageVariableOptions = (...args) => AudienceMessaging.buildMessageVariableOptions(...args);
 export const hasAudienceMessageContent = (...args) => AudienceMessaging.hasMessageContent(...args);
 export const isContactMergeMutationSuccessful = (...args) => ContactStewardship.isMergeMutationSuccessful(...args);
+export const buildHistoryCourseOptions = (...args) => AudienceMessaging.buildHistoryCourseOptions(...args);
+export const buildCommunicationTrackingHistoryTrendData = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryTrendData(...args);
+export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCategoryTotals(...args);
+export const buildCommunicationTrackingHistoryCourseTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCourseTotals(...args);
 
 export const initAdminTools = async (emailId) => {
   const token = await getTokenFromEmail(emailId);
@@ -1375,6 +1379,13 @@ const AdminToolsManager = {
   buildAudienceMessageVariableOptions,
   hasAudienceMessageContent,
   isContactMergeMutationSuccessful,
+  buildHistoryCourseOptions,
+  buildCommunicationTrackingHistoryTrendData,
+  buildCommunicationTrackingHistoryCategoryTotals,
+  buildCommunicationTrackingHistoryCourseTotals,
+  getCommunicationCategories: (...args) => getCommunicationCategories(...args),
+  getCommunicationTrackingHistory: (...args) => getCommunicationTrackingHistory(...args),
+  updateCommunicationCategory: (...args) => updateCommunicationCategory(...args),
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,
@@ -1382,6 +1393,57 @@ const AdminToolsManager = {
   buildUpsertUserRoleGlobalPayload: AdminTools.buildUpsertUserRoleGlobalPayload,
   prefillFromTemplate: AdminTools.prefillFromTemplate,
   isValidHttpUrl: AdminTools.isValidHttpUrl
+};
+
+export const getCommunicationCategories = async (emailId) => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) {
+    return { emailId, rows: [] };
+  }
+
+  const rows = await TitulinoAdminAuthService.getCommunicationCategories(
+    token,
+    'AdminToolsManager.getCommunicationCategories'
+  );
+
+  return { emailId, rows: AudienceMessaging.buildCommunicationCategoryTableModel(rows) };
+};
+
+export const getCommunicationTrackingHistory = async (emailId, filters = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = AudienceMessaging.buildCommunicationTrackingHistoryPayload(filters);
+
+  if (!token) {
+    return { emailId, filters, payload, rows: [] };
+  }
+
+  const rows = await TitulinoAdminAuthService.getCommunicationTrackingHistory(
+    payload,
+    token,
+    'AdminToolsManager.getCommunicationTrackingHistory'
+  );
+
+  return {
+    emailId,
+    filters,
+    payload,
+    rows: AudienceMessaging.buildCommunicationTrackingHistoryTableModel(rows)
+  };
+};
+
+export const updateCommunicationCategory = async (emailId, id, displayName, isActive) => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) return false;
+
+  const result = await TitulinoAdminAuthService.updateCommunicationCategory(
+    { p_id: id, p_display_name: displayName, p_is_active: isActive },
+    token,
+    'AdminToolsManager.updateCommunicationCategory'
+  );
+
+  return result !== false;
 };
 
 export default AdminToolsManager;

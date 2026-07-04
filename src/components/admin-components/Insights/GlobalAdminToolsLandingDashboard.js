@@ -2,8 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined } from '@ant-design/icons';
+import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space, Modal, Switch } from 'antd';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
@@ -11,6 +11,7 @@ import IntlMessage from 'components/util-components/IntlMessage';
 import EnrolleeByRegionWidget from 'components/layout-components/Landing/Unauthenticated/EnrolleeByRegionWidget';
 import TimelineTrendGraph from 'components/layout-components/Graphs/TimelineTrendGraph';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
+import { Area } from '@ant-design/plots';
 import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/LoginFootprintHeatmapGraph';
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import ContactProfileEditor from 'components/shared-components/ContactProfileEditor';
@@ -59,6 +60,9 @@ import {
   onRollingBackContactMerge,
   onLoadingAudienceMessageVariables,
   onSendingAudienceMessage,
+  onLoadingCommunicationCategories,
+  onLoadingCommunicationTrackingHistory,
+  onUpdatingCommunicationCategory,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -85,7 +89,11 @@ import {
   buildAudienceSummary,
   buildAudienceMessageVariableOptions,
   hasAudienceMessageContent,
-  isContactMergeMutationSuccessful
+  isContactMergeMutationSuccessful,
+  buildHistoryCourseOptions,
+  buildCommunicationTrackingHistoryTrendData,
+  buildCommunicationTrackingHistoryCategoryTotals,
+  buildCommunicationTrackingHistoryCourseTotals
 } from "redux/actions/AdminTools";
 
 const normalizeContactInternalId = (value) => (
@@ -559,6 +567,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onRollingBackContactMerge,
     onLoadingAudienceMessageVariables,
     onSendingAudienceMessage,
+    onLoadingCommunicationCategories,
+    onLoadingCommunicationTrackingHistory,
+    onUpdatingCommunicationCategory,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     processLogEventsBySource,
@@ -568,6 +579,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     contactMergeDashboard,
     contactMergePreview,
     audienceMessageVariables,
+    communicationCategories,
+    communicationTrackingHistory,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   } = props;
@@ -636,9 +649,17 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [audienceMessageDraft, setAudienceMessageDraft] = useState({
     subject: '',
     bodyHtml: '',
-    bodyText: ''
+    bodyText: '',
+    categoryId: null,
+    courseCodeId: ''
   });
   const [audienceMessageSending, setAudienceMessageSending] = useState(false);
+  const [messagingHistoryLoading, setMessagingHistoryLoading] = useState(false);
+  const [messagingHistoryFilters, setMessagingHistoryFilters] = useState({ limit: 50, offset: 0 });
+  const [historyViewMode, setHistoryViewMode] = useState('grid');
+  const [categoryManagerVisible, setCategoryManagerVisible] = useState(false);
+  const [categoryEdits, setCategoryEdits] = useState({});
+  const [categoryManagerSavingId, setCategoryManagerSavingId] = useState(null);
   const [audienceCertificationLoading, setAudienceCertificationLoading] = useState(false);
   const [audienceCertificationHistory, setAudienceCertificationHistory] = useState(null);
   const [audienceCertificationFilters, setAudienceCertificationFilters] = useState({
@@ -1120,6 +1141,40 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     return await onLoadingAudienceMessageVariables(emailId, 'audience');
   }, [emailId, onLoadingAudienceMessageVariables]);
 
+  const loadCommunicationCategories = useCallback(async () => {
+    if (!emailId || !onLoadingCommunicationCategories) return;
+    await onLoadingCommunicationCategories(emailId);
+  }, [emailId, onLoadingCommunicationCategories]);
+
+  const openCategoryManager = useCallback(() => {
+    const edits = (communicationCategories?.rows || []).reduce((accumulator, row) => {
+      accumulator[row.id] = { displayName: row.displayName, isActive: row.isActive };
+      return accumulator;
+    }, {});
+    setCategoryEdits(edits);
+    setCategoryManagerVisible(true);
+  }, [communicationCategories]);
+
+  const saveCategoryUpdate = useCallback(async (id, displayName, isActive) => {
+    if (!emailId || !onUpdatingCommunicationCategory) return;
+    setCategoryManagerSavingId(id);
+    try {
+      await onUpdatingCommunicationCategory(emailId, id, displayName, isActive);
+    } finally {
+      setCategoryManagerSavingId(null);
+    }
+  }, [emailId, onUpdatingCommunicationCategory]);
+
+  const loadMessagingHistory = useCallback(async (filters = messagingHistoryFilters) => {
+    if (!emailId || !onLoadingCommunicationTrackingHistory) return;
+    setMessagingHistoryLoading(true);
+    try {
+      await onLoadingCommunicationTrackingHistory(emailId, filters);
+    } finally {
+      setMessagingHistoryLoading(false);
+    }
+  }, [emailId, messagingHistoryFilters, onLoadingCommunicationTrackingHistory]);
+
   const updateAudienceFilter = useCallback((fieldName, value, shouldReload = false) => {
     const nextFilters = {
       ...audienceFilters,
@@ -1451,7 +1506,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       if (!result?.success) throw new Error(result?.errorMessage || 'Audience message failed.');
 
       messageApi.success(t('admin.tools.messaging.sendSuccess'));
-      setAudienceMessageDraft({ subject: '', bodyHtml: '', bodyText: '' });
+      setAudienceMessageDraft({ subject: '', bodyHtml: '', bodyText: '', categoryId: null, courseCodeId: '' });
     } catch (error) {
       console.error(error);
       messageApi.error(t('admin.tools.messaging.sendError'));
@@ -1754,6 +1809,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     emailId,
     loadAudienceMessageVariables
   ]);
+
+  useEffect(() => {
+    if (activeOuterTabKey !== 'messaging' || !emailId) return;
+    if (!communicationCategories?.emailId || communicationCategories.emailId !== emailId) {
+      loadCommunicationCategories();
+    }
+  }, [activeOuterTabKey, communicationCategories?.emailId, emailId, loadCommunicationCategories]);
+
+  useEffect(() => {
+    if (activeOuterTabKey !== 'messaging' || !emailId) return;
+    if (!communicationTrackingHistory?.emailId || communicationTrackingHistory.emailId !== emailId) {
+      loadMessagingHistory({ limit: 50, offset: 0 });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeOuterTabKey, communicationTrackingHistory?.emailId, emailId]);
 
   useEffect(() => {
     if (
@@ -2693,16 +2763,28 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     () => buildAudienceMessageVariableOptions(audienceMessageVariables, 'audience'),
     [audienceMessageVariables]
   );
+  const communicationCategoryOptions = useMemo(() => (
+    (communicationCategories?.rows || [])
+      .filter(row => row.id != null && row.displayName)
+      .map(row => ({ value: row.id, label: row.displayName }))
+  ), [communicationCategories]);
+  const historyCourseOptions = useMemo(
+    () => buildHistoryCourseOptions(allRawCourses),
+    [allRawCourses]
+  );
   const hasAudienceMessageDraftContent = hasAudienceMessageContent(audienceMessageDraft);
   const canSendAudienceMessage = (
     selectedAudienceRows.length > 0 &&
-    hasAudienceMessageDraftContent
+    hasAudienceMessageDraftContent &&
+    audienceMessageDraft.categoryId != null
   );
   const audienceMessageSendDisabledHint = selectedAudienceRows.length === 0
     ? t('admin.tools.messaging.chooseAudienceHint')
     : !hasAudienceMessageDraftContent
       ? t('admin.tools.messaging.writeMessageHint')
-      : '';
+      : audienceMessageDraft.categoryId == null
+        ? t('admin.tools.messaging.chooseCategoryHint')
+        : '';
 
   useEffect(() => {
     setContactProfileTableCounts({
@@ -3672,15 +3754,17 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                     const courseYear = course.startDate ? new Date(course.startDate).getFullYear() : null;
                     return (
                       <Tooltip title={course.courseCodeId} key={i}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                          <Tag color="green" style={{ width: 'fit-content', cursor: 'default', marginRight: 0 }}>
+                        <span style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 4, minWidth: 0 }}>
+                          <Tag color="green" style={{ cursor: 'default', marginRight: 0 }}>
                             {course.title || course.courseCodeId}
                           </Tag>
-                          <Tag color="geekblue" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
-                            {course.courseCodeId}
+                          <Tag color="geekblue" style={{ cursor: 'default', fontSize: 11, opacity: 0.85, marginRight: 0 }}>
+                            <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 180 }}>
+                              {course.courseCodeId}
+                            </span>
                           </Tag>
                           {courseYear && (
-                            <Tag color="orange" style={{ width: 'fit-content', cursor: 'default', fontSize: 11, marginRight: 0 }}>
+                            <Tag color="orange" style={{ cursor: 'default', fontSize: 11, marginRight: 0 }}>
                               {courseYear}
                             </Tag>
                           )}
@@ -4398,9 +4482,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           onChange={(e) => setContactTabKey(e.target.value)}
           style={{ marginBottom: 16 }}
         >
-          <Radio.Button value="summary">{setLocale(locale, 'admin.tools.tab.summary')}</Radio.Button>
-          <Radio.Button value="detailed">{setLocale(locale, 'admin.tools.tab.detailed')}</Radio.Button>
-          <Radio.Button value="access">{setLocale(locale, 'admin.tools.tab.access')}</Radio.Button>
+          <Radio.Button value="summary"><SolutionOutlined /> {setLocale(locale, 'admin.tools.tab.summary')}</Radio.Button>
+          <Radio.Button value="detailed"><UserOutlined /> {setLocale(locale, 'admin.tools.tab.detailed')}</Radio.Button>
+          <Radio.Button value="access"><SafetyCertificateOutlined /> {setLocale(locale, 'admin.tools.tab.access')}</Radio.Button>
         </Radio.Group>
 
         {contactTabKey === 'summary' && summaryContent}
@@ -4498,7 +4582,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       title: setLocale(locale, 'admin.tools.course.label.courseCodeId'),
       dataIndex: 'courseCodeId',
       key: 'courseCodeId',
-      render: courseCodeId => courseCodeId || '—'
+      width: 200,
+      ellipsis: { showTitle: false },
+      render: courseCodeId => (
+        <Tooltip title={courseCodeId || '—'} placement="topLeft">
+          <span>{courseCodeId || '—'}</span>
+        </Tooltip>
+      )
     },
     {
       title: setLocale(locale, 'admin.tools.label.email'),
@@ -4561,6 +4651,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       pagination={false}
       locale={{ emptyText: setLocale(locale, 'admin.tools.label.none') }}
       style={{ marginTop: 12 }}
+      scroll={{ x: 520 }}
     />
   );
 
@@ -5849,7 +5940,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 )}
               </Col>
             </Row>
-            <Table size="small" rowKey="key" loading={stewardshipLoading} columns={candidateColumns} dataSource={duplicateRows} pagination={{ pageSize: 10 }} />
+            <Table size="small" rowKey="key" loading={stewardshipLoading} columns={candidateColumns} dataSource={duplicateRows} pagination={{ pageSize: 10 }} scroll={{ x: 900 }} />
           </>
         )
       },
@@ -5930,6 +6021,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               )
             }}
             pagination={{ pageSize: 10 }}
+            scroll={{ x: 900 }}
           />
         )
       }
@@ -6916,9 +7008,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         onChange={(event) => setMonitoringInnerTabKey(event.target.value)}
         style={{ marginBottom: 16 }}
       >
-        <Radio.Button value="general-access">{setLocale(locale, 'admin.tools.monitoring.tab.generalAccess')}</Radio.Button>
-        <Radio.Button value="contact-profiles">{setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}</Radio.Button>
-        <Radio.Button value="process-logs">{setLocale(locale, 'admin.tools.monitoring.tab.processLogs')}</Radio.Button>
+        <Radio.Button value="general-access"><LoginOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.generalAccess')}</Radio.Button>
+        <Radio.Button value="contact-profiles"><UserOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}</Radio.Button>
+        <Radio.Button value="process-logs"><UnorderedListOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.processLogs')}</Radio.Button>
       </Radio.Group>
 
       {monitoringInnerTabKey === 'general-access' && renderGeneralAccessMonitoring()}
@@ -7285,6 +7377,26 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             </Button>
           </Col>
         </Row>
+        <Row gutter={[12, 12]} style={{ marginBottom: 8 }}>
+          <Col xs={24} md={8}>
+            <Select
+              value={audienceFilters.excludeCategoryId ?? null}
+              placeholder={t('admin.tools.messaging.excludeCategoryPlaceholder')}
+              options={communicationCategoryOptions}
+              onChange={value => updateAudienceFilter('excludeCategoryId', value)}
+              style={{ width: '100%' }}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} md={8}>
+            <Input
+              value={audienceFilters.excludeCourseCodeId || ''}
+              onChange={event => updateAudienceFilter('excludeCourseCodeId', event.target.value)}
+              placeholder={t('admin.tools.messaging.excludeCourseCodeIdPlaceholder')}
+              allowClear
+            />
+          </Col>
+        </Row>
         </Card>
       </div>
     );
@@ -7612,6 +7724,181 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const renderMessagingHistory = () => {
+    const historyRows = communicationTrackingHistory?.rows || [];
+    const trendData = buildCommunicationTrackingHistoryTrendData(historyRows);
+    const categoryTotals = buildCommunicationTrackingHistoryCategoryTotals(historyRows);
+    const courseTotals = buildCommunicationTrackingHistoryCourseTotals(historyRows);
+
+    return (
+      <div>
+        <Radio.Group
+          value={historyViewMode}
+          onChange={e => setHistoryViewMode(e.target.value)}
+          style={{ marginBottom: 16 }}
+        >
+          <Radio.Button value="grid"><TableOutlined /> {t('admin.tools.messaging.history.viewGrid')}</Radio.Button>
+          <Radio.Button value="chart"><BarChartOutlined /> {t('admin.tools.messaging.history.viewChart')}</Radio.Button>
+        </Radio.Group>
+        <Row gutter={[8, 8]} style={{ marginBottom: 12 }} align="middle">
+          <Col xs={24} md={7}>
+            <Select
+              value={messagingHistoryFilters.categoryId ?? null}
+              placeholder={t('admin.tools.messaging.history.filterCategory')}
+              options={communicationCategoryOptions}
+              onChange={value => setMessagingHistoryFilters(prev => ({ ...prev, categoryId: value, offset: 0 }))}
+              style={{ width: '100%' }}
+              allowClear
+              showSearch
+              loading={!communicationCategories}
+            />
+          </Col>
+          <Col xs={24} md={9}>
+            <Select
+              value={messagingHistoryFilters.courseCodeId || null}
+              onChange={value => setMessagingHistoryFilters(prev => ({ ...prev, courseCodeId: value || '', offset: 0 }))}
+              placeholder={t('admin.tools.messaging.history.filterCourseCode')}
+              options={historyCourseOptions}
+              optionFilterProp="searchText"
+              showSearch
+              allowClear
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={4}>
+            <Select
+              value={messagingHistoryFilters.limit}
+              onChange={value => {
+                const updated = { ...messagingHistoryFilters, limit: value, offset: 0 };
+                setMessagingHistoryFilters(updated);
+                loadMessagingHistory(updated);
+              }}
+              options={[
+                { value: 50, label: 'Last 50' },
+                { value: 200, label: 'Last 200' },
+                { value: 1000, label: 'Last 1,000' },
+              ]}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} md={4}>
+            <Button
+              type="primary"
+              icon={<SearchOutlined />}
+              loading={messagingHistoryLoading}
+              onClick={() => loadMessagingHistory(messagingHistoryFilters)}
+              block
+            >
+              {t('admin.tools.messaging.applyFilters')}
+            </Button>
+          </Col>
+        </Row>
+        {historyViewMode === 'grid' && (
+          <Table
+            size="small"
+            rowKey="key"
+            loading={messagingHistoryLoading}
+            dataSource={historyRows}
+            pagination={{ pageSize: 50, showSizeChanger: true }}
+            scroll={{ x: 900 }}
+            locale={{ emptyText: t('admin.tools.messaging.history.empty') }}
+            columns={[
+              {
+                title: t('admin.tools.messaging.history.col.email'),
+                dataIndex: 'emailId',
+                key: 'emailId',
+                width: 240,
+                ellipsis: true,
+                filters: [...new Set((historyRows || []).map(r => r.emailId).filter(Boolean))].sort().map(e => ({ text: e, value: e })),
+                filterSearch: true,
+                filterMode: 'menu',
+                onFilter: (value, record) => record.emailId === value,
+              },
+              {
+                title: t('admin.tools.messaging.history.col.category'),
+                dataIndex: 'categoryName',
+                key: 'categoryName',
+                width: 180,
+                filters: [...new Set((historyRows || []).map(r => r.categoryName).filter(Boolean))].sort().map(c => ({ text: c, value: c })),
+                filterSearch: true,
+                filterMode: 'menu',
+                onFilter: (value, record) => record.categoryName === value,
+              },
+              {
+                title: t('admin.tools.messaging.history.col.courseCode'),
+                dataIndex: 'courseCodeId',
+                key: 'courseCodeId',
+                width: 200,
+                filters: [...new Set((historyRows || []).map(r => r.courseCodeId).filter(Boolean))].sort().map(c => ({ text: c, value: c })),
+                filterSearch: true,
+                filterMode: 'menu',
+                onFilter: (value, record) => record.courseCodeId === value,
+              },
+              {
+                title: t('admin.tools.messaging.history.col.status'),
+                dataIndex: 'wasSentSuccessful',
+                key: 'wasSentSuccessful',
+                width: 100,
+                filters: [
+                  { text: t('admin.tools.messaging.history.sent'), value: true },
+                  { text: t('admin.tools.messaging.history.failed'), value: false },
+                ],
+                onFilter: (value, record) => record.wasSentSuccessful === value,
+                render: value => (
+                  <Tag color={value ? 'success' : 'error'}>
+                    {value ? t('admin.tools.messaging.history.sent') : t('admin.tools.messaging.history.failed')}
+                  </Tag>
+                )
+              },
+              {
+                title: t('admin.tools.messaging.history.col.sentAt'),
+                dataIndex: 'sentAt',
+                key: 'sentAt',
+                width: 180,
+                defaultSortOrder: 'descend',
+                sorter: (a, b) => new Date(a.sentAt || 0) - new Date(b.sentAt || 0),
+                render: value => (value ? new Date(value).toLocaleString() : '-')
+              }
+            ]}
+          />
+        )}
+        {historyViewMode === 'chart' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <Card variant="outlined" title={<IntlMessage id="admin.tools.messaging.history.chart.trend" />}>
+              {trendData.length === 0
+                ? <p style={{ textAlign: 'center', color: '#999', padding: 40 }}><IntlMessage id="admin.tools.messaging.history.empty" /></p>
+                : <Area
+                    data={trendData}
+                    xField="date"
+                    yField="count"
+                    colorField="categoryName"
+                    shapeField="smooth"
+                    slider={{ x: { labelFormatter: d => d } }}
+                    axis={{ x: { title: false }, y: { title: false } }}
+                    legend={{ color: { position: 'top-right' } }}
+                    style={{ fillOpacity: 0.15 }}
+                    point={{ shapeField: 'circle', sizeField: 4 }}
+                  />
+              }
+            </Card>
+            <BarGraph
+              graphData={categoryTotals}
+              passedType="categoryName"
+              passedValue="count"
+              localizedTitle="admin.tools.messaging.history.chart.totals"
+            />
+            <BarGraph
+              graphData={courseTotals}
+              passedType="courseCodeId"
+              passedValue="count"
+              localizedTitle="admin.tools.messaging.history.chart.courseTotals"
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderAudienceMessageComposer = () => (
     <div>
       <Alert
@@ -7620,8 +7907,43 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         title={t('admin.tools.messaging.selectedRecipients', {
           count: selectedAudienceRows.length
         })}
+        style={{ marginBottom: 8 }}
+      />
+      <Alert
+        type="warning"
+        showIcon
+        message={t('admin.tools.messaging.dailyLimitBanner')}
         style={{ marginBottom: 16 }}
       />
+      <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+        <Col xs={24} md={12}>
+          <Select
+            value={audienceMessageDraft.categoryId}
+            placeholder={t('admin.tools.messaging.categoryPlaceholder')}
+            options={communicationCategoryOptions}
+            onChange={value => setAudienceMessageDraft(prev => ({ ...prev, categoryId: value }))}
+            style={{ width: '100%' }}
+            allowClear
+          />
+          <div style={{ textAlign: 'right', marginTop: 2 }}>
+            <Button type="link" size="small" icon={<EditOutlined />} onClick={openCategoryManager}>
+              {t('admin.tools.messaging.manage')}
+            </Button>
+          </div>
+        </Col>
+        <Col xs={24} md={12}>
+          <Select
+            value={audienceMessageDraft.courseCodeId || undefined}
+            onChange={value => setAudienceMessageDraft(prev => ({ ...prev, courseCodeId: value || '' }))}
+            placeholder={t('admin.tools.messaging.courseCodeIdPlaceholder')}
+            options={historyCourseOptions}
+            showSearch
+            allowClear
+            optionFilterProp="searchText"
+            style={{ width: '100%' }}
+          />
+        </Col>
+      </Row>
       <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
         <Col xs={24} md={18}>
           <Input
@@ -7718,6 +8040,100 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </div>
   );
 
+  const renderCategoryManager = () => {
+    const rows = communicationCategories?.rows || [];
+    const columns = [
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+        width: 56
+      },
+      {
+        title: t('admin.tools.messaging.categoryManager.key'),
+        dataIndex: 'categoryKey',
+        key: 'categoryKey',
+        render: value => (
+          <span style={{ color: '#8c8c8c', fontStyle: 'italic', fontSize: 12 }}>{value}</span>
+        )
+      },
+      {
+        title: t('admin.tools.messaging.categoryManager.displayName'),
+        key: 'displayName',
+        render: (_, row) => {
+          const edit = categoryEdits[row.id] || {};
+          const isDirty = edit.displayName !== undefined && edit.displayName !== row.displayName;
+          return (
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                size="small"
+                value={edit.displayName !== undefined ? edit.displayName : row.displayName}
+                onChange={e => setCategoryEdits(prev => ({
+                  ...prev,
+                  [row.id]: { ...prev[row.id], displayName: e.target.value }
+                }))}
+              />
+              {isDirty && (
+                <Button
+                  size="small"
+                  type="primary"
+                  icon={<SaveOutlined />}
+                  loading={categoryManagerSavingId === row.id}
+                  onClick={() => saveCategoryUpdate(row.id, edit.displayName, edit.isActive !== undefined ? edit.isActive : row.isActive)}
+                />
+              )}
+            </Space.Compact>
+          );
+        }
+      },
+      {
+        title: t('admin.tools.messaging.categoryManager.active'),
+        key: 'active',
+        width: 80,
+        render: (_, row) => {
+          const edit = categoryEdits[row.id] || {};
+          const currentActive = edit.isActive !== undefined ? edit.isActive : row.isActive;
+          const currentDisplayName = edit.displayName !== undefined ? edit.displayName : row.displayName;
+          return (
+            <Switch
+              size="small"
+              checked={currentActive}
+              loading={categoryManagerSavingId === row.id}
+              onChange={checked => {
+                setCategoryEdits(prev => ({ ...prev, [row.id]: { ...prev[row.id], isActive: checked } }));
+                saveCategoryUpdate(row.id, currentDisplayName, checked);
+              }}
+            />
+          );
+        }
+      }
+    ];
+
+    return (
+      <Modal
+        title={t('admin.tools.messaging.categoryManager.title')}
+        open={categoryManagerVisible}
+        onCancel={() => setCategoryManagerVisible(false)}
+        footer={null}
+        width={640}
+      >
+        <Table
+          dataSource={rows}
+          columns={columns}
+          rowKey="key"
+          pagination={false}
+          size="small"
+        />
+        <Alert
+          type="info"
+          showIcon
+          message={t('admin.tools.messaging.categoryManager.note')}
+          style={{ marginTop: 12 }}
+        />
+      </Modal>
+    );
+  };
+
   const renderMessagingDashboard = () => (
     <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
       <h4 style={{ marginBottom: 12 }}>
@@ -7773,9 +8189,20 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               </span>
             ),
             children: renderAudienceCertificationReport()
+          },
+          {
+            key: 'messagingHistory',
+            label: (
+              <span>
+                <UnorderedListOutlined style={{ marginRight: 6 }} />
+                {t('admin.tools.messaging.tab.history')}
+              </span>
+            ),
+            children: renderMessagingHistory()
           }
         ]}
       />
+      {renderCategoryManager()}
     </Card>
   );
 
@@ -8349,6 +8776,9 @@ function mapDispatchToProps(dispatch) {
     onRollingBackContactMerge,
     onLoadingAudienceMessageVariables,
     onSendingAudienceMessage,
+    onLoadingCommunicationCategories,
+    onLoadingCommunicationTrackingHistory,
+    onUpdatingCommunicationCategory,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   }, dispatch);
@@ -8379,7 +8809,9 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     contactMergeDashboard,
     contactMergePreview,
     audienceMessageVariables,
-    lastAudienceMessageSendResult
+    lastAudienceMessageSendResult,
+    communicationCategories,
+    communicationTrackingHistory
   } = adminTools;
   return {
     user,
@@ -8406,7 +8838,9 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     contactMergeDashboard,
     contactMergePreview,
     audienceMessageVariables,
-    lastAudienceMessageSendResult
+    lastAudienceMessageSendResult,
+    communicationCategories,
+    communicationTrackingHistory
   };
 };
 

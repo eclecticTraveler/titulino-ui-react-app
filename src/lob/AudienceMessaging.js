@@ -196,6 +196,8 @@ export const buildContactSegmentPayload = (filters = {}) => {
     p_hascertifications: normalizeBooleanFilter(filters.hasCertifications),
     p_haspurchases: normalizeBooleanFilter(filters.hasPurchases),
     p_search: toNullable(filters.searchText),
+    p_exclude_category_id: toNumberOrNull(filters.excludeCategoryId),
+    p_exclude_course_code_id: toNullable(filters.excludeCourseCodeId),
     p_limit: Number(filters.limit || 100),
     p_offset: Number(filters.offset || 0)
   };
@@ -794,7 +796,9 @@ export const buildAudienceMessagePayload = (selectedRows = [], messageDraft = {}
       subject: normalizeText(messageDraft.subject),
       bodyText: normalizeText(messageDraft.bodyText || messageDraft.bodyHtml)
     },
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    categoryId: messageDraft.categoryId ?? null,
+    courseCodeId: normalizeText(messageDraft.courseCodeId) || null
   };
 };
 
@@ -802,6 +806,134 @@ export const hasMessageContent = (messageDraft = {}) => (
   normalizeText(messageDraft.subject).length > 0 &&
   normalizeText(messageDraft.bodyText || messageDraft.bodyHtml).length > 0
 );
+
+export const buildCommunicationCategoryTableModel = (rows = []) => (
+  (Array.isArray(rows) ? rows : []).map((row, index) => {
+    const id = getValue(row, 'CommunicationCategoryId', 'communicationCategoryId', 'communication_category_id');
+    const categoryKey = getValue(row, 'CommunicationCategoryName', 'communicationCategoryName', 'communication_category_name');
+    const displayName = getValue(row, 'DisplayName', 'displayName', 'display_name') || categoryKey || '';
+    const isActive = getValue(row, 'is_active', 'isActive', 'IsActive') !== false;
+
+    return {
+      ...row,
+      key: id != null ? id : `category-${index}`,
+      id,
+      categoryKey: categoryKey || '',
+      displayName,
+      isActive
+    };
+  })
+);
+
+export const buildCommunicationTrackingHistoryPayload = (filters = {}) => {
+  const payload = {
+    p_category_id: toNumberOrNull(filters.categoryId),
+    p_course_code_id: toNullable(filters.courseCodeId),
+    p_was_successful: filters.wasSuccessful === true ? true : filters.wasSuccessful === false ? false : null,
+    p_limit: Number(filters.limit || 50),
+    p_offset: Number(filters.offset || 0)
+  };
+
+  return Object.entries(payload).reduce((accumulator, [key, value]) => {
+    if (value === null || value === undefined || value === '') return accumulator;
+    accumulator[key] = value;
+    return accumulator;
+  }, {});
+};
+
+export const buildCommunicationTrackingHistoryTableModel = (rows = []) => (
+  (Array.isArray(rows) ? rows : []).map((row, index) => {
+    const trackingId = getValue(row, 'TrackingId', 'trackingId', 'tracking_id');
+    const contactExternalId = getValue(row, 'ContactExternalId', 'contactExternalId', 'contact_external_id');
+    const emailId = getValue(row, 'EmailId', 'emailId', 'email_id');
+    const courseCodeId = getValue(row, 'CourseCodeId', 'courseCodeId', 'course_code_id');
+    const categoryName = getValue(row, 'CategoryDisplayName', 'categoryDisplayName', 'category_display_name', 'CommunicationCategoryName', 'communicationCategoryName');
+    const wasSentSuccessful = getValue(row, 'WasSentSuccessful', 'wasSentSuccessful', 'was_sent_successful');
+    const sentAt = getValue(row, 'SentAt', 'sentAt', 'sent_at');
+
+    return {
+      ...row,
+      key: trackingId ?? `tracking-${index}`,
+      trackingId,
+      contactExternalId,
+      emailId,
+      courseCodeId,
+      categoryName: categoryName || '—',
+      wasSentSuccessful: Boolean(wasSentSuccessful),
+      sentAt: sentAt || null
+    };
+  })
+);
+
+export const buildHistoryCourseOptions = (courses = []) => {
+  const byYear = {};
+  (Array.isArray(courses) ? courses : []).forEach(course => {
+    const courseCodeId = course?.CourseCodeId || course?.courseCodeId || '';
+    const courseName = course?.CourseDetails?.course || course?.CourseName || course?.courseName || courseCodeId;
+    if (!courseCodeId) return;
+
+    let year = null;
+    const startDate = course?.StartDate || course?.startDate;
+    const endDate = course?.EndDate || course?.endDate;
+    if (startDate) year = new Date(startDate).getUTCFullYear();
+    else if (endDate) year = new Date(endDate).getUTCFullYear();
+
+    if (!year || isNaN(year)) {
+      const match = courseCodeId.match(/20\d{2}/);
+      year = match ? parseInt(match[0], 10) : 0;
+    }
+
+    if (!byYear[year]) byYear[year] = [];
+    byYear[year].push({
+      value: courseCodeId,
+      label: `${courseName} — ${courseCodeId}`,
+      searchText: `${courseName} ${courseCodeId}`
+    });
+  });
+
+  return Object.keys(byYear)
+    .map(Number)
+    .sort((a, b) => b - a)
+    .map(year => ({
+      label: year > 0 ? String(year) : 'Unknown',
+      options: byYear[year]
+    }));
+};
+
+export const buildCommunicationTrackingHistoryTrendData = (rows = []) => {
+  const counts = {};
+  (Array.isArray(rows) ? rows : []).forEach(row => {
+    const day = row?.sentAt ? String(row.sentAt).substring(0, 10) : null;
+    if (!day) return;
+    const category = row?.categoryName || '—';
+    const key = `${day}|${category}`;
+    if (!counts[key]) counts[key] = { date: day, count: 0, categoryName: category };
+    counts[key].count += 1;
+  });
+  return Object.values(counts).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+};
+
+export const buildCommunicationTrackingHistoryCategoryTotals = (rows = []) => {
+  const counts = {};
+  (Array.isArray(rows) ? rows : []).forEach(row => {
+    const category = row?.categoryName || '—';
+    counts[category] = (counts[category] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([categoryName, count]) => ({ categoryName, count }))
+    .sort((a, b) => b.count - a.count);
+};
+
+export const buildCommunicationTrackingHistoryCourseTotals = (rows = []) => {
+  const counts = {};
+  (Array.isArray(rows) ? rows : []).forEach(row => {
+    if (!row?.courseCodeId) return;
+    counts[row.courseCodeId] = (counts[row.courseCodeId] || 0) + 1;
+  });
+  return Object.entries(counts)
+    .map(([courseCodeId, count]) => ({ courseCodeId, count }))
+    .sort((a, b) => b.count - a.count);
+};
 
 const AudienceMessaging = {
   getDefaultAudienceFilters,
@@ -820,7 +952,14 @@ const AudienceMessaging = {
   buildAudienceMessagePayload,
   hasMessageContent,
   normalizeMessageTemplateVariables,
-  buildMessageVariableOptions
+  buildMessageVariableOptions,
+  buildCommunicationCategoryTableModel,
+  buildCommunicationTrackingHistoryPayload,
+  buildCommunicationTrackingHistoryTableModel,
+  buildHistoryCourseOptions,
+  buildCommunicationTrackingHistoryTrendData,
+  buildCommunicationTrackingHistoryCategoryTotals,
+  buildCommunicationTrackingHistoryCourseTotals
 };
 
 export default AudienceMessaging;

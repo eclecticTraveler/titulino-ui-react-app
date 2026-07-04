@@ -15,6 +15,32 @@ Tracked defects that have been diagnosed but not yet fixed, or fixed in one part
 
 ---
 
+## BUG-006 — AI grammar notes rendered raw `**markdown**` instead of plain text
+
+**Status:** `FIXED` — deployed with Phase 6 (T38) on 2026-07-02  
+**Severity:** Medium — all grammar notes in completed AI reviews showed visible asterisks instead of formatted text  
+**Discovered:** 2026-06-30 (first end-to-end test)  
+**Work log:** [docs/work-logs/2026-07-02.md](work-logs/2026-07-02.md)
+
+### Symptom
+
+Grammar notes in the Know Me AI review result card displayed raw markdown syntax, e.g.:
+`**Use simple past:** changed "go" to "went"` instead of bold text.
+
+### Root cause
+
+The AI prompt did not specify plain-text output. Gemini (and other models) default to markdown formatting in free-text fields.
+
+### Fix applied
+
+Added an explicit plain-text rule to `AiPromptHelper.BuildEssayCorrectionPrompt` in `TitulinoWorkerService`:
+
+> "All text values must be plain text — no asterisks, no bold, no italic, no markdown formatting of any kind."
+
+**Note:** Existing completed jobs in the DB still contain markdown in their stored `FeedbackJson`. These are legacy test rows — new jobs processed after the worker deploy will be plain text.
+
+---
+
 ## BUG-001 — Auth redirect loses query params after logout/login cycle
 
 **Status:** `OPEN`  

@@ -1,5 +1,5 @@
 import { APP_PREFIX_PATH } from '../../AppConfig'
-import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic' 
+import { getCourseSubNavigationLowBasic } from '../Submenus/CourseSubNavigationLowBasic'
 import { getCourseSubNavigationMidBasic } from '../Submenus/CourseSubNavigationMidBasic';
 import { CourseSubNavigationHouseholdTheme } from '../Submenus/CourseSubNavigationHouseholdTheme';
 import { CourseSubNavigationWorkNJobsTheme } from '../Submenus/CourseSubNavigationWorkNJobsTheme';
@@ -17,6 +17,7 @@ export const getEnglishCourseMainNavigationConfig = (isAuthenticated, coursesByT
 	return EnglishCourseMainNavigationConfig(isAuthenticated, coursesByTheme);
 }
 const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => [
+	// ─── Hidden from top nav (routing / side-nav only) ──────────────────────────
 	{
 		key: 'level-1-eng-inactive',
 		nameToCourseCodeKey:"english-connect-1",
@@ -59,6 +60,84 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 			...getCourseSubNavigationMidBasic("en")
 		]
 	},
+	// Hidden: kept so side-nav renders correctly when visiting these course routes
+	{
+		key: 'level-work-and-jobs-part-eng',
+		nameToCourseCodeKey:"work-n-jobs",
+		path: `${APP_PREFIX_PATH}/en/level-work-n-jobs`,
+		title: 'main.upper.nav.theme.level.workNjobs',
+		sideTitle: 'Work & Jobs',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
+		color: isAuthenticated && coursesByTheme['work-n-jobs']?.courseTierAccess === COURSE_TIERS_CONFIG.silver
+				? COURSE_COLOR_CONFIG.silverTier
+				: isAuthenticated && coursesByTheme['work-n-jobs']?.courseTierAccess === COURSE_TIERS_CONFIG.gold
+				? COURSE_COLOR_CONFIG.goldTier
+				: COURSE_COLOR_CONFIG.workNjobsTheme,
+		current: false,
+		isRootMenuItem: true,
+		iconPosition: "upperNav",
+		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: false,
+		isFree: false,
+		course: "English",
+		topSubmenu: [],
+		submenu: [
+			...(isAuthenticated
+				? AuthCourseSubNavigationWorkNJobsTheme("en", coursesByTheme['work-n-jobs'])
+				: CourseSubNavigationWorkNJobsTheme("en")
+			  )
+		]
+	},
+	{
+		key: 'level-household-part-eng',
+		nameToCourseCodeKey:"household",
+		path: `${APP_PREFIX_PATH}/en/level-household`,
+		title: 'main.upper.nav.theme.level.household',
+		sideTitle: 'Household',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
+		color: COURSE_COLOR_CONFIG.householdTheme,
+		current: true,
+		isRootMenuItem: true,
+		iconPosition: "upperNav",
+		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: false,
+		isFree: false,
+		course: "English",
+		topSubmenu: [],
+		submenu: [
+			...(isAuthenticated
+				? AuthCourseSubNavigationHouseholdTheme("en")
+				: CourseSubNavigationHouseholdTheme("en")
+			)
+		]
+	},
+	{
+		key: 'level-supermarket-eng',
+		nameToCourseCodeKey:"supermarket",
+		path: `${APP_PREFIX_PATH}/en/level-supermarket`,
+		title: 'main.upper.nav.theme.level.supermarket',
+		sideTitle: 'Supermarket',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
+		color: COURSE_COLOR_CONFIG.superMarketTheme,
+		current: true,
+		isRootMenuItem: true,
+		iconPosition: "upperNav",
+		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: false,
+		isFree: false,
+		course: "English",
+		topSubmenu: [],
+		submenu: [
+			...(isAuthenticated
+				? AuthCourseSubNavigationSupermarketTheme("en")
+				: CourseSubNavigationSupermarketTheme("en")
+			)
+		]
+	},
+	// ─── Visible top-nav items (order = display order) ───────────────────────────
 	{
 		key: 'level-speeches-part-eng',
 		nameToCourseCodeKey:"speeches",
@@ -79,86 +158,10 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 		course: "English",
 		topSubmenu: [],
 		submenu: [
-			...(isAuthenticated 
-				? AuthCourseSubNavigationSpeechesTheme("en", coursesByTheme['speeches']) 
+			...(isAuthenticated
+				? AuthCourseSubNavigationSpeechesTheme("en", coursesByTheme['speeches'])
 				: CourseSubNavigationSpeechesTheme("en")
 			  )
-		]
-	},
-	{
-		key: 'level-work-and-jobs-part-eng',
-		nameToCourseCodeKey:"work-n-jobs",
-		path: `${APP_PREFIX_PATH}/en/level-work-n-jobs`,
-		title: 'main.upper.nav.theme.level.workNjobs',
-		sideTitle: 'Work & Jobs',
-		icon: COURSE_ICON_CONFIG.default,
-		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
-		color: isAuthenticated && coursesByTheme['work-n-jobs']?.courseTierAccess === COURSE_TIERS_CONFIG.silver
-				? COURSE_COLOR_CONFIG.silverTier
-				: isAuthenticated && coursesByTheme['work-n-jobs']?.courseTierAccess === COURSE_TIERS_CONFIG.gold
-				? COURSE_COLOR_CONFIG.goldTier
-				: COURSE_COLOR_CONFIG.workNjobsTheme,
-		current: false,
-		isRootMenuItem: true,
-		iconPosition: "upperNav",
-		isServiceAvailableForUser: false,
-		isToDisplayInNavigation: true,
-		isFree: false,
-		course: "English",
-		topSubmenu: [],
-		submenu: [
-			...(isAuthenticated 
-				? AuthCourseSubNavigationWorkNJobsTheme("en", coursesByTheme['work-n-jobs']) 
-				: CourseSubNavigationWorkNJobsTheme("en")
-			  )
-		]
-	},
-	{
-		key: 'level-household-part-eng',
-		nameToCourseCodeKey:"household",
-		path: `${APP_PREFIX_PATH}/en/level-household`,
-		title: 'main.upper.nav.theme.level.household',
-		sideTitle: 'Household',
-		icon: COURSE_ICON_CONFIG.default,
-		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
-		color: COURSE_COLOR_CONFIG.householdTheme,
-		current: true,
-		isRootMenuItem: true,
-		iconPosition: "upperNav",
-		isServiceAvailableForUser: false,
-		isToDisplayInNavigation: true,
-		isFree: false,
-		course: "English",
-		topSubmenu: [],
-		submenu: [
-			...(isAuthenticated 
-				? AuthCourseSubNavigationHouseholdTheme("en") 
-				: CourseSubNavigationHouseholdTheme("en")
-			)
-		]
-	},
-	{
-		key: 'level-supermarket-eng',
-		nameToCourseCodeKey:"supermarket",
-		path: `${APP_PREFIX_PATH}/en/level-supermarket`,
-		title: 'main.upper.nav.theme.level.supermarket',
-		sideTitle: 'Supermarket',
-		icon: COURSE_ICON_CONFIG.default,
-		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
-		color: COURSE_COLOR_CONFIG.superMarketTheme,
-		current: true,
-		isRootMenuItem: true,
-		iconPosition: "upperNav",
-		isServiceAvailableForUser: false,
-		isToDisplayInNavigation: true,
-		isFree: false,
-		course: "English",
-		topSubmenu: [],
-		submenu: [
-			...(isAuthenticated 
-				? AuthCourseSubNavigationSupermarketTheme("en") 
-				: CourseSubNavigationSupermarketTheme("en")
-			)
 		]
 	},
 	{
@@ -181,5 +184,47 @@ const EnglishCourseMainNavigationConfig  = (isAuthenticated, coursesByTheme) => 
 		],
 		submenu: []
 	},
+	// Temporary grouping — Work & Jobs, Household, Supermarket collected under one dropdown.
+	// Nav order will be updated when the full English course lineup is finalized.
+	{
+		key: 'level-other-courses-eng',
+		title: 'main.upper.nav.theme.level.otherCourses',
+		sideTitle: 'Other Courses',
+		icon: COURSE_ICON_CONFIG.default,
+		iconType: ICON_LIBRARY_TYPE_CONFIG.hostedSvg,
+		color: COURSE_COLOR_CONFIG.defaultBlueBasic,
+		isRootMenuItem: true,
+		iconPosition: "upperNav",
+		isServiceAvailableForUser: false,
+		isToDisplayInNavigation: true,
+		isFree: false,
+		course: "English",
+		topSubmenu: [
+			{
+				key: 'other-courses-eng-worknJobs',
+				path: `${APP_PREFIX_PATH}/en/level-work-n-jobs`,
+				title: 'main.upper.nav.theme.level.workNjobs',
+				icon: COURSE_ICON_CONFIG.default,
+				iconPosition: "upperNav",
+				topSubmenu: []
+			},
+			{
+				key: 'other-courses-eng-household',
+				path: `${APP_PREFIX_PATH}/en/level-household`,
+				title: 'main.upper.nav.theme.level.household',
+				icon: COURSE_ICON_CONFIG.default,
+				iconPosition: "upperNav",
+				topSubmenu: []
+			},
+			{
+				key: 'other-courses-eng-supermarket',
+				path: `${APP_PREFIX_PATH}/en/level-supermarket`,
+				title: 'main.upper.nav.theme.level.supermarket',
+				icon: COURSE_ICON_CONFIG.default,
+				iconPosition: "upperNav",
+				topSubmenu: []
+			}
+		],
+		submenu: []
+	},
 ]
-

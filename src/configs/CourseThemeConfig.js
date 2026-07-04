@@ -7,6 +7,7 @@ export const COURSE_COLOR_CONFIG = {
 	speechesTheme:"#7a3c88",
 	householdTheme:"#AA4A44",
 	workNjobsTheme: "#2171b5",
+	meditacionesTheme: "#796648",
 	defaultBlueBasic:"#3CA292",
 	defaultRedBasic: "#C4745F",
 	defaultYellowBasic: "#C89736",

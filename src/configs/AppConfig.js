@@ -7,9 +7,9 @@ export const API_BASE_URL = env.TITULINO_NET_API
 export const APP_PREFIX_PATH = '/lrn';
 export const AUTH_PREFIX_PATH = '/lrn-auth';
 export const DEFAULT_PREFIX_VIEW = '/';
-export const DEFAULT_LANDING_COURSE = 'work-n-jobs';
+export const DEFAULT_LANDING_COURSE = 'speeches';
 export const DEFAULT_LANDING_COURSE_ENG = DEFAULT_LANDING_COURSE;
-export const DEFAULT_LANDING_COURSE_SPA = '1';
+export const DEFAULT_LANDING_COURSE_SPA = 'meditaciones';
 export const DEFAULT_LANDING_COURSE_POR = '1';
 
 export const THEME_CONFIG = {
