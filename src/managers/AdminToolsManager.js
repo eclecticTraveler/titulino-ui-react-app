@@ -1384,4 +1384,55 @@ const AdminToolsManager = {
   isValidHttpUrl: AdminTools.isValidHttpUrl
 };
 
+export const getCommunicationCategories = async (emailId) => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) {
+    return { emailId, rows: [] };
+  }
+
+  const rows = await TitulinoAdminAuthService.getCommunicationCategories(
+    token,
+    'AdminToolsManager.getCommunicationCategories'
+  );
+
+  return { emailId, rows: AudienceMessaging.buildCommunicationCategoryTableModel(rows) };
+};
+
+export const getCommunicationTrackingHistory = async (emailId, filters = {}) => {
+  const token = await getTokenFromEmail(emailId);
+  const payload = AudienceMessaging.buildCommunicationTrackingHistoryPayload(filters);
+
+  if (!token) {
+    return { emailId, filters, payload, rows: [] };
+  }
+
+  const rows = await TitulinoAdminAuthService.getCommunicationTrackingHistory(
+    payload,
+    token,
+    'AdminToolsManager.getCommunicationTrackingHistory'
+  );
+
+  return {
+    emailId,
+    filters,
+    payload,
+    rows: AudienceMessaging.buildCommunicationTrackingHistoryTableModel(rows)
+  };
+};
+
+export const updateCommunicationCategory = async (emailId, id, displayName, isActive) => {
+  const token = await getTokenFromEmail(emailId);
+
+  if (!token) return false;
+
+  const result = await TitulinoAdminAuthService.updateCommunicationCategory(
+    { p_id: id, p_display_name: displayName, p_is_active: isActive },
+    token,
+    'AdminToolsManager.updateCommunicationCategory'
+  );
+
+  return result !== false;
+};
+
 export default AdminToolsManager;

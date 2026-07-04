@@ -2,8 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined } from '@ant-design/icons';
+import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space, Modal, Switch } from 'antd';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
@@ -59,6 +59,9 @@ import {
   onRollingBackContactMerge,
   onLoadingAudienceMessageVariables,
   onSendingAudienceMessage,
+  onLoadingCommunicationCategories,
+  onLoadingCommunicationTrackingHistory,
+  onUpdatingCommunicationCategory,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -559,6 +562,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onRollingBackContactMerge,
     onLoadingAudienceMessageVariables,
     onSendingAudienceMessage,
+    onLoadingCommunicationCategories,
+    onLoadingCommunicationTrackingHistory,
+    onUpdatingCommunicationCategory,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     processLogEventsBySource,
@@ -568,6 +574,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     contactMergeDashboard,
     contactMergePreview,
     audienceMessageVariables,
+    communicationCategories,
+    communicationTrackingHistory,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   } = props;
@@ -636,9 +644,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [audienceMessageDraft, setAudienceMessageDraft] = useState({
     subject: '',
     bodyHtml: '',
-    bodyText: ''
+    bodyText: '',
+    categoryId: null,
+    courseCodeId: ''
   });
   const [audienceMessageSending, setAudienceMessageSending] = useState(false);
+  const [messagingHistoryLoading, setMessagingHistoryLoading] = useState(false);
+  const [messagingHistoryFilters, setMessagingHistoryFilters] = useState({ limit: 50, offset: 0 });
+  const [categoryManagerVisible, setCategoryManagerVisible] = useState(false);
+  const [categoryEdits, setCategoryEdits] = useState({});
+  const [categoryManagerSavingId, setCategoryManagerSavingId] = useState(null);
   const [audienceCertificationLoading, setAudienceCertificationLoading] = useState(false);
   const [audienceCertificationHistory, setAudienceCertificationHistory] = useState(null);
   const [audienceCertificationFilters, setAudienceCertificationFilters] = useState({
@@ -1120,6 +1135,40 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     return await onLoadingAudienceMessageVariables(emailId, 'audience');
   }, [emailId, onLoadingAudienceMessageVariables]);
 
+  const loadCommunicationCategories = useCallback(async () => {
+    if (!emailId || !onLoadingCommunicationCategories) return;
+    await onLoadingCommunicationCategories(emailId);
+  }, [emailId, onLoadingCommunicationCategories]);
+
+  const openCategoryManager = useCallback(() => {
+    const edits = (communicationCategories?.rows || []).reduce((accumulator, row) => {
+      accumulator[row.id] = { displayName: row.displayName, isActive: row.isActive };
+      return accumulator;
+    }, {});
+    setCategoryEdits(edits);
+    setCategoryManagerVisible(true);
+  }, [communicationCategories]);
+
+  const saveCategoryUpdate = useCallback(async (id, displayName, isActive) => {
+    if (!emailId || !onUpdatingCommunicationCategory) return;
+    setCategoryManagerSavingId(id);
+    try {
+      await onUpdatingCommunicationCategory(emailId, id, displayName, isActive);
+    } finally {
+      setCategoryManagerSavingId(null);
+    }
+  }, [emailId, onUpdatingCommunicationCategory]);
+
+  const loadMessagingHistory = useCallback(async (filters = messagingHistoryFilters) => {
+    if (!emailId || !onLoadingCommunicationTrackingHistory) return;
+    setMessagingHistoryLoading(true);
+    try {
+      await onLoadingCommunicationTrackingHistory(emailId, filters);
+    } finally {
+      setMessagingHistoryLoading(false);
+    }
+  }, [emailId, messagingHistoryFilters, onLoadingCommunicationTrackingHistory]);
+
   const updateAudienceFilter = useCallback((fieldName, value, shouldReload = false) => {
     const nextFilters = {
       ...audienceFilters,
@@ -1451,7 +1500,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       if (!result?.success) throw new Error(result?.errorMessage || 'Audience message failed.');
 
       messageApi.success(t('admin.tools.messaging.sendSuccess'));
-      setAudienceMessageDraft({ subject: '', bodyHtml: '', bodyText: '' });
+      setAudienceMessageDraft({ subject: '', bodyHtml: '', bodyText: '', categoryId: null, courseCodeId: '' });
     } catch (error) {
       console.error(error);
       messageApi.error(t('admin.tools.messaging.sendError'));
@@ -1754,6 +1803,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     emailId,
     loadAudienceMessageVariables
   ]);
+
+  useEffect(() => {
+    if (activeOuterTabKey !== 'messaging' || !emailId) return;
+    if (!communicationCategories?.emailId || communicationCategories.emailId !== emailId) {
+      loadCommunicationCategories();
+    }
+  }, [activeOuterTabKey, communicationCategories?.emailId, emailId, loadCommunicationCategories]);
 
   useEffect(() => {
     if (
@@ -2693,16 +2749,24 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     () => buildAudienceMessageVariableOptions(audienceMessageVariables, 'audience'),
     [audienceMessageVariables]
   );
+  const communicationCategoryOptions = useMemo(() => (
+    (communicationCategories?.rows || [])
+      .filter(row => row.id != null && row.displayName)
+      .map(row => ({ value: row.id, label: row.displayName }))
+  ), [communicationCategories]);
   const hasAudienceMessageDraftContent = hasAudienceMessageContent(audienceMessageDraft);
   const canSendAudienceMessage = (
     selectedAudienceRows.length > 0 &&
-    hasAudienceMessageDraftContent
+    hasAudienceMessageDraftContent &&
+    audienceMessageDraft.categoryId != null
   );
   const audienceMessageSendDisabledHint = selectedAudienceRows.length === 0
     ? t('admin.tools.messaging.chooseAudienceHint')
     : !hasAudienceMessageDraftContent
       ? t('admin.tools.messaging.writeMessageHint')
-      : '';
+      : audienceMessageDraft.categoryId == null
+        ? t('admin.tools.messaging.chooseCategoryHint')
+        : '';
 
   useEffect(() => {
     setContactProfileTableCounts({
@@ -7295,6 +7359,26 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             </Button>
           </Col>
         </Row>
+        <Row gutter={[12, 12]} style={{ marginBottom: 8 }}>
+          <Col xs={24} md={8}>
+            <Select
+              value={audienceFilters.excludeCategoryId ?? null}
+              placeholder={t('admin.tools.messaging.excludeCategoryPlaceholder')}
+              options={communicationCategoryOptions}
+              onChange={value => updateAudienceFilter('excludeCategoryId', value)}
+              style={{ width: '100%' }}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} md={8}>
+            <Input
+              value={audienceFilters.excludeCourseCodeId || ''}
+              onChange={event => updateAudienceFilter('excludeCourseCodeId', event.target.value)}
+              placeholder={t('admin.tools.messaging.excludeCourseCodeIdPlaceholder')}
+              allowClear
+            />
+          </Col>
+        </Row>
         </Card>
       </div>
     );
@@ -7622,6 +7706,94 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const renderMessagingHistory = () => {
+    const historyRows = communicationTrackingHistory?.rows || [];
+    return (
+      <div>
+        <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+          <Col xs={24} md={8}>
+            <Select
+              value={messagingHistoryFilters.categoryId ?? null}
+              placeholder={t('admin.tools.messaging.history.filterCategory')}
+              options={communicationCategoryOptions}
+              onChange={value => setMessagingHistoryFilters(prev => ({ ...prev, categoryId: value, offset: 0 }))}
+              style={{ width: '100%' }}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} md={8}>
+            <Input
+              value={messagingHistoryFilters.courseCodeId || ''}
+              onChange={event => setMessagingHistoryFilters(prev => ({ ...prev, courseCodeId: event.target.value, offset: 0 }))}
+              placeholder={t('admin.tools.messaging.history.filterCourseCode')}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} md={4}>
+            <Button
+              type="primary"
+              icon={<SearchOutlined />}
+              loading={messagingHistoryLoading}
+              onClick={() => loadMessagingHistory(messagingHistoryFilters)}
+              block
+            >
+              {t('admin.tools.messaging.applyFilters')}
+            </Button>
+          </Col>
+        </Row>
+        <Table
+          size="small"
+          rowKey="key"
+          loading={messagingHistoryLoading}
+          dataSource={historyRows}
+          pagination={{ pageSize: 50, showSizeChanger: true }}
+          scroll={{ x: 900 }}
+          locale={{ emptyText: t('admin.tools.messaging.history.empty') }}
+          columns={[
+            {
+              title: t('admin.tools.messaging.history.col.email'),
+              dataIndex: 'emailId',
+              key: 'emailId',
+              width: 240,
+              ellipsis: true
+            },
+            {
+              title: t('admin.tools.messaging.history.col.category'),
+              dataIndex: 'categoryName',
+              key: 'categoryName',
+              width: 180
+            },
+            {
+              title: t('admin.tools.messaging.history.col.courseCode'),
+              dataIndex: 'courseCodeId',
+              key: 'courseCodeId',
+              width: 200
+            },
+            {
+              title: t('admin.tools.messaging.history.col.status'),
+              dataIndex: 'wasSentSuccessful',
+              key: 'wasSentSuccessful',
+              width: 100,
+              render: value => (
+                <Tag color={value ? 'success' : 'error'}>
+                  {value ? t('admin.tools.messaging.history.sent') : t('admin.tools.messaging.history.failed')}
+                </Tag>
+              )
+            },
+            {
+              title: t('admin.tools.messaging.history.col.sentAt'),
+              dataIndex: 'sentAt',
+              key: 'sentAt',
+              width: 180,
+              sorter: (a, b) => new Date(a.sentAt || 0) - new Date(b.sentAt || 0),
+              render: value => (value ? new Date(value).toLocaleString() : '-')
+            }
+          ]}
+        />
+      </div>
+    );
+  };
+
   const renderAudienceMessageComposer = () => (
     <div>
       <Alert
@@ -7630,8 +7802,38 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         title={t('admin.tools.messaging.selectedRecipients', {
           count: selectedAudienceRows.length
         })}
+        style={{ marginBottom: 8 }}
+      />
+      <Alert
+        type="warning"
+        showIcon
+        message={t('admin.tools.messaging.dailyLimitBanner')}
         style={{ marginBottom: 16 }}
       />
+      <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+        <Col xs={24} md={12}>
+          <Select
+            value={audienceMessageDraft.categoryId}
+            placeholder={t('admin.tools.messaging.categoryPlaceholder')}
+            options={communicationCategoryOptions}
+            onChange={value => setAudienceMessageDraft(prev => ({ ...prev, categoryId: value }))}
+            style={{ width: '100%' }}
+            allowClear
+          />
+          <div style={{ textAlign: 'right', marginTop: 2 }}>
+            <Button type="link" size="small" icon={<EditOutlined />} onClick={openCategoryManager}>
+              {t('admin.tools.messaging.manage')}
+            </Button>
+          </div>
+        </Col>
+        <Col xs={24} md={12}>
+          <Input
+            value={audienceMessageDraft.courseCodeId}
+            onChange={event => setAudienceMessageDraft(prev => ({ ...prev, courseCodeId: event.target.value }))}
+            placeholder={t('admin.tools.messaging.courseCodeIdPlaceholder')}
+          />
+        </Col>
+      </Row>
       <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
         <Col xs={24} md={18}>
           <Input
@@ -7728,6 +7930,100 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </div>
   );
 
+  const renderCategoryManager = () => {
+    const rows = communicationCategories?.rows || [];
+    const columns = [
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+        width: 56
+      },
+      {
+        title: t('admin.tools.messaging.categoryManager.key'),
+        dataIndex: 'categoryKey',
+        key: 'categoryKey',
+        render: value => (
+          <span style={{ color: '#8c8c8c', fontStyle: 'italic', fontSize: 12 }}>{value}</span>
+        )
+      },
+      {
+        title: t('admin.tools.messaging.categoryManager.displayName'),
+        key: 'displayName',
+        render: (_, row) => {
+          const edit = categoryEdits[row.id] || {};
+          const isDirty = edit.displayName !== undefined && edit.displayName !== row.displayName;
+          return (
+            <Space.Compact style={{ width: '100%' }}>
+              <Input
+                size="small"
+                value={edit.displayName !== undefined ? edit.displayName : row.displayName}
+                onChange={e => setCategoryEdits(prev => ({
+                  ...prev,
+                  [row.id]: { ...prev[row.id], displayName: e.target.value }
+                }))}
+              />
+              {isDirty && (
+                <Button
+                  size="small"
+                  type="primary"
+                  icon={<SaveOutlined />}
+                  loading={categoryManagerSavingId === row.id}
+                  onClick={() => saveCategoryUpdate(row.id, edit.displayName, edit.isActive !== undefined ? edit.isActive : row.isActive)}
+                />
+              )}
+            </Space.Compact>
+          );
+        }
+      },
+      {
+        title: t('admin.tools.messaging.categoryManager.active'),
+        key: 'active',
+        width: 80,
+        render: (_, row) => {
+          const edit = categoryEdits[row.id] || {};
+          const currentActive = edit.isActive !== undefined ? edit.isActive : row.isActive;
+          const currentDisplayName = edit.displayName !== undefined ? edit.displayName : row.displayName;
+          return (
+            <Switch
+              size="small"
+              checked={currentActive}
+              loading={categoryManagerSavingId === row.id}
+              onChange={checked => {
+                setCategoryEdits(prev => ({ ...prev, [row.id]: { ...prev[row.id], isActive: checked } }));
+                saveCategoryUpdate(row.id, currentDisplayName, checked);
+              }}
+            />
+          );
+        }
+      }
+    ];
+
+    return (
+      <Modal
+        title={t('admin.tools.messaging.categoryManager.title')}
+        open={categoryManagerVisible}
+        onCancel={() => setCategoryManagerVisible(false)}
+        footer={null}
+        width={640}
+      >
+        <Table
+          dataSource={rows}
+          columns={columns}
+          rowKey="key"
+          pagination={false}
+          size="small"
+        />
+        <Alert
+          type="info"
+          showIcon
+          message={t('admin.tools.messaging.categoryManager.note')}
+          style={{ marginTop: 12 }}
+        />
+      </Modal>
+    );
+  };
+
   const renderMessagingDashboard = () => (
     <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
       <h4 style={{ marginBottom: 12 }}>
@@ -7783,9 +8079,20 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               </span>
             ),
             children: renderAudienceCertificationReport()
+          },
+          {
+            key: 'messagingHistory',
+            label: (
+              <span>
+                <UnorderedListOutlined style={{ marginRight: 6 }} />
+                {t('admin.tools.messaging.tab.history')}
+              </span>
+            ),
+            children: renderMessagingHistory()
           }
         ]}
       />
+      {renderCategoryManager()}
     </Card>
   );
 
@@ -8359,6 +8666,9 @@ function mapDispatchToProps(dispatch) {
     onRollingBackContactMerge,
     onLoadingAudienceMessageVariables,
     onSendingAudienceMessage,
+    onLoadingCommunicationCategories,
+    onLoadingCommunicationTrackingHistory,
+    onUpdatingCommunicationCategory,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   }, dispatch);
@@ -8389,7 +8699,9 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     contactMergeDashboard,
     contactMergePreview,
     audienceMessageVariables,
-    lastAudienceMessageSendResult
+    lastAudienceMessageSendResult,
+    communicationCategories,
+    communicationTrackingHistory
   } = adminTools;
   return {
     user,
@@ -8416,7 +8728,9 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     contactMergeDashboard,
     contactMergePreview,
     audienceMessageVariables,
-    lastAudienceMessageSendResult
+    lastAudienceMessageSendResult,
+    communicationCategories,
+    communicationTrackingHistory
   };
 };
 

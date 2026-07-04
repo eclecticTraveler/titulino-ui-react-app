@@ -36,7 +36,10 @@ import {
   ON_EXECUTING_CONTACT_MERGE,
   ON_ROLLING_BACK_CONTACT_MERGE,
   ON_LOADING_AUDIENCE_MESSAGE_VARIABLES,
-  ON_SENDING_AUDIENCE_MESSAGE
+  ON_SENDING_AUDIENCE_MESSAGE,
+  ON_LOADING_COMMUNICATION_CATEGORIES,
+  ON_LOADING_COMMUNICATION_TRACKING_HISTORY,
+  ON_UPDATING_COMMUNICATION_CATEGORY
 } from '../constants/AdminTools';
 
 const initState = {
@@ -51,7 +54,9 @@ const initState = {
   lastContactMergeResult: null,
   lastContactMergeRollbackResult: null,
   audienceMessageVariables: null,
-  lastAudienceMessageSendResult: null
+  lastAudienceMessageSendResult: null,
+  communicationCategories: null,
+  communicationTrackingHistory: null
 };
 
 const applyAvatarCacheToEnrollees = (allEnrollees = [], avatarUrlMap = {}) => (
@@ -253,6 +258,24 @@ const adminTools = (state = initState, action) => {
       return { ...state, audienceMessageVariables: action.audienceMessageVariables };
     case ON_SENDING_AUDIENCE_MESSAGE:
       return { ...state, lastAudienceMessageSendResult: action.audienceMessageSendResult };
+    case ON_LOADING_COMMUNICATION_CATEGORIES:
+      return { ...state, communicationCategories: action.communicationCategories };
+    case ON_LOADING_COMMUNICATION_TRACKING_HISTORY:
+      return { ...state, communicationTrackingHistory: action.communicationTrackingHistory };
+    case ON_UPDATING_COMMUNICATION_CATEGORY:
+      return {
+        ...state,
+        lastUpdateCommunicationCategoryResult: action.updateCommunicationCategoryResult,
+        communicationCategories: action.updateCommunicationCategoryResult !== false && state.communicationCategories
+          ? {
+              ...state.communicationCategories,
+              rows: (state.communicationCategories.rows || []).map(row => {
+                if (row.id !== action.id) return row;
+                return { ...row, displayName: action.displayName, isActive: action.isActive };
+              })
+            }
+          : state.communicationCategories
+      };
     case ON_CLEAR_SELECTED_CONTACT:
       return {
         ...state,

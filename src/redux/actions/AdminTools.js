@@ -35,7 +35,10 @@ import {
   ON_EXECUTING_CONTACT_MERGE,
   ON_ROLLING_BACK_CONTACT_MERGE,
   ON_LOADING_AUDIENCE_MESSAGE_VARIABLES,
-  ON_SENDING_AUDIENCE_MESSAGE
+  ON_SENDING_AUDIENCE_MESSAGE,
+  ON_LOADING_COMMUNICATION_CATEGORIES,
+  ON_LOADING_COMMUNICATION_TRACKING_HISTORY,
+  ON_UPDATING_COMMUNICATION_CATEGORY
 } from '../constants/AdminTools';
 
 // Pure helpers re-exported via the manager so components keep a single
@@ -373,5 +376,32 @@ export const onTogglingShopProductActive = async (adminEmailId, paymentProviderP
   return {
     type: ON_TOGGLING_SHOP_PRODUCT_ACTIVE,
     toggleResult: result
+  };
+};
+
+export const onLoadingCommunicationCategories = async (adminEmailId) => {
+  const communicationCategories = await AdminToolsManager.getCommunicationCategories(adminEmailId);
+  return {
+    type: ON_LOADING_COMMUNICATION_CATEGORIES,
+    communicationCategories
+  };
+};
+
+export const onLoadingCommunicationTrackingHistory = async (adminEmailId, filters) => {
+  const communicationTrackingHistory = await AdminToolsManager.getCommunicationTrackingHistory(adminEmailId, filters);
+  return {
+    type: ON_LOADING_COMMUNICATION_TRACKING_HISTORY,
+    communicationTrackingHistory
+  };
+};
+
+export const onUpdatingCommunicationCategory = async (adminEmailId, id, displayName, isActive) => {
+  const result = await AdminToolsManager.updateCommunicationCategory(adminEmailId, id, displayName, isActive);
+  return {
+    type: ON_UPDATING_COMMUNICATION_CATEGORY,
+    updateCommunicationCategoryResult: result,
+    id,
+    displayName,
+    isActive
   };
 };
