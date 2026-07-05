@@ -667,7 +667,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [editingCategoryId, setEditingCategoryId] = useState(null);
   const [categoryCreating, setCategoryCreating] = useState(false);
   const [newCategoryKey, setNewCategoryKey] = useState('');
-  const [newCategoryLocalizationKey, setNewCategoryLocalizationKey] = useState('');
   const [audienceCertificationLoading, setAudienceCertificationLoading] = useState(false);
   const [audienceCertificationHistory, setAudienceCertificationHistory] = useState(null);
   const [audienceCertificationFilters, setAudienceCertificationFilters] = useState({
@@ -1176,18 +1175,18 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const createCategory = useCallback(async () => {
     const derivedKey = buildCommunicationCategoryKey(newCategoryKey);
-    if (!emailId || !derivedKey || !newCategoryLocalizationKey.trim()) return;
+    if (!emailId || !derivedKey) return;
+    const derivedLocalizationKey = `messaging.category.${derivedKey}`;
     setCategoryCreating(true);
     try {
-      await onUpsertingCommunicationCategory(emailId, null, derivedKey, newCategoryLocalizationKey.trim(), true);
+      await onUpsertingCommunicationCategory(emailId, null, derivedKey, derivedLocalizationKey, true);
       await onLoadingCommunicationCategories(emailId);
       setNewCategoryKey('');
-      setNewCategoryLocalizationKey('');
       setCategoryManagerTab('list');
     } finally {
       setCategoryCreating(false);
     }
-  }, [emailId, newCategoryKey, newCategoryLocalizationKey, onUpsertingCommunicationCategory, onLoadingCommunicationCategories]);
+  }, [emailId, newCategoryKey, onUpsertingCommunicationCategory, onLoadingCommunicationCategories]);
 
   const loadMessagingHistory = useCallback(async (filters = messagingHistoryFilters) => {
     if (!emailId || !onLoadingCommunicationTrackingHistory) return;
@@ -8241,21 +8240,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             onChange={e => setNewCategoryKey(e.target.value)}
             placeholder={t('admin.tools.messaging.categoryManager.create.keyHint')}
           />
-          {newCategoryKey.trim() && (
-            <div style={{ marginTop: 4, fontSize: 11, color: '#8c8c8c' }}>
-              {'→ '}
-              <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#595959' }}>
-                {buildCommunicationCategoryKey(newCategoryKey)}
-              </span>
-            </div>
-          )}
-        </div>
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.categoryManager.create.localizationKey')}</div>
-          <Input
-            value={newCategoryLocalizationKey}
-            onChange={e => setNewCategoryLocalizationKey(e.target.value)}
-          />
+          {newCategoryKey.trim() && (() => {
+            const dk = buildCommunicationCategoryKey(newCategoryKey);
+            return dk ? (
+              <div style={{ marginTop: 6, fontSize: 11, color: '#8c8c8c', lineHeight: '20px' }}>
+                <div>
+                  {'→ '}
+                  <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#595959' }}>{dk}</span>
+                </div>
+                <div>
+                  {'→ '}
+                  <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#595959' }}>{`messaging.category.${dk}`}</span>
+                </div>
+              </div>
+            ) : null;
+          })()}
         </div>
         <Alert
           type="warning"
@@ -8267,7 +8266,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           type="primary"
           icon={<PlusOutlined />}
           loading={categoryCreating}
-          disabled={!buildCommunicationCategoryKey(newCategoryKey) || !newCategoryLocalizationKey.trim()}
+          disabled={!buildCommunicationCategoryKey(newCategoryKey)}
           onClick={createCategory}
         >
           {t('admin.tools.messaging.categoryManager.create.save')}

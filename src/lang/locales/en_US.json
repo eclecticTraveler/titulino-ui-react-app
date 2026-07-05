@@ -663,7 +663,7 @@
 	"admin.tools.messaging.categoryManager.tabs.create": "Create New",
 	"admin.tools.messaging.categoryManager.create.key": "Category Key",
 	"admin.tools.messaging.categoryManager.create.keyHint": "1–3 words, e.g. Special Invitation",
-	"admin.tools.messaging.categoryManager.create.localizationKey": "Localization Key",
+
 	"admin.tools.messaging.categoryManager.create.save": "Save Category",
 	"admin.tools.messaging.categoryManager.create.success": "Category created. Remember to add it to CommunicationCategory.cs in the backend.",
 	"messaging.category.error": "Error",
