@@ -501,6 +501,11 @@ describe('buildCommunicationCategoryKey', () => {
     expect(buildCommunicationCategoryKey(null)).toBe('');
     expect(buildCommunicationCategoryKey(undefined)).toBe('');
   });
+
+  it('splits camelCase input into words before converting', () => {
+    expect(buildCommunicationCategoryKey('testingNowAllAtOnce')).toBe('testingNowAllAtOnce');
+    expect(buildCommunicationCategoryKey('specialInvitation')).toBe('specialInvitation');
+  });
 });
 
 // ---------------------------------------------------------------------------

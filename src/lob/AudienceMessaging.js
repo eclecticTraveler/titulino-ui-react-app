@@ -828,6 +828,7 @@ export const buildCommunicationCategoryTableModel = (rows = []) => (
 export const buildCommunicationCategoryKey = (raw = '') => {
   if (raw == null) return '';
   const words = String(raw)
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
     .trim()
     .split(/\s+/)
     .map(w => w.replace(/[^a-zA-Z0-9]/g, ''))

@@ -8111,6 +8111,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         title: t('admin.tools.messaging.categoryManager.key'),
         dataIndex: 'categoryKey',
         key: 'categoryKey',
+        filters: rows.map(r => ({ text: r.categoryKey, value: r.categoryKey })),
+        filterSearch: true,
+        onFilter: (value, record) => record.categoryKey === value,
         render: value => (
           <span style={{ color: '#8c8c8c', fontStyle: 'italic', fontSize: 12 }}>{value}</span>
         )
@@ -8118,11 +8121,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       {
         title: t('admin.tools.messaging.categoryManager.localizationKey'),
         key: 'localizationKey',
+        filters: rows.map(r => ({ text: r.localizationKey, value: r.localizationKey })),
+        filterSearch: true,
+        onFilter: (value, record) => record.localizationKey === value,
         render: (_, row) => {
+          const PREFIX = 'messaging.category.';
           const edit = categoryEdits[row.id] || {};
           const currentKey = edit.localizationKey !== undefined ? edit.localizationKey : row.localizationKey;
           const isDirty = edit.localizationKey !== undefined && edit.localizationKey !== row.localizationKey;
           const isEditing = editingCategoryId === row.id;
+          const suffix = currentKey.startsWith(PREFIX) ? currentKey.slice(PREFIX.length) : currentKey;
 
           if (!isEditing) {
             return (
@@ -8147,11 +8155,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               <Space.Compact style={{ width: '100%' }}>
                 <Input
                   size="small"
-                  value={currentKey}
+                  addonBefore={<span style={{ fontSize: 11, color: '#8c8c8c' }}>messaging.category.</span>}
+                  value={suffix}
                   autoFocus
                   onChange={e => setCategoryEdits(prev => ({
                     ...prev,
-                    [row.id]: { ...prev[row.id], localizationKey: e.target.value }
+                    [row.id]: { ...prev[row.id], localizationKey: `${PREFIX}${e.target.value}` }
                   }))}
                 />
                 {isDirty && (
@@ -8187,6 +8196,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         title: t('admin.tools.messaging.categoryManager.active'),
         key: 'active',
         width: 80,
+        filters: [
+          { text: t('admin.tools.messaging.categoryManager.filter.active'), value: true },
+          { text: t('admin.tools.messaging.categoryManager.filter.inactive'), value: false },
+        ],
+        onFilter: (value, record) => record.isActive === value,
         render: (_, row) => {
           const edit = categoryEdits[row.id] || {};
           const currentActive = edit.isActive !== undefined ? edit.isActive : row.isActive;
@@ -8243,31 +8257,33 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           {newCategoryKey.trim() && (() => {
             const dk = buildCommunicationCategoryKey(newCategoryKey);
             return dk ? (
-              <div style={{ marginTop: 6, fontSize: 11, color: '#8c8c8c', lineHeight: '20px' }}>
+              <div style={{ marginTop: 6, fontSize: 11, lineHeight: '20px' }}>
                 <div>
-                  {'→ '}
+                  <span style={{ color: '#8c8c8c' }}>{t('admin.tools.messaging.categoryManager.create.previewKey')}{' '}</span>
                   <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#595959' }}>{dk}</span>
                 </div>
                 <div>
-                  {'→ '}
+                  <span style={{ color: '#8c8c8c' }}>{t('admin.tools.messaging.categoryManager.create.previewLocalization')}{' '}</span>
                   <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#595959' }}>{`messaging.category.${dk}`}</span>
                 </div>
               </div>
             ) : null;
           })()}
         </div>
-        <Alert
-          type="warning"
-          showIcon
-          message={t('admin.tools.messaging.categoryManager.note')}
-          style={{ marginBottom: 16 }}
-        />
         <Button
           type="primary"
           icon={<PlusOutlined />}
           loading={categoryCreating}
           disabled={!buildCommunicationCategoryKey(newCategoryKey)}
-          onClick={createCategory}
+          onClick={() => {
+            Modal.confirm({
+              title: t('admin.tools.messaging.categoryManager.create.confirmTitle'),
+              content: t('admin.tools.messaging.categoryManager.create.confirmContent'),
+              okText: t('admin.tools.messaging.categoryManager.create.save'),
+
+              onOk: createCategory,
+            });
+          }}
         >
           {t('admin.tools.messaging.categoryManager.create.save')}
         </Button>
