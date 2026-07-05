@@ -8105,7 +8105,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         title: 'ID',
         dataIndex: 'id',
         key: 'id',
-        width: 56
+        width: 56,
+        sorter: (a, b) => (a.id ?? 0) - (b.id ?? 0),
+        defaultSortOrder: 'ascend'
       },
       {
         title: t('admin.tools.messaging.categoryManager.key'),
