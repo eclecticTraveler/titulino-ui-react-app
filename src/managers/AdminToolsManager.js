@@ -1386,6 +1386,7 @@ const AdminToolsManager = {
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,
   buildCommunicationTrackingHistoryHeatmapData,
+  buildCommunicationCategoryKey,
   getCommunicationCategories: (...args) => getCommunicationCategories(...args),
   getCommunicationTrackingHistory: (...args) => getCommunicationTrackingHistory(...args),
   upsertCommunicationCategory: (...args) => upsertCommunicationCategory(...args),
