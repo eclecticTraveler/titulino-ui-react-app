@@ -809,17 +809,17 @@ export const hasMessageContent = (messageDraft = {}) => (
 
 export const buildCommunicationCategoryTableModel = (rows = []) => (
   (Array.isArray(rows) ? rows : []).map((row, index) => {
-    const id = getValue(row, 'CommunicationCategoryId', 'communicationCategoryId', 'communication_category_id');
-    const categoryKey = getValue(row, 'CommunicationCategoryName', 'communicationCategoryName', 'communication_category_name');
-    const displayName = getValue(row, 'DisplayName', 'displayName', 'display_name') || categoryKey || '';
-    const isActive = getValue(row, 'is_active', 'isActive', 'IsActive') !== false;
+    const id = getValue(row, 'CommunicationCategoryId', 'communicationCategoryId');
+    const categoryKey = getValue(row, 'CommunicationCategoryKey', 'communicationCategoryKey');
+    const localizationKey = getValue(row, 'LocalizationKey', 'localizationKey') || '';
+    const isActive = getValue(row, 'IsActive', 'isActive') !== false;
 
     return {
       ...row,
       key: id != null ? id : `category-${index}`,
       id,
       categoryKey: categoryKey || '',
-      displayName,
+      localizationKey,
       isActive
     };
   })

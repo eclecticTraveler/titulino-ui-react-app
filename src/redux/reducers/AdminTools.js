@@ -39,7 +39,7 @@ import {
   ON_SENDING_AUDIENCE_MESSAGE,
   ON_LOADING_COMMUNICATION_CATEGORIES,
   ON_LOADING_COMMUNICATION_TRACKING_HISTORY,
-  ON_UPDATING_COMMUNICATION_CATEGORY
+  ON_UPSERTING_COMMUNICATION_CATEGORY
 } from '../constants/AdminTools';
 
 const initState = {
@@ -262,16 +262,16 @@ const adminTools = (state = initState, action) => {
       return { ...state, communicationCategories: action.communicationCategories };
     case ON_LOADING_COMMUNICATION_TRACKING_HISTORY:
       return { ...state, communicationTrackingHistory: action.communicationTrackingHistory };
-    case ON_UPDATING_COMMUNICATION_CATEGORY:
+    case ON_UPSERTING_COMMUNICATION_CATEGORY:
       return {
         ...state,
-        lastUpdateCommunicationCategoryResult: action.updateCommunicationCategoryResult,
-        communicationCategories: action.updateCommunicationCategoryResult !== false && state.communicationCategories
+        lastUpsertCommunicationCategoryResult: action.upsertCommunicationCategoryResult,
+        communicationCategories: action.upsertCommunicationCategoryResult !== null && action.id !== null && state.communicationCategories
           ? {
               ...state.communicationCategories,
               rows: (state.communicationCategories.rows || []).map(row => {
                 if (row.id !== action.id) return row;
-                return { ...row, displayName: action.displayName, isActive: action.isActive };
+                return { ...row, localizationKey: action.localizationKey, isActive: action.isActive };
               })
             }
           : state.communicationCategories

@@ -62,7 +62,7 @@ import {
   onSendingAudienceMessage,
   onLoadingCommunicationCategories,
   onLoadingCommunicationTrackingHistory,
-  onUpdatingCommunicationCategory,
+  onUpsertingCommunicationCategory,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -569,7 +569,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onSendingAudienceMessage,
     onLoadingCommunicationCategories,
     onLoadingCommunicationTrackingHistory,
-    onUpdatingCommunicationCategory,
+    onUpsertingCommunicationCategory,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     processLogEventsBySource,
@@ -658,8 +658,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [messagingHistoryFilters, setMessagingHistoryFilters] = useState({ limit: 50, offset: 0 });
   const [historyViewMode, setHistoryViewMode] = useState('grid');
   const [categoryManagerVisible, setCategoryManagerVisible] = useState(false);
+  const [categoryManagerTab, setCategoryManagerTab] = useState('list');
   const [categoryEdits, setCategoryEdits] = useState({});
   const [categoryManagerSavingId, setCategoryManagerSavingId] = useState(null);
+  const [categoryCreating, setCategoryCreating] = useState(false);
+  const [newCategoryKey, setNewCategoryKey] = useState('');
+  const [newCategoryLocalizationKey, setNewCategoryLocalizationKey] = useState('');
   const [audienceCertificationLoading, setAudienceCertificationLoading] = useState(false);
   const [audienceCertificationHistory, setAudienceCertificationHistory] = useState(null);
   const [audienceCertificationFilters, setAudienceCertificationFilters] = useState({
@@ -1155,15 +1159,29 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setCategoryManagerVisible(true);
   }, [communicationCategories]);
 
-  const saveCategoryUpdate = useCallback(async (id, displayName, isActive) => {
-    if (!emailId || !onUpdatingCommunicationCategory) return;
+  const saveCategoryUpdate = useCallback(async (id, key, localizationKey, isActive) => {
+    if (!emailId || !onUpsertingCommunicationCategory) return;
     setCategoryManagerSavingId(id);
     try {
-      await onUpdatingCommunicationCategory(emailId, id, displayName, isActive);
+      await onUpsertingCommunicationCategory(emailId, id, key, localizationKey, isActive);
     } finally {
       setCategoryManagerSavingId(null);
     }
-  }, [emailId, onUpdatingCommunicationCategory]);
+  }, [emailId, onUpsertingCommunicationCategory]);
+
+  const createCategory = useCallback(async () => {
+    if (!emailId || !newCategoryKey.trim() || !newCategoryLocalizationKey.trim()) return;
+    setCategoryCreating(true);
+    try {
+      await onUpsertingCommunicationCategory(emailId, null, newCategoryKey.trim(), newCategoryLocalizationKey.trim(), true);
+      await onLoadingCommunicationCategories(emailId);
+      setNewCategoryKey('');
+      setNewCategoryLocalizationKey('');
+      setCategoryManagerTab('list');
+    } finally {
+      setCategoryCreating(false);
+    }
+  }, [emailId, newCategoryKey, newCategoryLocalizationKey, onUpsertingCommunicationCategory, onLoadingCommunicationCategories]);
 
   const loadMessagingHistory = useCallback(async (filters = messagingHistoryFilters) => {
     if (!emailId || !onLoadingCommunicationTrackingHistory) return;
@@ -2765,9 +2783,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   );
   const communicationCategoryOptions = useMemo(() => (
     (communicationCategories?.rows || [])
-      .filter(row => row.id != null && row.displayName)
-      .map(row => ({ value: row.id, label: row.displayName }))
-  ), [communicationCategories]);
+      .filter(row => row.id != null && row.localizationKey)
+      .map(row => ({ value: row.id, label: t(row.localizationKey) }))
+  ), [communicationCategories, t]);
   const historyCourseOptions = useMemo(
     () => buildHistoryCourseOptions(allRawCourses),
     [allRawCourses]
@@ -8058,31 +8076,35 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         )
       },
       {
-        title: t('admin.tools.messaging.categoryManager.displayName'),
-        key: 'displayName',
+        title: t('admin.tools.messaging.categoryManager.localizationKey'),
+        key: 'localizationKey',
         render: (_, row) => {
           const edit = categoryEdits[row.id] || {};
-          const isDirty = edit.displayName !== undefined && edit.displayName !== row.displayName;
+          const currentKey = edit.localizationKey !== undefined ? edit.localizationKey : row.localizationKey;
+          const isDirty = edit.localizationKey !== undefined && edit.localizationKey !== row.localizationKey;
           return (
-            <Space.Compact style={{ width: '100%' }}>
-              <Input
-                size="small"
-                value={edit.displayName !== undefined ? edit.displayName : row.displayName}
-                onChange={e => setCategoryEdits(prev => ({
-                  ...prev,
-                  [row.id]: { ...prev[row.id], displayName: e.target.value }
-                }))}
-              />
-              {isDirty && (
-                <Button
+            <Space direction="vertical" size={2} style={{ width: '100%' }}>
+              <span style={{ fontSize: 11, color: '#8c8c8c' }}>{t(row.localizationKey)}</span>
+              <Space.Compact style={{ width: '100%' }}>
+                <Input
                   size="small"
-                  type="primary"
-                  icon={<SaveOutlined />}
-                  loading={categoryManagerSavingId === row.id}
-                  onClick={() => saveCategoryUpdate(row.id, edit.displayName, edit.isActive !== undefined ? edit.isActive : row.isActive)}
+                  value={currentKey}
+                  onChange={e => setCategoryEdits(prev => ({
+                    ...prev,
+                    [row.id]: { ...prev[row.id], localizationKey: e.target.value }
+                  }))}
                 />
-              )}
-            </Space.Compact>
+                {isDirty && (
+                  <Button
+                    size="small"
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    loading={categoryManagerSavingId === row.id}
+                    onClick={() => saveCategoryUpdate(row.id, row.categoryKey, currentKey, edit.isActive !== undefined ? edit.isActive : row.isActive)}
+                  />
+                )}
+              </Space.Compact>
+            </Space>
           );
         }
       },
@@ -8093,7 +8115,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         render: (_, row) => {
           const edit = categoryEdits[row.id] || {};
           const currentActive = edit.isActive !== undefined ? edit.isActive : row.isActive;
-          const currentDisplayName = edit.displayName !== undefined ? edit.displayName : row.displayName;
+          const currentLocalizationKey = edit.localizationKey !== undefined ? edit.localizationKey : row.localizationKey;
           return (
             <Switch
               size="small"
@@ -8101,7 +8123,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               loading={categoryManagerSavingId === row.id}
               onChange={checked => {
                 setCategoryEdits(prev => ({ ...prev, [row.id]: { ...prev[row.id], isActive: checked } }));
-                saveCategoryUpdate(row.id, currentDisplayName, checked);
+                saveCategoryUpdate(row.id, row.categoryKey, currentLocalizationKey, checked);
               }}
             />
           );
@@ -8109,14 +8131,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       }
     ];
 
-    return (
-      <Modal
-        title={t('admin.tools.messaging.categoryManager.title')}
-        open={categoryManagerVisible}
-        onCancel={() => setCategoryManagerVisible(false)}
-        footer={null}
-        width={640}
-      >
+    const listTab = (
+      <>
         <Table
           dataSource={rows}
           columns={columns}
@@ -8129,6 +8145,60 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           showIcon
           message={t('admin.tools.messaging.categoryManager.note')}
           style={{ marginTop: 12 }}
+        />
+      </>
+    );
+
+    const createTab = (
+      <div style={{ maxWidth: 420 }}>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.categoryManager.create.key')}</div>
+          <Input
+            value={newCategoryKey}
+            onChange={e => setNewCategoryKey(e.target.value)}
+            placeholder={t('admin.tools.messaging.categoryManager.create.keyHint')}
+          />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.categoryManager.create.localizationKey')}</div>
+          <Input
+            value={newCategoryLocalizationKey}
+            onChange={e => setNewCategoryLocalizationKey(e.target.value)}
+          />
+        </div>
+        <Alert
+          type="warning"
+          showIcon
+          message={t('admin.tools.messaging.categoryManager.note')}
+          style={{ marginBottom: 16 }}
+        />
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          loading={categoryCreating}
+          disabled={!newCategoryKey.trim() || !newCategoryLocalizationKey.trim()}
+          onClick={createCategory}
+        >
+          {t('admin.tools.messaging.categoryManager.create.save')}
+        </Button>
+      </div>
+    );
+
+    return (
+      <Modal
+        title={t('admin.tools.messaging.categoryManager.title')}
+        open={categoryManagerVisible}
+        onCancel={() => { setCategoryManagerVisible(false); setCategoryManagerTab('list'); }}
+        footer={null}
+        width={640}
+      >
+        <Tabs
+          activeKey={categoryManagerTab}
+          onChange={setCategoryManagerTab}
+          items={[
+            { key: 'list', label: t('admin.tools.messaging.categoryManager.tabs.list'), children: listTab },
+            { key: 'create', label: t('admin.tools.messaging.categoryManager.tabs.create'), children: createTab }
+          ]}
         />
       </Modal>
     );
@@ -8778,7 +8848,7 @@ function mapDispatchToProps(dispatch) {
     onSendingAudienceMessage,
     onLoadingCommunicationCategories,
     onLoadingCommunicationTrackingHistory,
-    onUpdatingCommunicationCategory,
+    onUpsertingCommunicationCategory,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   }, dispatch);

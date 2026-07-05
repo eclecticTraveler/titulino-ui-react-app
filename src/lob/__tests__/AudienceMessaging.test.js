@@ -399,45 +399,45 @@ describe('buildCommunicationCategoryTableModel', () => {
     expect(buildCommunicationCategoryTableModel(undefined)).toEqual([]);
   });
 
-  it('normalizes PascalCase DB fields to camelCase', () => {
+  it('normalizes PascalCase DB fields (post-rename columns)', () => {
     const rows = [{
       CommunicationCategoryId: 1,
-      CommunicationCategoryName: 'welcome',
-      DisplayName: 'Welcome',
-      is_active: true
+      CommunicationCategoryKey: 'welcome',
+      LocalizationKey: 'messaging.category.welcome',
+      IsActive: true
     }];
     const [row] = buildCommunicationCategoryTableModel(rows);
     expect(row.id).toBe(1);
     expect(row.categoryKey).toBe('welcome');
-    expect(row.displayName).toBe('Welcome');
+    expect(row.localizationKey).toBe('messaging.category.welcome');
     expect(row.isActive).toBe(true);
   });
 
   it('normalizes camelCase fields', () => {
     const rows = [{
       communicationCategoryId: 2,
-      communicationCategoryName: 'week1',
-      displayName: 'Week 1',
+      communicationCategoryKey: 'week1',
+      localizationKey: 'messaging.category.week1',
       isActive: true
     }];
     const [row] = buildCommunicationCategoryTableModel(rows);
     expect(row.id).toBe(2);
     expect(row.categoryKey).toBe('week1');
-    expect(row.displayName).toBe('Week 1');
+    expect(row.localizationKey).toBe('messaging.category.week1');
   });
 
-  it('falls back to categoryKey as displayName when DisplayName is absent', () => {
-    const rows = [{ CommunicationCategoryId: 3, CommunicationCategoryName: 'birthday' }];
+  it('sets localizationKey to empty string when absent', () => {
+    const rows = [{ CommunicationCategoryId: 3, CommunicationCategoryKey: 'birthday' }];
     const [row] = buildCommunicationCategoryTableModel(rows);
-    expect(row.displayName).toBe('birthday');
+    expect(row.localizationKey).toBe('');
   });
 
-  it('treats is_active=false as isActive=false', () => {
-    const [row] = buildCommunicationCategoryTableModel([{ CommunicationCategoryId: 4, is_active: false }]);
+  it('treats IsActive=false as isActive=false', () => {
+    const [row] = buildCommunicationCategoryTableModel([{ CommunicationCategoryId: 4, IsActive: false }]);
     expect(row.isActive).toBe(false);
   });
 
-  it('treats missing is_active as isActive=true', () => {
+  it('treats missing IsActive as isActive=true', () => {
     const [row] = buildCommunicationCategoryTableModel([{ CommunicationCategoryId: 5 }]);
     expect(row.isActive).toBe(true);
   });
@@ -448,7 +448,7 @@ describe('buildCommunicationCategoryTableModel', () => {
   });
 
   it('sets key to category-{index} when id is absent', () => {
-    const [row] = buildCommunicationCategoryTableModel([{ CommunicationCategoryName: 'na' }]);
+    const [row] = buildCommunicationCategoryTableModel([{ CommunicationCategoryKey: 'na' }]);
     expect(row.key).toBe('category-0');
   });
 

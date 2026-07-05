@@ -38,7 +38,7 @@ import {
   ON_SENDING_AUDIENCE_MESSAGE,
   ON_LOADING_COMMUNICATION_CATEGORIES,
   ON_LOADING_COMMUNICATION_TRACKING_HISTORY,
-  ON_UPDATING_COMMUNICATION_CATEGORY
+  ON_UPSERTING_COMMUNICATION_CATEGORY
 } from '../constants/AdminTools';
 
 // Pure helpers re-exported via the manager so components keep a single
@@ -399,13 +399,14 @@ export const onLoadingCommunicationTrackingHistory = async (adminEmailId, filter
   };
 };
 
-export const onUpdatingCommunicationCategory = async (adminEmailId, id, displayName, isActive) => {
-  const result = await AdminToolsManager.updateCommunicationCategory(adminEmailId, id, displayName, isActive);
+export const onUpsertingCommunicationCategory = async (adminEmailId, id, key, localizationKey, isActive) => {
+  const result = await AdminToolsManager.upsertCommunicationCategory(adminEmailId, id, key, localizationKey, isActive);
   return {
-    type: ON_UPDATING_COMMUNICATION_CATEGORY,
-    updateCommunicationCategoryResult: result,
+    type: ON_UPSERTING_COMMUNICATION_CATEGORY,
+    upsertCommunicationCategoryResult: result,
     id,
-    displayName,
+    key,
+    localizationKey,
     isActive
   };
 };
