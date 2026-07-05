@@ -825,6 +825,23 @@ export const buildCommunicationCategoryTableModel = (rows = []) => (
   })
 );
 
+export const buildCommunicationCategoryKey = (raw = '') => {
+  if (raw == null) return '';
+  const words = String(raw)
+    .trim()
+    .split(/\s+/)
+    .map(w => w.replace(/[^a-zA-Z0-9]/g, ''))
+    .filter(Boolean);
+  if (!words.length) return '';
+  return words
+    .map((word, i) =>
+      i === 0
+        ? word.charAt(0).toLowerCase() + word.slice(1).toLowerCase()
+        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    )
+    .join('');
+};
+
 export const buildCommunicationTrackingHistoryPayload = (filters = {}) => {
   const payload = {
     p_category_id: toNumberOrNull(filters.categoryId),
@@ -973,7 +990,8 @@ const AudienceMessaging = {
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,
-  buildCommunicationTrackingHistoryHeatmapData
+  buildCommunicationTrackingHistoryHeatmapData,
+  buildCommunicationCategoryKey
 };
 
 export default AudienceMessaging;

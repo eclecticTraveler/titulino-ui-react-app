@@ -76,6 +76,7 @@ export const buildCommunicationTrackingHistoryTrendData = (...args) => AdminTool
 export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryCategoryTotals(...args);
 export const buildCommunicationTrackingHistoryCourseTotals = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryCourseTotals(...args);
 export const buildCommunicationTrackingHistoryHeatmapData = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryHeatmapData(...args);
+export const buildCommunicationCategoryKey = (...args) => AdminToolsManager.buildCommunicationCategoryKey(...args);
 
 export const onLoadingAdminToolsInit = async (emailId) => {
   const { allCourses, allRoles, allEnrollees, allRawCourses } = await AdminToolsManager.initAdminTools(emailId);

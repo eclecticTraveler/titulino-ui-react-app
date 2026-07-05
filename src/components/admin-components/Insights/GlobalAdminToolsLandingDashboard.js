@@ -94,7 +94,8 @@ import {
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,
-  buildCommunicationTrackingHistoryHeatmapData
+  buildCommunicationTrackingHistoryHeatmapData,
+  buildCommunicationCategoryKey
 } from "redux/actions/AdminTools";
 
 const normalizeContactInternalId = (value) => (
@@ -663,6 +664,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [categoryManagerTab, setCategoryManagerTab] = useState('list');
   const [categoryEdits, setCategoryEdits] = useState({});
   const [categoryManagerSavingId, setCategoryManagerSavingId] = useState(null);
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
   const [categoryCreating, setCategoryCreating] = useState(false);
   const [newCategoryKey, setNewCategoryKey] = useState('');
   const [newCategoryLocalizationKey, setNewCategoryLocalizationKey] = useState('');
@@ -1166,16 +1168,18 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setCategoryManagerSavingId(id);
     try {
       await onUpsertingCommunicationCategory(emailId, id, key, localizationKey, isActive);
+      setEditingCategoryId(null);
     } finally {
       setCategoryManagerSavingId(null);
     }
   }, [emailId, onUpsertingCommunicationCategory]);
 
   const createCategory = useCallback(async () => {
-    if (!emailId || !newCategoryKey.trim() || !newCategoryLocalizationKey.trim()) return;
+    const derivedKey = buildCommunicationCategoryKey(newCategoryKey);
+    if (!emailId || !derivedKey || !newCategoryLocalizationKey.trim()) return;
     setCategoryCreating(true);
     try {
-      await onUpsertingCommunicationCategory(emailId, null, newCategoryKey.trim(), newCategoryLocalizationKey.trim(), true);
+      await onUpsertingCommunicationCategory(emailId, null, derivedKey, newCategoryLocalizationKey.trim(), true);
       await onLoadingCommunicationCategories(emailId);
       setNewCategoryKey('');
       setNewCategoryLocalizationKey('');
@@ -8119,6 +8123,25 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           const edit = categoryEdits[row.id] || {};
           const currentKey = edit.localizationKey !== undefined ? edit.localizationKey : row.localizationKey;
           const isDirty = edit.localizationKey !== undefined && edit.localizationKey !== row.localizationKey;
+          const isEditing = editingCategoryId === row.id;
+
+          if (!isEditing) {
+            return (
+              <Space style={{ width: '100%', justifyContent: 'space-between' }} align="center">
+                <Space direction="vertical" size={1}>
+                  <span style={{ fontSize: 11, color: '#8c8c8c' }}>{t(row.localizationKey)}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 500 }}>{currentKey}</span>
+                </Space>
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => setEditingCategoryId(row.id)}
+                />
+              </Space>
+            );
+          }
+
           return (
             <Space direction="vertical" size={2} style={{ width: '100%' }}>
               <span style={{ fontSize: 11, color: '#8c8c8c' }}>{t(row.localizationKey)}</span>
@@ -8126,6 +8149,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 <Input
                   size="small"
                   value={currentKey}
+                  autoFocus
                   onChange={e => setCategoryEdits(prev => ({
                     ...prev,
                     [row.id]: { ...prev[row.id], localizationKey: e.target.value }
@@ -8140,6 +8164,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                     onClick={() => saveCategoryUpdate(row.id, row.categoryKey, currentKey, edit.isActive !== undefined ? edit.isActive : row.isActive)}
                   />
                 )}
+                <Button
+                  size="small"
+                  icon={<CloseCircleOutlined />}
+                  onClick={() => {
+                    setEditingCategoryId(null);
+                    setCategoryEdits(prev => {
+                      const next = { ...prev };
+                      if (next[row.id]) {
+                        const { localizationKey: _lk, ...rest } = next[row.id];
+                        next[row.id] = rest;
+                      }
+                      return next;
+                    });
+                  }}
+                />
               </Space.Compact>
             </Space>
           );
@@ -8170,12 +8209,19 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     const listTab = (
       <>
+        <Alert
+          type="warning"
+          showIcon
+          message={t('admin.tools.messaging.categoryManager.localizationKeyDisclaimer')}
+          style={{ marginBottom: 12 }}
+        />
         <Table
           dataSource={rows}
           columns={columns}
           rowKey="key"
           pagination={false}
           size="small"
+          scroll={{ y: 360 }}
         />
         <Alert
           type="info"
@@ -8195,6 +8241,14 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             onChange={e => setNewCategoryKey(e.target.value)}
             placeholder={t('admin.tools.messaging.categoryManager.create.keyHint')}
           />
+          {newCategoryKey.trim() && (
+            <div style={{ marginTop: 4, fontSize: 11, color: '#8c8c8c' }}>
+              {'→ '}
+              <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#595959' }}>
+                {buildCommunicationCategoryKey(newCategoryKey)}
+              </span>
+            </div>
+          )}
         </div>
         <div style={{ marginBottom: 16 }}>
           <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.categoryManager.create.localizationKey')}</div>
@@ -8213,7 +8267,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           type="primary"
           icon={<PlusOutlined />}
           loading={categoryCreating}
-          disabled={!newCategoryKey.trim() || !newCategoryLocalizationKey.trim()}
+          disabled={!buildCommunicationCategoryKey(newCategoryKey) || !newCategoryLocalizationKey.trim()}
           onClick={createCategory}
         >
           {t('admin.tools.messaging.categoryManager.create.save')}

@@ -238,6 +238,7 @@ describe('buildContactSegmentPayload — region params', () => {
 // ---------------------------------------------------------------------------
 const {
   buildCommunicationCategoryTableModel,
+  buildCommunicationCategoryKey,
   buildCommunicationTrackingHistoryPayload,
   buildCommunicationTrackingHistoryTableModel
 } = AudienceMessaging;
@@ -456,6 +457,49 @@ describe('buildCommunicationCategoryTableModel', () => {
     const rows = [{ CommunicationCategoryId: 19, ExtraField: 'extra' }];
     const [row] = buildCommunicationCategoryTableModel(rows);
     expect(row.ExtraField).toBe('extra');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildCommunicationCategoryKey
+// ---------------------------------------------------------------------------
+describe('buildCommunicationCategoryKey', () => {
+  it('returns empty string for empty input', () => {
+    expect(buildCommunicationCategoryKey('')).toBe('');
+    expect(buildCommunicationCategoryKey('   ')).toBe('');
+  });
+
+  it('lowercases a single word', () => {
+    expect(buildCommunicationCategoryKey('Error')).toBe('error');
+    expect(buildCommunicationCategoryKey('WELCOME')).toBe('welcome');
+  });
+
+  it('camelCases two words', () => {
+    expect(buildCommunicationCategoryKey('Special Invitation')).toBe('specialInvitation');
+    expect(buildCommunicationCategoryKey('special invitation')).toBe('specialInvitation');
+  });
+
+  it('camelCases three words', () => {
+    expect(buildCommunicationCategoryKey('after purchase access')).toBe('afterPurchaseAccess');
+  });
+
+  it('handles word with trailing number', () => {
+    expect(buildCommunicationCategoryKey('week 1')).toBe('week1');
+    expect(buildCommunicationCategoryKey('semiotics 2')).toBe('semiotics2');
+  });
+
+  it('strips special characters from words', () => {
+    expect(buildCommunicationCategoryKey('hello-world')).toBe('helloworld');
+    expect(buildCommunicationCategoryKey('foo_bar')).toBe('foobar');
+  });
+
+  it('handles extra whitespace between words', () => {
+    expect(buildCommunicationCategoryKey('  special   invitation  ')).toBe('specialInvitation');
+  });
+
+  it('handles non-string input gracefully', () => {
+    expect(buildCommunicationCategoryKey(null)).toBe('');
+    expect(buildCommunicationCategoryKey(undefined)).toBe('');
   });
 });
 

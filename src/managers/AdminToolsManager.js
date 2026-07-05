@@ -118,6 +118,7 @@ export const buildCommunicationTrackingHistoryTrendData = (...args) => AudienceM
 export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCategoryTotals(...args);
 export const buildCommunicationTrackingHistoryCourseTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCourseTotals(...args);
 export const buildCommunicationTrackingHistoryHeatmapData = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryHeatmapData(...args);
+export const buildCommunicationCategoryKey = (...args) => AudienceMessaging.buildCommunicationCategoryKey(...args);
 
 export const initAdminTools = async (emailId) => {
   const token = await getTokenFromEmail(emailId);
