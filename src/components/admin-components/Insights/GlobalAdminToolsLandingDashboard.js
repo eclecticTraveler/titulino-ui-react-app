@@ -62,7 +62,7 @@ import {
   onSendingAudienceMessage,
   onLoadingCommunicationCategories,
   onLoadingCommunicationTrackingHistory,
-  onUpdatingCommunicationCategory,
+  onUpsertingCommunicationCategory,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -94,7 +94,8 @@ import {
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,
-  buildCommunicationTrackingHistoryHeatmapData
+  buildCommunicationTrackingHistoryHeatmapData,
+  buildCommunicationCategoryKey
 } from "redux/actions/AdminTools";
 
 const normalizeContactInternalId = (value) => (
@@ -570,7 +571,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onSendingAudienceMessage,
     onLoadingCommunicationCategories,
     onLoadingCommunicationTrackingHistory,
-    onUpdatingCommunicationCategory,
+    onUpsertingCommunicationCategory,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     processLogEventsBySource,
@@ -660,8 +661,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [historyViewMode, setHistoryViewMode] = useState('grid');
   const [chartDimensionTab, setChartDimensionTab] = useState('category');
   const [categoryManagerVisible, setCategoryManagerVisible] = useState(false);
+  const [categoryManagerTab, setCategoryManagerTab] = useState('list');
   const [categoryEdits, setCategoryEdits] = useState({});
   const [categoryManagerSavingId, setCategoryManagerSavingId] = useState(null);
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [categoryCreating, setCategoryCreating] = useState(false);
+  const [newCategoryKey, setNewCategoryKey] = useState('');
   const [audienceCertificationLoading, setAudienceCertificationLoading] = useState(false);
   const [audienceCertificationHistory, setAudienceCertificationHistory] = useState(null);
   const [audienceCertificationFilters, setAudienceCertificationFilters] = useState({
@@ -1157,15 +1162,31 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     setCategoryManagerVisible(true);
   }, [communicationCategories]);
 
-  const saveCategoryUpdate = useCallback(async (id, displayName, isActive) => {
-    if (!emailId || !onUpdatingCommunicationCategory) return;
+  const saveCategoryUpdate = useCallback(async (id, key, localizationKey, isActive) => {
+    if (!emailId || !onUpsertingCommunicationCategory) return;
     setCategoryManagerSavingId(id);
     try {
-      await onUpdatingCommunicationCategory(emailId, id, displayName, isActive);
+      await onUpsertingCommunicationCategory(emailId, id, key, localizationKey, isActive);
+      setEditingCategoryId(null);
     } finally {
       setCategoryManagerSavingId(null);
     }
-  }, [emailId, onUpdatingCommunicationCategory]);
+  }, [emailId, onUpsertingCommunicationCategory]);
+
+  const createCategory = useCallback(async () => {
+    const derivedKey = buildCommunicationCategoryKey(newCategoryKey);
+    if (!emailId || !derivedKey) return;
+    const derivedLocalizationKey = `messaging.category.${derivedKey}`;
+    setCategoryCreating(true);
+    try {
+      await onUpsertingCommunicationCategory(emailId, null, derivedKey, derivedLocalizationKey, true);
+      await onLoadingCommunicationCategories(emailId);
+      setNewCategoryKey('');
+      setCategoryManagerTab('list');
+    } finally {
+      setCategoryCreating(false);
+    }
+  }, [emailId, newCategoryKey, onUpsertingCommunicationCategory, onLoadingCommunicationCategories]);
 
   const loadMessagingHistory = useCallback(async (filters = messagingHistoryFilters) => {
     if (!emailId || !onLoadingCommunicationTrackingHistory) return;
@@ -2767,9 +2788,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   );
   const communicationCategoryOptions = useMemo(() => (
     (communicationCategories?.rows || [])
-      .filter(row => row.id != null && row.displayName)
-      .map(row => ({ value: row.id, label: row.displayName }))
-  ), [communicationCategories]);
+      .filter(row => row.id != null && row.localizationKey)
+      .map(row => ({ value: row.id, label: t(row.localizationKey) }))
+  ), [communicationCategories, t]);
   const historyCourseOptions = useMemo(
     () => buildHistoryCourseOptions(allRawCourses),
     [allRawCourses]
@@ -8084,42 +8105,92 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         title: 'ID',
         dataIndex: 'id',
         key: 'id',
-        width: 56
+        width: 56,
+        sorter: (a, b) => (a.id ?? 0) - (b.id ?? 0),
+        defaultSortOrder: 'ascend'
       },
       {
         title: t('admin.tools.messaging.categoryManager.key'),
         dataIndex: 'categoryKey',
         key: 'categoryKey',
+        filters: rows.map(r => ({ text: r.categoryKey, value: r.categoryKey })),
+        filterSearch: true,
+        onFilter: (value, record) => record.categoryKey === value,
         render: value => (
           <span style={{ color: '#8c8c8c', fontStyle: 'italic', fontSize: 12 }}>{value}</span>
         )
       },
       {
-        title: t('admin.tools.messaging.categoryManager.displayName'),
-        key: 'displayName',
+        title: t('admin.tools.messaging.categoryManager.localizationKey'),
+        key: 'localizationKey',
+        filters: rows.map(r => ({ text: r.localizationKey, value: r.localizationKey })),
+        filterSearch: true,
+        onFilter: (value, record) => record.localizationKey === value,
         render: (_, row) => {
+          const PREFIX = 'messaging.category.';
           const edit = categoryEdits[row.id] || {};
-          const isDirty = edit.displayName !== undefined && edit.displayName !== row.displayName;
+          const currentKey = edit.localizationKey !== undefined ? edit.localizationKey : row.localizationKey;
+          const isDirty = edit.localizationKey !== undefined && edit.localizationKey !== row.localizationKey;
+          const isEditing = editingCategoryId === row.id;
+          const suffix = currentKey.startsWith(PREFIX) ? currentKey.slice(PREFIX.length) : currentKey;
+
+          if (!isEditing) {
+            return (
+              <Space style={{ width: '100%', justifyContent: 'space-between' }} align="center">
+                <Space direction="vertical" size={1}>
+                  <span style={{ fontSize: 11, color: '#8c8c8c' }}>{t(row.localizationKey)}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 500 }}>{currentKey}</span>
+                </Space>
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => setEditingCategoryId(row.id)}
+                />
+              </Space>
+            );
+          }
+
           return (
-            <Space.Compact style={{ width: '100%' }}>
-              <Input
-                size="small"
-                value={edit.displayName !== undefined ? edit.displayName : row.displayName}
-                onChange={e => setCategoryEdits(prev => ({
-                  ...prev,
-                  [row.id]: { ...prev[row.id], displayName: e.target.value }
-                }))}
-              />
-              {isDirty && (
+            <Space direction="vertical" size={2} style={{ width: '100%' }}>
+              <span style={{ fontSize: 11, color: '#8c8c8c' }}>{t(row.localizationKey)}</span>
+              <Space.Compact style={{ width: '100%' }}>
+                <Input
+                  size="small"
+                  addonBefore={<span style={{ fontSize: 11, color: '#8c8c8c' }}>messaging.category.</span>}
+                  value={suffix}
+                  autoFocus
+                  onChange={e => setCategoryEdits(prev => ({
+                    ...prev,
+                    [row.id]: { ...prev[row.id], localizationKey: `${PREFIX}${e.target.value}` }
+                  }))}
+                />
+                {isDirty && (
+                  <Button
+                    size="small"
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    loading={categoryManagerSavingId === row.id}
+                    onClick={() => saveCategoryUpdate(row.id, row.categoryKey, currentKey, edit.isActive !== undefined ? edit.isActive : row.isActive)}
+                  />
+                )}
                 <Button
                   size="small"
-                  type="primary"
-                  icon={<SaveOutlined />}
-                  loading={categoryManagerSavingId === row.id}
-                  onClick={() => saveCategoryUpdate(row.id, edit.displayName, edit.isActive !== undefined ? edit.isActive : row.isActive)}
+                  icon={<CloseCircleOutlined />}
+                  onClick={() => {
+                    setEditingCategoryId(null);
+                    setCategoryEdits(prev => {
+                      const next = { ...prev };
+                      if (next[row.id]) {
+                        const { localizationKey: _lk, ...rest } = next[row.id];
+                        next[row.id] = rest;
+                      }
+                      return next;
+                    });
+                  }}
                 />
-              )}
-            </Space.Compact>
+              </Space.Compact>
+            </Space>
           );
         }
       },
@@ -8127,10 +8198,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         title: t('admin.tools.messaging.categoryManager.active'),
         key: 'active',
         width: 80,
+        filters: [
+          { text: t('admin.tools.messaging.categoryManager.filter.active'), value: true },
+          { text: t('admin.tools.messaging.categoryManager.filter.inactive'), value: false },
+        ],
+        onFilter: (value, record) => record.isActive === value,
         render: (_, row) => {
           const edit = categoryEdits[row.id] || {};
           const currentActive = edit.isActive !== undefined ? edit.isActive : row.isActive;
-          const currentDisplayName = edit.displayName !== undefined ? edit.displayName : row.displayName;
+          const currentLocalizationKey = edit.localizationKey !== undefined ? edit.localizationKey : row.localizationKey;
           return (
             <Switch
               size="small"
@@ -8138,7 +8214,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               loading={categoryManagerSavingId === row.id}
               onChange={checked => {
                 setCategoryEdits(prev => ({ ...prev, [row.id]: { ...prev[row.id], isActive: checked } }));
-                saveCategoryUpdate(row.id, currentDisplayName, checked);
+                saveCategoryUpdate(row.id, row.categoryKey, currentLocalizationKey, checked);
               }}
             />
           );
@@ -8146,26 +8222,91 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       }
     ];
 
-    return (
-      <Modal
-        title={t('admin.tools.messaging.categoryManager.title')}
-        open={categoryManagerVisible}
-        onCancel={() => setCategoryManagerVisible(false)}
-        footer={null}
-        width={640}
-      >
+    const listTab = (
+      <>
+        <Alert
+          type="warning"
+          showIcon
+          message={t('admin.tools.messaging.categoryManager.localizationKeyDisclaimer')}
+          style={{ marginBottom: 12 }}
+        />
         <Table
           dataSource={rows}
           columns={columns}
           rowKey="key"
           pagination={false}
           size="small"
+          scroll={{ y: 360 }}
         />
         <Alert
           type="info"
           showIcon
           message={t('admin.tools.messaging.categoryManager.note')}
           style={{ marginTop: 12 }}
+        />
+      </>
+    );
+
+    const createTab = (
+      <div style={{ maxWidth: 420 }}>
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.categoryManager.create.key')}</div>
+          <Input
+            value={newCategoryKey}
+            onChange={e => setNewCategoryKey(e.target.value)}
+            placeholder={t('admin.tools.messaging.categoryManager.create.keyHint')}
+          />
+          {newCategoryKey.trim() && (() => {
+            const dk = buildCommunicationCategoryKey(newCategoryKey);
+            return dk ? (
+              <div style={{ marginTop: 6, fontSize: 11, lineHeight: '20px' }}>
+                <div>
+                  <span style={{ color: '#8c8c8c' }}>{t('admin.tools.messaging.categoryManager.create.previewKey')}{' '}</span>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#595959' }}>{dk}</span>
+                </div>
+                <div>
+                  <span style={{ color: '#8c8c8c' }}>{t('admin.tools.messaging.categoryManager.create.previewLocalization')}{' '}</span>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 500, color: '#595959' }}>{`messaging.category.${dk}`}</span>
+                </div>
+              </div>
+            ) : null;
+          })()}
+        </div>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          loading={categoryCreating}
+          disabled={!buildCommunicationCategoryKey(newCategoryKey)}
+          onClick={() => {
+            Modal.confirm({
+              title: t('admin.tools.messaging.categoryManager.create.confirmTitle'),
+              content: t('admin.tools.messaging.categoryManager.create.confirmContent'),
+              okText: t('admin.tools.messaging.categoryManager.create.save'),
+
+              onOk: createCategory,
+            });
+          }}
+        >
+          {t('admin.tools.messaging.categoryManager.create.save')}
+        </Button>
+      </div>
+    );
+
+    return (
+      <Modal
+        title={t('admin.tools.messaging.categoryManager.title')}
+        open={categoryManagerVisible}
+        onCancel={() => { setCategoryManagerVisible(false); setCategoryManagerTab('list'); }}
+        footer={null}
+        width={640}
+      >
+        <Tabs
+          activeKey={categoryManagerTab}
+          onChange={setCategoryManagerTab}
+          items={[
+            { key: 'list', label: t('admin.tools.messaging.categoryManager.tabs.list'), children: listTab },
+            { key: 'create', label: t('admin.tools.messaging.categoryManager.tabs.create'), children: createTab }
+          ]}
         />
       </Modal>
     );
@@ -8815,7 +8956,7 @@ function mapDispatchToProps(dispatch) {
     onSendingAudienceMessage,
     onLoadingCommunicationCategories,
     onLoadingCommunicationTrackingHistory,
-    onUpdatingCommunicationCategory,
+    onUpsertingCommunicationCategory,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   }, dispatch);

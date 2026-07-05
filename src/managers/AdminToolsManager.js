@@ -118,6 +118,7 @@ export const buildCommunicationTrackingHistoryTrendData = (...args) => AudienceM
 export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCategoryTotals(...args);
 export const buildCommunicationTrackingHistoryCourseTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCourseTotals(...args);
 export const buildCommunicationTrackingHistoryHeatmapData = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryHeatmapData(...args);
+export const buildCommunicationCategoryKey = (...args) => AudienceMessaging.buildCommunicationCategoryKey(...args);
 
 export const initAdminTools = async (emailId) => {
   const token = await getTokenFromEmail(emailId);
@@ -1385,9 +1386,10 @@ const AdminToolsManager = {
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,
   buildCommunicationTrackingHistoryHeatmapData,
+  buildCommunicationCategoryKey,
   getCommunicationCategories: (...args) => getCommunicationCategories(...args),
   getCommunicationTrackingHistory: (...args) => getCommunicationTrackingHistory(...args),
-  updateCommunicationCategory: (...args) => updateCommunicationCategory(...args),
+  upsertCommunicationCategory: (...args) => upsertCommunicationCategory(...args),
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,
@@ -1434,18 +1436,20 @@ export const getCommunicationTrackingHistory = async (emailId, filters = {}) => 
   };
 };
 
-export const updateCommunicationCategory = async (emailId, id, displayName, isActive) => {
+export const upsertCommunicationCategory = async (emailId, id, key, localizationKey, isActive) => {
   const token = await getTokenFromEmail(emailId);
 
-  if (!token) return false;
+  if (!token) return null;
 
-  const result = await TitulinoAdminAuthService.updateCommunicationCategory(
-    { p_id: id, p_display_name: displayName, p_is_active: isActive },
+  const result = await TitulinoAdminAuthService.upsertCommunicationCategory(
+    { p_id: id ?? null, p_key: key ?? null, p_localization_key: localizationKey, p_is_active: isActive },
     token,
-    'AdminToolsManager.updateCommunicationCategory'
+    'AdminToolsManager.upsertCommunicationCategory'
   );
 
-  return result !== false;
+  // Wrapper returns communication_category_type; PostgREST delivers composite types as a one-element array
+  const row = Array.isArray(result) ? result[0] : result;
+  return row?.CommunicationCategoryId ?? null;
 };
 
 export default AdminToolsManager;

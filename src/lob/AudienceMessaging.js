@@ -809,21 +809,39 @@ export const hasMessageContent = (messageDraft = {}) => (
 
 export const buildCommunicationCategoryTableModel = (rows = []) => (
   (Array.isArray(rows) ? rows : []).map((row, index) => {
-    const id = getValue(row, 'CommunicationCategoryId', 'communicationCategoryId', 'communication_category_id');
-    const categoryKey = getValue(row, 'CommunicationCategoryName', 'communicationCategoryName', 'communication_category_name');
-    const displayName = getValue(row, 'DisplayName', 'displayName', 'display_name') || categoryKey || '';
-    const isActive = getValue(row, 'is_active', 'isActive', 'IsActive') !== false;
+    const id = getValue(row, 'CommunicationCategoryId', 'communicationCategoryId');
+    const categoryKey = getValue(row, 'CommunicationCategoryKey', 'communicationCategoryKey');
+    const localizationKey = getValue(row, 'LocalizationKey', 'localizationKey') || '';
+    const isActive = getValue(row, 'IsActive', 'isActive') !== false;
 
     return {
       ...row,
       key: id != null ? id : `category-${index}`,
       id,
       categoryKey: categoryKey || '',
-      displayName,
+      localizationKey,
       isActive
     };
   })
 );
+
+export const buildCommunicationCategoryKey = (raw = '') => {
+  if (raw == null) return '';
+  const words = String(raw)
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .trim()
+    .split(/\s+/)
+    .map(w => w.replace(/[^a-zA-Z0-9]/g, ''))
+    .filter(Boolean);
+  if (!words.length) return '';
+  return words
+    .map((word, i) =>
+      i === 0
+        ? word.charAt(0).toLowerCase() + word.slice(1).toLowerCase()
+        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    )
+    .join('');
+};
 
 export const buildCommunicationTrackingHistoryPayload = (filters = {}) => {
   const payload = {
@@ -973,7 +991,8 @@ const AudienceMessaging = {
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,
-  buildCommunicationTrackingHistoryHeatmapData
+  buildCommunicationTrackingHistoryHeatmapData,
+  buildCommunicationCategoryKey
 };
 
 export default AudienceMessaging;

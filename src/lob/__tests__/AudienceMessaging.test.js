@@ -238,6 +238,7 @@ describe('buildContactSegmentPayload — region params', () => {
 // ---------------------------------------------------------------------------
 const {
   buildCommunicationCategoryTableModel,
+  buildCommunicationCategoryKey,
   buildCommunicationTrackingHistoryPayload,
   buildCommunicationTrackingHistoryTableModel
 } = AudienceMessaging;
@@ -399,45 +400,45 @@ describe('buildCommunicationCategoryTableModel', () => {
     expect(buildCommunicationCategoryTableModel(undefined)).toEqual([]);
   });
 
-  it('normalizes PascalCase DB fields to camelCase', () => {
+  it('normalizes PascalCase DB fields (post-rename columns)', () => {
     const rows = [{
       CommunicationCategoryId: 1,
-      CommunicationCategoryName: 'welcome',
-      DisplayName: 'Welcome',
-      is_active: true
+      CommunicationCategoryKey: 'welcome',
+      LocalizationKey: 'messaging.category.welcome',
+      IsActive: true
     }];
     const [row] = buildCommunicationCategoryTableModel(rows);
     expect(row.id).toBe(1);
     expect(row.categoryKey).toBe('welcome');
-    expect(row.displayName).toBe('Welcome');
+    expect(row.localizationKey).toBe('messaging.category.welcome');
     expect(row.isActive).toBe(true);
   });
 
   it('normalizes camelCase fields', () => {
     const rows = [{
       communicationCategoryId: 2,
-      communicationCategoryName: 'week1',
-      displayName: 'Week 1',
+      communicationCategoryKey: 'week1',
+      localizationKey: 'messaging.category.week1',
       isActive: true
     }];
     const [row] = buildCommunicationCategoryTableModel(rows);
     expect(row.id).toBe(2);
     expect(row.categoryKey).toBe('week1');
-    expect(row.displayName).toBe('Week 1');
+    expect(row.localizationKey).toBe('messaging.category.week1');
   });
 
-  it('falls back to categoryKey as displayName when DisplayName is absent', () => {
-    const rows = [{ CommunicationCategoryId: 3, CommunicationCategoryName: 'birthday' }];
+  it('sets localizationKey to empty string when absent', () => {
+    const rows = [{ CommunicationCategoryId: 3, CommunicationCategoryKey: 'birthday' }];
     const [row] = buildCommunicationCategoryTableModel(rows);
-    expect(row.displayName).toBe('birthday');
+    expect(row.localizationKey).toBe('');
   });
 
-  it('treats is_active=false as isActive=false', () => {
-    const [row] = buildCommunicationCategoryTableModel([{ CommunicationCategoryId: 4, is_active: false }]);
+  it('treats IsActive=false as isActive=false', () => {
+    const [row] = buildCommunicationCategoryTableModel([{ CommunicationCategoryId: 4, IsActive: false }]);
     expect(row.isActive).toBe(false);
   });
 
-  it('treats missing is_active as isActive=true', () => {
+  it('treats missing IsActive as isActive=true', () => {
     const [row] = buildCommunicationCategoryTableModel([{ CommunicationCategoryId: 5 }]);
     expect(row.isActive).toBe(true);
   });
@@ -448,7 +449,7 @@ describe('buildCommunicationCategoryTableModel', () => {
   });
 
   it('sets key to category-{index} when id is absent', () => {
-    const [row] = buildCommunicationCategoryTableModel([{ CommunicationCategoryName: 'na' }]);
+    const [row] = buildCommunicationCategoryTableModel([{ CommunicationCategoryKey: 'na' }]);
     expect(row.key).toBe('category-0');
   });
 
@@ -456,6 +457,54 @@ describe('buildCommunicationCategoryTableModel', () => {
     const rows = [{ CommunicationCategoryId: 19, ExtraField: 'extra' }];
     const [row] = buildCommunicationCategoryTableModel(rows);
     expect(row.ExtraField).toBe('extra');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildCommunicationCategoryKey
+// ---------------------------------------------------------------------------
+describe('buildCommunicationCategoryKey', () => {
+  it('returns empty string for empty input', () => {
+    expect(buildCommunicationCategoryKey('')).toBe('');
+    expect(buildCommunicationCategoryKey('   ')).toBe('');
+  });
+
+  it('lowercases a single word', () => {
+    expect(buildCommunicationCategoryKey('Error')).toBe('error');
+    expect(buildCommunicationCategoryKey('WELCOME')).toBe('welcome');
+  });
+
+  it('camelCases two words', () => {
+    expect(buildCommunicationCategoryKey('Special Invitation')).toBe('specialInvitation');
+    expect(buildCommunicationCategoryKey('special invitation')).toBe('specialInvitation');
+  });
+
+  it('camelCases three words', () => {
+    expect(buildCommunicationCategoryKey('after purchase access')).toBe('afterPurchaseAccess');
+  });
+
+  it('handles word with trailing number', () => {
+    expect(buildCommunicationCategoryKey('week 1')).toBe('week1');
+    expect(buildCommunicationCategoryKey('semiotics 2')).toBe('semiotics2');
+  });
+
+  it('strips special characters from words', () => {
+    expect(buildCommunicationCategoryKey('hello-world')).toBe('helloworld');
+    expect(buildCommunicationCategoryKey('foo_bar')).toBe('foobar');
+  });
+
+  it('handles extra whitespace between words', () => {
+    expect(buildCommunicationCategoryKey('  special   invitation  ')).toBe('specialInvitation');
+  });
+
+  it('handles non-string input gracefully', () => {
+    expect(buildCommunicationCategoryKey(null)).toBe('');
+    expect(buildCommunicationCategoryKey(undefined)).toBe('');
+  });
+
+  it('splits camelCase input into words before converting', () => {
+    expect(buildCommunicationCategoryKey('testingNowAllAtOnce')).toBe('testingNowAllAtOnce');
+    expect(buildCommunicationCategoryKey('specialInvitation')).toBe('specialInvitation');
   });
 });
 
