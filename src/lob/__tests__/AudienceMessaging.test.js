@@ -466,7 +466,8 @@ const {
   buildHistoryCourseOptions,
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
-  buildCommunicationTrackingHistoryCourseTotals
+  buildCommunicationTrackingHistoryCourseTotals,
+  buildCommunicationTrackingHistoryHeatmapData
 } = AudienceMessaging;
 
 describe('buildHistoryCourseOptions', () => {
@@ -656,5 +657,55 @@ describe('buildCommunicationTrackingHistoryCourseTotals', () => {
     const result = buildCommunicationTrackingHistoryCourseTotals(rows);
     expect(result).toHaveLength(1);
     expect(result[0].courseCodeId).toBe('C1');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildCommunicationTrackingHistoryHeatmapData
+// ---------------------------------------------------------------------------
+describe('buildCommunicationTrackingHistoryHeatmapData', () => {
+  it('returns empty array for empty input', () => {
+    expect(buildCommunicationTrackingHistoryHeatmapData([])).toEqual([]);
+  });
+
+  it('returns empty array for non-array input', () => {
+    expect(buildCommunicationTrackingHistoryHeatmapData(null)).toEqual([]);
+  });
+
+  it('groups by courseCodeId and categoryName', () => {
+    const rows = [
+      { courseCodeId: 'C1', categoryName: 'Birthday' },
+      { courseCodeId: 'C1', categoryName: 'Birthday' },
+      { courseCodeId: 'C1', categoryName: 'Welcome' },
+      { courseCodeId: 'C2', categoryName: 'Birthday' },
+    ];
+    const result = buildCommunicationTrackingHistoryHeatmapData(rows);
+    expect(result).toHaveLength(3);
+    const c1Birthday = result.find(r => r.course === 'C1' && r.category === 'Birthday');
+    const c1Welcome = result.find(r => r.course === 'C1' && r.category === 'Welcome');
+    const c2Birthday = result.find(r => r.course === 'C2' && r.category === 'Birthday');
+    expect(c1Birthday.count).toBe(2);
+    expect(c1Welcome.count).toBe(1);
+    expect(c2Birthday.count).toBe(1);
+  });
+
+  it('skips rows missing courseCodeId or categoryName', () => {
+    const rows = [
+      { courseCodeId: 'C1', categoryName: 'Birthday' },
+      { courseCodeId: 'C1' },
+      { categoryName: 'Birthday' },
+      { courseCodeId: null, categoryName: 'Birthday' },
+    ];
+    const result = buildCommunicationTrackingHistoryHeatmapData(rows);
+    expect(result).toHaveLength(1);
+    expect(result[0].course).toBe('C1');
+    expect(result[0].category).toBe('Birthday');
+    expect(result[0].count).toBe(1);
+  });
+
+  it('returns { course, category, count } shape', () => {
+    const rows = [{ courseCodeId: 'COURSE_A', categoryName: 'Welcome' }];
+    const [entry] = buildCommunicationTrackingHistoryHeatmapData(rows);
+    expect(entry).toEqual({ course: 'COURSE_A', category: 'Welcome', count: 1 });
   });
 });
