@@ -1033,6 +1033,70 @@ export const buildMessageTemplateOptions = (rows = []) => (
     }))
 );
 
+export const buildAudienceFilterClauses = (filters = {}, lookups = {}) => {
+  const {
+    courseNames = {},
+    categoryNames = {},
+    languageNames = {},
+    countryNames = {}
+  } = lookups;
+
+  const clauses = [];
+
+  const { sex, minAge, maxAge } = filters;
+  if (sex && sex !== 'all') clauses.push(sex === 'female' ? 'Female contacts' : 'Male contacts');
+  if (minAge != null && maxAge != null) clauses.push(`Age ${minAge}–${maxAge}`);
+  else if (minAge != null) clauses.push(`Age ≥ ${minAge}`);
+  else if (maxAge != null) clauses.push(`Age ≤ ${maxAge}`);
+
+  const { residencyCountry, residencyRegion, residencyExclude, birthCountry, birthRegion, birthExclude } = filters;
+  if (residencyCountry) {
+    const name = countryNames[residencyCountry] || residencyCountry;
+    const regionPart = (residencyRegion || []).length ? ` · ${residencyRegion.join(', ')}` : '';
+    clauses.push(`${residencyExclude ? 'Not residing in' : 'Residing in'} ${name}${regionPart}`);
+  }
+  if (birthCountry) {
+    const name = countryNames[birthCountry] || birthCountry;
+    const regionPart = (birthRegion || []).length ? ` · ${birthRegion.join(', ')}` : '';
+    clauses.push(`${birthExclude ? 'Not born in' : 'Born in'} ${name}${regionPart}`);
+  }
+
+  const { languageId, languageLevel } = filters;
+  if (languageId && languageId !== 'all') {
+    const lang = languageNames[languageId] || languageId;
+    const level = languageLevel && languageLevel !== 'all' ? ` at ${languageLevel}` : '';
+    clauses.push(`Language: ${lang}${level}`);
+  }
+
+  const { courseCodeIds = [], matchAllCourses, excludeCourseCodeIds = [] } = filters;
+  if (courseCodeIds.length) {
+    const names = courseCodeIds.map(id => courseNames[id] || id).join(', ');
+    const qualifier = matchAllCourses && courseCodeIds.length > 1 ? ' (all)' : '';
+    clauses.push(`Enrolled in: ${names}${qualifier}`);
+  }
+  if (excludeCourseCodeIds.length) {
+    const names = excludeCourseCodeIds.map(id => courseNames[id] || id).join(', ');
+    clauses.push(`Not enrolled in: ${names}`);
+  }
+
+  const { hasProgress, hasCertifications, hasPurchases } = filters;
+  if (hasProgress === 'with') clauses.push('With progress');
+  if (hasProgress === 'without') clauses.push('Without progress');
+  if (hasCertifications === 'with') clauses.push('With certificate');
+  if (hasCertifications === 'without') clauses.push('No certificate');
+  if (hasPurchases === 'with') clauses.push('With access/purchase');
+  if (hasPurchases === 'without') clauses.push('No access/purchase');
+
+  const { excludeCategoryId, excludeCourseCodeId } = filters;
+  if (excludeCategoryId != null) {
+    const catName = categoryNames[excludeCategoryId] || `Category #${excludeCategoryId}`;
+    const courseLabel = excludeCourseCodeId ? ` for "${courseNames[excludeCourseCodeId] || excludeCourseCodeId}"` : '';
+    clauses.push(`Skip already sent: ${catName}${courseLabel}`);
+  }
+
+  return clauses;
+};
+
 const AudienceMessaging = {
   getDefaultAudienceFilters,
   buildContactSegmentPayload,
@@ -1063,7 +1127,8 @@ const AudienceMessaging = {
   buildMessageVariableTableModel,
   buildMessageVariableRegistryOptions,
   buildMessageTemplateTableModel,
-  buildMessageTemplateOptions
+  buildMessageTemplateOptions,
+  buildAudienceFilterClauses
 };
 
 export default AudienceMessaging;

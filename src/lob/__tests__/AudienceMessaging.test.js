@@ -14,7 +14,8 @@ const {
   buildMessageVariableTableModel,
   buildMessageVariableRegistryOptions,
   buildMessageTemplateTableModel,
-  buildMessageTemplateOptions
+  buildMessageTemplateOptions,
+  buildAudienceFilterClauses
 } = AudienceMessaging;
 
 // ---------------------------------------------------------------------------
@@ -961,5 +962,107 @@ describe('buildMessageTemplateOptions', () => {
     const [opt] = buildMessageTemplateOptions(rows);
     expect(opt.value).toBe(5);
     expect(opt.label).toBe('golden (en_US)');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildAudienceFilterClauses
+// ---------------------------------------------------------------------------
+describe('buildAudienceFilterClauses', () => {
+  it('returns empty array for default filters', () => {
+    expect(buildAudienceFilterClauses({})).toEqual([]);
+  });
+
+  it('adds sex clause for female', () => {
+    const result = buildAudienceFilterClauses({ sex: 'female' });
+    expect(result).toContain('Female contacts');
+  });
+
+  it('adds sex clause for male', () => {
+    const result = buildAudienceFilterClauses({ sex: 'male' });
+    expect(result).toContain('Male contacts');
+  });
+
+  it('omits sex clause for all', () => {
+    expect(buildAudienceFilterClauses({ sex: 'all' })).toEqual([]);
+  });
+
+  it('adds age range clause for both min and max', () => {
+    const result = buildAudienceFilterClauses({ minAge: 20, maxAge: 40 });
+    expect(result).toContain('Age 20–40');
+  });
+
+  it('adds age clause for min only', () => {
+    expect(buildAudienceFilterClauses({ minAge: 18 })).toContain('Age ≥ 18');
+  });
+
+  it('adds age clause for max only', () => {
+    expect(buildAudienceFilterClauses({ maxAge: 30 })).toContain('Age ≤ 30');
+  });
+
+  it('adds residency clause with country name lookup', () => {
+    const result = buildAudienceFilterClauses(
+      { residencyCountry: 'MEX' },
+      { countryNames: { MEX: 'Mexico' } }
+    );
+    expect(result).toContain('Residing in Mexico');
+  });
+
+  it('adds residency exclude clause', () => {
+    const result = buildAudienceFilterClauses({ residencyCountry: 'MEX', residencyExclude: true });
+    expect(result).toContain('Not residing in MEX');
+  });
+
+  it('adds course enrollment clause using course names', () => {
+    const result = buildAudienceFilterClauses(
+      { courseCodeIds: ['COURSE_01', 'COURSE_02'] },
+      { courseNames: { COURSE_01: 'English Connect', COURSE_02: 'Supermarket' } }
+    );
+    expect(result).toContain('Enrolled in: English Connect, Supermarket');
+  });
+
+  it('appends (all) qualifier when matchAllCourses is true', () => {
+    const result = buildAudienceFilterClauses(
+      { courseCodeIds: ['A', 'B'], matchAllCourses: true },
+      { courseNames: { A: 'A', B: 'B' } }
+    );
+    expect(result[0]).toMatch(/\(all\)/);
+  });
+
+  it('adds excluded courses clause', () => {
+    const result = buildAudienceFilterClauses(
+      { excludeCourseCodeIds: ['COURSE_01'] },
+      { courseNames: { COURSE_01: 'English Connect' } }
+    );
+    expect(result).toContain('Not enrolled in: English Connect');
+  });
+
+  it('adds engagement signal clauses', () => {
+    const result = buildAudienceFilterClauses({ hasProgress: 'with', hasCertifications: 'without', hasPurchases: 'with' });
+    expect(result).toContain('With progress');
+    expect(result).toContain('No certificate');
+    expect(result).toContain('With access/purchase');
+  });
+
+  it('adds deduplication clause with category and course', () => {
+    const result = buildAudienceFilterClauses(
+      { excludeCategoryId: 1, excludeCourseCodeId: 'COURSE_01' },
+      { categoryNames: { 1: 'Invitation (1st)' }, courseNames: { COURSE_01: 'Supermarket' } }
+    );
+    expect(result).toContain('Skip already sent: Invitation (1st) for "Supermarket"');
+  });
+
+  it('adds deduplication clause with category only', () => {
+    const result = buildAudienceFilterClauses(
+      { excludeCategoryId: 2 },
+      { categoryNames: { 2: 'Birthday' } }
+    );
+    expect(result).toContain('Skip already sent: Birthday');
+    expect(result[0]).not.toMatch(/for/);
+  });
+
+  it('falls back to id when category name not in lookup', () => {
+    const result = buildAudienceFilterClauses({ excludeCategoryId: 99 });
+    expect(result).toContain('Skip already sent: Category #99');
   });
 });

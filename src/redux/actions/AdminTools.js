@@ -72,6 +72,7 @@ export const buildAudienceCountryOptionsForLocation = (...args) => AdminToolsMan
 export const buildAudienceCountryDivisionOptions = (...args) => AdminToolsManager.buildAudienceCountryDivisionOptions(...args);
 export const buildAudienceTableColumns = (...args) => AdminToolsManager.buildAudienceTableColumns(...args);
 export const buildAudienceSummary = (...args) => AdminToolsManager.buildAudienceSummary(...args);
+export const buildAudienceFilterClauses = (...args) => AdminToolsManager.buildAudienceFilterClauses(...args);
 export const buildAudienceMessageVariableOptions = (...args) => AdminToolsManager.buildAudienceMessageVariableOptions(...args);
 export const buildMessageVariableRegistryOptions = (...args) => AdminToolsManager.buildMessageVariableRegistryOptions(...args);
 export const buildMessageTemplateOptions = (...args) => AdminToolsManager.buildMessageTemplateOptions(...args);

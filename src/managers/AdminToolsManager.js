@@ -110,6 +110,7 @@ export const buildAudienceCountryOptionsForLocation = (...args) => AudienceMessa
 export const buildAudienceCountryDivisionOptions = (...args) => AudienceMessaging.buildCountryDivisionOptions(...args);
 export const buildAudienceTableColumns = (...args) => AudienceMessaging.buildAudienceTableColumns(...args);
 export const buildAudienceSummary = (...args) => AudienceMessaging.buildAudienceSummary(...args);
+export const buildAudienceFilterClauses = (...args) => AudienceMessaging.buildAudienceFilterClauses(...args);
 export const buildAudienceMessageVariableOptions = (...args) => AudienceMessaging.buildMessageVariableOptions(...args);
 export const buildMessageVariableRegistryOptions = (...args) => AudienceMessaging.buildMessageVariableRegistryOptions(...args);
 export const buildMessageTemplateOptions = (...args) => AudienceMessaging.buildMessageTemplateOptions(...args);
@@ -1380,6 +1381,7 @@ const AdminToolsManager = {
   buildAudienceCountryDivisionOptions,
   buildAudienceTableColumns,
   buildAudienceSummary,
+  buildAudienceFilterClauses,
   buildAudienceMessageVariableOptions,
   buildMessageVariableRegistryOptions,
   buildMessageTemplateOptions,
