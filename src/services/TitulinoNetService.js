@@ -466,7 +466,7 @@ export const getContactEnrolleeKnowMeProfileImage = async (token, email, contact
     const raw = JSON.stringify({
       emailId: email,
       contactInternalId: contactInternalId,
-      minutesRequestedForProfileUrlUsage: 128
+      minutesRequestedForProfileUrlUsage: 480
     });
 
     const requestOptions = {

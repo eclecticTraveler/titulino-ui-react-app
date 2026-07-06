@@ -1,7 +1,7 @@
 import TitulinoNetService from "services/TitulinoNetService";
 
 const KNOW_ME_PROFILE_BATCH_SIZE = 100;
-const DEFAULT_PROFILE_URL_AVAILABILITY_MINUTES = 128;
+const DEFAULT_PROFILE_URL_AVAILABILITY_MINUTES = 480;
 
 export const normalizeContactInternalId = (value) => (
   value == null ? '' : String(value).trim().toLowerCase()

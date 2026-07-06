@@ -9,7 +9,7 @@ import {
   onResetSubmittingEnrollee,
   onSelectingEnrollmentCourses
 } from "redux/actions/Lrn";
-import { Form, Select, Button, Card, Row, Col, Radio, Space, Tabs } from "antd";
+import { Alert, Form, Select, Button, Card, Row, Col, Radio, Space, Tabs } from "antd";
 import Flag from "react-world-flags";
 import CourseDetails from "./CourseDetails";
 import EnrollmentProfilePictureField, { PROFILE_PICTURE_FIELD_NAME } from "./EnrollmentProfilePictureField";
@@ -51,6 +51,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [pendingSubmission, setPendingSubmission] = useState(null);
+  const [photoUploadError, setPhotoUploadError] = useState(false);
   const { executeRecaptcha } = useGoogleReCaptcha();
   const intl = useIntl();
   const locale = true;
@@ -121,6 +122,17 @@ export const AuthenticatedQuickEnrollment = (props) => {
       const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
 
       if (wasSuccessful === true) {
+        if (
+          filesMap?.profilePictureUpload?.length > 0 &&
+          !upsertedRecords?.uploadedProfilePicture?.wasUploaded
+        ) {
+          form.setFieldsValue({ [PROFILE_PICTURE_FIELD_NAME]: [] });
+          setPhotoUploadError(true);
+          setSubmittingLoading(false);
+          setPendingSubmission(null);
+          return;
+        }
+        setPhotoUploadError(false);
         setIsEnrollmentModalVisible(true);
       } else if (wasSuccessful === false) {
         console.log("wasSuccessful", wasSuccessful);
@@ -417,6 +429,7 @@ export const AuthenticatedQuickEnrollment = (props) => {
     onResetSubmittingEnrollee(undefined);
     setSubmittingLoading(false);
     setPendingSubmission(null);
+    setPhotoUploadError(false);
     onSelectingEnrollmentCourses([]);
   };
 
@@ -735,6 +748,17 @@ export const AuthenticatedQuickEnrollment = (props) => {
                 enrollmentStyle={quickEnrollmentStyle}
                 submittingLoading={submittingLoading}
               />
+            )}
+
+            {photoUploadError && (
+              <Card style={quickEnrollmentStyle} variant="outlined">
+                <Alert
+                  type="warning"
+                  showIcon
+                  message={setLocaleString(locale, "enrollment.form.photoRetry.title", "Profile picture not saved")}
+                  description={setLocaleString(locale, "enrollment.form.photoRetry.description", "Your enrollment was confirmed. Please select your photo again and click Submit to complete your profile.")}
+                />
+              </Card>
             )}
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined">
