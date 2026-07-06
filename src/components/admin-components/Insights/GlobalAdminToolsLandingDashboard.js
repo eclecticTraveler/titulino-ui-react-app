@@ -671,6 +671,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [audienceMessageSending, setAudienceMessageSending] = useState(false);
   const [messagingHistoryLoading, setMessagingHistoryLoading] = useState(false);
   const [messagingHistoryFilters, setMessagingHistoryFilters] = useState({ limit: 50, offset: 0 });
+  const [historyFiltersDirty, setHistoryFiltersDirty] = useState(false);
   const [historyViewMode, setHistoryViewMode] = useState('grid');
   const [chartDimensionTab, setChartDimensionTab] = useState('category');
   const [categoryManagerVisible, setCategoryManagerVisible] = useState(false);
@@ -6040,7 +6041,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     const stewardshipItems = [
       {
         key: 'duplicates',
-        destroyInactiveTabPane: true,
+        destroyOnHidden: true,
         label: <span><TeamOutlined /> {setLocale(locale, 'admin.tools.stewardship.duplicates')}</span>,
         children: (
           <>
@@ -6068,7 +6069,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       },
       {
         key: 'preview',
-        destroyInactiveTabPane: true,
+        destroyOnHidden: true,
         label: <span><SolutionOutlined /> {setLocale(locale, 'admin.tools.stewardship.mergePreview')}</span>,
         children: (
           <>
@@ -6126,7 +6127,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       },
       {
         key: 'history',
-        destroyInactiveTabPane: true,
+        destroyOnHidden: true,
         label: <span><TableOutlined /> {setLocale(locale, 'admin.tools.stewardship.mergeHistory')}</span>,
         children: (
           <Table
@@ -7944,7 +7945,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               value={messagingHistoryFilters.categoryId ?? null}
               placeholder={t('admin.tools.messaging.history.filterCategory')}
               options={communicationCategoryOptions}
-              onChange={value => setMessagingHistoryFilters(prev => ({ ...prev, categoryId: value, offset: 0 }))}
+              onChange={value => { setMessagingHistoryFilters(prev => ({ ...prev, categoryId: value, offset: 0 })); setHistoryFiltersDirty(true); }}
               style={{ width: '100%' }}
               allowClear
               showSearch
@@ -7954,7 +7955,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <Col xs={24} md={9}>
             <Select
               value={messagingHistoryFilters.courseCodeId || null}
-              onChange={value => setMessagingHistoryFilters(prev => ({ ...prev, courseCodeId: value || '', offset: 0 }))}
+              onChange={value => { setMessagingHistoryFilters(prev => ({ ...prev, courseCodeId: value || '', offset: 0 })); setHistoryFiltersDirty(true); }}
               placeholder={t('admin.tools.messaging.history.filterCourseCode')}
               options={historyCourseOptions}
               optionFilterProp="searchText"
@@ -7969,6 +7970,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               onChange={value => {
                 const updated = { ...messagingHistoryFilters, limit: value, offset: 0 };
                 setMessagingHistoryFilters(updated);
+                setHistoryFiltersDirty(false);
                 loadMessagingHistory(updated);
               }}
               options={[
@@ -7984,13 +7986,23 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               type="primary"
               icon={<SearchOutlined />}
               loading={messagingHistoryLoading}
-              onClick={() => loadMessagingHistory(messagingHistoryFilters)}
+              onClick={() => { setHistoryFiltersDirty(false); loadMessagingHistory(messagingHistoryFilters); }}
               block
             >
               {t('admin.tools.messaging.applyFilters')}
             </Button>
           </Col>
         </Row>
+        {historyFiltersDirty && (
+          <Alert
+            type="info"
+            showIcon
+            message={t('admin.tools.messaging.history.filtersDirty')}
+            style={{ marginBottom: 12 }}
+            closable
+            onClose={() => setHistoryFiltersDirty(false)}
+          />
+        )}
         {historyViewMode === 'grid' && (
           <Table
             size="small"

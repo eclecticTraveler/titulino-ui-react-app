@@ -648,6 +648,7 @@
 	"admin.tools.messaging.tab.history": "History",
 	"admin.tools.messaging.history.filterCategory": "Filter by category",
 	"admin.tools.messaging.history.filterCourseCode": "Filter by course code",
+	"admin.tools.messaging.history.filtersDirty": "Filters changed — click Apply to update the results.",
 	"admin.tools.messaging.history.empty": "No message history found.",
 	"admin.tools.messaging.history.col.email": "Email",
 	"admin.tools.messaging.history.col.category": "Category",
