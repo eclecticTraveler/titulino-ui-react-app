@@ -39,7 +39,11 @@ import {
   ON_SENDING_AUDIENCE_MESSAGE,
   ON_LOADING_COMMUNICATION_CATEGORIES,
   ON_LOADING_COMMUNICATION_TRACKING_HISTORY,
-  ON_UPSERTING_COMMUNICATION_CATEGORY
+  ON_UPSERTING_COMMUNICATION_CATEGORY,
+  ON_LOADING_MESSAGE_VARIABLES,
+  ON_UPSERTING_MESSAGE_VARIABLE,
+  ON_LOADING_MESSAGE_TEMPLATES,
+  ON_UPSERTING_MESSAGE_TEMPLATE
 } from '../constants/AdminTools';
 
 const initState = {
@@ -56,7 +60,11 @@ const initState = {
   audienceMessageVariables: null,
   lastAudienceMessageSendResult: null,
   communicationCategories: null,
-  communicationTrackingHistory: null
+  communicationTrackingHistory: null,
+  messageVariables: null,
+  lastUpsertMessageVariableResult: null,
+  messageTemplates: null,
+  lastUpsertMessageTemplateResult: null
 };
 
 const applyAvatarCacheToEnrollees = (allEnrollees = [], avatarUrlMap = {}) => (
@@ -276,6 +284,14 @@ const adminTools = (state = initState, action) => {
             }
           : state.communicationCategories
       };
+    case ON_LOADING_MESSAGE_VARIABLES:
+      return { ...state, messageVariables: action.messageVariables };
+    case ON_UPSERTING_MESSAGE_VARIABLE:
+      return { ...state, lastUpsertMessageVariableResult: action.upsertMessageVariableResult };
+    case ON_LOADING_MESSAGE_TEMPLATES:
+      return { ...state, messageTemplates: action.messageTemplates };
+    case ON_UPSERTING_MESSAGE_TEMPLATE:
+      return { ...state, lastUpsertMessageTemplateResult: action.upsertMessageTemplateResult };
     case ON_CLEAR_SELECTED_CONTACT:
       return {
         ...state,

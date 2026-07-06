@@ -140,6 +140,25 @@ export const upsertCommunicationCategory = async (payload = {}, token, whoCalled
   postJsonEndpoint('UpsertCommunicationCategory', payload, token, whoCalledMe, null)
 );
 
+export const getMessageVariables = async (token, whoCalledMe = 'getMessageVariables') => {
+  const apiResult = await postJsonEndpoint('GetMessageVariables', {}, token, whoCalledMe, EMPTY_RESULT);
+  return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
+};
+
+export const upsertMessageVariable = async (payload = {}, token, whoCalledMe = 'upsertMessageVariable') => (
+  postJsonEndpoint('UpsertMessageVariable', payload, token, whoCalledMe, null)
+);
+
+export const getMessageTemplates = async (localeCode = null, token, whoCalledMe = 'getMessageTemplates') => {
+  const payload = localeCode ? { p_locale_code: localeCode } : {};
+  const apiResult = await postJsonEndpoint('GetMessageTemplates', payload, token, whoCalledMe, EMPTY_RESULT);
+  return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
+};
+
+export const upsertMessageTemplate = async (payload = {}, token, whoCalledMe = 'upsertMessageTemplate') => (
+  postJsonEndpoint('UpsertMessageTemplate', payload, token, whoCalledMe, null)
+);
+
 export const detectPossibleDuplicateContacts = async (payload = {}, token, whoCalledMe = 'detectPossibleDuplicateContacts') => {
   const apiResult = await postJsonEndpoint('DetectPossibleDuplicateContacts', payload, token, whoCalledMe);
   return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
@@ -364,6 +383,10 @@ const TitulinoAdminAuthService = {
   getCommunicationCategories,
   getCommunicationTrackingHistory,
   upsertCommunicationCategory,
+  getMessageVariables,
+  upsertMessageVariable,
+  getMessageTemplates,
+  upsertMessageTemplate,
   detectPossibleDuplicateContacts,
   getContactMergeDashboard,
   previewContactMerge,

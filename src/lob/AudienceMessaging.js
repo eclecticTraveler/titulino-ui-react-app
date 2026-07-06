@@ -966,6 +966,137 @@ export const buildCommunicationTrackingHistoryHeatmapData = (rows = []) => {
   });
 };
 
+export const buildMessageVariableTableModel = (rows = []) => (
+  (Array.isArray(rows) ? rows : []).map((row, index) => {
+    const id = getValue(row, 'MessageVariableId', 'messageVariableId');
+    const variableKey = getValue(row, 'VariableKey', 'variableKey') || '';
+    const displayName = getValue(row, 'DisplayName', 'displayName') || '';
+    const dataFieldPath = getValue(row, 'DataFieldPath', 'dataFieldPath') || '';
+    const localeKey = getValue(row, 'LocaleKey', 'localeKey') || '';
+    const isActive = getValue(row, 'IsActive', 'isActive') !== false;
+
+    return {
+      ...row,
+      key: id != null ? id : `variable-${index}`,
+      id,
+      variableKey,
+      displayName,
+      dataFieldPath,
+      localeKey,
+      isActive
+    };
+  })
+);
+
+export const buildMessageVariableRegistryOptions = (rows = []) => (
+  (Array.isArray(rows) ? rows : [])
+    .filter(row => row?.isActive !== false)
+    .map(row => ({
+      value: `{{${row.variableKey || row.VariableKey || ''}}}`,
+      label: row.displayName || row.DisplayName || row.variableKey || '',
+      description: row.dataFieldPath || row.DataFieldPath || ''
+    }))
+);
+
+export const buildMessageTemplateTableModel = (rows = []) => (
+  (Array.isArray(rows) ? rows : []).map((row, index) => {
+    const id = getValue(row, 'MessageTemplateId', 'messageTemplateId');
+    const templateName = getValue(row, 'TemplateName', 'templateName') || '';
+    const subject = getValue(row, 'Subject', 'subject') || '';
+    const body = getValue(row, 'Body', 'body') || '';
+    const localeCode = getValue(row, 'LocaleCode', 'localeCode') || '';
+    const categoryId = getValue(row, 'CategoryId', 'categoryId') ?? null;
+    const isActive = getValue(row, 'IsActive', 'isActive') !== false;
+
+    return {
+      ...row,
+      key: id != null ? id : `template-${index}`,
+      id,
+      templateName,
+      subject,
+      body,
+      localeCode,
+      categoryId,
+      isActive
+    };
+  })
+);
+
+export const buildMessageTemplateOptions = (rows = []) => (
+  (Array.isArray(rows) ? rows : [])
+    .filter(row => row?.isActive !== false)
+    .map(row => ({
+      value: row.id ?? getValue(row, 'MessageTemplateId', 'messageTemplateId'),
+      label: `${row.templateName || getValue(row, 'TemplateName', 'templateName') || ''} (${row.localeCode || getValue(row, 'LocaleCode', 'localeCode') || ''})`,
+      subject: row.subject || getValue(row, 'Subject', 'subject') || '',
+      body: row.body || getValue(row, 'Body', 'body') || ''
+    }))
+);
+
+export const buildAudienceFilterClauses = (filters = {}, lookups = {}) => {
+  const {
+    courseNames = {},
+    categoryNames = {},
+    languageNames = {},
+    countryNames = {}
+  } = lookups;
+
+  const clauses = [];
+
+  const { sex, minAge, maxAge } = filters;
+  if (sex && sex !== 'all') clauses.push(sex === 'female' ? 'Female contacts' : 'Male contacts');
+  if (minAge != null && maxAge != null) clauses.push(`Age ${minAge}–${maxAge}`);
+  else if (minAge != null) clauses.push(`Age ≥ ${minAge}`);
+  else if (maxAge != null) clauses.push(`Age ≤ ${maxAge}`);
+
+  const { residencyCountry, residencyRegion, residencyExclude, birthCountry, birthRegion, birthExclude } = filters;
+  if (residencyCountry) {
+    const name = countryNames[residencyCountry] || residencyCountry;
+    const regionPart = (residencyRegion || []).length ? ` · ${residencyRegion.join(', ')}` : '';
+    clauses.push(`${residencyExclude ? 'Not residing in' : 'Residing in'} ${name}${regionPart}`);
+  }
+  if (birthCountry) {
+    const name = countryNames[birthCountry] || birthCountry;
+    const regionPart = (birthRegion || []).length ? ` · ${birthRegion.join(', ')}` : '';
+    clauses.push(`${birthExclude ? 'Not born in' : 'Born in'} ${name}${regionPart}`);
+  }
+
+  const { languageId, languageLevel } = filters;
+  if (languageId && languageId !== 'all') {
+    const lang = languageNames[languageId] || languageId;
+    const level = languageLevel && languageLevel !== 'all' ? ` at ${languageLevel}` : '';
+    clauses.push(`Language: ${lang}${level}`);
+  }
+
+  const { courseCodeIds = [], matchAllCourses, excludeCourseCodeIds = [] } = filters;
+  if (courseCodeIds.length) {
+    const names = courseCodeIds.map(id => courseNames[id] || id).join(', ');
+    const qualifier = matchAllCourses && courseCodeIds.length > 1 ? ' (all)' : '';
+    clauses.push(`Enrolled in: ${names}${qualifier}`);
+  }
+  if (excludeCourseCodeIds.length) {
+    const names = excludeCourseCodeIds.map(id => courseNames[id] || id).join(', ');
+    clauses.push(`Not enrolled in: ${names}`);
+  }
+
+  const { hasProgress, hasCertifications, hasPurchases } = filters;
+  if (hasProgress === 'with') clauses.push('With progress');
+  if (hasProgress === 'without') clauses.push('Without progress');
+  if (hasCertifications === 'with') clauses.push('With certificate');
+  if (hasCertifications === 'without') clauses.push('No certificate');
+  if (hasPurchases === 'with') clauses.push('With access/purchase');
+  if (hasPurchases === 'without') clauses.push('No access/purchase');
+
+  const { excludeCategoryId, excludeCourseCodeId } = filters;
+  if (excludeCategoryId != null) {
+    const catName = categoryNames[excludeCategoryId] || `Category #${excludeCategoryId}`;
+    const courseLabel = excludeCourseCodeId ? ` for "${courseNames[excludeCourseCodeId] || excludeCourseCodeId}"` : '';
+    clauses.push(`Skip already sent: ${catName}${courseLabel}`);
+  }
+
+  return clauses;
+};
+
 const AudienceMessaging = {
   getDefaultAudienceFilters,
   buildContactSegmentPayload,
@@ -992,7 +1123,12 @@ const AudienceMessaging = {
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,
   buildCommunicationTrackingHistoryHeatmapData,
-  buildCommunicationCategoryKey
+  buildCommunicationCategoryKey,
+  buildMessageVariableTableModel,
+  buildMessageVariableRegistryOptions,
+  buildMessageTemplateTableModel,
+  buildMessageTemplateOptions,
+  buildAudienceFilterClauses
 };
 
 export default AudienceMessaging;

@@ -110,7 +110,10 @@ export const buildAudienceCountryOptionsForLocation = (...args) => AudienceMessa
 export const buildAudienceCountryDivisionOptions = (...args) => AudienceMessaging.buildCountryDivisionOptions(...args);
 export const buildAudienceTableColumns = (...args) => AudienceMessaging.buildAudienceTableColumns(...args);
 export const buildAudienceSummary = (...args) => AudienceMessaging.buildAudienceSummary(...args);
+export const buildAudienceFilterClauses = (...args) => AudienceMessaging.buildAudienceFilterClauses(...args);
 export const buildAudienceMessageVariableOptions = (...args) => AudienceMessaging.buildMessageVariableOptions(...args);
+export const buildMessageVariableRegistryOptions = (...args) => AudienceMessaging.buildMessageVariableRegistryOptions(...args);
+export const buildMessageTemplateOptions = (...args) => AudienceMessaging.buildMessageTemplateOptions(...args);
 export const hasAudienceMessageContent = (...args) => AudienceMessaging.hasMessageContent(...args);
 export const isContactMergeMutationSuccessful = (...args) => ContactStewardship.isMergeMutationSuccessful(...args);
 export const buildHistoryCourseOptions = (...args) => AudienceMessaging.buildHistoryCourseOptions(...args);
@@ -1378,7 +1381,10 @@ const AdminToolsManager = {
   buildAudienceCountryDivisionOptions,
   buildAudienceTableColumns,
   buildAudienceSummary,
+  buildAudienceFilterClauses,
   buildAudienceMessageVariableOptions,
+  buildMessageVariableRegistryOptions,
+  buildMessageTemplateOptions,
   hasAudienceMessageContent,
   isContactMergeMutationSuccessful,
   buildHistoryCourseOptions,
@@ -1390,6 +1396,10 @@ const AdminToolsManager = {
   getCommunicationCategories: (...args) => getCommunicationCategories(...args),
   getCommunicationTrackingHistory: (...args) => getCommunicationTrackingHistory(...args),
   upsertCommunicationCategory: (...args) => upsertCommunicationCategory(...args),
+  getMessageVariables: (...args) => getMessageVariables(...args),
+  upsertMessageVariable: (...args) => upsertMessageVariable(...args),
+  getMessageTemplates: (...args) => getMessageTemplates(...args),
+  upsertMessageTemplate: (...args) => upsertMessageTemplate(...args),
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,
@@ -1450,6 +1460,74 @@ export const upsertCommunicationCategory = async (emailId, id, key, localization
   // Wrapper returns communication_category_type; PostgREST delivers composite types as a one-element array
   const row = Array.isArray(result) ? result[0] : result;
   return row?.CommunicationCategoryId ?? null;
+};
+
+export const getMessageVariables = async (emailId) => {
+  const token = await getTokenFromEmail(emailId);
+  if (!token) return { emailId, rows: [] };
+
+  const rows = await TitulinoAdminAuthService.getMessageVariables(
+    token,
+    'AdminToolsManager.getMessageVariables'
+  );
+
+  return { emailId, rows: AudienceMessaging.buildMessageVariableTableModel(rows) };
+};
+
+export const upsertMessageVariable = async (emailId, id, variableKey, displayName, dataFieldPath, localeKey, isActive) => {
+  const token = await getTokenFromEmail(emailId);
+  if (!token) return null;
+
+  const result = await TitulinoAdminAuthService.upsertMessageVariable(
+    {
+      p_message_variable_id: id ?? null,
+      p_variable_key: variableKey ?? null,
+      p_display_name: displayName ?? null,
+      p_data_field_path: dataFieldPath ?? null,
+      p_locale_key: localeKey ?? null,
+      p_is_active: isActive
+    },
+    token,
+    'AdminToolsManager.upsertMessageVariable'
+  );
+
+  const row = Array.isArray(result) ? result[0] : result;
+  return row?.MessageVariableId ?? null;
+};
+
+export const getMessageTemplates = async (emailId, localeCode = null) => {
+  const token = await getTokenFromEmail(emailId);
+  if (!token) return { emailId, rows: [] };
+
+  const rows = await TitulinoAdminAuthService.getMessageTemplates(
+    localeCode,
+    token,
+    'AdminToolsManager.getMessageTemplates'
+  );
+
+  return { emailId, rows: AudienceMessaging.buildMessageTemplateTableModel(rows) };
+};
+
+export const upsertMessageTemplate = async (emailId, id, templateName, subject, body, localeCode, categoryId, isActive) => {
+  const token = await getTokenFromEmail(emailId);
+  if (!token) return null;
+
+  const result = await TitulinoAdminAuthService.upsertMessageTemplate(
+    {
+      p_message_template_id: id ?? null,
+      p_template_name: templateName ?? null,
+      p_subject: subject ?? null,
+      p_body: body ?? null,
+      p_locale_code: localeCode ?? null,
+      p_category_id: categoryId ?? null,
+      p_is_active: isActive
+    },
+    token,
+    'AdminToolsManager.upsertMessageTemplate'
+  );
+
+  const row = Array.isArray(result) ? result[0] : result;
+  return row?.MessageTemplateId ?? null;
 };
 
 export default AdminToolsManager;
