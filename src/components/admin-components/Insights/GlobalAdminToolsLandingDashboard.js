@@ -63,6 +63,10 @@ import {
   onLoadingCommunicationCategories,
   onLoadingCommunicationTrackingHistory,
   onUpsertingCommunicationCategory,
+  onLoadingMessageVariables,
+  onUpsertingMessageVariable,
+  onLoadingMessageTemplates,
+  onUpsertingMessageTemplate,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -88,6 +92,8 @@ import {
   buildAudienceTableColumns,
   buildAudienceSummary,
   buildAudienceMessageVariableOptions,
+  buildMessageVariableRegistryOptions,
+  buildMessageTemplateOptions,
   hasAudienceMessageContent,
   isContactMergeMutationSuccessful,
   buildHistoryCourseOptions,
@@ -572,6 +578,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onLoadingCommunicationCategories,
     onLoadingCommunicationTrackingHistory,
     onUpsertingCommunicationCategory,
+    onLoadingMessageVariables,
+    onUpsertingMessageVariable,
+    onLoadingMessageTemplates,
+    onUpsertingMessageTemplate,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     processLogEventsBySource,
@@ -583,6 +593,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     audienceMessageVariables,
     communicationCategories,
     communicationTrackingHistory,
+    messageVariables,
+    messageTemplates,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   } = props;
@@ -667,6 +679,19 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [editingCategoryId, setEditingCategoryId] = useState(null);
   const [categoryCreating, setCategoryCreating] = useState(false);
   const [newCategoryKey, setNewCategoryKey] = useState('');
+  const [variableManagerVisible, setVariableManagerVisible] = useState(false);
+  const [variableManagerTab, setVariableManagerTab] = useState('list');
+  const [variableManagerSavingId, setVariableManagerSavingId] = useState(null);
+  const [variableCreating, setVariableCreating] = useState(false);
+  const [newVariable, setNewVariable] = useState({ variableKey: '', displayName: '', dataFieldPath: '', localeKey: '' });
+  const [templateManagerVisible, setTemplateManagerVisible] = useState(false);
+  const [templateManagerTab, setTemplateManagerTab] = useState('list');
+  const [templateManagerSavingId, setTemplateManagerSavingId] = useState(null);
+  const [templateCreating, setTemplateCreating] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
+  const templateBodyRef = useRef(null);
+  const [templateBodySelection, setTemplateBodySelection] = useState({ start: 0, end: 0 });
+  const [composerPreviewVisible, setComposerPreviewVisible] = useState(false);
   const [audienceCertificationLoading, setAudienceCertificationLoading] = useState(false);
   const [audienceCertificationHistory, setAudienceCertificationHistory] = useState(null);
   const [audienceCertificationFilters, setAudienceCertificationFilters] = useState({
@@ -1152,6 +1177,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     if (!emailId || !onLoadingCommunicationCategories) return;
     await onLoadingCommunicationCategories(emailId);
   }, [emailId, onLoadingCommunicationCategories]);
+
+  const loadMessageVariables = useCallback(async () => {
+    if (!emailId || !onLoadingMessageVariables) return;
+    await onLoadingMessageVariables(emailId);
+  }, [emailId, onLoadingMessageVariables]);
+
+  const loadMessageTemplates = useCallback(async () => {
+    if (!emailId || !onLoadingMessageTemplates) return;
+    await onLoadingMessageTemplates(emailId);
+  }, [emailId, onLoadingMessageTemplates]);
 
   const openCategoryManager = useCallback(() => {
     const edits = (communicationCategories?.rows || []).reduce((accumulator, row) => {
@@ -1839,6 +1874,20 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       loadCommunicationCategories();
     }
   }, [activeOuterTabKey, communicationCategories?.emailId, emailId, loadCommunicationCategories]);
+
+  useEffect(() => {
+    if (activeOuterTabKey !== 'messaging' || !emailId) return;
+    if (!messageVariables?.emailId || messageVariables.emailId !== emailId) {
+      loadMessageVariables();
+    }
+  }, [activeOuterTabKey, messageVariables?.emailId, emailId, loadMessageVariables]);
+
+  useEffect(() => {
+    if (activeOuterTabKey !== 'messaging' || !emailId) return;
+    if (!messageTemplates?.emailId || messageTemplates.emailId !== emailId) {
+      loadMessageTemplates();
+    }
+  }, [activeOuterTabKey, messageTemplates?.emailId, emailId, loadMessageTemplates]);
 
   useEffect(() => {
     if (activeOuterTabKey !== 'messaging' || !emailId) return;
@@ -2794,6 +2843,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const historyCourseOptions = useMemo(
     () => buildHistoryCourseOptions(allRawCourses),
     [allRawCourses]
+  );
+  const messageTemplateSelectOptions = useMemo(
+    () => buildMessageTemplateOptions(messageTemplates?.rows),
+    [messageTemplates]
   );
   const hasAudienceMessageDraftContent = hasAudienceMessageContent(audienceMessageDraft);
   const canSendAudienceMessage = (
@@ -7984,9 +8037,17 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             allowClear
           />
           <div style={{ textAlign: 'right', marginTop: 2 }}>
-            <Button type="link" size="small" icon={<EditOutlined />} onClick={openCategoryManager}>
-              {t('admin.tools.messaging.manage')}
-            </Button>
+            <Space size="small">
+              <Button type="link" size="small" icon={<EditOutlined />} onClick={openCategoryManager}>
+                {t('admin.tools.messaging.manage')}
+              </Button>
+              <Button type="link" size="small" icon={<EditOutlined />} onClick={() => setVariableManagerVisible(true)}>
+                {t('admin.tools.messaging.variableManager.title')}
+              </Button>
+              <Button type="link" size="small" icon={<EditOutlined />} onClick={() => setTemplateManagerVisible(true)}>
+                {t('admin.tools.messaging.templateManager.title')}
+              </Button>
+            </Space>
           </div>
         </Col>
         <Col xs={24} md={12}>
@@ -8002,6 +8063,30 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           />
         </Col>
       </Row>
+      {messageTemplateSelectOptions.length > 0 && (
+        <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+          <Col xs={24}>
+            <Select
+              value={undefined}
+              placeholder={t('admin.tools.messaging.loadTemplate')}
+              options={messageTemplateSelectOptions}
+              style={{ width: '100%', maxWidth: 480 }}
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              onChange={(_, option) => {
+                if (!option) return;
+                setAudienceMessageDraft(prev => ({
+                  ...prev,
+                  subject: option.subject || prev.subject,
+                  bodyText: option.body || prev.bodyText,
+                  bodyHtml: ''
+                }));
+              }}
+            />
+          </Col>
+        </Row>
+      )}
       <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
         <Col xs={24} md={18}>
           <Input
@@ -8042,6 +8127,15 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           options={audienceMessageVariableOptions}
           optionFilterProp="searchText"
           onChange={insertAudienceBodyVariable}
+          optionRender={option => (
+            <Tooltip
+              title={option.data.title || option.data.description || null}
+              placement="right"
+              mouseEnterDelay={0.4}
+            >
+              <span style={{ display: 'block' }}>{option.label}</span>
+            </Tooltip>
+          )}
         />
       </div>
       <Input.TextArea
@@ -8062,8 +8156,45 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         onSelect={saveAudienceBodySelection}
         onBlur={saveAudienceBodySelection}
         placeholder={t('admin.tools.messaging.bodyPlaceholder')}
-        style={{ marginBottom: 12 }}
+        style={{ marginBottom: 8 }}
       />
+      {audienceMessageDraft.bodyText && (messageVariables?.rows || []).length > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <Button
+            type="link"
+            size="small"
+            style={{ paddingLeft: 0 }}
+            onClick={() => setComposerPreviewVisible(prev => !prev)}
+          >
+            {composerPreviewVisible ? 'Hide preview' : 'Show variable preview'}
+          </Button>
+          {composerPreviewVisible && (() => {
+            const variableMap = (messageVariables?.rows || []).reduce((acc, v) => {
+              if (v.variableKey) acc[v.variableKey] = v.displayName || v.variableKey;
+              return acc;
+            }, {});
+            const preview = audienceMessageDraft.bodyText.replace(
+              /\{\{(\w+)\}\}/g,
+              (match, key) => variableMap[key] ? `[${variableMap[key]}]` : match
+            );
+            return (
+              <div
+                style={{
+                  background: '#fafafa',
+                  border: '1px solid #d9d9d9',
+                  borderRadius: 6,
+                  padding: '8px 12px',
+                  fontSize: 13,
+                  whiteSpace: 'pre-wrap',
+                  color: '#262626'
+                }}
+              >
+                {preview}
+              </div>
+            );
+          })()}
+        </div>
+      )}
       <Tooltip title={audienceMessageSendDisabledHint}>
         <span style={{ display: 'inline-block' }}>
           <Popconfirm
@@ -8312,6 +8443,444 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const saveVariableChange = async (id, variableKey, displayName, dataFieldPath, localeKey, isActive) => {
+    if (!emailId || !onUpsertingMessageVariable) return;
+    setVariableManagerSavingId(id ?? 'new');
+    try {
+      await onUpsertingMessageVariable(emailId, id, variableKey, displayName, dataFieldPath, localeKey, isActive);
+      await loadMessageVariables();
+    } finally {
+      setVariableManagerSavingId(null);
+    }
+  };
+
+  const createVariable = async () => {
+    const { variableKey, displayName, dataFieldPath, localeKey } = newVariable;
+    if (!variableKey.trim() || !displayName.trim() || !dataFieldPath.trim() || !localeKey.trim()) return;
+    setVariableCreating(true);
+    try {
+      await onUpsertingMessageVariable(emailId, null, variableKey.trim(), displayName.trim(), dataFieldPath.trim(), localeKey.trim(), true);
+      await loadMessageVariables();
+      setNewVariable({ variableKey: '', displayName: '', dataFieldPath: '', localeKey: '' });
+      setVariableManagerTab('list');
+    } finally {
+      setVariableCreating(false);
+    }
+  };
+
+  const renderVariableManager = () => {
+    const rows = messageVariables?.rows || [];
+    const columns = [
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+        width: 56,
+        sorter: (a, b) => (a.id ?? 0) - (b.id ?? 0),
+        defaultSortOrder: 'ascend'
+      },
+      {
+        title: t('admin.tools.messaging.variableManager.variableKey'),
+        dataIndex: 'variableKey',
+        key: 'variableKey',
+        filters: rows.map(r => ({ text: r.variableKey, value: r.variableKey })),
+        filterSearch: true,
+        onFilter: (value, record) => record.variableKey === value,
+        render: value => (
+          <span style={{ color: '#1677ff', fontFamily: 'monospace', fontSize: 12 }}>{`{{${value}}}`}</span>
+        )
+      },
+      {
+        title: t('admin.tools.messaging.variableManager.displayName'),
+        dataIndex: 'displayName',
+        key: 'displayName'
+      },
+      {
+        title: t('admin.tools.messaging.variableManager.dataFieldPath'),
+        dataIndex: 'dataFieldPath',
+        key: 'dataFieldPath',
+        filters: rows.map(r => ({ text: r.dataFieldPath, value: r.dataFieldPath })),
+        filterSearch: true,
+        onFilter: (value, record) => record.dataFieldPath === value,
+        render: value => (
+          <span style={{ color: '#8c8c8c', fontStyle: 'italic', fontSize: 12 }}>{value}</span>
+        )
+      },
+      {
+        title: t('admin.tools.messaging.variableManager.active'),
+        key: 'active',
+        width: 80,
+        filters: [
+          { text: t('admin.tools.messaging.variableManager.filter.active'), value: true },
+          { text: t('admin.tools.messaging.variableManager.filter.inactive'), value: false }
+        ],
+        onFilter: (value, record) => record.isActive === value,
+        render: (_, row) => (
+          <Switch
+            size="small"
+            checked={row.isActive}
+            loading={variableManagerSavingId === row.id}
+            onChange={checked => saveVariableChange(row.id, row.variableKey, row.displayName, row.dataFieldPath, row.localeKey, checked)}
+          />
+        )
+      }
+    ];
+
+    const listTab = (
+      <>
+        <Alert
+          type="info"
+          showIcon
+          message={t('admin.tools.messaging.variableManager.note')}
+          style={{ marginBottom: 12 }}
+        />
+        <Table
+          dataSource={rows}
+          columns={columns}
+          rowKey="key"
+          pagination={false}
+          size="small"
+          scroll={{ y: 360 }}
+        />
+      </>
+    );
+
+    const isNewVariableValid = newVariable.variableKey.trim() && newVariable.displayName.trim() &&
+      newVariable.dataFieldPath.trim() && newVariable.localeKey.trim();
+
+    const createTab = (
+      <div style={{ maxWidth: 480 }}>
+        {[
+          { field: 'variableKey', labelKey: 'admin.tools.messaging.variableManager.create.variableKey', placeholder: 'e.g. firstName' },
+          { field: 'displayName', labelKey: 'admin.tools.messaging.variableManager.create.displayName', placeholder: 'e.g. First Name' },
+          { field: 'dataFieldPath', labelKey: 'admin.tools.messaging.variableManager.create.dataFieldPath', placeholder: 'e.g. Contact.FirstName' },
+          { field: 'localeKey', labelKey: 'admin.tools.messaging.variableManager.create.localeKey', placeholder: 'e.g. es_US' }
+        ].map(({ field, labelKey, placeholder }) => (
+          <div key={field} style={{ marginBottom: 12 }}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>{t(labelKey)}</div>
+            <Input
+              value={newVariable[field]}
+              onChange={e => setNewVariable(prev => ({ ...prev, [field]: e.target.value }))}
+              placeholder={placeholder}
+            />
+          </div>
+        ))}
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          loading={variableCreating}
+          disabled={!isNewVariableValid}
+          onClick={() => {
+            Modal.confirm({
+              title: t('admin.tools.messaging.variableManager.create.confirmTitle'),
+              content: t('admin.tools.messaging.variableManager.create.confirmContent'),
+              okText: t('admin.tools.messaging.variableManager.create.save'),
+              onOk: createVariable
+            });
+          }}
+        >
+          {t('admin.tools.messaging.variableManager.create.save')}
+        </Button>
+      </div>
+    );
+
+    return (
+      <Modal
+        title={t('admin.tools.messaging.variableManager.title')}
+        open={variableManagerVisible}
+        onCancel={() => { setVariableManagerVisible(false); setVariableManagerTab('list'); }}
+        footer={null}
+        width={720}
+      >
+        <Tabs
+          activeKey={variableManagerTab}
+          onChange={setVariableManagerTab}
+          items={[
+            { key: 'list', label: t('admin.tools.messaging.variableManager.tabs.list'), children: listTab },
+            { key: 'create', label: t('admin.tools.messaging.variableManager.tabs.create'), children: createTab }
+          ]}
+        />
+      </Modal>
+    );
+  };
+
+  const saveTemplateBodySelection = (event) => {
+    const el = event?.target;
+    if (el) {
+      setTemplateBodySelection({ start: el.selectionStart ?? 0, end: el.selectionEnd ?? 0 });
+    }
+  };
+
+  const insertTemplateBodyVariable = (variableToken) => {
+    if (!variableToken || !editingTemplate) return;
+    const body = editingTemplate.body || '';
+    const { start, end } = templateBodySelection;
+    const nextBody = `${body.slice(0, start)}${variableToken}${body.slice(end)}`;
+    const nextCursor = start + variableToken.length;
+    setEditingTemplate(prev => ({ ...prev, body: nextBody }));
+    setTemplateBodySelection({ start: nextCursor, end: nextCursor });
+    if (templateBodyRef.current?.resizableTextArea?.textArea) {
+      const el = templateBodyRef.current.resizableTextArea.textArea;
+      setTimeout(() => {
+        el.selectionStart = nextCursor;
+        el.selectionEnd = nextCursor;
+        el.focus();
+      }, 0);
+    }
+  };
+
+  const saveTemplate = async () => {
+    if (!editingTemplate || !emailId || !onUpsertingMessageTemplate) return;
+    const { id, templateName, subject, body, localeCode, categoryId, isActive } = editingTemplate;
+    if (!templateName?.trim() || !subject?.trim() || !body?.trim() || !localeCode) return;
+    setTemplateManagerSavingId(id ?? 'new');
+    try {
+      await onUpsertingMessageTemplate(emailId, id ?? null, templateName.trim(), subject.trim(), body.trim(), localeCode, categoryId ?? null, isActive !== false);
+      await loadMessageTemplates();
+      setTemplateManagerTab('list');
+      setEditingTemplate(null);
+    } finally {
+      setTemplateManagerSavingId(null);
+    }
+  };
+
+  const renderTemplateManager = () => {
+    const rows = messageTemplates?.rows || [];
+    const categoryOptions = (communicationCategories?.rows || []).map(c => ({
+      value: c.id,
+      label: t(c.localizationKey) || c.categoryKey
+    }));
+    const variableOptions = (messageVariables?.rows || [])
+      .filter(v => v.isActive !== false)
+      .map(v => ({ value: `{{${v.variableKey}}}`, label: `{{${v.variableKey}}} — ${v.displayName}` }));
+    const localeOptions = [
+      { value: 'es_US', label: 'Spanish (es_US)' },
+      { value: 'pt_BR', label: 'Portuguese (pt_BR)' },
+      { value: 'en_US', label: 'English (en_US)' }
+    ];
+
+    const listColumns = [
+      {
+        title: 'ID',
+        dataIndex: 'id',
+        key: 'id',
+        width: 56,
+        sorter: (a, b) => (a.id ?? 0) - (b.id ?? 0),
+        defaultSortOrder: 'ascend'
+      },
+      {
+        title: t('admin.tools.messaging.templateManager.templateName'),
+        dataIndex: 'templateName',
+        key: 'templateName',
+        filters: [...new Set(rows.map(r => r.templateName))].map(v => ({ text: v, value: v })),
+        filterSearch: true,
+        onFilter: (value, record) => record.templateName === value
+      },
+      {
+        title: t('admin.tools.messaging.templateManager.locale'),
+        dataIndex: 'localeCode',
+        key: 'localeCode',
+        width: 90,
+        filters: [...new Set(rows.map(r => r.localeCode))].map(v => ({ text: v, value: v })),
+        onFilter: (value, record) => record.localeCode === value
+      },
+      {
+        title: t('admin.tools.messaging.templateManager.category'),
+        key: 'categoryId',
+        width: 120,
+        render: (_, row) => {
+          const cat = (communicationCategories?.rows || []).find(c => c.id === row.categoryId);
+          return cat ? <span style={{ fontSize: 12 }}>{t(cat.localizationKey) || cat.categoryKey}</span> : '—';
+        }
+      },
+      {
+        title: t('admin.tools.messaging.templateManager.subject'),
+        dataIndex: 'subject',
+        key: 'subject',
+        render: value => (
+          <span style={{ fontSize: 12, color: '#595959' }}>{value?.length > 60 ? `${value.slice(0, 60)}…` : value}</span>
+        )
+      },
+      {
+        title: t('admin.tools.messaging.templateManager.active'),
+        key: 'active',
+        width: 80,
+        filters: [
+          { text: t('admin.tools.messaging.templateManager.filter.active'), value: true },
+          { text: t('admin.tools.messaging.templateManager.filter.inactive'), value: false }
+        ],
+        onFilter: (value, record) => record.isActive === value,
+        render: (_, row) => (
+          <Switch
+            size="small"
+            checked={row.isActive}
+            loading={templateManagerSavingId === row.id}
+            onChange={checked => {
+              onUpsertingMessageTemplate(emailId, row.id, row.templateName, row.subject, row.body, row.localeCode, row.categoryId ?? null, checked)
+                .then(() => loadMessageTemplates());
+            }}
+          />
+        )
+      },
+      {
+        title: '',
+        key: 'edit',
+        width: 48,
+        render: (_, row) => (
+          <Button
+            type="text"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setEditingTemplate({ ...row });
+              setTemplateManagerTab('createEdit');
+            }}
+          />
+        )
+      }
+    ];
+
+    const listTab = (
+      <Table
+        dataSource={rows}
+        columns={listColumns}
+        rowKey="key"
+        pagination={false}
+        size="small"
+        scroll={{ y: 360 }}
+      />
+    );
+
+    const isEditValid = editingTemplate?.templateName?.trim() && editingTemplate?.subject?.trim() &&
+      editingTemplate?.body?.trim() && editingTemplate?.localeCode;
+
+    const createEditTab = (
+      <div style={{ maxWidth: 560 }}>
+        <Row gutter={[12, 12]}>
+          <Col xs={24} md={14}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.templateManager.create.templateName')}</div>
+            <Input
+              value={editingTemplate?.templateName || ''}
+              onChange={e => setEditingTemplate(prev => ({ ...prev, templateName: e.target.value }))}
+              placeholder="e.g. birthday"
+            />
+          </Col>
+          <Col xs={24} md={10}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.templateManager.create.locale')}</div>
+            <Select
+              value={editingTemplate?.localeCode || undefined}
+              onChange={value => setEditingTemplate(prev => ({ ...prev, localeCode: value }))}
+              options={localeOptions}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.templateManager.create.category')}</div>
+            <Select
+              value={editingTemplate?.categoryId ?? undefined}
+              onChange={value => setEditingTemplate(prev => ({ ...prev, categoryId: value ?? null }))}
+              options={categoryOptions}
+              allowClear
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.templateManager.create.subject')}</div>
+            <Input
+              value={editingTemplate?.subject || ''}
+              onChange={e => setEditingTemplate(prev => ({ ...prev, subject: e.target.value }))}
+              placeholder="e.g. Feliz cumpleaños, {{name}}!"
+            />
+          </Col>
+          <Col xs={24}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>
+              {t('admin.tools.messaging.templateManager.create.body')}
+            </div>
+            <div style={{ marginBottom: 6 }}>
+              <Select
+                value={undefined}
+                placeholder={t('admin.tools.messaging.templateManager.create.insertVariable')}
+                options={variableOptions}
+                style={{ width: 280, maxWidth: '100%' }}
+                onChange={insertTemplateBodyVariable}
+              />
+            </div>
+            <Input.TextArea
+              ref={templateBodyRef}
+              value={editingTemplate?.body || ''}
+              rows={8}
+              onChange={e => {
+                saveTemplateBodySelection(e);
+                setEditingTemplate(prev => ({ ...prev, body: e.target.value }));
+              }}
+              onClick={saveTemplateBodySelection}
+              onFocus={saveTemplateBodySelection}
+              onKeyUp={saveTemplateBodySelection}
+              onSelect={saveTemplateBodySelection}
+              onBlur={saveTemplateBodySelection}
+            />
+          </Col>
+          <Col xs={24}>
+            <Space>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                loading={templateManagerSavingId === (editingTemplate?.id ?? 'new')}
+                disabled={!isEditValid}
+                onClick={() => {
+                  Modal.confirm({
+                    title: t('admin.tools.messaging.templateManager.create.confirmTitle'),
+                    content: t('admin.tools.messaging.templateManager.create.confirmContent'),
+                    okText: t('admin.tools.messaging.templateManager.create.save'),
+                    onOk: saveTemplate
+                  });
+                }}
+              >
+                {t('admin.tools.messaging.templateManager.create.save')}
+              </Button>
+              {editingTemplate?.id && (
+                <Button
+                  icon={<PlusOutlined />}
+                  onClick={() => setEditingTemplate({ templateName: '', subject: '', body: '', localeCode: 'es_US', categoryId: null, isActive: true })}
+                >
+                  New
+                </Button>
+              )}
+            </Space>
+          </Col>
+        </Row>
+      </div>
+    );
+
+    return (
+      <Modal
+        title={t('admin.tools.messaging.templateManager.title')}
+        open={templateManagerVisible}
+        onCancel={() => {
+          setTemplateManagerVisible(false);
+          setTemplateManagerTab('list');
+          setEditingTemplate(null);
+        }}
+        footer={null}
+        width={720}
+      >
+        <Tabs
+          activeKey={templateManagerTab}
+          onChange={key => {
+            setTemplateManagerTab(key);
+            if (key === 'createEdit' && !editingTemplate) {
+              setEditingTemplate({ templateName: '', subject: '', body: '', localeCode: 'es_US', categoryId: null, isActive: true });
+            }
+          }}
+          items={[
+            { key: 'list', label: t('admin.tools.messaging.templateManager.tabs.list'), children: listTab },
+            { key: 'createEdit', label: t('admin.tools.messaging.templateManager.tabs.createEdit'), children: createEditTab }
+          ]}
+        />
+      </Modal>
+    );
+  };
+
   const renderMessagingDashboard = () => (
     <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
       <h4 style={{ marginBottom: 12 }}>
@@ -8381,6 +8950,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         ]}
       />
       {renderCategoryManager()}
+      {renderVariableManager()}
+      {renderTemplateManager()}
     </Card>
   );
 
@@ -8957,6 +9528,10 @@ function mapDispatchToProps(dispatch) {
     onLoadingCommunicationCategories,
     onLoadingCommunicationTrackingHistory,
     onUpsertingCommunicationCategory,
+    onLoadingMessageVariables,
+    onUpsertingMessageVariable,
+    onLoadingMessageTemplates,
+    onUpsertingMessageTemplate,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision
   }, dispatch);
@@ -8989,7 +9564,9 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     audienceMessageVariables,
     lastAudienceMessageSendResult,
     communicationCategories,
-    communicationTrackingHistory
+    communicationTrackingHistory,
+    messageVariables,
+    messageTemplates
   } = adminTools;
   return {
     user,
@@ -9018,7 +9595,9 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     audienceMessageVariables,
     lastAudienceMessageSendResult,
     communicationCategories,
-    communicationTrackingHistory
+    communicationTrackingHistory,
+    messageVariables,
+    messageTemplates
   };
 };
 

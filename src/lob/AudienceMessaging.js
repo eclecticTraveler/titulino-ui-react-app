@@ -966,6 +966,73 @@ export const buildCommunicationTrackingHistoryHeatmapData = (rows = []) => {
   });
 };
 
+export const buildMessageVariableTableModel = (rows = []) => (
+  (Array.isArray(rows) ? rows : []).map((row, index) => {
+    const id = getValue(row, 'MessageVariableId', 'messageVariableId');
+    const variableKey = getValue(row, 'VariableKey', 'variableKey') || '';
+    const displayName = getValue(row, 'DisplayName', 'displayName') || '';
+    const dataFieldPath = getValue(row, 'DataFieldPath', 'dataFieldPath') || '';
+    const localeKey = getValue(row, 'LocaleKey', 'localeKey') || '';
+    const isActive = getValue(row, 'IsActive', 'isActive') !== false;
+
+    return {
+      ...row,
+      key: id != null ? id : `variable-${index}`,
+      id,
+      variableKey,
+      displayName,
+      dataFieldPath,
+      localeKey,
+      isActive
+    };
+  })
+);
+
+export const buildMessageVariableRegistryOptions = (rows = []) => (
+  (Array.isArray(rows) ? rows : [])
+    .filter(row => row?.isActive !== false)
+    .map(row => ({
+      value: `{{${row.variableKey || row.VariableKey || ''}}}`,
+      label: row.displayName || row.DisplayName || row.variableKey || '',
+      description: row.dataFieldPath || row.DataFieldPath || ''
+    }))
+);
+
+export const buildMessageTemplateTableModel = (rows = []) => (
+  (Array.isArray(rows) ? rows : []).map((row, index) => {
+    const id = getValue(row, 'MessageTemplateId', 'messageTemplateId');
+    const templateName = getValue(row, 'TemplateName', 'templateName') || '';
+    const subject = getValue(row, 'Subject', 'subject') || '';
+    const body = getValue(row, 'Body', 'body') || '';
+    const localeCode = getValue(row, 'LocaleCode', 'localeCode') || '';
+    const categoryId = getValue(row, 'CategoryId', 'categoryId') ?? null;
+    const isActive = getValue(row, 'IsActive', 'isActive') !== false;
+
+    return {
+      ...row,
+      key: id != null ? id : `template-${index}`,
+      id,
+      templateName,
+      subject,
+      body,
+      localeCode,
+      categoryId,
+      isActive
+    };
+  })
+);
+
+export const buildMessageTemplateOptions = (rows = []) => (
+  (Array.isArray(rows) ? rows : [])
+    .filter(row => row?.isActive !== false)
+    .map(row => ({
+      value: row.id ?? getValue(row, 'MessageTemplateId', 'messageTemplateId'),
+      label: `${row.templateName || getValue(row, 'TemplateName', 'templateName') || ''} (${row.localeCode || getValue(row, 'LocaleCode', 'localeCode') || ''})`,
+      subject: row.subject || getValue(row, 'Subject', 'subject') || '',
+      body: row.body || getValue(row, 'Body', 'body') || ''
+    }))
+);
+
 const AudienceMessaging = {
   getDefaultAudienceFilters,
   buildContactSegmentPayload,
@@ -992,7 +1059,11 @@ const AudienceMessaging = {
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,
   buildCommunicationTrackingHistoryHeatmapData,
-  buildCommunicationCategoryKey
+  buildCommunicationCategoryKey,
+  buildMessageVariableTableModel,
+  buildMessageVariableRegistryOptions,
+  buildMessageTemplateTableModel,
+  buildMessageTemplateOptions
 };
 
 export default AudienceMessaging;

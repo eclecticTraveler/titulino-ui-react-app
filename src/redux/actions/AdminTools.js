@@ -38,7 +38,11 @@ import {
   ON_SENDING_AUDIENCE_MESSAGE,
   ON_LOADING_COMMUNICATION_CATEGORIES,
   ON_LOADING_COMMUNICATION_TRACKING_HISTORY,
-  ON_UPSERTING_COMMUNICATION_CATEGORY
+  ON_UPSERTING_COMMUNICATION_CATEGORY,
+  ON_LOADING_MESSAGE_VARIABLES,
+  ON_UPSERTING_MESSAGE_VARIABLE,
+  ON_LOADING_MESSAGE_TEMPLATES,
+  ON_UPSERTING_MESSAGE_TEMPLATE
 } from '../constants/AdminTools';
 
 // Pure helpers re-exported via the manager so components keep a single
@@ -69,6 +73,8 @@ export const buildAudienceCountryDivisionOptions = (...args) => AdminToolsManage
 export const buildAudienceTableColumns = (...args) => AdminToolsManager.buildAudienceTableColumns(...args);
 export const buildAudienceSummary = (...args) => AdminToolsManager.buildAudienceSummary(...args);
 export const buildAudienceMessageVariableOptions = (...args) => AdminToolsManager.buildAudienceMessageVariableOptions(...args);
+export const buildMessageVariableRegistryOptions = (...args) => AdminToolsManager.buildMessageVariableRegistryOptions(...args);
+export const buildMessageTemplateOptions = (...args) => AdminToolsManager.buildMessageTemplateOptions(...args);
 export const hasAudienceMessageContent = (...args) => AdminToolsManager.hasAudienceMessageContent(...args);
 export const isContactMergeMutationSuccessful = (...args) => AdminToolsManager.isContactMergeMutationSuccessful(...args);
 export const buildHistoryCourseOptions = (...args) => AdminToolsManager.buildHistoryCourseOptions(...args);
@@ -410,5 +416,37 @@ export const onUpsertingCommunicationCategory = async (adminEmailId, id, key, lo
     key,
     localizationKey,
     isActive
+  };
+};
+
+export const onLoadingMessageVariables = async (adminEmailId) => {
+  const messageVariables = await AdminToolsManager.getMessageVariables(adminEmailId);
+  return {
+    type: ON_LOADING_MESSAGE_VARIABLES,
+    messageVariables
+  };
+};
+
+export const onUpsertingMessageVariable = async (adminEmailId, id, variableKey, displayName, dataFieldPath, localeKey, isActive) => {
+  const result = await AdminToolsManager.upsertMessageVariable(adminEmailId, id, variableKey, displayName, dataFieldPath, localeKey, isActive);
+  return {
+    type: ON_UPSERTING_MESSAGE_VARIABLE,
+    upsertMessageVariableResult: result
+  };
+};
+
+export const onLoadingMessageTemplates = async (adminEmailId, localeCode = null) => {
+  const messageTemplates = await AdminToolsManager.getMessageTemplates(adminEmailId, localeCode);
+  return {
+    type: ON_LOADING_MESSAGE_TEMPLATES,
+    messageTemplates
+  };
+};
+
+export const onUpsertingMessageTemplate = async (adminEmailId, id, templateName, subject, body, localeCode, categoryId, isActive) => {
+  const result = await AdminToolsManager.upsertMessageTemplate(adminEmailId, id, templateName, subject, body, localeCode, categoryId, isActive);
+  return {
+    type: ON_UPSERTING_MESSAGE_TEMPLATE,
+    upsertMessageTemplateResult: result
   };
 };

@@ -8,7 +8,14 @@ jest.mock('antd', () => ({
 
 import AudienceMessaging from '../AudienceMessaging';
 
-const { buildContactSegmentPayload, buildCountryDivisionOptions } = AudienceMessaging;
+const {
+  buildContactSegmentPayload,
+  buildCountryDivisionOptions,
+  buildMessageVariableTableModel,
+  buildMessageVariableRegistryOptions,
+  buildMessageTemplateTableModel,
+  buildMessageTemplateOptions
+} = AudienceMessaging;
 
 // ---------------------------------------------------------------------------
 // buildCountryDivisionOptions
@@ -756,5 +763,203 @@ describe('buildCommunicationTrackingHistoryHeatmapData', () => {
     const rows = [{ courseCodeId: 'COURSE_A', categoryName: 'Welcome' }];
     const [entry] = buildCommunicationTrackingHistoryHeatmapData(rows);
     expect(entry).toEqual({ course: 'COURSE_A', category: 'Welcome', count: 1 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildMessageVariableTableModel
+// ---------------------------------------------------------------------------
+describe('buildMessageVariableTableModel', () => {
+  it('returns empty array for empty input', () => {
+    expect(buildMessageVariableTableModel([])).toEqual([]);
+  });
+
+  it('returns empty array for non-array input', () => {
+    expect(buildMessageVariableTableModel(null)).toEqual([]);
+  });
+
+  it('normalizes PascalCase DB fields to camelCase', () => {
+    const rows = [{ MessageVariableId: 1, VariableKey: 'name', DisplayName: 'Recipient Name', DataFieldPath: 'personalCommunicationName', LocaleKey: 'messaging.variable.name', IsActive: true }];
+    const [row] = buildMessageVariableTableModel(rows);
+    expect(row.id).toBe(1);
+    expect(row.variableKey).toBe('name');
+    expect(row.displayName).toBe('Recipient Name');
+    expect(row.dataFieldPath).toBe('personalCommunicationName');
+    expect(row.localeKey).toBe('messaging.variable.name');
+    expect(row.isActive).toBe(true);
+  });
+
+  it('uses MessageVariableId as the row key', () => {
+    const rows = [{ MessageVariableId: 5, VariableKey: 'location', DisplayName: 'Country', DataFieldPath: 'location.residency', LocaleKey: 'messaging.variable.location', IsActive: true }];
+    expect(buildMessageVariableTableModel(rows)[0].key).toBe(5);
+  });
+
+  it('falls back to index-based key when id is null', () => {
+    const rows = [{ VariableKey: 'x', DisplayName: 'X', DataFieldPath: 'x', LocaleKey: 'x' }];
+    expect(buildMessageVariableTableModel(rows)[0].key).toBe('variable-0');
+  });
+
+  it('defaults isActive to true when field is missing', () => {
+    const rows = [{ MessageVariableId: 1, VariableKey: 'name', DisplayName: 'Name', DataFieldPath: 'name', LocaleKey: 'k' }];
+    expect(buildMessageVariableTableModel(rows)[0].isActive).toBe(true);
+  });
+
+  it('preserves isActive false', () => {
+    const rows = [{ MessageVariableId: 2, VariableKey: 'x', DisplayName: 'X', DataFieldPath: 'x', LocaleKey: 'k', IsActive: false }];
+    expect(buildMessageVariableTableModel(rows)[0].isActive).toBe(false);
+  });
+
+  it('handles multiple rows', () => {
+    const rows = [
+      { MessageVariableId: 1, VariableKey: 'name', DisplayName: 'Name', DataFieldPath: 'n', LocaleKey: 'k1', IsActive: true },
+      { MessageVariableId: 2, VariableKey: 'location', DisplayName: 'Location', DataFieldPath: 'l', LocaleKey: 'k2', IsActive: true },
+    ];
+    expect(buildMessageVariableTableModel(rows)).toHaveLength(2);
+  });
+
+  it('spreads original row fields', () => {
+    const rows = [{ MessageVariableId: 1, VariableKey: 'name', DisplayName: 'Name', DataFieldPath: 'n', LocaleKey: 'k', IsActive: true, extra: 'extra' }];
+    expect(buildMessageVariableTableModel(rows)[0].extra).toBe('extra');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildMessageVariableRegistryOptions
+// ---------------------------------------------------------------------------
+describe('buildMessageVariableRegistryOptions', () => {
+  it('returns empty array for empty input', () => {
+    expect(buildMessageVariableRegistryOptions([])).toEqual([]);
+  });
+
+  it('returns empty array for non-array input', () => {
+    expect(buildMessageVariableRegistryOptions(null)).toEqual([]);
+  });
+
+  it('wraps variableKey in {{ }} for value', () => {
+    const rows = [{ variableKey: 'name', displayName: 'Recipient Name', dataFieldPath: 'personalCommunicationName', isActive: true }];
+    expect(buildMessageVariableRegistryOptions(rows)[0].value).toBe('{{name}}');
+  });
+
+  it('uses displayName as label', () => {
+    const rows = [{ variableKey: 'name', displayName: 'Recipient Name', dataFieldPath: 'personalCommunicationName', isActive: true }];
+    expect(buildMessageVariableRegistryOptions(rows)[0].label).toBe('Recipient Name');
+  });
+
+  it('uses dataFieldPath as description', () => {
+    const rows = [{ variableKey: 'location', displayName: 'Country', dataFieldPath: 'location.residency.countryNativeName', isActive: true }];
+    expect(buildMessageVariableRegistryOptions(rows)[0].description).toBe('location.residency.countryNativeName');
+  });
+
+  it('filters out inactive rows', () => {
+    const rows = [
+      { variableKey: 'name', displayName: 'Name', dataFieldPath: 'n', isActive: true },
+      { variableKey: 'x', displayName: 'X', dataFieldPath: 'x', isActive: false },
+    ];
+    expect(buildMessageVariableRegistryOptions(rows)).toHaveLength(1);
+  });
+
+  it('handles PascalCase DB fields', () => {
+    const rows = [{ VariableKey: 'association', DisplayName: 'Greeting', DataFieldPath: 'dynamicGreeting', IsActive: true }];
+    const [opt] = buildMessageVariableRegistryOptions(rows);
+    expect(opt.value).toBe('{{association}}');
+    expect(opt.label).toBe('Greeting');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildMessageTemplateTableModel
+// ---------------------------------------------------------------------------
+describe('buildMessageTemplateTableModel', () => {
+  it('returns empty array for empty input', () => {
+    expect(buildMessageTemplateTableModel([])).toEqual([]);
+  });
+
+  it('returns empty array for non-array input', () => {
+    expect(buildMessageTemplateTableModel(null)).toEqual([]);
+  });
+
+  it('normalizes PascalCase DB fields to camelCase', () => {
+    const rows = [{ MessageTemplateId: 1, TemplateName: 'birthday', Subject: 'Happy Birthday', Body: 'Hi {{name}}', LocaleCode: 'es_US', CategoryId: 2, IsActive: true }];
+    const [row] = buildMessageTemplateTableModel(rows);
+    expect(row.id).toBe(1);
+    expect(row.templateName).toBe('birthday');
+    expect(row.subject).toBe('Happy Birthday');
+    expect(row.body).toBe('Hi {{name}}');
+    expect(row.localeCode).toBe('es_US');
+    expect(row.categoryId).toBe(2);
+    expect(row.isActive).toBe(true);
+  });
+
+  it('uses MessageTemplateId as the row key', () => {
+    const rows = [{ MessageTemplateId: 7, TemplateName: 't', Subject: 's', Body: 'b', LocaleCode: 'en_US', CategoryId: null, IsActive: true }];
+    expect(buildMessageTemplateTableModel(rows)[0].key).toBe(7);
+  });
+
+  it('falls back to index-based key when id is null', () => {
+    const rows = [{ TemplateName: 't', Subject: 's', Body: 'b', LocaleCode: 'es_US' }];
+    expect(buildMessageTemplateTableModel(rows)[0].key).toBe('template-0');
+  });
+
+  it('defaults isActive to true when field is missing', () => {
+    const rows = [{ MessageTemplateId: 1, TemplateName: 't', Subject: 's', Body: 'b', LocaleCode: 'es_US' }];
+    expect(buildMessageTemplateTableModel(rows)[0].isActive).toBe(true);
+  });
+
+  it('categoryId can be null', () => {
+    const rows = [{ MessageTemplateId: 1, TemplateName: 't', Subject: 's', Body: 'b', LocaleCode: 'es_US', CategoryId: null }];
+    expect(buildMessageTemplateTableModel(rows)[0].categoryId).toBeNull();
+  });
+
+  it('handles multiple rows', () => {
+    const rows = [
+      { MessageTemplateId: 1, TemplateName: 'birthday', Subject: 's1', Body: 'b1', LocaleCode: 'es_US', IsActive: true },
+      { MessageTemplateId: 2, TemplateName: 'welcome', Subject: 's2', Body: 'b2', LocaleCode: 'en_US', IsActive: true },
+    ];
+    expect(buildMessageTemplateTableModel(rows)).toHaveLength(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildMessageTemplateOptions
+// ---------------------------------------------------------------------------
+describe('buildMessageTemplateOptions', () => {
+  it('returns empty array for empty input', () => {
+    expect(buildMessageTemplateOptions([])).toEqual([]);
+  });
+
+  it('returns empty array for non-array input', () => {
+    expect(buildMessageTemplateOptions(null)).toEqual([]);
+  });
+
+  it('uses id as value', () => {
+    const rows = [{ id: 3, templateName: 'birthday', subject: 'Happy Birthday', body: 'Hi {{name}}', localeCode: 'es_US', isActive: true }];
+    expect(buildMessageTemplateOptions(rows)[0].value).toBe(3);
+  });
+
+  it('label includes templateName and localeCode', () => {
+    const rows = [{ id: 1, templateName: 'birthday', subject: 's', body: 'b', localeCode: 'es_US', isActive: true }];
+    expect(buildMessageTemplateOptions(rows)[0].label).toBe('birthday (es_US)');
+  });
+
+  it('exposes subject and body on the option', () => {
+    const rows = [{ id: 1, templateName: 'welcome', subject: 'Welcome {{name}}', body: 'Dear {{association}}', localeCode: 'en_US', isActive: true }];
+    const [opt] = buildMessageTemplateOptions(rows);
+    expect(opt.subject).toBe('Welcome {{name}}');
+    expect(opt.body).toBe('Dear {{association}}');
+  });
+
+  it('filters out inactive rows', () => {
+    const rows = [
+      { id: 1, templateName: 'active', subject: 's', body: 'b', localeCode: 'es_US', isActive: true },
+      { id: 2, templateName: 'inactive', subject: 's', body: 'b', localeCode: 'es_US', isActive: false },
+    ];
+    expect(buildMessageTemplateOptions(rows)).toHaveLength(1);
+  });
+
+  it('handles PascalCase DB fields', () => {
+    const rows = [{ MessageTemplateId: 5, TemplateName: 'golden', Subject: 'Gold', Body: 'Congrats', LocaleCode: 'en_US', IsActive: true }];
+    const [opt] = buildMessageTemplateOptions(rows);
+    expect(opt.value).toBe(5);
+    expect(opt.label).toBe('golden (en_US)');
   });
 });
