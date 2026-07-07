@@ -567,6 +567,7 @@
 	"admin.tools.messaging.signal.purchases": "Acceso / Compras",
 	"admin.tools.messaging.audienceTitle": "Segmento de Audiencia ({count})",
 	"admin.tools.messaging.loadedRows": "{total} fila(s) cargada(s)",
+	"admin.tools.messaging.audiencePagination": "{start}–{end} de {total} contactos",
 	"admin.tools.messaging.noAudienceRows": "No hay contactos para este segmento.",
 	"admin.tools.messaging.genderSnapshot": "Resumen por Sexo",
 	"admin.tools.messaging.residencySnapshot": "Resumen por Residencia",
