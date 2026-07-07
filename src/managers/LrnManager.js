@@ -472,7 +472,8 @@ export const getEnrollmentProfilePictureRequirement = async ({
     emailId,
     dobOrYob,
     contactInternalId,
-    token
+    token,
+    shouldRetrieveRegistrationToken: true
   });
 
   if (env.IS_TO_FORCE_ENROLLMENT_PROFILE_PICTURE_UPLOAD) {
