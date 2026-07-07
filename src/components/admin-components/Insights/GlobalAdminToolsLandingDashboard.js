@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space, Modal, Switch } from 'antd';
+import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space, Modal, Switch, Pagination } from 'antd';
 import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined, UnorderedListOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
@@ -7218,28 +7218,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               />
             ))}
           </Col>
-          <Col xs={12} sm={8} lg={3}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.limit', (
-              <Select
-                value={audienceFilters.limit}
-                options={[50, 100, 250, 500].map(value => ({ value, label: String(value) }))}
-                onChange={value => updateAudienceFilter('limit', value)}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.offset', (
-              <InputNumber
-                min={0}
-                step={audienceFilters.limit}
-                value={audienceFilters.offset}
-                onChange={value => updateAudienceFilter('offset', Number(value || 0))}
-                placeholder={t('admin.tools.messaging.offset')}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
         </Row>
         </Card>
 
@@ -7689,11 +7667,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             }
           ]
         }}
-        pagination={{
-          pageSize: 25,
-          showSizeChanger: true,
-          showTotal: total => t('admin.tools.messaging.loadedRows', { total })
-        }}
+        pagination={false}
         expandable={{
           expandedRowRender: renderAudienceExpandedRow
         }}
@@ -7701,6 +7675,23 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           emptyText: setLocale(locale, 'admin.tools.messaging.noAudienceRows')
         }}
       />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+        <Pagination
+          total={audienceTotalCount}
+          current={Math.floor(audienceFilters.offset / audienceFilters.limit) + 1}
+          pageSize={audienceFilters.limit}
+          pageSizeOptions={[25, 50, 100, 250, 500]}
+          showSizeChanger
+          showQuickJumper
+          showTotal={(total, range) => t('admin.tools.messaging.audiencePagination', { start: range[0], end: range[1], total })}
+          onChange={(page, pageSize) => {
+            const nextFilters = { ...audienceFilters, limit: pageSize, offset: (page - 1) * pageSize };
+            setAudienceFilters(nextFilters);
+            loadAudienceSegment(nextFilters);
+          }}
+          disabled={audienceLoading}
+        />
+      </div>
     </>
   );
 
