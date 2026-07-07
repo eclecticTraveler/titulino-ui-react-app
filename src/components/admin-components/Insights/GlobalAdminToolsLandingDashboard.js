@@ -7633,7 +7633,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       )}
       <Divider titlePlacement="left">
         <TeamOutlined style={{ marginRight: 8 }} />
-        {t('admin.tools.messaging.audienceTitle', { count: audienceDisplayCount })}
+        {t('admin.tools.messaging.audienceTitle', { loaded: audienceRows.length, total: audienceDisplayCount })}
       </Divider>
       <Table
         rowKey="key"
@@ -7675,17 +7675,39 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           emptyText: setLocale(locale, 'admin.tools.messaging.noAudienceRows')
         }}
       />
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.audiencePageSize')}:</span>
+          <InputNumber
+            min={1}
+            max={2000}
+            value={audienceFilters.limit}
+            style={{ width: 80 }}
+            disabled={audienceLoading}
+            onPressEnter={e => {
+              const v = parseInt(e.target.value, 10);
+              if (!v || v < 1) return;
+              const nextFilters = { ...audienceFilters, limit: v, offset: 0 };
+              setAudienceFilters(nextFilters);
+              loadAudienceSegment(nextFilters);
+            }}
+            onBlur={e => {
+              const v = parseInt(e.target.value, 10);
+              if (!v || v < 1 || v === audienceFilters.limit) return;
+              const nextFilters = { ...audienceFilters, limit: v, offset: 0 };
+              setAudienceFilters(nextFilters);
+              loadAudienceSegment(nextFilters);
+            }}
+          />
+        </span>
         <Pagination
           total={audienceTotalCount}
           current={Math.floor(audienceFilters.offset / audienceFilters.limit) + 1}
           pageSize={audienceFilters.limit}
-          pageSizeOptions={[25, 50, 100, 250, 500]}
-          showSizeChanger
-          showQuickJumper
+          showSizeChanger={false}
           showTotal={(total, range) => t('admin.tools.messaging.audiencePagination', { start: range[0], end: range[1], total })}
-          onChange={(page, pageSize) => {
-            const nextFilters = { ...audienceFilters, limit: pageSize, offset: (page - 1) * pageSize };
+          onChange={(page) => {
+            const nextFilters = { ...audienceFilters, offset: (page - 1) * audienceFilters.limit };
             setAudienceFilters(nextFilters);
             loadAudienceSegment(nextFilters);
           }}
