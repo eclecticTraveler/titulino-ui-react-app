@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
 import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space, Modal, Switch, Pagination } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined, UnorderedListOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined, UnorderedListOutlined, QuestionCircleOutlined, SettingOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
@@ -654,7 +654,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     limit: 50,
     offset: 0
   });
-  const [messagingInnerTabKey, setMessagingInnerTabKey] = useState('message');
+  const [messagingInnerTabKey, setMessagingInnerTabKey] = useState('compose');
   const [audienceFilters, setAudienceFilters] = useState(() => getAudienceDefaultFilters());
   const [audienceLoading, setAudienceLoading] = useState(false);
   const [audienceMetadataLoading, setAudienceMetadataLoading] = useState(false);
@@ -7814,6 +7814,125 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const renderAudienceReview = () => {
+    const checklistItems = [
+      {
+        done: audienceMessageDraft.categoryId != null,
+        label: t('admin.tools.messaging.checklist.category'),
+        hint: audienceMessageDraft.categoryId == null ? t('admin.tools.messaging.chooseCategoryHint') : null
+      },
+      {
+        done: !!audienceMessageDraft.subject?.trim(),
+        label: t('admin.tools.messaging.checklist.subject'),
+        hint: !audienceMessageDraft.subject?.trim() ? t('admin.tools.messaging.checklist.subjectHint') : null
+      },
+      {
+        done: !!audienceMessageDraft.bodyText?.trim(),
+        label: t('admin.tools.messaging.checklist.body'),
+        hint: !audienceMessageDraft.bodyText?.trim() ? t('admin.tools.messaging.checklist.bodyHint') : null
+      },
+      {
+        done: selectedAudienceRows.length > 0,
+        label: t('admin.tools.messaging.checklist.audience', { count: selectedAudienceRows.length }),
+        hint: selectedAudienceRows.length === 0 ? t('admin.tools.messaging.chooseAudienceHint') : null
+      }
+    ];
+
+    return (
+      <div>
+        <Card size="small" title={t('admin.tools.messaging.checklist.title')} style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+            {checklistItems.map(({ done, label, hint }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                {done
+                  ? <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 16, marginTop: 1, flexShrink: 0 }} />
+                  : <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: 16, marginTop: 1, flexShrink: 0 }} />
+                }
+                <span style={{ fontSize: 13 }}>
+                  <span style={{ color: done ? '#262626' : '#595959' }}>{label}</span>
+                  {hint && <span style={{ color: '#8c8c8c', marginLeft: 6, fontSize: 12 }}>— {hint}</span>}
+                </span>
+              </div>
+            ))}
+          </div>
+          <Tooltip title={!canSendAudienceMessage ? audienceMessageSendDisabledHint : undefined}>
+            <span style={{ display: 'inline-block' }}>
+              <Popconfirm
+                title={t('admin.tools.messaging.confirmSend', { count: selectedAudienceRows.length })}
+                onConfirm={handleSendAudienceMessage}
+                okText={t('admin.tools.confirmYes')}
+                cancelText={t('admin.tools.confirmNo')}
+                disabled={!canSendAudienceMessage}
+              >
+                <Button
+                  type="primary"
+                  icon={<SendOutlined />}
+                  loading={audienceMessageSending}
+                  disabled={!canSendAudienceMessage}
+                >
+                  {t('admin.tools.messaging.sendMessage')}
+                </Button>
+              </Popconfirm>
+            </span>
+          </Tooltip>
+        </Card>
+        {renderAudienceVisualization()}
+      </div>
+    );
+  };
+
+  const renderSetupTab = () => (
+    <div>
+      <Alert
+        type="info"
+        showIcon
+        message={t('admin.tools.messaging.setup.description')}
+        style={{ marginBottom: 16 }}
+      />
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={8}>
+          <Card
+            size="small"
+            title={t('admin.tools.messaging.manage')}
+            extra={
+              <Button type="primary" size="small" icon={<EditOutlined />} onClick={openCategoryManager}>
+                {t('admin.tools.messaging.manage')}
+              </Button>
+            }
+          >
+            <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.categoryDesc')}</span>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card
+            size="small"
+            title={t('admin.tools.messaging.variableManager.title')}
+            extra={
+              <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => setVariableManagerVisible(true)}>
+                {t('admin.tools.messaging.manage')}
+              </Button>
+            }
+          >
+            <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.variableDesc')}</span>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card
+            size="small"
+            title={t('admin.tools.messaging.templateManager.title')}
+            extra={
+              <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => setTemplateManagerVisible(true)}>
+                {t('admin.tools.messaging.manage')}
+              </Button>
+            }
+          >
+            <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.templateDesc')}</span>
+          </Card>
+        </Col>
+      </Row>
+    </div>
+  );
+
   const renderAudienceCertificationReport = () => {
     const certificationRows = [...(audienceCertificationHistory?.rows || [])]
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -7856,7 +7975,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 showSearch
                 value={audienceCertificationFilters.courseCodeIds}
                 placeholder="Course"
-                options={audienceCourseOptions}
+                options={audienceCourseGroupedOptions}
                 optionFilterProp="searchText"
                 tagRender={renderAudienceCourseTag}
                 maxTagCount={2}
@@ -8213,9 +8332,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         type="warning"
         showIcon
         message={t('admin.tools.messaging.dailyLimitBanner')}
-        style={{ marginBottom: 16 }}
+        style={{ marginBottom: 8 }}
       />
-      <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+      <Divider orientation="left" style={{ margin: '12px 0 10px', fontSize: 13, color: '#595959' }}>
+        {t('admin.tools.messaging.section.routing')}
+      </Divider>
+      <Row gutter={[8, 8]} style={{ marginBottom: 4 }}>
         <Col xs={24} md={12}>
           <Select
             value={audienceMessageDraft.categoryId}
@@ -8225,19 +8347,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             style={{ width: '100%' }}
             allowClear
           />
-          <div style={{ textAlign: 'right', marginTop: 2 }}>
-            <Space size="small">
-              <Button type="link" size="small" icon={<EditOutlined />} onClick={openCategoryManager}>
-                {t('admin.tools.messaging.manage')}
-              </Button>
-              <Button type="link" size="small" icon={<EditOutlined />} onClick={() => setVariableManagerVisible(true)}>
-                {t('admin.tools.messaging.variableManager.title')}
-              </Button>
-              <Button type="link" size="small" icon={<EditOutlined />} onClick={() => setTemplateManagerVisible(true)}>
-                {t('admin.tools.messaging.templateManager.title')}
-              </Button>
-            </Space>
-          </div>
         </Col>
         <Col xs={24} md={12}>
           <Select
@@ -8253,30 +8362,38 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </Col>
       </Row>
       {messageTemplateSelectOptions.length > 0 && (
-        <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
-          <Col xs={24}>
-            <Select
-              value={undefined}
-              placeholder={t('admin.tools.messaging.loadTemplate')}
-              options={messageTemplateSelectOptions}
-              style={{ width: '100%', maxWidth: 480 }}
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              onChange={(_, option) => {
-                if (!option) return;
-                setAudienceMessageDraft(prev => ({
-                  ...prev,
-                  subject: option.subject || prev.subject,
-                  bodyText: option.body || prev.bodyText,
-                  bodyHtml: ''
-                }));
-              }}
-            />
-          </Col>
-        </Row>
+        <>
+          <Divider orientation="left" style={{ margin: '12px 0 10px', fontSize: 13, color: '#595959' }}>
+            {t('admin.tools.messaging.section.template')}
+          </Divider>
+          <Row gutter={[8, 8]} style={{ marginBottom: 4 }}>
+            <Col xs={24}>
+              <Select
+                value={undefined}
+                placeholder={t('admin.tools.messaging.loadTemplate')}
+                options={messageTemplateSelectOptions}
+                style={{ width: '100%', maxWidth: 480 }}
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                onChange={(_, option) => {
+                  if (!option) return;
+                  setAudienceMessageDraft(prev => ({
+                    ...prev,
+                    subject: option.subject || prev.subject,
+                    bodyText: option.body || prev.bodyText,
+                    bodyHtml: ''
+                  }));
+                }}
+              />
+            </Col>
+          </Row>
+        </>
       )}
-      <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+      <Divider orientation="left" style={{ margin: '12px 0 10px', fontSize: 13, color: '#595959' }}>
+        {t('admin.tools.messaging.section.subject')}
+      </Divider>
+      <Row gutter={[8, 8]} style={{ marginBottom: 4 }}>
         <Col xs={24} md={18}>
           <Input
             ref={audienceSubjectInputRef}
@@ -8307,6 +8424,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           />
         </Col>
       </Row>
+      <Divider orientation="left" style={{ margin: '12px 0 10px', fontSize: 13, color: '#595959' }}>
+        {t('admin.tools.messaging.section.messageBody')}
+      </Divider>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
         <Select
           value={undefined}
@@ -8382,37 +8502,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               </div>
             );
           })()}
-        </div>
-      )}
-      <Tooltip title={audienceMessageSendDisabledHint}>
-        <span style={{ display: 'inline-block' }}>
-          <Popconfirm
-            title={t('admin.tools.messaging.confirmSend', { count: selectedAudienceRows.length })}
-            onConfirm={handleSendAudienceMessage}
-            okText={t('admin.tools.confirmYes')}
-            cancelText={t('admin.tools.confirmNo')}
-            disabled={!canSendAudienceMessage}
-          >
-            <Button
-              type="primary"
-              icon={<SendOutlined />}
-              loading={audienceMessageSending}
-              disabled={!canSendAudienceMessage}
-            >
-              {setLocale(locale, 'admin.tools.messaging.sendMessage')}
-            </Button>
-          </Popconfirm>
-        </span>
-      </Tooltip>
-      {selectedAudienceRows.length === 0 && (
-        <div
-          style={{
-            color: '#72849a',
-            fontSize: 12,
-            marginTop: 8
-          }}
-        >
-          {setLocale(locale, 'admin.tools.messaging.chooseAudienceHint')}
         </div>
       )}
     </div>
@@ -9190,11 +9279,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         onChange={setMessagingInnerTabKey}
         items={[
           {
-            key: 'message',
+            key: 'compose',
             label: (
               <span>
                 <MessageOutlined style={{ marginRight: 6 }} />
-                {setLocale(locale, 'admin.tools.messaging.tab.message')}
+                {t('admin.tools.messaging.tab.compose')}
               </span>
             ),
             children: renderAudienceMessageComposer()
@@ -9210,24 +9299,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             children: renderAudienceTable()
           },
           {
-            key: 'visualization',
+            key: 'review',
             label: (
               <span>
                 <BarChartOutlined style={{ marginRight: 6 }} />
-                {setLocale(locale, 'admin.tools.messaging.tab.visualization')}
+                {t('admin.tools.messaging.tab.review')}
               </span>
             ),
-            children: renderAudienceVisualization()
+            children: renderAudienceReview()
           },
           {
-            key: 'certifications',
+            key: '__divider',
             label: (
-              <span>
-                <SafetyCertificateOutlined style={{ marginRight: 6 }} />
-                Certifications
-              </span>
+              <span style={{ color: '#d9d9d9', cursor: 'default', userSelect: 'none', padding: '0 2px', fontWeight: 300 }}>|</span>
             ),
-            children: renderAudienceCertificationReport()
+            disabled: true
           },
           {
             key: 'messagingHistory',
@@ -9238,6 +9324,26 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               </span>
             ),
             children: renderMessagingHistory()
+          },
+          {
+            key: 'certifications',
+            label: (
+              <span>
+                <SafetyCertificateOutlined style={{ marginRight: 6 }} />
+                {t('admin.tools.messaging.tab.certifications')}
+              </span>
+            ),
+            children: renderAudienceCertificationReport()
+          },
+          {
+            key: 'setup',
+            label: (
+              <span>
+                <SettingOutlined style={{ marginRight: 6 }} />
+                {t('admin.tools.messaging.tab.setup')}
+              </span>
+            ),
+            children: renderSetupTab()
           }
         ]}
       />
