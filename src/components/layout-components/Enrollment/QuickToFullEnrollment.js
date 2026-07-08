@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onRenderingCourseRegistration, onSearchingForAlreadyEnrolledContact, onRequestingGeographicalDivision, onSubmittingEnrollee, onResetSubmittingEnrollee, onSelectingEnrollmentCourses } from "redux/actions/Lrn";
-import { App, Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs } from "antd";
+import { Alert, App, Form, Input, Select, DatePicker, Button, Card, Row, Col, Spin, Radio, Space, Tabs } from "antd";
 import dayjs from "dayjs";
 import Flag from "react-world-flags";
 import CourseDetails from "./CourseDetails";
@@ -41,6 +41,7 @@ export const QuickToFullEnrollment = (props) => {
   const [isEnrollmentModalVisible, setIsEnrollmentModalVisible] = useState(false);
   const [submittingLoading, setSubmittingLoading] = useState(false);
   const [pendingSubmission, setPendingSubmission] = useState(null);
+  const [photoUploadError, setPhotoUploadError] = useState(false);
   const { executeRecaptcha } = useGoogleReCaptcha();
     console.log("passedEmail ", passedEmail, passedDateOfBirth);
   const intl = useIntl();
@@ -155,8 +156,13 @@ export const QuickToFullEnrollment = (props) => {
             filesMap?.profilePictureUpload?.length > 0 &&
             !upsertedRecords?.uploadedProfilePicture?.wasUploaded
           ) {
-            message.warning(setLocaleString(locale, "enrollment.form.profilePictureUploadFailed"));
+            form.setFieldsValue({ [PROFILE_PICTURE_FIELD_NAME]: [] });
+            setPhotoUploadError(true);
+            setSubmittingLoading(false);
+            setPendingSubmission(null);
+            return;
           }
+          setPhotoUploadError(false);
           setIsEnrollmentModalVisible(true);
         } else if (wasSuccessful === false) {
           console.log("wasSuccessful", wasSuccessful);
@@ -510,9 +516,10 @@ useEffect(() => {
     onResetSubmittingEnrollee(undefined);
     setSubmittingLoading(false);
     setPendingSubmission(null);
+    setPhotoUploadError(false);
     onSelectingEnrollmentCourses([]);
   };
-  
+
 
   const handleEmailChange = (email) => {
     const emailValue = email?.trim()?.toLowerCase(); // Trim spaces and convert to lowercase
@@ -951,6 +958,17 @@ useEffect(() => {
 
             )
           }
+
+            {photoUploadError && (
+              <Card style={quickEnrollmentStyle} variant="outlined">
+                <Alert
+                  type="warning"
+                  showIcon
+                  message={setLocaleString(locale, "enrollment.form.photoRetry.title", "Profile picture not saved")}
+                  description={setLocaleString(locale, "enrollment.form.photoRetry.description", "Your enrollment was confirmed. Please select your photo again and click Submit to complete your profile.")}
+                />
+              </Card>
+            )}
 
             <Card style={quickEnrollmentStyle} loading={submittingLoading} variant="outlined">
               <p>

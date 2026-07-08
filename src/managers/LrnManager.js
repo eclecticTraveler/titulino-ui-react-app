@@ -472,7 +472,8 @@ export const getEnrollmentProfilePictureRequirement = async ({
     emailId,
     dobOrYob,
     contactInternalId,
-    token
+    token,
+    shouldRetrieveRegistrationToken: true
   });
 
   if (env.IS_TO_FORCE_ENROLLMENT_PROFILE_PICTURE_UPLOAD) {
@@ -566,6 +567,11 @@ export const ensureEnrollmentProfilePicture = async ({
       profileUrl: null,
       skipped: false
     };
+    console.error("[LrnManager] ensureEnrollmentProfilePicture: upload skipped — could not resolve contactInternalId or token", {
+      emailId,
+      resolvedContactInternalId: resolvedContext.contactInternalId || null,
+      hasResolvedToken: !!resolvedContext.token
+    });
     logEnrollmentProfilePictureDebug("ensureEnrollmentProfilePicture:missingResolvedContext", {
       ...result,
       resolvedContactInternalId: resolvedContext.contactInternalId || null,
@@ -601,6 +607,13 @@ export const ensureEnrollmentProfilePicture = async ({
     skipped: false,
     contactInternalId: resolvedContext.contactInternalId
   };
+  if (!result.wasUploaded) {
+    console.error("[LrnManager] ensureEnrollmentProfilePicture: upload returned no profileUrl", {
+      emailId,
+      contactInternalId: resolvedContext.contactInternalId,
+      hasUploadPayload: !!uploaded
+    });
+  }
   logEnrollmentProfilePictureDebug("ensureEnrollmentProfilePicture:completed", {
     ...result,
     hasUploadPayload: !!uploaded

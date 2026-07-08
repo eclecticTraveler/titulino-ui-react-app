@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { App, Card, Form, Upload } from "antd";
+import { App, Card, Form, Spin, Upload } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { useIntl } from "react-intl";
 import IntlMessage from "components/util-components/IntlMessage";
@@ -213,17 +213,6 @@ export default function EnrollmentProfilePictureField({
 
   if (!isEnabled) return null;
 
-  if (requirement.loading) {
-    return (
-      <Card
-        style={enrollmentStyle}
-        title={setLocale(locale, "enrollment.form.profilePictureCardTitle")}
-        loading={true}
-        variant="outlined"
-      />
-    );
-  }
-
   if (requirement.checked && !requirement.requiresUpload && requirement.profileUrl) {
     logEnrollmentProfilePictureFieldDebug("render:hidingFieldBecauseProfileExists", {
       profileUrl: requirement.profileUrl
@@ -231,11 +220,13 @@ export default function EnrollmentProfilePictureField({
     return null;
   }
 
-  if (!requirement.checked && !requirement.requiresUpload) {
-    return null;
-  }
+  // isChecking covers both: initial state (not yet triggered) and in-flight lookup.
+  // The Form.Item is always rendered so its validator is always registered with the form.
+  // During checking the Form.Item is hidden (display:none) but still mounted, so
+  // form.validateFields() will correctly reject if the user somehow triggers submit early.
+  const isChecking = requirement.loading || !requirement.checked;
 
-  logEnrollmentProfilePictureFieldDebug("render:showingUploadField", requirement);
+  logEnrollmentProfilePictureFieldDebug("render:showingUploadField", { ...requirement, isChecking });
 
   return (
     <Card
@@ -244,15 +235,20 @@ export default function EnrollmentProfilePictureField({
       loading={submittingLoading}
       variant="outlined"
     >
-      <p style={{ marginBottom: 12 }}>
-        {intl.formatMessage({ id: "enrollment.form.profilePictureCardDescription" })}
-      </p>
+      {isChecking ? (
+        <Spin style={{ display: "block", margin: "16px auto" }} />
+      ) : (
+        <p style={{ marginBottom: 12 }}>
+          {intl.formatMessage({ id: "enrollment.form.profilePictureCardDescription" })}
+        </p>
+      )}
 
       <Form.Item
         name={PROFILE_PICTURE_FIELD_NAME}
         valuePropName="fileList"
         getValueFromEvent={getValueFromUploadEvent}
         preserve={false}
+        style={isChecking ? { display: "none" } : undefined}
         rules={[
           {
             validator: (_, fileList) => (
@@ -279,7 +275,6 @@ export default function EnrollmentProfilePictureField({
           </div>
         </Upload>
       </Form.Item>
-
     </Card>
   );
 }
