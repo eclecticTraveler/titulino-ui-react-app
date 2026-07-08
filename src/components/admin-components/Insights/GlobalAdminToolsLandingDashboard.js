@@ -2559,9 +2559,26 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const handleCopyProcessLogEventData = useCallback((record) => {
     const eventDataText = record?.eventDataText || '';
     if (!eventDataText || eventDataText === '-') return;
-
     navigator.clipboard?.writeText(eventDataText).then(() => {
       messageApi.success(t('admin.tools.monitoring.processLogs.copiedEventData'));
+    }).catch(() => {
+      messageApi.error(t('admin.tools.monitoring.processLogs.copyEventDataError'));
+    });
+  }, [messageApi, t]);
+  const handleCopyProcessLogMessage = useCallback((record) => {
+    const text = record?.message || '';
+    if (!text) return;
+    navigator.clipboard?.writeText(text).then(() => {
+      messageApi.success(t('admin.tools.monitoring.processLogs.copiedMessage'));
+    }).catch(() => {
+      messageApi.error(t('admin.tools.monitoring.processLogs.copyEventDataError'));
+    });
+  }, [messageApi, t]);
+  const handleCopyProcessLogMethodName = useCallback((record) => {
+    const text = record?.methodName || '';
+    if (!text) return;
+    navigator.clipboard?.writeText(text).then(() => {
+      messageApi.success(t('admin.tools.monitoring.processLogs.copiedMethodName'));
     }).catch(() => {
       messageApi.error(t('admin.tools.monitoring.processLogs.copyEventDataError'));
     });
@@ -2570,9 +2587,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     () => buildProcessLogTableColumns({
       t,
       copyTitle: t('admin.tools.monitoring.processLogs.copyEventData'),
-      onCopyEventData: handleCopyProcessLogEventData
+      onCopyEventData: handleCopyProcessLogEventData,
+      onCopyMessage: handleCopyProcessLogMessage,
+      onCopyMethodName: handleCopyProcessLogMethodName
     }),
-    [handleCopyProcessLogEventData, t]
+    [handleCopyProcessLogEventData, handleCopyProcessLogMessage, handleCopyProcessLogMethodName, t]
   );
   const audienceRows = useMemo(
     () => contactSegment?.rows || [],
@@ -7079,38 +7098,62 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             emptyText: setLocale(locale, 'admin.tools.monitoring.processLogs.noData')
           }}
           expandable={{
-            rowExpandable: record => record?.eventDataText && record.eventDataText !== '-',
+            rowExpandable: () => true,
             expandedRowRender: record => (
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <strong>{setLocale(locale, 'admin.tools.monitoring.processLogs.eventData')}</strong>
-                  <Button
-                    size="small"
-                    type="link"
-                    icon={<CopyOutlined />}
-                    onClick={() => handleCopyProcessLogEventData(record)}
-                  >
-                    {setLocale(locale, 'admin.tools.monitoring.processLogs.copyEventData')}
-                  </Button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {record.message && (
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <strong style={{ whiteSpace: 'nowrap', minWidth: 70 }}>{t('admin.tools.monitoring.processLogs.column.message')}:</strong>
+                      <span style={{ wordBreak: 'break-word', flex: 1 }}>{record.message}</span>
+                      <Button size="small" type="link" icon={<CopyOutlined />} onClick={() => handleCopyProcessLogMessage(record)} style={{ flexShrink: 0 }}>
+                        {t('admin.tools.monitoring.processLogs.copy')}
+                      </Button>
+                    </div>
+                  )}
+                  {record.methodName && (
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <strong style={{ whiteSpace: 'nowrap', minWidth: 70 }}>{t('admin.tools.monitoring.processLogs.column.methodName')}:</strong>
+                      <span style={{ wordBreak: 'break-word', flex: 1 }}>{record.methodName}</span>
+                      <Button size="small" type="link" icon={<CopyOutlined />} onClick={() => handleCopyProcessLogMethodName(record)} style={{ flexShrink: 0 }}>
+                        {t('admin.tools.monitoring.processLogs.copy')}
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <div
-                  style={{
-                    padding: 12,
-                    background: '#f6f8fa',
-                    border: '1px solid #e6ebf1',
-                    borderRadius: 6,
-                    maxHeight: 360,
-                    overflow: 'auto'
-                  }}
-                >
-                  <JsonView
-                    value={record.eventDataJson || {}}
-                    collapsed={2}
-                    displayDataTypes={false}
-                    enableClipboard
-                    style={{ background: 'transparent' }}
-                  />
-                </div>
+                {record.eventDataText && record.eventDataText !== '-' && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <strong>{setLocale(locale, 'admin.tools.monitoring.processLogs.eventData')}</strong>
+                      <Button
+                        size="small"
+                        type="link"
+                        icon={<CopyOutlined />}
+                        onClick={() => handleCopyProcessLogEventData(record)}
+                      >
+                        {setLocale(locale, 'admin.tools.monitoring.processLogs.copyEventData')}
+                      </Button>
+                    </div>
+                    <div
+                      style={{
+                        padding: 12,
+                        background: '#f6f8fa',
+                        border: '1px solid #e6ebf1',
+                        borderRadius: 6,
+                        maxHeight: 360,
+                        overflow: 'auto'
+                      }}
+                    >
+                      <JsonView
+                        value={record.eventDataJson || {}}
+                        collapsed={2}
+                        displayDataTypes={false}
+                        enableClipboard
+                        style={{ background: 'transparent' }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )
           }}
