@@ -228,7 +228,9 @@ export const filterLogRows = (rows = [], filters = {}) => {
 export const buildLogTableColumns = ({
   t,
   copyTitle,
-  onCopyEventData
+  onCopyEventData,
+  onCopyMessage,
+  onCopyMethodName
 } = {}) => [
   {
     title: t('admin.tools.monitoring.processLogs.column.severity'),
@@ -249,15 +251,41 @@ export const buildLogTableColumns = ({
     title: t('admin.tools.monitoring.processLogs.column.message'),
     dataIndex: 'message',
     key: 'message',
-    ellipsis: true,
-    render: message => message || EMPTY_LABEL
+    ellipsis: { showTitle: false },
+    render: (message, record) => message ? (
+      <Tooltip title={message} placement="topLeft">
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, maxWidth: '100%' }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{message}</span>
+          <Button
+            type="text"
+            size="small"
+            icon={<CopyOutlined />}
+            onClick={e => { e.stopPropagation(); onCopyMessage?.(record); }}
+            style={{ flexShrink: 0, padding: '0 2px', height: 18, color: '#8c8c8c' }}
+          />
+        </span>
+      </Tooltip>
+    ) : EMPTY_LABEL
   },
   {
     title: t('admin.tools.monitoring.processLogs.column.methodName'),
     dataIndex: 'methodName',
     key: 'methodName',
-    ellipsis: true,
-    render: methodName => methodName || EMPTY_LABEL
+    ellipsis: { showTitle: false },
+    render: (methodName, record) => methodName ? (
+      <Tooltip title={methodName} placement="topLeft">
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, maxWidth: '100%' }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{methodName}</span>
+          <Button
+            type="text"
+            size="small"
+            icon={<CopyOutlined />}
+            onClick={e => { e.stopPropagation(); onCopyMethodName?.(record); }}
+            style={{ flexShrink: 0, padding: '0 2px', height: 18, color: '#8c8c8c' }}
+          />
+        </span>
+      </Tooltip>
+    ) : EMPTY_LABEL
   },
   {
     title: t('admin.tools.monitoring.processLogs.column.createdByUser'),
