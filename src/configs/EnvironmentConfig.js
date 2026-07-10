@@ -16,6 +16,7 @@ const commonConfig = {
   IS_LANGUAGE_PICKER_ENABLED:true,
   IS_SSO_ON: true,
   IS_SHOPPING_UX_ON: true,
+  IS_ENROLLMENT_LANDING_ON: false,
 };
 
 const dev = {
@@ -40,6 +41,7 @@ const local = {
   IS_TO_USE_LOCAL_COURSE_THEME_DATA: true,
   IS_TO_USE_LOCAL_BADGE_THEME_DATA: true,
   IS_TO_USE_LOCAL_KNOW_ME_SURVEY_DATA: true,
+  IS_ENROLLMENT_LANDING_ON: true,
   ENVIROMENT: 'local'
 };
 

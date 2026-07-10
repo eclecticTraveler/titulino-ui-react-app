@@ -1198,7 +1198,28 @@
 	"titulino.super.administrator": "Super Administrator",
 	"titulino.user": "User",
 	"titulino.facilitator": "Facilitator",
-	"titulino.general.support": "General Support"
+	"titulino.general.support": "General Support",
+	"landing.headline": "Open Enrollment — Join a Course Today",
+	"landing.subheadline": "Learn alongside your community.",
+	"landing.cta.enroll": "Enroll Now",
+	"landing.cta.go.course": "Go to Course",
+	"landing.cta.whatsapp": "WhatsApp Group",
+	"landing.signin.title": "Already have an account?",
+	"landing.signin.more.options": "More sign-in options →",
+	"landing.new.here": "New here?",
+	"landing.divider.or": "or",
+	"landing.scroll.courses": "Browse available courses",
+	"landing.choose.how.to.start": "Choose how to get started",
+	"landing.continue.with.google": "Continue with Google",
+	"landing.continue.with.facebook": "Continue with Facebook",
+	"landing.auto.create.account": "Don't have an account yet? We'll create one automatically.",
+	"landing.cta.get.started": "Get started",
+	"landing.ribbon.enrolled": "Enrolled",
+	"landing.ribbon.open": "Open for Enrollment",
+	"landing.greeting": "Welcome back, {name}!",
+	"landing.courses.title": "Our Courses",
+	"landing.courses.available.title": "📚 Courses Available for Enrollment",
+	"admin.tools.course.label.coursePath": "Course Path"
 
 
 

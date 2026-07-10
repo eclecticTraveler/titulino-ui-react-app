@@ -6289,7 +6289,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         ...prev,
         ...(section === 'info' && { course: cd.course, teacher: cd.teacher, imageUrl: cd.imageUrl, location: cd.location, gatheringDay: cd.gatheringDay, gatheringTime: cd.gatheringTime, gatheringStartingDate: cd.gatheringStartingDate, courseWeeksLength: cd.courseWeeksLength }),
         ...(section === 'dates' && { StartDate: selectedCourseObj.StartDate, EndDate: selectedCourseObj.EndDate }),
-        ...(section === 'links' && { whatsAppLink: cd.whatsAppLink, targetAudienceNativeLanguage: cd.targetAudienceNativeLanguage, NativeLanguageId: selectedCourseObj.NativeLanguageId, TargetLanguageId: selectedCourseObj.TargetLanguageId })
+        ...(section === 'links' && { whatsAppLink: cd.whatsAppLink, coursePath: cd.coursePath, targetAudienceNativeLanguage: cd.targetAudienceNativeLanguage, NativeLanguageId: selectedCourseObj.NativeLanguageId, TargetLanguageId: selectedCourseObj.TargetLanguageId })
       }));
     }
     setEditingSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -6302,7 +6302,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       const merged = {
         ...cd,
         ...(section === 'info' && { course: courseFormValues.course, teacher: courseFormValues.teacher, imageUrl: courseFormValues.imageUrl, location: courseFormValues.location, gatheringDay: courseFormValues.gatheringDay, gatheringTime: courseFormValues.gatheringTime, gatheringStartingDate: courseFormValues.gatheringStartingDate, courseWeeksLength: courseFormValues.courseWeeksLength }),
-        ...(section === 'links' && { whatsAppLink: courseFormValues.whatsAppLink, targetAudienceNativeLanguage: courseFormValues.targetAudienceNativeLanguage })
+        ...(section === 'links' && { whatsAppLink: courseFormValues.whatsAppLink, coursePath: courseFormValues.coursePath, targetAudienceNativeLanguage: courseFormValues.targetAudienceNativeLanguage })
       };
       const payload = buildCourseUpsertPayload({
         CourseCodeId: selectedCourseObj.CourseCodeId,
@@ -6548,6 +6548,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <div style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong><MessageOutlined style={{ marginRight: 4, color: '#25D366' }} />{t('admin.tools.course.label.whatsAppLink')}</strong></div><Input value={courseFormValues.whatsAppLink || ''} onChange={e => setCourseFormValues(p => ({ ...p, whatsAppLink: e.target.value }))} /></Col>
+              <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.coursePath')}</strong></div><Input value={courseFormValues.coursePath || ''} placeholder="/lrn/en/level-1" onChange={e => setCourseFormValues(p => ({ ...p, coursePath: e.target.value }))} /></Col>
               <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.targetAudience')}</strong></div><Select value={courseFormValues.targetAudienceNativeLanguage || undefined} onChange={v => setCourseFormValues(p => ({ ...p, targetAudienceNativeLanguage: v }))} options={langData.map(l => ({ value: l.langName, label: l.langName }))} style={{ width: '100%' }} /></Col>
               <Col xs={24} sm={8} style={{ marginTop: 8 }}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.nativeLanguage')}</strong></div><Select value={courseFormValues.NativeLanguageId || undefined} onChange={v => setCourseFormValues(p => ({ ...p, NativeLanguageId: v }))} options={langOptions} style={{ width: '100%' }} /></Col>
               <Col xs={24} sm={8} style={{ marginTop: 8 }}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.targetLanguage')}</strong></div><Select value={courseFormValues.TargetLanguageId || undefined} onChange={v => setCourseFormValues(p => ({ ...p, TargetLanguageId: v }))} options={langOptions} style={{ width: '100%' }} /></Col>
@@ -6573,6 +6574,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             </Descriptions.Item>
             <Descriptions.Item label={<span><MessageOutlined style={{ marginRight: 4, color: '#25D366' }} />{setLocale(locale, 'admin.tools.course.label.whatsAppLink')}</span>}>
               {cd.whatsAppLink ? <a href={cd.whatsAppLink} target="_blank" rel="noreferrer">{cd.whatsAppLink}</a> : '—'}
+            </Descriptions.Item>
+            <Descriptions.Item label={setLocale(locale, 'admin.tools.course.label.coursePath')}>
+              {cd.coursePath || '—'}
             </Descriptions.Item>
             <Descriptions.Item label={setLocale(locale, 'admin.tools.course.label.targetAudience')}>{cd.targetAudienceNativeLanguage || '—'}</Descriptions.Item>
           </Descriptions>
@@ -6641,6 +6645,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         <Row gutter={16} style={{ marginTop: 12 }}>
           <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.targetAudience')} *</strong></div><Select value={courseFormValues.targetAudienceNativeLanguage || undefined} onChange={v => setCourseFormValues(p => ({ ...p, targetAudienceNativeLanguage: v }))} options={langData.map(l => ({ value: l.langName, label: l.langName }))} style={{ width: '100%' }} /></Col>
           <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong><MessageOutlined style={{ marginRight: 4, color: '#25D366' }} />{t('admin.tools.course.label.whatsAppLink')} *</strong></div><Input value={courseFormValues.whatsAppLink || ''} onChange={e => setCourseFormValues(p => ({ ...p, whatsAppLink: e.target.value }))} /></Col>
+          <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.coursePath')}</strong></div><Input value={courseFormValues.coursePath || ''} placeholder="/lrn/en/level-1" onChange={e => setCourseFormValues(p => ({ ...p, coursePath: e.target.value }))} /></Col>
         </Row>
         <Row gutter={16} style={{ marginTop: 12 }}>
           <Col xs={24}>

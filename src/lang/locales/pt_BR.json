@@ -1199,7 +1199,26 @@
 	"titulino.super.administrator": "Super Administrador",
 	"titulino.user": "Usuário",
 	"titulino.facilitator": "Facilitador",
-	"titulino.general.support": "Suporte Geral"
-
-
+	"titulino.general.support": "Suporte Geral",
+	"landing.headline": "Inscrições Abertas — Participe de um Curso Hoje",
+	"landing.subheadline": "Aprenda junto à sua comunidade.",
+	"landing.cta.enroll": "Inscrever-se",
+	"landing.cta.go.course": "Ir ao Curso",
+	"landing.cta.whatsapp": "Grupo do WhatsApp",
+	"landing.signin.title": "Já tem uma conta?",
+	"landing.signin.more.options": "Mais opções de acesso →",
+	"landing.new.here": "Novo aqui?",
+	"landing.divider.or": "ou",
+	"landing.scroll.courses": "Ver cursos disponíveis",
+	"landing.choose.how.to.start": "Escolha como começar",
+	"landing.continue.with.google": "Continue com Google",
+	"landing.continue.with.facebook": "Continue com Facebook",
+	"landing.auto.create.account": "Sem conta ainda? Criaremos uma automaticamente.",
+	"landing.cta.get.started": "Começar",
+	"landing.ribbon.enrolled": "Inscrito",
+	"landing.ribbon.open": "Inscrições Abertas",
+	"landing.greeting": "Bem-vindo de volta, {name}!",
+	"landing.courses.title": "Nossos Cursos",
+	"landing.courses.available.title": "📚 Cursos Disponíveis para Inscrição",
+	"admin.tools.course.label.coursePath": "Caminho do Curso"
 }
