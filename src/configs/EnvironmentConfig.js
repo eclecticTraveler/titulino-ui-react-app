@@ -10,7 +10,7 @@ const commonConfig = {
   TITULINO_NET_API: process.env.REACT_APP_TITULINO_NET_API || '',
   DONATION_CENTER_URL: 'http://buymeacoffee.com/titulino',
   RECAPTCHA_SITE_KEY: process.env.REACT_APP_RECAPTCHA_SITE_KEY || '',
-  USER_PROFILE_CACHE_TTL_MINUTES: 160,
+  USER_PROFILE_CACHE_TTL_MINUTES: 300, // 5 hours — matches titulino-net-api's JwtTokenService.GenerateJwtTokenV2Async token lifetime
   INTERNAL_TOKEN_CACHE_TTL_MINUTES: 60,
   COURSE_DATA_CACHE_TTL_MINUTES: 60,
   IS_LANGUAGE_PICKER_ENABLED:true,

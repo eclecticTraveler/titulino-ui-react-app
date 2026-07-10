@@ -22,6 +22,8 @@ import { APP_PREFIX_PATH } from 'configs/AppConfig';
 import AdminToolsManager from 'managers/AdminToolsManager';
 import dayjs from 'dayjs';
 import { onRenderingCourseRegistration, onRequestingGeographicalDivision } from 'redux/actions/Lrn';
+import { onSessionTokenExpired } from 'redux/actions/Grant';
+import useSessionTokenExpiryGuard from 'hooks/useSessionTokenExpiryGuard';
 import {
   onLoadingAdminToolsInit,
   onAssigningEnrolleeRoleToCourse,
@@ -531,58 +533,58 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     allRawCourses,
     countries,
     selfLanguageLevel,
-    onLoadingAdminToolsInit,
-    onAssigningEnrolleeRoleToCourse,
-    onRevokingCourseFacilitatorAccess,
-    onLoadingGlobalUserRole,
-    onAssigningGlobalRole,
-    onRevokingGlobalRole,
+    onLoadingAdminToolsInit: rawOnLoadingAdminToolsInit,
+    onAssigningEnrolleeRoleToCourse: rawOnAssigningEnrolleeRoleToCourse,
+    onRevokingCourseFacilitatorAccess: rawOnRevokingCourseFacilitatorAccess,
+    onLoadingGlobalUserRole: rawOnLoadingGlobalUserRole,
+    onAssigningGlobalRole: rawOnAssigningGlobalRole,
+    onRevokingGlobalRole: rawOnRevokingGlobalRole,
     onClearSelectedContact,
-    onUpsertingCourse,
+    onUpsertingCourse: rawOnUpsertingCourse,
     onLoadingContactCourseProgressActivity,
-    onLoadingContactShopPurchaseHistory,
-    onLoadingContactLoginFootprint,
+    onLoadingContactShopPurchaseHistory: rawOnLoadingContactShopPurchaseHistory,
+    onLoadingContactLoginFootprint: rawOnLoadingContactLoginFootprint,
     contactCourseProgressActivity,
     contactShopPurchaseHistory,
     contactLoginFootprint,
-    onLoadingAllUserLoginFootprint,
+    onLoadingAllUserLoginFootprint: rawOnLoadingAllUserLoginFootprint,
     allUserLoginFootprint,
-    onLoadingContactProfileMonitoring,
-    onLoadingProcessLogEvents,
-    onTogglingContactEmailOptOut,
-    onTogglingContactActive,
-    onTogglingSelectedContactEmailOptOut,
-    onTogglingSelectedContactActive,
+    onLoadingContactProfileMonitoring: rawOnLoadingContactProfileMonitoring,
+    onLoadingProcessLogEvents: rawOnLoadingProcessLogEvents,
+    onTogglingContactEmailOptOut: rawOnTogglingContactEmailOptOut,
+    onTogglingContactActive: rawOnTogglingContactActive,
+    onTogglingSelectedContactEmailOptOut: rawOnTogglingSelectedContactEmailOptOut,
+    onTogglingSelectedContactActive: rawOnTogglingSelectedContactActive,
     contactProfileMonitoring,
     contactGlobalUserRole,
-    onHydratingAdminToolAvatars,
+    onHydratingAdminToolAvatars: rawOnHydratingAdminToolAvatars,
     avatarUrlMap,
     onLoadingContactGeoMaps,
     contactGeoMaps,
-    onUploadingCourseCoverImage,
-    onUpsertingSelectedContactProfile,
-    onLoadingShopRevenueDashboard,
-    onUpsertingShopProductCourseTier,
-    onUpsertingShopTiers,
-    onUpsertingShopPaymentProviders,
-    onStartingContactImpersonation,
-    onLoadingContactSegmentMetadata,
-    onLoadingContactSegmentCountryDivisions,
-    onLoadingContactSegment,
-    onLoadingContactCertificationHistory,
-    onLoadingContactMergeDashboard,
-    onPreviewingContactMerge,
-    onExecutingContactMerge,
-    onRollingBackContactMerge,
-    onLoadingAudienceMessageVariables,
-    onSendingAudienceMessage,
-    onLoadingCommunicationCategories,
-    onLoadingCommunicationTrackingHistory,
-    onUpsertingCommunicationCategory,
-    onLoadingMessageVariables,
-    onUpsertingMessageVariable,
-    onLoadingMessageTemplates,
-    onUpsertingMessageTemplate,
+    onUploadingCourseCoverImage: rawOnUploadingCourseCoverImage,
+    onUpsertingSelectedContactProfile: rawOnUpsertingSelectedContactProfile,
+    onLoadingShopRevenueDashboard: rawOnLoadingShopRevenueDashboard,
+    onUpsertingShopProductCourseTier: rawOnUpsertingShopProductCourseTier,
+    onUpsertingShopTiers: rawOnUpsertingShopTiers,
+    onUpsertingShopPaymentProviders: rawOnUpsertingShopPaymentProviders,
+    onStartingContactImpersonation: rawOnStartingContactImpersonation,
+    onLoadingContactSegmentMetadata: rawOnLoadingContactSegmentMetadata,
+    onLoadingContactSegmentCountryDivisions: rawOnLoadingContactSegmentCountryDivisions,
+    onLoadingContactSegment: rawOnLoadingContactSegment,
+    onLoadingContactCertificationHistory: rawOnLoadingContactCertificationHistory,
+    onLoadingContactMergeDashboard: rawOnLoadingContactMergeDashboard,
+    onPreviewingContactMerge: rawOnPreviewingContactMerge,
+    onExecutingContactMerge: rawOnExecutingContactMerge,
+    onRollingBackContactMerge: rawOnRollingBackContactMerge,
+    onLoadingAudienceMessageVariables: rawOnLoadingAudienceMessageVariables,
+    onSendingAudienceMessage: rawOnSendingAudienceMessage,
+    onLoadingCommunicationCategories: rawOnLoadingCommunicationCategories,
+    onLoadingCommunicationTrackingHistory: rawOnLoadingCommunicationTrackingHistory,
+    onUpsertingCommunicationCategory: rawOnUpsertingCommunicationCategory,
+    onLoadingMessageVariables: rawOnLoadingMessageVariables,
+    onUpsertingMessageVariable: rawOnUpsertingMessageVariable,
+    onLoadingMessageTemplates: rawOnLoadingMessageTemplates,
+    onUpsertingMessageTemplate: rawOnUpsertingMessageTemplate,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     processLogEventsBySource,
@@ -597,8 +599,61 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     messageVariables,
     messageTemplates,
     onRenderingCourseRegistration,
-    onRequestingGeographicalDivision
+    onRequestingGeographicalDivision,
+    onSessionTokenExpired
   } = props;
+
+  // Every AdminToolsManager-cluster action above resolves its token the same
+  // way (LocalStorageService cache for user.emailId, which is grant.user.innerToken
+  // for the current identity) — one guard here covers all of them instead of
+  // touching 40+ scattered call sites throughout this file. See
+  // docs/plans/active/2026-07-09-data-fetch-time-token-expiry.md Task 7.
+  const ensureValidSession = useSessionTokenExpiryGuard(user, onSessionTokenExpired);
+  const withSessionGuard = (actionCreator) => (...args) => {
+    if (!ensureValidSession()) return Promise.resolve(null);
+    return actionCreator(...args);
+  };
+  const onLoadingAdminToolsInit = withSessionGuard(rawOnLoadingAdminToolsInit);
+  const onAssigningEnrolleeRoleToCourse = withSessionGuard(rawOnAssigningEnrolleeRoleToCourse);
+  const onRevokingCourseFacilitatorAccess = withSessionGuard(rawOnRevokingCourseFacilitatorAccess);
+  const onLoadingGlobalUserRole = withSessionGuard(rawOnLoadingGlobalUserRole);
+  const onAssigningGlobalRole = withSessionGuard(rawOnAssigningGlobalRole);
+  const onRevokingGlobalRole = withSessionGuard(rawOnRevokingGlobalRole);
+  const onUpsertingCourse = withSessionGuard(rawOnUpsertingCourse);
+  const onLoadingContactShopPurchaseHistory = withSessionGuard(rawOnLoadingContactShopPurchaseHistory);
+  const onLoadingContactLoginFootprint = withSessionGuard(rawOnLoadingContactLoginFootprint);
+  const onLoadingAllUserLoginFootprint = withSessionGuard(rawOnLoadingAllUserLoginFootprint);
+  const onLoadingContactProfileMonitoring = withSessionGuard(rawOnLoadingContactProfileMonitoring);
+  const onLoadingProcessLogEvents = withSessionGuard(rawOnLoadingProcessLogEvents);
+  const onTogglingContactEmailOptOut = withSessionGuard(rawOnTogglingContactEmailOptOut);
+  const onTogglingContactActive = withSessionGuard(rawOnTogglingContactActive);
+  const onTogglingSelectedContactEmailOptOut = withSessionGuard(rawOnTogglingSelectedContactEmailOptOut);
+  const onTogglingSelectedContactActive = withSessionGuard(rawOnTogglingSelectedContactActive);
+  const onHydratingAdminToolAvatars = withSessionGuard(rawOnHydratingAdminToolAvatars);
+  const onUploadingCourseCoverImage = withSessionGuard(rawOnUploadingCourseCoverImage);
+  const onUpsertingSelectedContactProfile = withSessionGuard(rawOnUpsertingSelectedContactProfile);
+  const onLoadingShopRevenueDashboard = withSessionGuard(rawOnLoadingShopRevenueDashboard);
+  const onUpsertingShopProductCourseTier = withSessionGuard(rawOnUpsertingShopProductCourseTier);
+  const onUpsertingShopTiers = withSessionGuard(rawOnUpsertingShopTiers);
+  const onUpsertingShopPaymentProviders = withSessionGuard(rawOnUpsertingShopPaymentProviders);
+  const onStartingContactImpersonation = withSessionGuard(rawOnStartingContactImpersonation);
+  const onLoadingContactSegmentMetadata = withSessionGuard(rawOnLoadingContactSegmentMetadata);
+  const onLoadingContactSegmentCountryDivisions = withSessionGuard(rawOnLoadingContactSegmentCountryDivisions);
+  const onLoadingContactSegment = withSessionGuard(rawOnLoadingContactSegment);
+  const onLoadingContactCertificationHistory = withSessionGuard(rawOnLoadingContactCertificationHistory);
+  const onLoadingContactMergeDashboard = withSessionGuard(rawOnLoadingContactMergeDashboard);
+  const onPreviewingContactMerge = withSessionGuard(rawOnPreviewingContactMerge);
+  const onExecutingContactMerge = withSessionGuard(rawOnExecutingContactMerge);
+  const onRollingBackContactMerge = withSessionGuard(rawOnRollingBackContactMerge);
+  const onLoadingAudienceMessageVariables = withSessionGuard(rawOnLoadingAudienceMessageVariables);
+  const onSendingAudienceMessage = withSessionGuard(rawOnSendingAudienceMessage);
+  const onLoadingCommunicationCategories = withSessionGuard(rawOnLoadingCommunicationCategories);
+  const onLoadingCommunicationTrackingHistory = withSessionGuard(rawOnLoadingCommunicationTrackingHistory);
+  const onUpsertingCommunicationCategory = withSessionGuard(rawOnUpsertingCommunicationCategory);
+  const onLoadingMessageVariables = withSessionGuard(rawOnLoadingMessageVariables);
+  const onUpsertingMessageVariable = withSessionGuard(rawOnUpsertingMessageVariable);
+  const onLoadingMessageTemplates = withSessionGuard(rawOnLoadingMessageTemplates);
+  const onUpsertingMessageTemplate = withSessionGuard(rawOnUpsertingMessageTemplate);
 
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
   const [searchText, setSearchText] = useState('');
@@ -2918,7 +2973,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const canSendAudienceMessage = (
     selectedAudienceRows.length > 0 &&
     hasAudienceMessageDraftContent &&
-    audienceMessageDraft.categoryId != null
+    audienceMessageDraft.categoryId != null &&
+    !!audienceMessageDraft.courseCodeId
   );
   const audienceMessageSendDisabledHint = selectedAudienceRows.length === 0
     ? t('admin.tools.messaging.chooseAudienceHint')
@@ -2926,7 +2982,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       ? t('admin.tools.messaging.writeMessageHint')
       : audienceMessageDraft.categoryId == null
         ? t('admin.tools.messaging.chooseCategoryHint')
-        : '';
+        : !audienceMessageDraft.courseCodeId
+          ? t('admin.tools.messaging.chooseCourseCodeHint')
+          : '';
 
   useEffect(() => {
     setContactProfileTableCounts({
@@ -7822,6 +7880,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         hint: audienceMessageDraft.categoryId == null ? t('admin.tools.messaging.chooseCategoryHint') : null
       },
       {
+        done: !!audienceMessageDraft.courseCodeId,
+        label: t('admin.tools.messaging.checklist.courseCode'),
+        hint: !audienceMessageDraft.courseCodeId ? t('admin.tools.messaging.chooseCourseCodeHint') : null
+      },
+      {
         done: !!audienceMessageDraft.subject?.trim(),
         label: t('admin.tools.messaging.checklist.subject'),
         hint: !audienceMessageDraft.subject?.trim() ? t('admin.tools.messaging.checklist.subjectHint') : null
@@ -9931,7 +9994,8 @@ function mapDispatchToProps(dispatch) {
     onLoadingMessageTemplates,
     onUpsertingMessageTemplate,
     onRenderingCourseRegistration,
-    onRequestingGeographicalDivision
+    onRequestingGeographicalDivision,
+    onSessionTokenExpired
   }, dispatch);
 }
 

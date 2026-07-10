@@ -4,6 +4,8 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import DynamicFormRenderer from "./DynamicFormRenderer";
 import { onUpsertingKnowMeByChapter, onFetchingKnowMeSurveyQuestions, onFetchingKnowMeAiResult } from "redux/actions/Lrn";
+import { onSessionTokenExpired } from "redux/actions/Grant";
+import useSessionTokenExpiryGuard from "hooks/useSessionTokenExpiryGuard";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -14,8 +16,9 @@ const getStorageKey = (levelTheme, chapterNo, emailId) =>
   `knowme_answers_${levelTheme}_${chapterNo}_${emailId}`;
 
 const KnowMeV3 = (props) => {
-  const { user, onUpsertingKnowMeByChapter, onFetchingKnowMeSurveyQuestions, onFetchingKnowMeAiResult, chapterNo, levelTheme } = props;
+  const { user, onUpsertingKnowMeByChapter, onFetchingKnowMeSurveyQuestions, onFetchingKnowMeAiResult, chapterNo, levelTheme, onSessionTokenExpired } = props;
   const { message } = App.useApp();
+  const ensureValidSession = useSessionTokenExpiryGuard(user, onSessionTokenExpired);
   const [loading, setLoading] = useState(false);
   const [questionsLoading, setQuestionsLoading] = useState(true);
   const [questions, setQuestions] = useState(null);
@@ -49,6 +52,8 @@ const KnowMeV3 = (props) => {
   }, [levelTheme, chapterNo, user?.emailId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchAiResult = async () => {
+    if (!ensureValidSession()) return;
+
     const result = await onFetchingKnowMeAiResult(levelTheme, user?.emailId, chapterNo);
     const fetched = result?.aiResult ?? null;
     setAiResult(fetched);
@@ -125,6 +130,11 @@ const KnowMeV3 = (props) => {
     if (!submittedKnowMe) return;
 
     const doUpsert = async () => {
+      if (!ensureValidSession()) {
+        setSubmittedKnowMe(null);
+        return;
+      }
+
       const upserted = await onUpsertingKnowMeByChapter(
         submittedKnowMe,
         levelTheme,
@@ -316,7 +326,7 @@ const KnowMeV3 = (props) => {
 };
 
 function mapDispatchToProps(dispatch) {
-  return bindActionCreators({ onUpsertingKnowMeByChapter, onFetchingKnowMeSurveyQuestions, onFetchingKnowMeAiResult }, dispatch);
+  return bindActionCreators({ onUpsertingKnowMeByChapter, onFetchingKnowMeSurveyQuestions, onFetchingKnowMeAiResult, onSessionTokenExpired }, dispatch);
 }
 
 const mapStateToProps = ({ grant }) => {

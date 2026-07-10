@@ -16,6 +16,8 @@ import {
   onLoadingFacilitadorOverviewCardOrder,
   onSavingFacilitadorOverviewCardOrder
 } from "redux/actions/Analytics";
+import { onSessionTokenExpired } from "redux/actions/Grant";
+import useSessionTokenExpiryGuard from "hooks/useSessionTokenExpiryGuard";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
 import DoubleCounterDisplayV2 from 'components/layout-components/DoubleCounterDisplayV2';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
@@ -74,8 +76,10 @@ const FacilitatorsLandingDashboard = (props) => {
     avatarUrlMap,
     facilitadorOverviewCardOrder,
     onLoadingFacilitadorOverviewCardOrder,
-    onSavingFacilitadorOverviewCardOrder
+    onSavingFacilitadorOverviewCardOrder,
+    onSessionTokenExpired
   } = props;
+  const ensureValidSession = useSessionTokenExpiryGuard(user, onSessionTokenExpired);
 
   const intl = useIntl();
   const { message: messageApi } = App.useApp();
@@ -137,11 +141,12 @@ const FacilitatorsLandingDashboard = (props) => {
     ) {
       return;
     }
+    if (!ensureValidSession()) return;
 
     onHydratingAnalyticsAvatars(user.emailId, avatarUrlMap, {
       facilitadorEnrolleeData
     });
-  }, [activeTabKey, facilitadorEnrolleeData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars]);
+  }, [activeTabKey, facilitadorEnrolleeData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars, ensureValidSession]);
 
   // Merged demographics: general in consistent color, progress in distinct colors
   const mergedDemographicData = useMemo(() => {
@@ -467,7 +472,8 @@ function mapDispatchToProps(dispatch) {
     onLoadingFacilitadorDrillDownDemographics,
     onHydratingAnalyticsAvatars,
     onLoadingFacilitadorOverviewCardOrder,
-    onSavingFacilitadorOverviewCardOrder
+    onSavingFacilitadorOverviewCardOrder,
+    onSessionTokenExpired
   }, dispatch);
 }
 

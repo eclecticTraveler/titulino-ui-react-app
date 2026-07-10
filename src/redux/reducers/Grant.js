@@ -7,7 +7,8 @@ import {
   ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT,
   ON_ACTIVATING_IMPERSONATION_PROFILE,
   ON_STOPPING_IMPERSONATION_PROFILE,
-  ON_LOADING_AUTHENTICATED_ENROLLEE_PROFILE
+  ON_LOADING_AUTHENTICATED_ENROLLEE_PROFILE,
+  ON_SESSION_TOKEN_EXPIRED
 } from '../constants/Grant';
 
 const emptyUser = {
@@ -88,6 +89,20 @@ const grant = (state = initState, action) => {
         generalLoading: false,
         user: {
           ...emptyUser,
+          innerToken: localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
+        }
+      };
+    case ON_SESSION_TOKEN_EXPIRED:
+      // Only the token and the year-of-birth gate it protects are invalidated —
+      // emailId/contactId/etc. stay put so shouldRequestProfile (which requires
+      // a known emailId) and EmailYearSearchForm (which has no email input,
+      // it only ever reads user.emailId) can actually re-prompt correctly.
+      return {
+        ...state,
+        generalLoading: false,
+        user: {
+          ...state.user,
+          yearOfBirth: null,
           innerToken: localStorage.getItem(AUTH_TITULINO_INTERNAL_TOKEN)
         }
       };

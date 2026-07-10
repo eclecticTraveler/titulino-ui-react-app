@@ -2,6 +2,11 @@ import CryptoJS from "crypto-js";
 import { env } from 'configs/EnvironmentConfig';
 import ImpersonationSession from "lob/ImpersonationSession";
 import WebsitePreferences from "lob/WebsitePreferences";
+// Narrow, deliberate exception to the usual Service -> Manager direction:
+// WebsitePreferencesManager owns the debounce/apply-guard state this needs,
+// and threading it through Redux for every single preference-key write would
+// be a much larger change than this cross-cutting hook warrants.
+import WebsitePreferencesManager from "managers/WebsitePreferencesManager";
 const SECRET_KEY = process.env.REACT_APP_STORAGE_KEY;
 
 const STORAGE_SCHEMA_VERSION = '3';
@@ -35,9 +40,9 @@ const getPreferenceAwareStorage = (key) => (
 const schedulePreferenceBackup = (key) => {
   if (
     WebsitePreferences.isWebsitePreferenceStorageKey(key) &&
-    !WebsitePreferences.isApplyingWebsitePreferences()
+    !WebsitePreferencesManager.isApplyingWebsitePreferences()
   ) {
-    WebsitePreferences.scheduleWebsitePreferencesBackup(key);
+    WebsitePreferencesManager.scheduleWebsitePreferencesBackup(key);
   }
 };
 
@@ -296,9 +301,14 @@ export const setCachedObject = (key, value, ttlInMinutes) => {
     : storeEncryptedObjectWithExpiry(key, value, ttlInMinutes);
 };
 
+export const removeCachedObject = (key) => {
+  getPreferenceAwareStorage(key).removeItem(key);
+};
+
 const LocalStorageService = {
   getCachedObject,
   setCachedObject,
+  removeCachedObject,
   setUserLanguageConfiguration,
   getUserBaseLanguage,
   getSelectedContentLanguage,
