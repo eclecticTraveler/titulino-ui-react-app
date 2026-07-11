@@ -117,6 +117,7 @@ export const buildMessageTemplateOptions = (...args) => AudienceMessaging.buildM
 export const hasAudienceMessageContent = (...args) => AudienceMessaging.hasMessageContent(...args);
 export const isContactMergeMutationSuccessful = (...args) => ContactStewardship.isMergeMutationSuccessful(...args);
 export const buildHistoryCourseOptions = (...args) => AudienceMessaging.buildHistoryCourseOptions(...args);
+export const buildCourseSearchGroupsByYear = (...args) => AudienceMessaging.buildCourseSearchGroupsByYear(...args);
 export const buildCommunicationTrackingHistoryTrendData = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryTrendData(...args);
 export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCategoryTotals(...args);
 export const buildCommunicationTrackingHistoryCourseTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCourseTotals(...args);
@@ -1388,6 +1389,7 @@ const AdminToolsManager = {
   hasAudienceMessageContent,
   isContactMergeMutationSuccessful,
   buildHistoryCourseOptions,
+  buildCourseSearchGroupsByYear,
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,

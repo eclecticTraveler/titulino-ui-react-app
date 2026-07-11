@@ -735,7 +735,7 @@ export const buildAudienceTableColumns = ({
   }
 ];
 
-export const buildAudienceSummary = (rows = [], selectedRows = []) => {
+const buildAudienceBreakdowns = (rows = []) => {
   const genderCounts = rows.reduce((accumulator, row) => {
     const sex = row.sex || EMPTY_LABEL;
     accumulator[sex] = (accumulator[sex] || 0) + 1;
@@ -764,15 +764,26 @@ export const buildAudienceSummary = (rows = [], selectedRows = []) => {
     return accumulator;
   }, {});
 
+  return { genderCounts, residencyCounts, residencyCountryAlpha3ByName, languageLevelCounts };
+};
+
+export const buildAudienceSummary = (rows = [], selectedRows = []) => {
+  const loaded = buildAudienceBreakdowns(rows);
+  const selected = buildAudienceBreakdowns(selectedRows);
+
   return {
     totalRows: rows.length,
     selectedRows: selectedRows.length,
     totalEmails: rows.reduce((sum, row) => sum + (row.emailList || []).length, 0),
     selectedEmails: selectedRows.reduce((sum, row) => sum + (row.emailList || []).length, 0),
-    genderCounts,
-    residencyCounts,
-    residencyCountryAlpha3ByName,
-    languageLevelCounts
+    genderCounts: loaded.genderCounts,
+    residencyCounts: loaded.residencyCounts,
+    residencyCountryAlpha3ByName: loaded.residencyCountryAlpha3ByName,
+    languageLevelCounts: loaded.languageLevelCounts,
+    selectedGenderCounts: selected.genderCounts,
+    selectedResidencyCounts: selected.residencyCounts,
+    selectedResidencyCountryAlpha3ByName: selected.residencyCountryAlpha3ByName,
+    selectedLanguageLevelCounts: selected.languageLevelCounts
   };
 };
 
@@ -915,6 +926,44 @@ export const buildHistoryCourseOptions = (courses = []) => {
     .map(year => ({
       label: year > 0 ? String(year) : 'Unknown',
       options: byYear[year]
+    }));
+};
+
+// Groups raw course objects by year (most recent year first) and, within each
+// year, keeps only the maxPerYear most recent (by EndDate) — used by course
+// search/picker UIs that want the same year-grouped shape as
+// buildHistoryCourseOptions but need the raw course objects back (not
+// pre-built string labels) so the caller can render its own rich option JSX.
+export const buildCourseSearchGroupsByYear = (courses = [], { maxPerYear = 5 } = {}) => {
+  const byYear = {};
+  (Array.isArray(courses) ? courses : []).forEach(course => {
+    const courseCodeId = course?.CourseCodeId || course?.courseCodeId || '';
+    if (!courseCodeId) return;
+
+    let year = null;
+    const startDate = course?.StartDate || course?.startDate;
+    const endDate = course?.EndDate || course?.endDate;
+    if (startDate) year = new Date(startDate).getUTCFullYear();
+    else if (endDate) year = new Date(endDate).getUTCFullYear();
+
+    if (!year || isNaN(year)) {
+      const match = courseCodeId.match(/20\d{2}/);
+      year = match ? parseInt(match[0], 10) : 0;
+    }
+
+    if (!byYear[year]) byYear[year] = [];
+    byYear[year].push(course);
+  });
+
+  return Object.keys(byYear)
+    .map(Number)
+    .sort((a, b) => b - a)
+    .map(year => ({
+      year: year > 0 ? year : null,
+      courses: byYear[year]
+        .slice()
+        .sort((a, b) => new Date(b?.EndDate || b?.endDate || 0) - new Date(a?.EndDate || a?.endDate || 0))
+        .slice(0, maxPerYear)
     }));
 };
 
@@ -1119,6 +1168,7 @@ const AudienceMessaging = {
   buildCommunicationTrackingHistoryPayload,
   buildCommunicationTrackingHistoryTableModel,
   buildHistoryCourseOptions,
+  buildCourseSearchGroupsByYear,
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,

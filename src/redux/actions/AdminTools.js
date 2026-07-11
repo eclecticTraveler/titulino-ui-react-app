@@ -79,6 +79,7 @@ export const buildMessageTemplateOptions = (...args) => AdminToolsManager.buildM
 export const hasAudienceMessageContent = (...args) => AdminToolsManager.hasAudienceMessageContent(...args);
 export const isContactMergeMutationSuccessful = (...args) => AdminToolsManager.isContactMergeMutationSuccessful(...args);
 export const buildHistoryCourseOptions = (...args) => AdminToolsManager.buildHistoryCourseOptions(...args);
+export const buildCourseSearchGroupsByYear = (...args) => AdminToolsManager.buildCourseSearchGroupsByYear(...args);
 export const buildCommunicationTrackingHistoryTrendData = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryTrendData(...args);
 export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryCategoryTotals(...args);
 export const buildCommunicationTrackingHistoryCourseTotals = (...args) => AdminToolsManager.buildCommunicationTrackingHistoryCourseTotals(...args);

@@ -99,6 +99,7 @@ import {
   hasAudienceMessageContent,
   isContactMergeMutationSuccessful,
   buildHistoryCourseOptions,
+  buildCourseSearchGroupsByYear,
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,
@@ -2201,21 +2202,24 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }, [activeOuterTabKey, emailId, allEnrollees, visibleContactIdsForAvatarHydration, avatarUrlMap, onHydratingAdminToolAvatars]);
 
   /* ── Course search memos (must be before early return) ── */
-  const latestCourses = useMemo(() => {
-    if (!allRawCourses?.length) return [];
-    return [...allRawCourses]
-      .sort((a, b) => new Date(b.EndDate || 0) - new Date(a.EndDate || 0))
-      .slice(0, 3);
-  }, [allRawCourses]);
-
+  // Grouped by year (most recent first), capped to the 5 most recent courses
+  // per year — same year-grouped shape as the History tab's course filter
+  // (buildHistoryCourseOptions), just returning raw course objects so this
+  // component can render its own rich option labels (avatar, flag, name).
   const filteredCourses = useMemo(() => {
-    if (!courseSearchText || courseSearchText.length < 1 || !allRawCourses?.length) return latestCourses;
+    if (!allRawCourses?.length) return [];
+    if (!courseSearchText || courseSearchText.length < 1) return allRawCourses;
     const lower = courseSearchText.toLowerCase();
     return allRawCourses.filter(c =>
       (c.CourseDetails?.course || '').toLowerCase().includes(lower) ||
       (c.CourseCodeId || '').toLowerCase().includes(lower)
-    ).slice(0, 20);
-  }, [courseSearchText, allRawCourses, latestCourses]);
+    );
+  }, [courseSearchText, allRawCourses]);
+
+  const courseSearchGroups = useMemo(
+    () => buildCourseSearchGroupsByYear(filteredCourses, { maxPerYear: 5 }),
+    [filteredCourses]
+  );
 
   const selectedContactCourseIds = useMemo(() => {
     if (!selectedContact) return [];
@@ -6245,7 +6249,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }));
 
   const langDataById = new Map(langData.map(l => [l.langId, l]));
-  const courseSearchOptions = filteredCourses.map(c => {
+  const buildCourseSearchOption = (c) => {
     const langInfo = langDataById.get(c.TargetLanguageId);
     return {
       key: c.CourseCodeId,
@@ -6262,7 +6266,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </div>
       )
     };
-  });
+  };
+  // Grouped by year, matching the History tab's course filter pattern —
+  // each year shows only its 5 most recent courses (courseSearchGroups).
+  const courseSearchOptions = courseSearchGroups.map(group => ({
+    label: group.year ? String(group.year) : 'Unknown',
+    options: group.courses.map(buildCourseSearchOption)
+  }));
 
   const handleCourseSearchChange = (value) => setCourseSearchText(value);
 
@@ -7237,9 +7247,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         onChange={(event) => setMonitoringInnerTabKey(event.target.value)}
         style={{ marginBottom: 16 }}
       >
-        <Radio.Button value="general-access"><LoginOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.generalAccess')}</Radio.Button>
-        <Radio.Button value="contact-profiles"><UserOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}</Radio.Button>
         <Radio.Button value="process-logs"><UnorderedListOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.processLogs')}</Radio.Button>
+        <Radio.Button value="contact-profiles"><UserOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}</Radio.Button>
+        <Radio.Button value="general-access"><LoginOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.generalAccess')}</Radio.Button>
       </Radio.Group>
 
       {monitoringInnerTabKey === 'general-access' && renderGeneralAccessMonitoring()}
@@ -7823,59 +7833,115 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </>
   );
 
-  const renderAudienceVisualization = () => {
-    const genderEntries = Object.entries(audienceSummary.genderCounts || {});
-    const countryEntries = Object.entries(audienceSummary.residencyCounts || {})
+  // Shared by both the Cargados and Seleccionados cards below — same three
+  // breakdown sections, fed from whichever row set (loaded or selected) the
+  // caller passes in. When the source array is empty (e.g. nothing selected
+  // yet), the entries lists are simply empty and each section shows the
+  // existing "no rows" Empty state — no separate placeholder needed.
+  const renderAudienceSummaryMetric = (icon, color, label, value) => (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      {React.cloneElement(icon, { style: { color } })}
+      <span style={{ color: '#8c8c8c' }}>{label}: <span style={{ color, fontWeight: 600 }}>{value}</span></span>
+    </span>
+  );
+
+  const renderAudienceSummaryCard = (
+    titleKey,
+    rowCount,
+    rowCountLabelKey,
+    rowIcon,
+    rowIconColor,
+    emailCount,
+    genderCounts,
+    residencyCounts,
+    residencyCountryAlpha3ByName,
+    languageLevelCounts
+  ) => {
+    const genderEntries = Object.entries(genderCounts || {});
+    const countryEntries = Object.entries(residencyCounts || {})
       .sort((a, b) => b[1] - a[1])
       .slice(0, 12);
-    const languageLevelEntries = Object.entries(audienceSummary.languageLevelCounts || {})
+    const languageLevelEntries = Object.entries(languageLevelCounts || {})
       .sort((a, b) => b[1] - a[1])
       .slice(0, 12);
 
     return (
-      <div>
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          {renderRevenueMetricCard('admin.tools.messaging.metric.backendCount', audienceTotalCount, <TeamOutlined />, '#1677ff')}
-          {renderRevenueMetricCard('admin.tools.messaging.metric.loadedRows', audienceSummary.totalRows, <TableOutlined />, '#52c41a')}
-          {renderRevenueMetricCard('admin.tools.messaging.metric.selectedRows', audienceSummary.selectedRows, <UserOutlined />, '#722ed1')}
-          {renderRevenueMetricCard('admin.tools.messaging.metric.emails', audienceSummary.totalEmails, <MailOutlined />, '#fa8c16')}
-        </Row>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} lg={12}>
-            <Card size="small" title={setLocale(locale, 'admin.tools.messaging.genderSnapshot')}>
-              {genderEntries.length > 0 ? genderEntries.map(([sex, count]) => (
-                <Tag key={sex} color={getSexTagColor(sex)}>
-                  {getSexDisplayLabel(sex)}: {count}
-                </Tag>
-              )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
-            </Card>
-          </Col>
-          <Col xs={24} lg={12}>
-            <Card size="small" title={setLocale(locale, 'admin.tools.messaging.residencySnapshot')}>
-              {countryEntries.length > 0 ? countryEntries.map(([country, count]) => (
-                <Tag key={country} color="green" style={{ marginBottom: 6 }}>
-                  {renderCountrySummary(country, audienceSummary.residencyCountryAlpha3ByName?.[country])}: {count}
-                </Tag>
-              )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
-            </Card>
-          </Col>
-          <Col xs={24} lg={12}>
-            <Card size="small" title={setLocale(locale, 'admin.tools.messaging.languageLevelSnapshot')}>
-              {languageLevelEntries.length > 0 ? languageLevelEntries.map(([languageLevelKey, count]) => {
-                const [languageId, level] = languageLevelKey.split(':');
-                const label = level ? `${languageId} ${getAudienceLanguageLevelLabel(level)}`.trim() : languageLevelKey;
-                return (
-                  <Tag key={languageLevelKey} color="blue" style={{ marginBottom: 6 }}>
-                    {label}: {count}
-                  </Tag>
-                );
-              }) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
-            </Card>
-          </Col>
-        </Row>
-      </div>
+      <Card
+        size="small"
+        title={setLocale(locale, titleKey)}
+        extra={
+          <span style={{ display: 'flex', gap: 16, fontSize: 12 }}>
+            {renderAudienceSummaryMetric(rowIcon, rowIconColor, setLocale(locale, rowCountLabelKey), rowCount)}
+            {renderAudienceSummaryMetric(<MailOutlined />, '#fa8c16', setLocale(locale, 'admin.tools.messaging.metric.emails'), emailCount)}
+          </span>
+        }
+      >
+        <Card size="small" type="inner" title={setLocale(locale, 'admin.tools.messaging.genderSnapshot')} style={{ marginBottom: 12 }}>
+          {genderEntries.length > 0 ? genderEntries.map(([sex, count]) => (
+            <Tag key={sex} color={getSexTagColor(sex)}>
+              {getSexDisplayLabel(sex)}: {count}
+            </Tag>
+          )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
+        </Card>
+        <Card size="small" type="inner" title={setLocale(locale, 'admin.tools.messaging.residencySnapshot')} style={{ marginBottom: 12 }}>
+          {countryEntries.length > 0 ? countryEntries.map(([country, count]) => (
+            <Tag key={country} color="green" style={{ marginBottom: 6 }}>
+              {renderCountrySummary(country, residencyCountryAlpha3ByName?.[country])}: {count}
+            </Tag>
+          )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
+        </Card>
+        <Card size="small" type="inner" title={setLocale(locale, 'admin.tools.messaging.languageLevelSnapshot')}>
+          {languageLevelEntries.length > 0 ? languageLevelEntries.map(([languageLevelKey, count]) => {
+            const [languageId, level] = languageLevelKey.split(':');
+            const label = level ? `${languageId} ${getAudienceLanguageLevelLabel(level)}`.trim() : languageLevelKey;
+            return (
+              <Tag key={languageLevelKey} color="blue" style={{ marginBottom: 6 }}>
+                {label}: {count}
+              </Tag>
+            );
+          }) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
+        </Card>
+      </Card>
     );
   };
+
+  const renderAudienceVisualization = () => (
+    <div>
+      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+        {renderRevenueMetricCard('admin.tools.messaging.metric.backendCount', audienceTotalCount, <TeamOutlined />, '#1677ff')}
+      </Row>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={12}>
+          {renderAudienceSummaryCard(
+            'admin.tools.messaging.loadedSection.title',
+            audienceSummary.totalRows,
+            'admin.tools.messaging.metric.loadedRows',
+            <TableOutlined />,
+            '#52c41a',
+            audienceSummary.totalEmails,
+            audienceSummary.genderCounts,
+            audienceSummary.residencyCounts,
+            audienceSummary.residencyCountryAlpha3ByName,
+            audienceSummary.languageLevelCounts
+          )}
+        </Col>
+        <Col xs={24} md={12}>
+          {renderAudienceSummaryCard(
+            'admin.tools.messaging.selectedSection.title',
+            audienceSummary.selectedRows,
+            'admin.tools.messaging.metric.selectedRows',
+            <UserOutlined />,
+            '#722ed1',
+            audienceSummary.selectedEmails,
+            audienceSummary.selectedGenderCounts,
+            audienceSummary.selectedResidencyCounts,
+            audienceSummary.selectedResidencyCountryAlpha3ByName,
+            audienceSummary.selectedLanguageLevelCounts
+          )}
+        </Col>
+      </Row>
+    </div>
+  );
 
   const renderAudienceReview = () => {
     const checklistItems = [
@@ -7959,42 +8025,33 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       />
       <Row gutter={[16, 16]}>
         <Col xs={24} md={8}>
-          <Card
-            size="small"
-            title={t('admin.tools.messaging.manage')}
-            extra={
-              <Button type="primary" size="small" icon={<EditOutlined />} onClick={openCategoryManager}>
-                {t('admin.tools.messaging.manage')}
+          <Card size="small" title={t('admin.tools.messaging.categoryManager.title')}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.categoryDesc')}</span>
+              <Button type="primary" icon={<EditOutlined />} onClick={openCategoryManager} block>
+                {t('admin.tools.messaging.categoryManager.cta')}
               </Button>
-            }
-          >
-            <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.categoryDesc')}</span>
+            </div>
           </Card>
         </Col>
         <Col xs={24} md={8}>
-          <Card
-            size="small"
-            title={t('admin.tools.messaging.variableManager.title')}
-            extra={
-              <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => setVariableManagerVisible(true)}>
-                {t('admin.tools.messaging.manage')}
+          <Card size="small" title={t('admin.tools.messaging.variableManager.title')}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.variableDesc')}</span>
+              <Button type="primary" icon={<EditOutlined />} onClick={() => setVariableManagerVisible(true)} block>
+                {t('admin.tools.messaging.variableManager.cta')}
               </Button>
-            }
-          >
-            <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.variableDesc')}</span>
+            </div>
           </Card>
         </Col>
         <Col xs={24} md={8}>
-          <Card
-            size="small"
-            title={t('admin.tools.messaging.templateManager.title')}
-            extra={
-              <Button type="primary" size="small" icon={<EditOutlined />} onClick={() => setTemplateManagerVisible(true)}>
-                {t('admin.tools.messaging.manage')}
+          <Card size="small" title={t('admin.tools.messaging.templateManager.title')}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.templateDesc')}</span>
+              <Button type="primary" icon={<EditOutlined />} onClick={() => setTemplateManagerVisible(true)} block>
+                {t('admin.tools.messaging.templateManager.cta')}
               </Button>
-            }
-          >
-            <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.templateDesc')}</span>
+            </div>
           </Card>
         </Col>
       </Row>
