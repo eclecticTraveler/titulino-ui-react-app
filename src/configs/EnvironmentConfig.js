@@ -23,6 +23,7 @@ const dev = {
   ...commonConfig,
   IS_LOGIN_FOOTPRINT_INDIVIDUAL_HEATMAP_ON: true,
   IS_TO_DISPLAY_PROGRESS_DASHBOARD: true,
+  IS_ENROLLMENT_LANDING_ON: true,
   ENVIROMENT: 'dev',  
 };
 
