@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space, Modal, Switch, Pagination } from 'antd';
+import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Space, Modal, Switch, Pagination } from 'antd';
 import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined, UnorderedListOutlined, QuestionCircleOutlined, SettingOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
@@ -15,6 +15,7 @@ import { Area, Heatmap } from '@ant-design/plots';
 import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/LoginFootprintHeatmapGraph';
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import ContactProfileEditor from 'components/shared-components/ContactProfileEditor';
+import ContactFilterPanel from 'components/shared-components/ContactFilterPanel';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
 import DraggableDashboardGrid from 'components/shared-components/DraggableDashboardGrid';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
@@ -89,6 +90,7 @@ import {
   buildProcessLogTableColumns,
   buildProcessLogRoleSelectionOptions,
   getAudienceDefaultFilters,
+  computeNextContactFilters,
   buildAudienceMetadataOptions,
   buildAudienceCountryOptionsForLocation,
   buildAudienceCountryDivisionOptions,
@@ -709,8 +711,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }));
   const [advancedContactSearchLoading, setAdvancedContactSearchLoading] = useState(false);
   const [advancedContactSearchResult, setAdvancedContactSearchResult] = useState(null);
-  const [advancedContactCountryDivisions, setAdvancedContactCountryDivisions] = useState([]);
-  const [advancedContactCountryDivisionsLoading, setAdvancedContactCountryDivisionsLoading] = useState(false);
+  const [advancedContactResidencyDivisions, setAdvancedContactResidencyDivisions] = useState([]);
+  const [advancedContactResidencyDivisionsLoading, setAdvancedContactResidencyDivisionsLoading] = useState(false);
+  const [advancedContactBirthDivisions, setAdvancedContactBirthDivisions] = useState([]);
+  const [advancedContactBirthDivisionsLoading, setAdvancedContactBirthDivisionsLoading] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [actionType, setActionType] = useState('enroll');
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -1334,12 +1338,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }, [emailId, messagingHistoryFilters, onLoadingCommunicationTrackingHistory]);
 
   const updateAudienceFilter = useCallback((fieldName, value, shouldReload = false) => {
-    const nextFilters = {
-      ...audienceFilters,
-      [fieldName]: value,
-      ...(fieldName !== 'offset' ? { offset: 0 } : {})
-    };
-
+    const nextFilters = computeNextContactFilters(audienceFilters, fieldName, value);
     setAudienceFilters(nextFilters);
 
     if (shouldReload) {
@@ -1354,12 +1353,24 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }, [loadAudienceSegment]);
 
   const updateAdvancedContactFilter = useCallback((fieldName, value) => {
-    setAdvancedContactFilters(previousFilters => ({
-      ...previousFilters,
-      [fieldName]: value,
-      ...(fieldName !== 'offset' ? { offset: 0 } : {})
-    }));
+    setAdvancedContactFilters(previousFilters => computeNextContactFilters(previousFilters, fieldName, value));
   }, []);
+
+  const loadAdvancedContactCountryDivisions = useCallback(async (locationKey, countryNameOrId) => {
+    if (!emailId || !countryNameOrId) return;
+    const setDivisions = locationKey === 'birth' ? setAdvancedContactBirthDivisions : setAdvancedContactResidencyDivisions;
+    const setLoading = locationKey === 'birth' ? setAdvancedContactBirthDivisionsLoading : setAdvancedContactResidencyDivisionsLoading;
+    setLoading(true);
+    try {
+      const result = await AdminToolsManager.getCountryDivisions(emailId, { locationType: locationKey, countryNameOrId });
+      setDivisions(result?.rows || []);
+    } catch (error) {
+      console.error('Failed to load advanced contact search regions', error);
+      setDivisions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [emailId]);
 
   const resetAdvancedContactFilters = useCallback(() => {
     setAdvancedContactFilters({
@@ -1368,7 +1379,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       offset: 0
     });
     setAdvancedContactSearchResult(null);
-    setAdvancedContactCountryDivisions([]);
+    setAdvancedContactResidencyDivisions([]);
+    setAdvancedContactBirthDivisions([]);
   }, []);
 
   const loadAdvancedContactSearch = useCallback(async (nextFilters = advancedContactFilters) => {
@@ -2013,46 +2025,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     emailId,
     audienceFilters.countryNameOrId,
     audienceFilters.locationType
-  ]);
-
-  useEffect(() => {
-    if (
-      activeOuterTabKey !== 'access' ||
-      !advancedContactSearchOpen ||
-      !emailId ||
-      !advancedContactFilters.countryNameOrId
-    ) {
-      setAdvancedContactCountryDivisions([]);
-      return;
-    }
-
-    let isActive = true;
-    setAdvancedContactCountryDivisionsLoading(true);
-
-    AdminToolsManager.getCountryDivisions(emailId, {
-      locationType: advancedContactFilters.locationType,
-      countryNameOrId: advancedContactFilters.countryNameOrId
-    })
-      .then((result) => {
-        if (isActive) setAdvancedContactCountryDivisions(result?.rows || []);
-      })
-      .catch((error) => {
-        console.error('Failed to load advanced contact search regions', error);
-        if (isActive) setAdvancedContactCountryDivisions([]);
-      })
-      .finally(() => {
-        if (isActive) setAdvancedContactCountryDivisionsLoading(false);
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, [
-    activeOuterTabKey,
-    advancedContactFilters.countryNameOrId,
-    advancedContactFilters.locationType,
-    advancedContactSearchOpen,
-    emailId
   ]);
 
   useEffect(() => {
@@ -2845,21 +2817,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       label: renderCountrySummary(option.label, option.alpha3)
     }))
   ), [audienceMetadataCountryOptions, audienceRows, renderCountrySummary]);
-  const advancedContactCountryOptions = useMemo(() => (
-    buildAudienceCountryOptionsForLocation({
-      metadataOptions: audienceMetadataCountryOptions,
-      rows: audienceRows,
-      locationType: advancedContactFilters.locationType
-    }).map(option => ({
-      ...option,
-      label: renderCountrySummary(option.label, option.alpha3)
-    }))
-  ), [
-    advancedContactFilters.locationType,
-    audienceMetadataCountryOptions,
-    audienceRows,
-    renderCountrySummary
-  ]);
   const audienceResidencyDivisionRows = useMemo(() => {
     if (!audienceFilters.residencyCountry) return [];
     if (contactSegmentCountryDivisions?.emailId !== emailId) return [];
@@ -2905,12 +2862,20 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       t('admin.tools.messaging.regionUnknown')
     )
   ), [audienceBirthDivisionRows, t]);
-  const advancedContactRegionOptions = useMemo(() => (
+  const advancedContactResidencyRegionOptions = useMemo(() => (
     buildAudienceCountryDivisionOptions(
-      advancedContactCountryDivisions,
-      t('admin.tools.messaging.regionNotAvailable')
+      advancedContactResidencyDivisions,
+      t('admin.tools.messaging.regionNotAvailable'),
+      t('admin.tools.messaging.regionUnknown')
     )
-  ), [advancedContactCountryDivisions, t]);
+  ), [advancedContactResidencyDivisions, t]);
+  const advancedContactBirthRegionOptions = useMemo(() => (
+    buildAudienceCountryDivisionOptions(
+      advancedContactBirthDivisions,
+      t('admin.tools.messaging.regionNotAvailable'),
+      t('admin.tools.messaging.regionUnknown')
+    )
+  ), [advancedContactBirthDivisions, t]);
   const audienceDisplayCount = audienceTotalCount;
   const getAudienceLanguageLevelLabel = useCallback((level) => {
     const normalizedLevel = String(level || '').trim().toLowerCase();
@@ -5395,232 +5360,45 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           borderTop: '1px solid #f0f0f0'
         }}
       >
-        <Row gutter={[12, 12]}>
-          <Col xs={24} lg={8}>
-            <Input
-              allowClear
-              prefix={<SearchOutlined />}
-              placeholder={t('admin.tools.messaging.searchPlaceholder')}
-              value={advancedContactFilters.searchText}
-              onChange={event => updateAdvancedContactFilter('searchText', event.target.value)}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={4}>
-            <Select
-              value={advancedContactFilters.sex}
-              options={audienceOptions.sex}
-              onChange={value => updateAdvancedContactFilter('sex', value)}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            <InputNumber
-              min={0}
-              max={120}
-              value={advancedContactFilters.minAge}
-              onChange={value => updateAdvancedContactFilter('minAge', value)}
-              placeholder={t('admin.tools.messaging.minAge')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            <InputNumber
-              min={0}
-              max={120}
-              value={advancedContactFilters.maxAge}
-              onChange={value => updateAdvancedContactFilter('maxAge', value)}
-              placeholder={t('admin.tools.messaging.maxAge')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            <Select
-              value={advancedContactFilters.limit}
-              options={[10, 20, 50, 100, 250].map(value => ({ value, label: String(value) }))}
-              onChange={value => updateAdvancedContactFilter('limit', value)}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            <InputNumber
-              min={0}
-              step={advancedContactFilters.limit}
-              value={advancedContactFilters.offset}
-              onChange={value => updateAdvancedContactFilter('offset', Number(value || 0))}
-              placeholder={t('admin.tools.messaging.offset')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-
-          <Col xs={24} md={8} lg={4}>
-            <Select
-              value={advancedContactFilters.locationType}
-              options={audienceOptions.locationTypes}
-              onChange={(value) => {
-                setAdvancedContactFilters(previousFilters => ({
-                  ...previousFilters,
-                  locationType: value,
-                  countryNameOrId: null,
-                  locationRegionName: null,
-                  offset: 0
-                }));
-              }}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={8} lg={5}>
-            <Select
-              allowClear
-              showSearch
-              value={advancedContactFilters.countryNameOrId}
-              placeholder={t('admin.tools.messaging.countryPlaceholder')}
-              options={advancedContactCountryOptions}
-              optionFilterProp="searchText"
-              onChange={(value) => {
-                setAdvancedContactFilters(previousFilters => ({
-                  ...previousFilters,
-                  countryNameOrId: value || null,
-                  locationRegionName: null,
-                  offset: 0
-                }));
-              }}
-              loading={audienceMetadataLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={8} lg={5}>
-            <Select
-              allowClear
-              showSearch
-              disabled={!advancedContactFilters.countryNameOrId}
-              value={advancedContactFilters.locationRegionName}
-              placeholder={t('admin.tools.messaging.regionPlaceholder')}
-              options={advancedContactRegionOptions}
-              optionFilterProp="searchText"
-              onChange={value => updateAdvancedContactFilter('locationRegionName', value || null)}
-              loading={advancedContactCountryDivisionsLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={8} lg={5}>
-            <Select
-              allowClear
-              showSearch
-              value={advancedContactFilters.languageId}
-              placeholder={t('admin.tools.messaging.languagePlaceholder')}
-              options={[
-                { value: 'all', label: t('admin.tools.messaging.option.all') },
-                ...audienceLanguageOptions
-              ]}
-              optionFilterProp="searchText"
-              onChange={value => updateAdvancedContactFilter('languageId', value || 'all')}
-              loading={audienceMetadataLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={8} lg={5}>
-            <Select
-              allowClear
-              showSearch
-              value={advancedContactFilters.languageLevel}
-              placeholder={t('admin.tools.messaging.languageLevelPlaceholder')}
-              options={[
-                { value: 'all', label: t('admin.tools.messaging.option.all') },
-                ...audienceLanguageLevelOptions
-              ]}
-              optionFilterProp="searchText"
-              onChange={value => updateAdvancedContactFilter('languageLevel', value || 'all')}
-              loading={audienceMetadataLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-
-          <Col xs={24} lg={10}>
-            <Select
-              mode="multiple"
-              allowClear
-              showSearch
-              value={advancedContactFilters.courseCodeIds}
-              placeholder={t('admin.tools.messaging.includeCoursesPlaceholder')}
-              options={audienceCourseOptions}
-              optionFilterProp="searchText"
-              onChange={value => updateAdvancedContactFilter('courseCodeIds', value || [])}
-              loading={audienceMetadataLoading}
-              maxTagCount={2}
-              tagRender={renderAudienceCourseTag}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} lg={10}>
-            <Select
-              mode="multiple"
-              allowClear
-              showSearch
-              value={advancedContactFilters.excludeCourseCodeIds}
-              placeholder={t('admin.tools.messaging.excludeCoursesPlaceholder')}
-              options={audienceCourseOptions}
-              optionFilterProp="searchText"
-              onChange={value => updateAdvancedContactFilter('excludeCourseCodeIds', value || [])}
-              loading={audienceMetadataLoading}
-              maxTagCount={2}
-              tagRender={renderAudienceCourseTag}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} lg={4}>
-            <Checkbox
-              checked={advancedContactFilters.matchAllCourses}
-              onChange={event => updateAdvancedContactFilter('matchAllCourses', event.target.checked)}
-            >
-              {setLocale(locale, 'admin.tools.messaging.matchAllCourses')}
-            </Checkbox>
-          </Col>
-
-          <Col xs={24} md={6}>
-            <Select
-              value={advancedContactFilters.hasProgress}
-              options={audienceOptions.triState}
-              onChange={value => updateAdvancedContactFilter('hasProgress', value)}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={6}>
-            <Select
-              value={advancedContactFilters.hasCertifications}
-              options={audienceOptions.triState}
-              onChange={value => updateAdvancedContactFilter('hasCertifications', value)}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={6}>
-            <Select
-              value={advancedContactFilters.hasPurchases}
-              options={audienceOptions.triState}
-              onChange={value => updateAdvancedContactFilter('hasPurchases', value)}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={12} md={3}>
-            <Button
-              type="primary"
-              icon={<SearchOutlined />}
-              loading={advancedContactSearchLoading}
-              onClick={() => loadAdvancedContactSearch()}
-              block
-            >
-              {setLocale(locale, 'admin.tools.messaging.applyFilters')}
-            </Button>
-          </Col>
-          <Col xs={12} md={3}>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={resetAdvancedContactFilters}
-              block
-            >
-              {setLocale(locale, 'admin.tools.messaging.clearFilters')}
-            </Button>
-          </Col>
-        </Row>
+        <ContactFilterPanel
+          filters={advancedContactFilters}
+          onFieldChange={updateAdvancedContactFilter}
+          onResidencyCountryChange={(value) => {
+            setAdvancedContactFilters(previousFilters => ({ ...previousFilters, residencyCountry: value || null, residencyRegion: null, offset: 0 }));
+            if (value) loadAdvancedContactCountryDivisions('residency', value);
+          }}
+          onBirthCountryChange={(value) => {
+            setAdvancedContactFilters(previousFilters => ({ ...previousFilters, birthCountry: value || null, birthRegion: null, offset: 0 }));
+            if (value) loadAdvancedContactCountryDivisions('birth', value);
+          }}
+          onExcludeCategoryChange={(value) => {
+            setAdvancedContactFilters(previousFilters => ({
+              ...previousFilters,
+              excludeCategoryId: value,
+              ...(value ? {} : { excludeCourseCodeId: '' }),
+              offset: 0,
+            }));
+          }}
+          onApply={() => loadAdvancedContactSearch()}
+          onReset={resetAdvancedContactFilters}
+          applyLoading={advancedContactSearchLoading}
+          metadataLoading={audienceMetadataLoading}
+          residencyDivisionsLoading={advancedContactResidencyDivisionsLoading}
+          birthDivisionsLoading={advancedContactBirthDivisionsLoading}
+          renderCourseTag={renderAudienceCourseTag}
+          showPaging
+          options={{
+            sex: audienceOptions.sex,
+            residencyCountries: audienceResidencyCountryOptions,
+            birthCountries: audienceBirthCountryOptions,
+            residencyRegions: advancedContactResidencyRegionOptions,
+            birthRegions: advancedContactBirthRegionOptions,
+            languages: audienceLanguageOptions,
+            languageLevels: audienceLanguageLevelOptions,
+            courses: audienceCourseGroupedOptions,
+            communicationCategories: communicationCategoryOptions
+          }}
+        />
 
         {advancedContactSearchResult && (
           <div style={{ marginTop: 12 }}>
@@ -7301,428 +7079,54 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </Card>
   );
 
-  const renderMessagingFilters = () => {
-    const renderFilterTooltip = (tooltipKey, child) => (
-      <Tooltip title={t(tooltipKey)} placement="topLeft">
-        <div>{child}</div>
-      </Tooltip>
-    );
-
-    return (
-      <div>
-        <Alert
-          type="info"
-          showIcon
-          title={setLocale(locale, 'admin.tools.messaging.filtersDescription')}
-          style={{ marginBottom: 12 }}
-        />
-
-        <Card
-          size="small"
-          title={setLocale(locale, 'admin.tools.messaging.filterSection.search')}
-          style={{ marginBottom: 12 }}
-        >
-        <Row gutter={[12, 12]}>
-          <Col xs={24}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.search', (
-              <Input
-                allowClear
-                prefix={<SearchOutlined />}
-                placeholder={t('admin.tools.messaging.searchPlaceholder')}
-                value={audienceFilters.searchText}
-                onChange={event => updateAudienceFilter('searchText', event.target.value)}
-              />
-            ))}
-          </Col>
-        </Row>
-        </Card>
-
-        <Card
-          size="small"
-          title={setLocale(locale, 'admin.tools.messaging.filterSection.searchAndPaging')}
-          style={{ marginBottom: 12 }}
-        >
-        <Row gutter={[12, 12]}>
-          <Col xs={12} sm={8} lg={4}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.sex', (
-              <Select
-                value={audienceFilters.sex}
-                options={audienceOptions.sex}
-                onChange={value => updateAudienceFilter('sex', value)}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.minAge', (
-              <InputNumber
-                min={0}
-                max={120}
-                value={audienceFilters.minAge}
-                onChange={value => updateAudienceFilter('minAge', value)}
-                placeholder={t('admin.tools.messaging.minAge')}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.maxAge', (
-              <InputNumber
-                min={0}
-                max={120}
-                value={audienceFilters.maxAge}
-                onChange={value => updateAudienceFilter('maxAge', value)}
-                placeholder={t('admin.tools.messaging.maxAge')}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-        </Row>
-        </Card>
-
-        <Card
-          size="small"
-          title={setLocale(locale, 'admin.tools.messaging.filterSection.demographics')}
-          style={{ marginBottom: 12 }}
-        >
-        {!audienceFilters.residencyCountry && !audienceFilters.birthCountry && (
-          <Row style={{ marginBottom: 8 }}>
-            <Col>
-              <span style={{ color: 'rgba(0,0,0,0.45)', fontSize: 13 }}>
-                {t('admin.tools.messaging.allLocations')}
-              </span>
-            </Col>
-          </Row>
-        )}
-        <Row gutter={[12, 8]} align="middle" style={{ marginBottom: 8 }}>
-          <Col xs={24} md={3} lg={3}>
-            <span style={{ fontWeight: 500, opacity: audienceFilters.residencyCountry ? 1 : 0.45 }}>Residency</span>
-          </Col>
-          <Col xs={24} md={6} lg={6}>
-            <Select
-              allowClear
-              showSearch
-              value={audienceFilters.residencyCountry}
-              placeholder={t('admin.tools.messaging.countryPlaceholder')}
-              options={audienceResidencyCountryOptions}
-              optionFilterProp="searchText"
-              onChange={(value) => {
-                setAudienceFilters(prev => ({ ...prev, residencyCountry: value || null, residencyRegion: null, offset: 0 }));
-                if (value) loadAudienceCountryDivisions({ locationType: 'residency', countryNameOrId: value });
-              }}
-              loading={audienceMetadataLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={6} lg={6}>
-            <Select
-              mode="multiple"
-              allowClear
-              showSearch
-              disabled={!audienceFilters.residencyCountry}
-              value={audienceFilters.residencyRegion || []}
-              placeholder={t('admin.tools.messaging.regionPlaceholder')}
-              options={audienceResidencyRegionOptions}
-              optionFilterProp="searchText"
-              onChange={values => updateAudienceFilter('residencyRegion', values?.length ? values : null)}
-              loading={audienceCountryDivisionsLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={4} lg={4}>
-            <Select
-              disabled={!audienceFilters.residencyCountry}
-              value={audienceFilters.residencyExclude ? 'exclude' : 'include'}
-              options={[
-                { value: 'include', label: 'Include' },
-                { value: 'exclude', label: 'Exclude' }
-              ]}
-              onChange={value => updateAudienceFilter('residencyExclude', value === 'exclude')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-        </Row>
-        <Row gutter={[12, 8]} align="middle" style={{ marginBottom: 8 }}>
-          <Col xs={24} md={3} lg={3}>
-            <span style={{ fontWeight: 500, opacity: audienceFilters.birthCountry ? 1 : 0.45 }}>Birth</span>
-          </Col>
-          <Col xs={24} md={6} lg={6}>
-            <Select
-              allowClear
-              showSearch
-              value={audienceFilters.birthCountry}
-              placeholder={t('admin.tools.messaging.countryPlaceholder')}
-              options={audienceBirthCountryOptions}
-              optionFilterProp="searchText"
-              onChange={(value) => {
-                setAudienceFilters(prev => ({ ...prev, birthCountry: value || null, birthRegion: null, offset: 0 }));
-                if (value) loadAudienceCountryDivisions({ locationType: 'birth', countryNameOrId: value });
-              }}
-              loading={audienceMetadataLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={6} lg={6}>
-            <Select
-              mode="multiple"
-              allowClear
-              showSearch
-              disabled={!audienceFilters.birthCountry}
-              value={audienceFilters.birthRegion || []}
-              placeholder={t('admin.tools.messaging.regionPlaceholder')}
-              options={audienceBirthRegionOptions}
-              optionFilterProp="searchText"
-              onChange={values => updateAudienceFilter('birthRegion', values?.length ? values : null)}
-              loading={audienceCountryDivisionsLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={4} lg={4}>
-            <Select
-              disabled={!audienceFilters.birthCountry}
-              value={audienceFilters.birthExclude ? 'exclude' : 'include'}
-              options={[
-                { value: 'include', label: 'Include' },
-                { value: 'exclude', label: 'Exclude' }
-              ]}
-              onChange={value => updateAudienceFilter('birthExclude', value === 'exclude')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-        </Row>
-        <Row gutter={[12, 8]}>
-          <Col xs={24} md={3} lg={3} />
-          <Col xs={24} md={6} lg={6}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.language', (
-              <Select
-                allowClear
-                showSearch
-                value={audienceFilters.languageId}
-                placeholder={t('admin.tools.messaging.languagePlaceholder')}
-                options={[
-                  { value: 'all', label: t('admin.tools.messaging.option.all') },
-                  ...audienceLanguageOptions
-                ]}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('languageId', value || 'all')}
-                loading={audienceMetadataLoading}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={24} md={6} lg={6}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.languageLevel', (
-              <Select
-                allowClear
-                showSearch
-                value={audienceFilters.languageLevel}
-                placeholder={t('admin.tools.messaging.languageLevelPlaceholder')}
-                options={[
-                  { value: 'all', label: t('admin.tools.messaging.option.all') },
-                  ...audienceLanguageLevelOptions
-                ]}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('languageLevel', value || 'all')}
-                loading={audienceMetadataLoading}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-        </Row>
-        </Card>
-
-        <Card
-          size="small"
-          title={setLocale(locale, 'admin.tools.messaging.filterSection.coursesAndSignals')}
-          style={{ marginBottom: 12 }}
-        >
-
-        {/* Course Membership */}
-        <Row gutter={[12, 12]} style={{ marginBottom: 12 }}>
-          <Col xs={24} lg={10}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.includeCourses', (
-              <Select
-                mode="multiple"
-                allowClear
-                showSearch
-                value={audienceFilters.courseCodeIds}
-                placeholder={t('admin.tools.messaging.includeCoursesPlaceholder')}
-                options={audienceCourseGroupedOptions}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('courseCodeIds', value || [])}
-                loading={audienceMetadataLoading}
-                maxTagCount={3}
-                tagRender={renderAudienceCourseTag}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={24} lg={10}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.excludeCourses', (
-              <Select
-                mode="multiple"
-                allowClear
-                showSearch
-                value={audienceFilters.excludeCourseCodeIds}
-                placeholder={t('admin.tools.messaging.excludeCoursesPlaceholder')}
-                options={audienceCourseGroupedOptions}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('excludeCourseCodeIds', value || [])}
-                loading={audienceMetadataLoading}
-                maxTagCount={3}
-                tagRender={renderAudienceCourseTag}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={24} lg={4} style={{ display: 'flex', alignItems: 'center' }}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.matchAllCourses', (
-              <Checkbox
-                checked={audienceFilters.matchAllCourses}
-                onChange={event => updateAudienceFilter('matchAllCourses', event.target.checked)}
-              >
-                {setLocale(locale, 'admin.tools.messaging.matchAllCourses')}
-              </Checkbox>
-            ))}
-          </Col>
-        </Row>
-
-        {/* Engagement Signals */}
-        <Divider orientation="left" style={{ margin: '4px 0 10px', fontSize: 12, color: '#8c8c8c' }}>
-          {t('admin.tools.messaging.filterSection.engagementSignals')}
-        </Divider>
-        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
-          <Col xs={24} md={6}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.progress', (
-              <div>
-                <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 3 }}>{t('admin.tools.messaging.signal.progress')}</div>
-                <Select
-                  value={audienceFilters.hasProgress}
-                  options={[
-                    { value: 'all', label: t('admin.tools.messaging.option.any') },
-                    { value: 'with', label: t('admin.tools.messaging.option.withProgress') },
-                    { value: 'without', label: t('admin.tools.messaging.option.withoutProgress') }
-                  ]}
-                  onChange={value => updateAudienceFilter('hasProgress', value)}
-                  style={{ width: '100%' }}
-                />
-              </div>
-            ))}
-          </Col>
-          <Col xs={24} md={6}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.certifications', (
-              <div>
-                <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 3 }}>{t('admin.tools.messaging.signal.certifications')}</div>
-                <Select
-                  value={audienceFilters.hasCertifications}
-                  options={[
-                    { value: 'all', label: t('admin.tools.messaging.option.any') },
-                    { value: 'with', label: t('admin.tools.messaging.option.withCertification') },
-                    { value: 'without', label: t('admin.tools.messaging.option.withoutCertification') }
-                  ]}
-                  onChange={value => updateAudienceFilter('hasCertifications', value)}
-                  style={{ width: '100%' }}
-                />
-              </div>
-            ))}
-          </Col>
-          <Col xs={24} md={6}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.purchases', (
-              <div>
-                <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 3 }}>{t('admin.tools.messaging.signal.purchases')}</div>
-                <Select
-                  value={audienceFilters.hasPurchases}
-                  options={[
-                    { value: 'all', label: t('admin.tools.messaging.option.any') },
-                    { value: 'with', label: t('admin.tools.messaging.option.withAccess') },
-                    { value: 'without', label: t('admin.tools.messaging.option.withoutAccess') }
-                  ]}
-                  onChange={value => updateAudienceFilter('hasPurchases', value)}
-                  style={{ width: '100%' }}
-                />
-              </div>
-            ))}
-          </Col>
-          <Col xs={12} md={3}>
-            <Button
-              type="primary"
-              icon={<SearchOutlined />}
-              loading={audienceLoading}
-              onClick={() => loadAudienceSegment()}
-              block
-              style={{ marginTop: 20 }}
-            >
-              {setLocale(locale, 'admin.tools.messaging.applyFilters')}
-            </Button>
-          </Col>
-          <Col xs={12} md={3}>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={resetAudienceFilters}
-              block
-              style={{ marginTop: 20 }}
-            >
-              {setLocale(locale, 'admin.tools.messaging.clearFilters')}
-            </Button>
-          </Col>
-        </Row>
-
-        {/* Deduplication */}
-        <Divider orientation="left" style={{ margin: '4px 0 10px', fontSize: 12, color: '#8c8c8c' }}>
-          {t('admin.tools.messaging.filterSection.deduplication')}
-        </Divider>
-        <Row gutter={[12, 12]} style={{ marginBottom: 4 }}>
-          <Col xs={24} md={8}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.excludeCategory', (
-              <Select
-                value={audienceFilters.excludeCategoryId ?? undefined}
-                placeholder={t('admin.tools.messaging.excludeCategoryPlaceholder')}
-                options={communicationCategoryOptions}
-                onChange={value => {
-                  setAudienceFilters(prev => ({
-                    ...prev,
-                    excludeCategoryId: value,
-                    ...(value ? {} : { excludeCourseCodeId: '' }),
-                    offset: 0,
-                  }));
-                }}
-                style={{ width: '100%' }}
-                allowClear
-              />
-            ))}
-          </Col>
-          <Col xs={24} md={8}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.excludeCourseCodeId', (
-              <Select
-                allowClear
-                showSearch
-                disabled={!audienceFilters.excludeCategoryId}
-                value={audienceFilters.excludeCourseCodeId || undefined}
-                placeholder={
-                  audienceFilters.excludeCategoryId
-                    ? t('admin.tools.messaging.excludeCourseCodeIdPlaceholder')
-                    : t('admin.tools.messaging.excludeCourseCodeIdDisabledPlaceholder')
-                }
-                options={audienceCourseGroupedOptions}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('excludeCourseCodeId', value || '')}
-                loading={audienceMetadataLoading}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-        </Row>
-        <Row style={{ marginBottom: 8 }}>
-          <Col xs={24} md={16}>
-            <div style={{ fontSize: 11, color: '#8c8c8c', paddingLeft: 2 }}>
-              {t('admin.tools.messaging.deduplication.hint')}
-            </div>
-          </Col>
-        </Row>
-        </Card>
-      </div>
-    );
-  };
+  const renderMessagingFilters = () => (
+    <div>
+      <Alert
+        type="info"
+        showIcon
+        title={setLocale(locale, 'admin.tools.messaging.filtersDescription')}
+        style={{ marginBottom: 12 }}
+      />
+      <ContactFilterPanel
+        filters={audienceFilters}
+        onFieldChange={updateAudienceFilter}
+        onResidencyCountryChange={(value) => {
+          setAudienceFilters(prev => ({ ...prev, residencyCountry: value || null, residencyRegion: null, offset: 0 }));
+          if (value) loadAudienceCountryDivisions({ locationType: 'residency', countryNameOrId: value });
+        }}
+        onBirthCountryChange={(value) => {
+          setAudienceFilters(prev => ({ ...prev, birthCountry: value || null, birthRegion: null, offset: 0 }));
+          if (value) loadAudienceCountryDivisions({ locationType: 'birth', countryNameOrId: value });
+        }}
+        onExcludeCategoryChange={(value) => {
+          setAudienceFilters(prev => ({
+            ...prev,
+            excludeCategoryId: value,
+            ...(value ? {} : { excludeCourseCodeId: '' }),
+            offset: 0,
+          }));
+        }}
+        onApply={() => loadAudienceSegment()}
+        onReset={resetAudienceFilters}
+        applyLoading={audienceLoading}
+        metadataLoading={audienceMetadataLoading}
+        residencyDivisionsLoading={audienceCountryDivisionsLoading}
+        birthDivisionsLoading={audienceCountryDivisionsLoading}
+        renderCourseTag={renderAudienceCourseTag}
+        options={{
+          sex: audienceOptions.sex,
+          residencyCountries: audienceResidencyCountryOptions,
+          birthCountries: audienceBirthCountryOptions,
+          residencyRegions: audienceResidencyRegionOptions,
+          birthRegions: audienceBirthRegionOptions,
+          languages: audienceLanguageOptions,
+          languageLevels: audienceLanguageLevelOptions,
+          courses: audienceCourseGroupedOptions,
+          communicationCategories: communicationCategoryOptions
+        }}
+      />
+    </div>
+  );
 
   const renderAudienceExpandedRow = (record) => (
     <Descriptions size="small" column={2} bordered>

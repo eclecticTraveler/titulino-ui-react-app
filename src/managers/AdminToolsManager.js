@@ -106,6 +106,7 @@ export const buildProcessLogRoleSelectionOptions = (rows = [], allRolesLabel = '
 ]);
 
 export const getAudienceDefaultFilters = () => AudienceMessaging.getDefaultAudienceFilters();
+export const computeNextContactFilters = (...args) => AudienceMessaging.computeNextContactFilters(...args);
 export const buildAudienceMetadataOptions = (...args) => AudienceMessaging.buildMetadataOptions(...args);
 export const buildAudienceCountryOptionsForLocation = (...args) => AudienceMessaging.buildCountryOptionsForLocation(...args);
 export const buildAudienceCountryDivisionOptions = (...args) => AudienceMessaging.buildCountryDivisionOptions(...args);
@@ -1397,6 +1398,7 @@ const AdminToolsManager = {
   buildProcessLogTableColumns,
   buildProcessLogRoleSelectionOptions,
   getAudienceDefaultFilters,
+  computeNextContactFilters,
   buildAudienceMetadataOptions,
   buildAudienceCountryOptionsForLocation,
   buildAudienceCountryDivisionOptions,

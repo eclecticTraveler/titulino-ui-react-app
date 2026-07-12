@@ -69,6 +69,7 @@ export const filterProcessLogRows = (...args) => AdminToolsManager.filterProcess
 export const buildProcessLogTableColumns = (...args) => AdminToolsManager.buildProcessLogTableColumns(...args);
 export const buildProcessLogRoleSelectionOptions = (...args) => AdminToolsManager.buildProcessLogRoleSelectionOptions(...args);
 export const getAudienceDefaultFilters = (...args) => AdminToolsManager.getAudienceDefaultFilters(...args);
+export const computeNextContactFilters = (...args) => AdminToolsManager.computeNextContactFilters(...args);
 export const buildAudienceMetadataOptions = (...args) => AdminToolsManager.buildAudienceMetadataOptions(...args);
 export const buildAudienceCountryOptionsForLocation = (...args) => AdminToolsManager.buildAudienceCountryOptionsForLocation(...args);
 export const buildAudienceCountryDivisionOptions = (...args) => AdminToolsManager.buildAudienceCountryDivisionOptions(...args);

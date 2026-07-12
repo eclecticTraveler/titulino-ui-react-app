@@ -17,8 +17,37 @@ const {
   buildMessageTemplateOptions,
   buildAudienceFilterClauses,
   buildAudienceSummary,
-  buildCourseSearchGroupsByYear
+  buildCourseSearchGroupsByYear,
+  computeNextContactFilters
 } = AudienceMessaging;
+
+// ---------------------------------------------------------------------------
+// computeNextContactFilters
+// ---------------------------------------------------------------------------
+describe('computeNextContactFilters', () => {
+  it('sets the given field and resets offset to 0', () => {
+    const filters = { sex: 'all', offset: 40 };
+    const next = computeNextContactFilters(filters, 'sex', 'F');
+    expect(next).toEqual({ sex: 'F', offset: 0 });
+  });
+
+  it('does not force offset back to 0 when the changed field is offset itself', () => {
+    const filters = { sex: 'F', offset: 0 };
+    const next = computeNextContactFilters(filters, 'offset', 60);
+    expect(next).toEqual({ sex: 'F', offset: 60 });
+  });
+
+  it('does not mutate the original filters object', () => {
+    const filters = { sex: 'all', offset: 20 };
+    computeNextContactFilters(filters, 'sex', 'M');
+    expect(filters).toEqual({ sex: 'all', offset: 20 });
+  });
+
+  it('defaults to an empty filters object when none is given', () => {
+    const next = computeNextContactFilters(undefined, 'sex', 'M');
+    expect(next).toEqual({ sex: 'M', offset: 0 });
+  });
+});
 
 // ---------------------------------------------------------------------------
 // buildCountryDivisionOptions

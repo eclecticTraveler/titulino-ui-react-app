@@ -173,6 +173,12 @@ export const getDefaultAudienceFilters = () => ({
   offset: 0
 });
 
+export const computeNextContactFilters = (filters = {}, fieldName, value) => ({
+  ...filters,
+  [fieldName]: value,
+  ...(fieldName !== 'offset' ? { offset: 0 } : {})
+});
+
 export const buildContactSegmentPayload = (filters = {}) => {
   const payload = {
     p_sex: toNullable(filters.sex),
@@ -1148,6 +1154,7 @@ export const buildAudienceFilterClauses = (filters = {}, lookups = {}) => {
 
 const AudienceMessaging = {
   getDefaultAudienceFilters,
+  computeNextContactFilters,
   buildContactSegmentPayload,
   buildContactSegmentCountPayload,
   buildContactCertificationHistoryPayload,
