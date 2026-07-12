@@ -16,6 +16,7 @@ import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/Logi
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import ContactProfileEditor from 'components/shared-components/ContactProfileEditor';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
+import DraggableDashboardGrid from 'components/shared-components/DraggableDashboardGrid';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
 import { env } from 'configs/EnvironmentConfig';
 import { APP_PREFIX_PATH } from 'configs/AppConfig';
@@ -105,8 +106,13 @@ import {
   buildCommunicationTrackingHistoryCourseTotals,
   buildCommunicationTrackingHistoryHeatmapData,
   buildCommunicationCategoryKey,
-  buildAudienceFilterClauses
+  buildAudienceFilterClauses,
+  onLoadingAdminToolsTabOrder,
+  onSavingAdminToolsTabOrder
 } from "redux/actions/AdminTools";
+
+const ADMIN_TOOLS_OUTER_TAB_DASHBOARD_KEY = 'adminToolsOuterTabs';
+const DEFAULT_OUTER_TAB_ORDER = ['access', 'stewardship', 'courses', 'revenue', 'messaging', 'monitoring'];
 
 const normalizeContactInternalId = (value) => (
   value == null ? '' : String(value).trim().toLowerCase()
@@ -601,7 +607,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     messageTemplates,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision,
-    onSessionTokenExpired
+    onSessionTokenExpired,
+    onLoadingAdminToolsTabOrder: rawOnLoadingAdminToolsTabOrder,
+    onSavingAdminToolsTabOrder: rawOnSavingAdminToolsTabOrder,
+    adminToolsTabOrders
   } = props;
 
   // Every AdminToolsManager-cluster action above resolves its token the same
@@ -655,6 +664,40 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const onUpsertingMessageVariable = withSessionGuard(rawOnUpsertingMessageVariable);
   const onLoadingMessageTemplates = withSessionGuard(rawOnLoadingMessageTemplates);
   const onUpsertingMessageTemplate = withSessionGuard(rawOnUpsertingMessageTemplate);
+  const onLoadingAdminToolsTabOrder = withSessionGuard(rawOnLoadingAdminToolsTabOrder);
+  const onSavingAdminToolsTabOrder = withSessionGuard(rawOnSavingAdminToolsTabOrder);
+
+  const [outerTabOrder, setOuterTabOrder] = useState(
+    () => adminToolsTabOrders?.[ADMIN_TOOLS_OUTER_TAB_DASHBOARD_KEY] || DEFAULT_OUTER_TAB_ORDER
+  );
+  const [isReorderingOuterTabs, setIsReorderingOuterTabs] = useState(false);
+
+  // Hydrate the admin's saved tab order once their identity is known — same
+  // per-admin preference mechanism as dashboard card order (cached locally
+  // under DashboardCardOrder_, synced to the backend preferences bucket).
+  useEffect(() => {
+    if (!user?.emailId) return;
+    let isActive = true;
+    onLoadingAdminToolsTabOrder(ADMIN_TOOLS_OUTER_TAB_DASHBOARD_KEY, user.emailId, DEFAULT_OUTER_TAB_ORDER)
+      .then((action) => {
+        if (isActive && action?.tabOrder?.length) {
+          setOuterTabOrder(action.tabOrder);
+        }
+      });
+    return () => { isActive = false; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.emailId]);
+
+  const handleDoneReorderingOuterTabs = () => {
+    setIsReorderingOuterTabs(false);
+    if (user?.emailId) {
+      onSavingAdminToolsTabOrder(ADMIN_TOOLS_OUTER_TAB_DASHBOARD_KEY, user.emailId, outerTabOrder, DEFAULT_OUTER_TAB_ORDER);
+    }
+  };
+
+  const handleResetOuterTabOrder = () => {
+    setOuterTabOrder(DEFAULT_OUTER_TAB_ORDER);
+  };
 
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
   const [searchText, setSearchText] = useState('');
@@ -697,7 +740,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [contactPurchaseHistoryLoading, setContactPurchaseHistoryLoading] = useState(false);
   const [contactLoginLoading, setContactLoginLoading] = useState(false);
   const [monitoringLoading, setMonitoringLoading] = useState(false);
-  const [monitoringInnerTabKey, setMonitoringInnerTabKey] = useState('general-access');
+  const [monitoringInnerTabKey, setMonitoringInnerTabKey] = useState('process-logs');
   const [processLogSourceKey, setProcessLogSourceKey] = useState('general');
   const [processLogLoading, setProcessLogLoading] = useState(false);
   const [processLogFilters, setProcessLogFilters] = useState({
@@ -9972,14 +10015,35 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const coverUrl = 'https://images.unsplash.com/photo-1593153041370-5ebf6b82886a?q=80&w=1461&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
-  const outerTabsConfig = [
-    { key: 'access', tab: <span><UserOutlined /> {setLocale(locale, 'admin.tools.tab.accessManagement')}</span> },
-    { key: 'stewardship', tab: <span><TeamOutlined /> {setLocale(locale, 'admin.tools.tab.contactStewardship')}</span> },
-    { key: 'courses', tab: <span><BookOutlined /> {setLocale(locale, 'admin.tools.tab.courseManagement')}</span> },
-    { key: 'revenue', tab: <span><DollarOutlined /> {setLocale(locale, 'admin.tools.tab.revenue')}</span> },
-    { key: 'messaging', tab: <span><MailOutlined /> {setLocale(locale, 'admin.tools.tab.messaging')}</span> },
-    { key: 'monitoring', tab: <span><DashboardOutlined /> {setLocale(locale, 'admin.tools.tab.monitoring')}</span> }
-  ];
+  const outerTabsByKey = {
+    access: { key: 'access', tab: <span><UserOutlined /> {setLocale(locale, 'admin.tools.tab.accessManagement')}</span> },
+    stewardship: { key: 'stewardship', tab: <span><TeamOutlined /> {setLocale(locale, 'admin.tools.tab.contactStewardship')}</span> },
+    courses: { key: 'courses', tab: <span><BookOutlined /> {setLocale(locale, 'admin.tools.tab.courseManagement')}</span> },
+    revenue: { key: 'revenue', tab: <span><DollarOutlined /> {setLocale(locale, 'admin.tools.tab.revenue')}</span> },
+    messaging: { key: 'messaging', tab: <span><MailOutlined /> {setLocale(locale, 'admin.tools.tab.messaging')}</span> },
+    monitoring: { key: 'monitoring', tab: <span><DashboardOutlined /> {setLocale(locale, 'admin.tools.tab.monitoring')}</span> }
+  };
+
+  // Reconciled the same way DraggableDashboardGrid reconciles card order
+  // internally: known keys in the saved order, then any default keys not
+  // yet seen (covers a future tab being added without breaking old orders).
+  const orderedOuterTabsConfig = (() => {
+    const seen = new Set();
+    const ordered = [];
+    outerTabOrder.forEach((key) => {
+      if (outerTabsByKey[key] && !seen.has(key)) {
+        ordered.push(outerTabsByKey[key]);
+        seen.add(key);
+      }
+    });
+    DEFAULT_OUTER_TAB_ORDER.forEach((key) => {
+      if (!seen.has(key)) {
+        ordered.push(outerTabsByKey[key]);
+        seen.add(key);
+      }
+    });
+    return ordered;
+  })();
 
   return (
     <div className="container customerName">
@@ -9992,19 +10056,58 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </h1>
       </Card>
 
-      <Card
-        variant="outlined"
-        tabList={outerTabsConfig}
-        activeTabKey={activeOuterTabKey}
-        onTabChange={setActiveOuterTabKey}
-      >
-        {activeOuterTabKey === 'access' && renderAccessManagement()}
-        {activeOuterTabKey === 'stewardship' && renderContactStewardship()}
-        {activeOuterTabKey === 'courses' && renderCourseManagement()}
-        {activeOuterTabKey === 'revenue' && renderRevenueDashboard()}
-        {activeOuterTabKey === 'messaging' && renderMessagingDashboard()}
-        {activeOuterTabKey === 'monitoring' && renderMonitoring()}
-      </Card>
+      {isReorderingOuterTabs ? (
+        <Card
+          variant="outlined"
+          title={setLocale(locale, 'admin.tools.reorderTabs.title')}
+          extra={
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button size="small" onClick={handleResetOuterTabOrder}>
+                {setLocale(locale, 'admin.tools.reorderTabs.reset')}
+              </Button>
+              <Button type="primary" size="small" icon={<CheckCircleOutlined />} onClick={handleDoneReorderingOuterTabs}>
+                {setLocale(locale, 'admin.tools.reorderTabs.done')}
+              </Button>
+            </div>
+          }
+        >
+          <DraggableDashboardGrid
+            cards={outerTabOrder
+              .filter((key) => outerTabsByKey[key])
+              .map((key) => ({
+                key,
+                content: (
+                  <Card size="small" variant="outlined" style={{ textAlign: 'center' }}>
+                    {outerTabsByKey[key].tab}
+                  </Card>
+                )
+              }))}
+            cardOrder={outerTabOrder}
+            onCardOrderChange={setOuterTabOrder}
+            gutter={12}
+            colProps={{ xs: 12, sm: 8, md: 4 }}
+          />
+        </Card>
+      ) : (
+        <Card
+          variant="outlined"
+          tabList={orderedOuterTabsConfig}
+          activeTabKey={activeOuterTabKey}
+          onTabChange={setActiveOuterTabKey}
+          tabBarExtraContent={
+            <Button type="text" size="small" icon={<EditOutlined />} onClick={() => setIsReorderingOuterTabs(true)}>
+              {setLocale(locale, 'admin.tools.reorderTabs.toggle')}
+            </Button>
+          }
+        >
+          {activeOuterTabKey === 'access' && renderAccessManagement()}
+          {activeOuterTabKey === 'stewardship' && renderContactStewardship()}
+          {activeOuterTabKey === 'courses' && renderCourseManagement()}
+          {activeOuterTabKey === 'revenue' && renderRevenueDashboard()}
+          {activeOuterTabKey === 'messaging' && renderMessagingDashboard()}
+          {activeOuterTabKey === 'monitoring' && renderMonitoring()}
+        </Card>
+      )}
     </div>
   );
 };
@@ -10057,7 +10160,9 @@ function mapDispatchToProps(dispatch) {
     onUpsertingMessageTemplate,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision,
-    onSessionTokenExpired
+    onSessionTokenExpired,
+    onLoadingAdminToolsTabOrder,
+    onSavingAdminToolsTabOrder
   }, dispatch);
 }
 
@@ -10090,7 +10195,8 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     communicationCategories,
     communicationTrackingHistory,
     messageVariables,
-    messageTemplates
+    messageTemplates,
+    adminToolsTabOrders
   } = adminTools;
   return {
     user,
@@ -10121,7 +10227,8 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     communicationCategories,
     communicationTrackingHistory,
     messageVariables,
-    messageTemplates
+    messageTemplates,
+    adminToolsTabOrders
   };
 };
 

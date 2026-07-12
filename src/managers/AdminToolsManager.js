@@ -20,6 +20,7 @@ import ImpersonationSession from "lob/ImpersonationSession";
 import ProcessLogs from "lob/ProcessLogs";
 import AudienceMessaging from "lob/AudienceMessaging";
 import ContactStewardship from "lob/ContactStewardship";
+import DashboardLayout from "lob/DashboardLayout";
 import utils from 'utils';
 
 const normalizeIdentifier = (value) => (
@@ -118,6 +119,25 @@ export const hasAudienceMessageContent = (...args) => AudienceMessaging.hasMessa
 export const isContactMergeMutationSuccessful = (...args) => ContactStewardship.isMergeMutationSuccessful(...args);
 export const buildHistoryCourseOptions = (...args) => AudienceMessaging.buildHistoryCourseOptions(...args);
 export const buildCourseSearchGroupsByYear = (...args) => AudienceMessaging.buildCourseSearchGroupsByYear(...args);
+
+// Per-admin outer-tab order for the Admin Tools dashboard — reuses the same
+// cache-key/normalization pattern as AnalyticsManager's dashboard card order
+// (same DashboardCardOrder_ prefix, so it rides the existing WebsitePreferences
+// bucket sync automatically), just under this manager since tab order is an
+// Admin Tools concern, not an Analytics one. No courseCodeId scope — tabs
+// aren't course-specific.
+export const getAdminToolsTabOrder = async (dashboardKey, emailId, defaultOrder = []) => {
+  const cacheKey = DashboardLayout.getDashboardCardOrderCacheKey(dashboardKey, emailId, null);
+  const savedOrder = await LocalStorageService.getCachedObject(cacheKey);
+  return DashboardLayout.normalizeDashboardCardOrder(savedOrder, defaultOrder);
+};
+
+export const saveAdminToolsTabOrder = async (dashboardKey, emailId, order = [], defaultOrder = []) => {
+  const normalizedOrder = DashboardLayout.normalizeDashboardCardOrder(order, defaultOrder);
+  const cacheKey = DashboardLayout.getDashboardCardOrderCacheKey(dashboardKey, emailId, null);
+  await LocalStorageService.setCachedObject(cacheKey, normalizedOrder, DashboardLayout.dashboardLayoutCacheMinutes);
+  return normalizedOrder;
+};
 export const buildCommunicationTrackingHistoryTrendData = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryTrendData(...args);
 export const buildCommunicationTrackingHistoryCategoryTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCategoryTotals(...args);
 export const buildCommunicationTrackingHistoryCourseTotals = (...args) => AudienceMessaging.buildCommunicationTrackingHistoryCourseTotals(...args);
@@ -1390,6 +1410,8 @@ const AdminToolsManager = {
   isContactMergeMutationSuccessful,
   buildHistoryCourseOptions,
   buildCourseSearchGroupsByYear,
+  getAdminToolsTabOrder,
+  saveAdminToolsTabOrder,
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,

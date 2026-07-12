@@ -43,7 +43,9 @@ import {
   ON_LOADING_MESSAGE_VARIABLES,
   ON_UPSERTING_MESSAGE_VARIABLE,
   ON_LOADING_MESSAGE_TEMPLATES,
-  ON_UPSERTING_MESSAGE_TEMPLATE
+  ON_UPSERTING_MESSAGE_TEMPLATE,
+  ON_LOADING_ADMIN_TOOLS_TAB_ORDER,
+  ON_SAVING_ADMIN_TOOLS_TAB_ORDER
 } from '../constants/AdminTools';
 
 const initState = {
@@ -64,7 +66,8 @@ const initState = {
   messageVariables: null,
   lastUpsertMessageVariableResult: null,
   messageTemplates: null,
-  lastUpsertMessageTemplateResult: null
+  lastUpsertMessageTemplateResult: null,
+  adminToolsTabOrders: {}
 };
 
 const applyAvatarCacheToEnrollees = (allEnrollees = [], avatarUrlMap = {}) => (
@@ -292,6 +295,15 @@ const adminTools = (state = initState, action) => {
       return { ...state, messageTemplates: action.messageTemplates };
     case ON_UPSERTING_MESSAGE_TEMPLATE:
       return { ...state, lastUpsertMessageTemplateResult: action.upsertMessageTemplateResult };
+    case ON_LOADING_ADMIN_TOOLS_TAB_ORDER:
+    case ON_SAVING_ADMIN_TOOLS_TAB_ORDER:
+      return {
+        ...state,
+        adminToolsTabOrders: {
+          ...(state.adminToolsTabOrders || {}),
+          [action.dashboardKey]: action.tabOrder || []
+        }
+      };
     case ON_CLEAR_SELECTED_CONTACT:
       return {
         ...state,

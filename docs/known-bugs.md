@@ -123,12 +123,16 @@ localStorage.removeItem('postLoginRedirect');
 
 ---
 
-## BUG-004 — npm audit: uuid buffer-bounds warning in dev toolchain (accepted risk)
+## BUG-004 — npm audit: uuid buffer-bounds warning in dev toolchain
 
-**Status:** `OPEN` — accepted, no production exposure  
+**Status:** `FIXED` — 2026-07-11, via `npm overrides`  
 **Severity:** Low — dev-only dependency, not in production bundle  
 **Discovered:** 2026-06-30  
 **Advisory:** [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq)
+
+### Fix applied
+
+Added `"uuid": ">=11.1.1"` to `package.json`'s existing `overrides` block (same pattern already used for `nth-check`, `postcss`, etc.), then `npm install`. `npm ls uuid` now resolves to a single patched copy everywhere in the tree (previously `uuid@8.3.2` via `sockjs`). Full test suite (277 tests) and production build both pass unchanged. The "may break webpack HMR" risk noted below did not materialize in build/test — **not** separately confirmed live in a running `npm start` session (no browser available in this environment); worth a quick manual check of hot-reload next time `npm start` is run.
 
 ### What `npm audit` reports
 
@@ -143,22 +147,46 @@ uuid  <11.1.1  — moderate
         react-scripts  >=0.1.0
 ```
 
-### Why this is accepted risk
+### Why this was low risk to begin with
 
 - `sockjs`, `webpack-dev-server`, and `@pmmmwh/react-refresh-webpack-plugin` are **build toolchain only** — they run during `npm start` / `npm run build` but are **never included in the production bundle output**. Confirmed by inspecting the `build/` output: no sockjs or webpack-dev-server code ships to GCS.
-- Note: `npm audit --omit=dev` still shows these because CRA (a CRA quirk) lists `react-scripts` under `dependencies`, not `devDependencies`. The flag is not the right signal here — what matters is that these packages do not appear in the `build/` bundle.
-- The uuid buffer-bounds vulnerability (GHSA-w5hq-g745-h8pq) requires explicitly passing a custom `buf` argument to the uuid v3/v5/v6 functions; webpack-dev-server's sockjs usage calls `uuid()` with no buffer, so the vulnerable code path is never reached
+- The uuid buffer-bounds vulnerability (GHSA-w5hq-g745-h8pq) requires explicitly passing a custom `buf` argument to the uuid v3/v5/v6 functions; webpack-dev-server's sockjs usage calls `uuid()` with no buffer, so the vulnerable code path was never reached even before the fix.
+
+---
+
+## BUG-007 — npm audit: webpack-dev-server source-code-exposure CVEs (accepted risk)
+
+**Status:** `OPEN` — accepted, no production exposure  
+**Severity:** Low — dev-server only, requires a specific browser attack scenario, never in production bundle  
+**Discovered:** 2026-07-11  
+**Advisories:** [GHSA-9jgg-88mc-972h](https://github.com/advisories/GHSA-9jgg-88mc-972h), [GHSA-4v9v-hfq4-rm2v](https://github.com/advisories/GHSA-4v9v-hfq4-rm2v), [GHSA-79cf-xcqc-c78w](https://github.com/advisories/GHSA-79cf-xcqc-c78w), [GHSA-mx8g-39q3-5c79](https://github.com/advisories/GHSA-mx8g-39q3-5c79)
+
+### What `npm audit` reports
+
+```
+webpack-dev-server  <=5.2.4  — moderate (4 advisories)
+  node_modules/webpack-dev-server
+    @pmmmwh/react-refresh-webpack-plugin  0.3.1 - 0.5.11
+    react-scripts  >=0.1.0
+```
+
+### Why this is accepted risk
+
+- Same as BUG-004: `webpack-dev-server` is build-toolchain only, never shipped in the production bundle.
+- The attack scenario requires a developer to be actively running `npm start` *and* visit a malicious website in the same browser session while the dev server is up (non-Chromium browser / non-HTTPS origin / permissive proxy, depending on the specific advisory) — narrow, dev-machine-only exposure, not reachable by an attacker targeting the deployed app or its users.
 
 ### Why it cannot be fixed easily
 
-These packages live inside `react-scripts` (Create React App, now deprecated). Fixing requires either:
+The fix landed in `webpack-dev-server@5.2.5+` — a different major version than the `^4.15.2` this project's `overrides` block deliberately pins. `react-scripts@5.0.1` (Create React App, now deprecated upstream) was written against webpack-dev-server v4's config API; v5 changed that API in ways that risk `npm start` breaking or silently ignoring dev-server config. There is no patched 4.x release (4.15.2 is the last one published).
+
+Fixing requires either:
+- Overriding to `webpack-dev-server@^5.2.5+` and manually verifying `npm start`/HMR still works (untested — no live dev server available in this environment)
 - Ejecting CRA (high maintenance cost)
 - Migrating to Vite (future roadmap item — see `docs/plans/`)
-- Using `npm overrides` to force `uuid@^11.1.1` (risky: may break webpack HMR during development)
 
 ### Resolution path
 
-Will be resolved when the project migrates away from CRA. Until then, `npm audit --omit=dev` is the correct command to verify production security posture.
+Will be resolved when the project migrates away from CRA, or if someone verifies the v5 override live against `npm start` and confirms HMR still works.
 
 ---
 

@@ -42,7 +42,9 @@ import {
   ON_LOADING_MESSAGE_VARIABLES,
   ON_UPSERTING_MESSAGE_VARIABLE,
   ON_LOADING_MESSAGE_TEMPLATES,
-  ON_UPSERTING_MESSAGE_TEMPLATE
+  ON_UPSERTING_MESSAGE_TEMPLATE,
+  ON_LOADING_ADMIN_TOOLS_TAB_ORDER,
+  ON_SAVING_ADMIN_TOOLS_TAB_ORDER
 } from '../constants/AdminTools';
 
 // Pure helpers re-exported via the manager so components keep a single
@@ -450,5 +452,23 @@ export const onUpsertingMessageTemplate = async (adminEmailId, id, templateName,
   return {
     type: ON_UPSERTING_MESSAGE_TEMPLATE,
     upsertMessageTemplateResult: result
+  };
+};
+
+export const onLoadingAdminToolsTabOrder = async (dashboardKey, emailId, defaultOrder) => {
+  const tabOrder = await AdminToolsManager.getAdminToolsTabOrder(dashboardKey, emailId, defaultOrder);
+  return {
+    type: ON_LOADING_ADMIN_TOOLS_TAB_ORDER,
+    dashboardKey,
+    tabOrder
+  };
+};
+
+export const onSavingAdminToolsTabOrder = async (dashboardKey, emailId, order, defaultOrder) => {
+  const tabOrder = await AdminToolsManager.saveAdminToolsTabOrder(dashboardKey, emailId, order, defaultOrder);
+  return {
+    type: ON_SAVING_ADMIN_TOOLS_TAB_ORDER,
+    dashboardKey,
+    tabOrder
   };
 };
