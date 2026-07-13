@@ -12,7 +12,7 @@ import {
 
 import { onAuthenticatingWithSSO } from "redux/actions/Grant";
 import { APP_PREFIX_PATH } from "configs/AppConfig";
-import env from 'configs/EnvironmentConfig';
+import { env } from 'configs/EnvironmentConfig';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from 'auth/SupabaseAuth';
@@ -67,7 +67,7 @@ export const LoginAdapter = (props) => {
 	
 		// If fromQuery is just "/lrn", ignore it and fallback
 		if (!rawRedirect || rawRedirect === APP_PREFIX_PATH) {
-			rawRedirect = fromState || fromStorage || (env.IS_ENROLLMENT_LANDING_ON ? '/' : APP_PREFIX_PATH);
+			rawRedirect = fromState || fromStorage || (env.IS_ENROLLMENT_LANDING_ON ? `${APP_PREFIX_PATH}/landing` : APP_PREFIX_PATH);
 		}
 	
 		const cleanRedirect = decodeURIComponent(rawRedirect);

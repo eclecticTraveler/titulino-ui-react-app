@@ -1,8 +1,6 @@
 import React, {Component} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
-import LandingAuthenticatedHub from 'views/landing/LandingAuthenticatedHub';
-import { env } from 'configs/EnvironmentConfig';
 import { geteBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse }  from 'redux/actions/Lrn';
 import { onLoadingAuthenticatedLandingPage, onAuthenticatingWithSSO } from 'redux/actions/Grant';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
@@ -67,13 +65,6 @@ class AuthCourseLevel extends Component {
                         </div>
                     );
                 } else if (this.props.userIsEnrolledInCourse === false) {
-                    if (env.IS_ENROLLMENT_LANDING_ON) {
-                        return (
-                            <div id="unathenticated-landing-page-margin">
-                                <LandingAuthenticatedHub />
-                            </div>
-                        );
-                    }
                     if (this.props.ebookUrl) {
                         return (
                             <div id="unathenticated-landing-page-margin">

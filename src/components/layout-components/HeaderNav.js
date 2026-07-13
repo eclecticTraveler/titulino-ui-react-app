@@ -11,7 +11,9 @@ import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
 import Toggle from 'react-toggle';
 import "react-toggle/style.css";
 import { toggleCollapsedNav, onMobileNavToggle } from '../../redux/actions/Theme';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, HomeOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
+import { env } from 'configs/EnvironmentConfig';
 
 
 const { Header } = Layout;
@@ -58,10 +60,18 @@ export const HeaderNav = props => {
 				<MenuContentTop localization={true} />				
 				
 				<div className="nav-right menu-right-padding">
+					{!isMobile && !searchActive && env.IS_ENROLLMENT_LANDING_ON && (
+						<Link
+							to="/lrn/landing"
+							style={{ cursor: 'pointer', marginRight: 16, fontSize: 18, display: 'inline-flex', alignItems: 'center', color: 'inherit' }}
+						>
+							<HomeOutlined />
+						</Link>
+					)}
 					{!isMobile && !searchActive && (
-						<span 
-							className="nav-icon desktop-search-toggle" 
-							onClick={onSearchToggle} 
+						<span
+							className="nav-icon desktop-search-toggle"
+							onClick={onSearchToggle}
 							style={{ cursor: 'pointer', marginRight: 16, fontSize: 18, display: 'inline-flex', alignItems: 'center' }}
 						>
 							<SearchOutlined />

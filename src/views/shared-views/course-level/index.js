@@ -1,8 +1,6 @@
 import React, {Component} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
-import EnrollmentUnauthPanel from 'views/landing/EnrollmentUnauthPanel';
-import LandingAuthenticatedHub from 'views/landing/LandingAuthenticatedHub';
 import { geteBookUrl, getUserEBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse, onResolvingFacilitadorForThemeCourse }  from 'redux/actions/Lrn';
 import { onLoadingAuthenticatedLandingPage, onAuthenticatingWithSSO } from 'redux/actions/Grant';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
@@ -107,13 +105,6 @@ class CourseLevel extends Component {
                             }
                     }
                 } else if (this.props.userIsEnrolledInCourse === false) {
-                    if (env.IS_ENROLLMENT_LANDING_ON) {
-                        return (
-                            <div id="unathenticated-landing-page-margin">
-                                <LandingAuthenticatedHub />
-                            </div>
-                        );
-                    }
                     if (this.props.ebookUrl) {
                         return (
                             <div id="unathenticated-landing-page-margin">
@@ -145,13 +136,6 @@ class CourseLevel extends Component {
                 )
             }
         }else{
-            if (env.IS_ENROLLMENT_LANDING_ON) {
-                return (
-                    <div id="unathenticated-landing-page-margin">
-                        <EnrollmentUnauthPanel />
-                    </div>
-                );
-            }
             if(this.props.ebookUrl){
                 return (
                     <div id="unathenticated-landing-page-margin">

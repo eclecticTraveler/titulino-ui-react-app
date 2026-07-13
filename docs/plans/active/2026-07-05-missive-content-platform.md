@@ -88,9 +88,20 @@ Start with zero-impact additions (DB + read-only data layer) and defer all refac
 
 > Most intrusive phase — changes how `{{variables}}` are resolved at send time
 
-- [ ] T29 — C#: Replace per-method hardcoded field mappings with DB variable registry (`VariableKey → DataFieldPath`); single `SubstituteVariables(template, contact, locale)` method
-- [ ] T30 — Frontend: Live preview uses same registry; `buildAudienceMessageVariableOptions` reads from DB-driven store instead of hardcoded list
-- [ ] T31 — Multi-language: resolve locale-dependent variables (e.g. `{{association}}`) by checking contact's language preference; variable registry stores locale-aware display name key
+### Findings (2026-07-14, before implementation)
+
+- The actual hardcoded resolution point is `PopulateMessageDetails()` in `titulino-communication/TitulinoMissive/Service/MessageManager.cs:1531` — builds one fixed `Dictionary<string,string>` with exactly the 7 seeded keys (`name`, `location`, `association`, `fullName`, `lastNames`, `programTitle`, `year`), each hand-mapped inline. `association` is not a field lookup — it's a 4-way `switch` on `isPortugueseNative` / `Sex` / `isBasicLevel` that computes a greeting string.
+- The DB registry (seed: `titulino-warehouse/deploy/Missive/2026/07/05_seed_message_variables.sql`) already anticipates this: 6 of 7 variables have real dot-notation `DataFieldPath` values (e.g. `location.residency.countryNativeName`), but `association`'s `DataFieldPath` is the literal sentinel string `'dynamicGreeting'` — flagged as non-field, but nothing in C# interprets that sentinel yet.
+- `ReplacePlaceholdersInPdf` (certificate PDF stamping, `goldcerts`/`defaultcerts`) consumes the *same* dictionary `PopulateMessageDetails` builds. Whatever replaces the builder must keep producing that same `Dictionary<string,string>` shape, or cert jobs break too.
+- The frontend "live preview" (T25, Phase 6) is already partially registry-driven but lighter than this plan originally described: it substitutes `{{key}}` with a bracketed **display name** (`[Recipient Name]`), sourced from `messageVariables?.rows` (the live DB registry) — not a genuine resolved value from a real contact. Confirmed via `GlobalAdminToolsLandingDashboard.js` ~line 8052. This needs an explicit decision (see T30 below) rather than being assumed "just needs a data-source swap."
+
+### Refined tasks
+
+- [ ] T29a — Design `SubstituteVariables(enrollee, sender, messageReferenceTemplate, locale)` in C#: for each active `MessageVariable` row with a real dot-notation `DataFieldPath`, resolve it against the object graph generically; for sentinel paths (starting with exactly `dynamicGreeting`), dispatch to a small registered table of named "computed resolvers" instead of inline switch logic — gives future non-field variables a real extension point instead of silently failing generic resolution.
+- [ ] T29b — Replace `PopulateMessageDetails`'s hardcoded dictionary build with T29a's resolver, keeping the output shape identical. Regression risk is real — every single email job (birthdays, welcome, weeklycourses, certs, purchases, invitations, audience) funnels through this one method. Needs a before/after diff check per job, not just a compile check.
+- [ ] T29c — Confirm `ReplacePlaceholdersInPdf` still receives the same dictionary shape from the new resolver; no changes needed there if T29b preserves the contract.
+- [ ] T30 — **Decision needed before implementing:** (a) keep the current lighter display-name-placeholder preview as sufficient (it already reads the live registry — arguably already satisfies the spirit of this task), or (b) build genuine per-contact resolution in the preview (bigger — needs either a sample contact's real data reaching the frontend, or a small preview-resolution endpoint that mirrors T29a's logic server-side).
+- [ ] T31 — Once T29a's computed-resolver table exists, register `association`'s locale/gender logic as one entry in it (formalizing what's already inline C# today, not rewriting the greeting logic itself). Confirm the registry's `LocaleKey` is enough to drive this, or whether a `SupportedLocales` field is needed on `MessageVariable`.
 
 ---
 

@@ -1,6 +1,6 @@
 # Plan: Enrollment Landing Page
 
-**Status:** IN PROGRESS  
+**Status:** COMPLETE  
 **Branch:** profile-issues  
 **Flag:** `IS_ENROLLMENT_LANDING_ON` in `src/configs/EnvironmentConfig.js`
 
@@ -69,7 +69,11 @@ src/views/landing/
 - [x] T10: Add `coursePath` text input to Admin Tools course **edit** form (already present at line 6382)
 - [x] T11: Post-login redirect → `/` when `IS_ENROLLMENT_LANDING_ON` is true (`src/views/app-views/user/login/index.js` — `getRedirectPath()` fallback)
 - [x] T12: Logo click → `<Link to="/">` when `IS_ENROLLMENT_LANDING_ON` is true (`src/components/layout-components/LogoAlt.js`)
-- [x] T13: "Inicio" + `<HomeOutlined />` prepended to top nav when `IS_ENROLLMENT_LANDING_ON` is true (`src/components/layout-components/MenuContentTop.js`)
+- [x] T13: `<HomeOutlined />` icon added to HeaderNav right side (near search) linking to `/lrn/landing` when flag is on; "Inicio" item removed from top nav (`src/components/layout-components/HeaderNav.js`)
+- [x] T14: Wired `/lrn/landing` route in `src/views/app-views/index.js`; empty-path redirect updated to go to `landing` when flag is on
+- [x] T15: Swapped `LandingUnauthenticated` import in `src/views/landing/index.js` to `EnrollmentUnauthPanel` — old split-screen replaced by card panel
+- [x] T16: Removed `IS_ENROLLMENT_LANDING_ON` redirect blocks from `src/views/shared-views/course-level/index.js` and `src/views/auth-views/course-level/index.js` — explicit course nav now always renders the course view regardless of flag
+- [x] T17: Deleted obsolete `src/views/landing/LandingUnauthenticated.js`
 
 ---
 

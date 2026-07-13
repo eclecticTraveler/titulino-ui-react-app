@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import LandingUnauthenticated from './LandingUnauthenticated';
+import LandingUnauthenticated from './EnrollmentUnauthPanel';
 import LandingAuthenticatedHub from './LandingAuthenticatedHub';
 
 const LandingPage = ({ token }) => {

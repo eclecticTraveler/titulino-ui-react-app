@@ -4,6 +4,7 @@ import { RouteElement } from "utils/routerCompat";
 import { connect } from "react-redux";
 import Loading from '../../components/shared-components/Loading';
 import { APP_PREFIX_PATH } from '../../configs/AppConfig';
+import { env } from '../../configs/EnvironmentConfig';
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPolicy";
@@ -22,6 +23,7 @@ const SessionRetrieval = lazy(() => import(`./user/session-retrieval`));
 const ImpersonationLaunch = lazy(() => import(`./user/impersonation`));
 const LoginView = lazy(() => import(`./user/login`));
 const LogoutView = lazy(() => import(`./user/logout`));
+const LandingPage = lazy(() => import(`../landing`));
 
 export const AppViews = (props) => {
 	const { contentLanguage } = props;
@@ -50,7 +52,8 @@ export const AppViews = (props) => {
 			<Route path={`impersonate`} element={<RouteElement component={ImpersonationLaunch} />} />
 			<Route path={`login`} element={<RouteElement component={LoginView} />} />
 			<Route path={`logout`} element={<RouteElement component={LogoutView} />} />
-			<Route path="" element={<Navigate to={`${APP_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${cfg?.defaultLanding}`} replace />} />
+			<Route path={`landing`} element={<RouteElement component={LandingPage} />} />
+			<Route path="" element={<Navigate to={env.IS_ENROLLMENT_LANDING_ON ? `${APP_PREFIX_PATH}/landing` : `${APP_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${cfg?.defaultLanding}`} replace />} />
 		</Routes>
 	</Suspense>
 	</>
