@@ -21,6 +21,7 @@ Before reading any source file, before running grep, before spawning an Explore 
 | Looking for | Check first |
 |---|---|
 | How a layer works | [docs/Architecture.md](docs/Architecture.md) |
+| How to implement a recurring pattern | [docs/Patterns.md](docs/Patterns.md) |
 | Naming / coding rules | [docs/Coding Standards.md](docs/Coding%20Standards.md) |
 | How to add a feature | [docs/Feature Workflow.md](docs/Feature%20Workflow.md) |
 | How to build/deploy | [docs/Deployment.md](docs/Deployment.md) |
