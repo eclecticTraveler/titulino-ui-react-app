@@ -1228,7 +1228,21 @@
 	"landing.greeting": "Welcome back, {name}!",
 	"landing.courses.title": "Our Courses",
 	"landing.courses.available.title": "📚 Courses Available for Enrollment",
-	"admin.tools.course.label.coursePath": "Course Path"
+	"admin.tools.course.label.coursePath": "Course Path",
+	"floating.facebook.tooltip": "Join us on Facebook",
+	"floating.whatsapp.tooltip": "Join our WhatsApp community",
+	"floating.contact.tooltip": "Send us a message",
+	"floating.contact.modal.title": "Contact Us",
+	"floating.contact.field.name": "Your Name",
+	"floating.contact.field.name.required": "Please enter your name",
+	"floating.contact.field.subject": "Subject",
+	"floating.contact.field.subject.required": "Please enter a subject",
+	"floating.contact.field.message": "Message",
+	"floating.contact.field.message.required": "Please enter your message",
+	"floating.contact.send": "Send",
+	"floating.contact.cancel": "Cancel",
+	"floating.contact.success": "Message sent! We'll be in touch soon.",
+	"floating.contact.error": "Something went wrong. Please try again."
 
 
 

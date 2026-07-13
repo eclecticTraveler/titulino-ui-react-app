@@ -17,6 +17,7 @@ const commonConfig = {
   IS_SSO_ON: true,
   IS_SHOPPING_UX_ON: true,
   IS_ENROLLMENT_LANDING_ON: false,
+  IS_FLOATING_ACTIONS_ON: false,
 };
 
 const dev = {
@@ -24,7 +25,8 @@ const dev = {
   IS_LOGIN_FOOTPRINT_INDIVIDUAL_HEATMAP_ON: true,
   IS_TO_DISPLAY_PROGRESS_DASHBOARD: true,
   IS_ENROLLMENT_LANDING_ON: true,
-  ENVIROMENT: 'dev',  
+  IS_FLOATING_ACTIONS_ON: true,
+  ENVIROMENT: 'dev',
 };
 
 const prod = {
@@ -43,6 +45,7 @@ const local = {
   IS_TO_USE_LOCAL_BADGE_THEME_DATA: true,
   IS_TO_USE_LOCAL_KNOW_ME_SURVEY_DATA: true,
   IS_ENROLLMENT_LANDING_ON: true,
+  IS_FLOATING_ACTIONS_ON: true,
   ENVIROMENT: 'local'
 };
 

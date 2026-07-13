@@ -698,6 +698,20 @@ export const uploadCourseCoverImage = async (token, file, courseCodeId, whoCalle
   }
 };
 
+export const getFloatingActionsConfig = async (whoCalledMe = 'getFloatingActionsConfig') => {
+  const url = `${env.TITULINO_NET_API}/v1/lrn/floating-actions`;
+  const requestOptions = { method: 'GET', headers: getHeaders() };
+
+  try {
+    const response = await fetch(url, requestOptions);
+    if (!response.ok) return null; // endpoint not yet deployed — keep existing initState config
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
+  } catch {
+    return null; // network failure — keep existing initState config, no console noise
+  }
+};
+
 const TitulinoNetService = {
   getRegistrationToken,
   startContactImpersonation,
@@ -712,7 +726,8 @@ const TitulinoNetService = {
   upsertStudentKnowMeClassFiles,
   getContactEnrolleesKnowMeProfileImages,
   getKnowMeProfilesByContactInternalIds,
-  uploadCourseCoverImage
+  uploadCourseCoverImage,
+  getFloatingActionsConfig
 };
 
 export default TitulinoNetService;

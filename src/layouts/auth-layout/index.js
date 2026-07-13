@@ -11,6 +11,7 @@ import Footer from 'components/layout-components/Footer';
 import AuthViews from 'views/auth-views'
 import AuthenticatedProfileGate from 'components/layout-components/AuthenticatedProfileGate';
 import ImpersonationBanner from 'components/layout-components/ImpersonationBanner';
+import FloatingActionMenu from 'components/layout-components/FloatingActionMenu';
 import {
   Layout,
   Grid,
@@ -96,6 +97,7 @@ export const AuthLayout = ({ navCollapsed, navType, location, direction, dynamic
 				</Layout>
 			</Layout>
 			{isMobile && <MobileNav routeInfo={currentRouteInfo}/>}
+      <FloatingActionMenu />
 		</Layout>
   )
 }

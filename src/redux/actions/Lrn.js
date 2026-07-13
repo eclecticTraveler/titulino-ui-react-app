@@ -11,7 +11,7 @@ import SpeakingPracticeService from "services/SpeakingPracticeService";
 import PdfFileService from "services/PdfFileService";
 import GoogleService from "services/GoogleService";
 import TitulinoRestService from "services/TitulinoRestService";
-import TitulinoNetService from "services/TitulinoNetService";
+import TitulinoNetService, { getFloatingActionsConfig } from "services/TitulinoNetService";
 import StudentProgress from "lob/StudentProgress";
 import LrnConfiguration from "lob/LrnConfiguration"
 import TitulinoManager from "managers/LrnManager";
@@ -69,7 +69,8 @@ import {
   ON_UPSERTING_KNOW_ME_BY_CHAPTER,
   ON_FETCHING_KNOW_ME_SURVEY_QUESTIONS,
   ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE,
-  ON_FETCHING_KNOW_ME_AI_RESULT
+  ON_FETCHING_KNOW_ME_AI_RESULT,
+  ON_FETCHING_FLOATING_ACTIONS
 } from "../constants/Lrn";
 import LrnManager from "managers/LrnManager";
 
@@ -712,6 +713,14 @@ export const onFetchingKnowMeAiResult = async (levelTheme, emailId, chapterNo) =
   return {
     type: ON_FETCHING_KNOW_ME_AI_RESULT,
     aiResult
+  };
+}
+
+export const onFetchingFloatingActions = async () => {
+  const floatingActionsConfig = await getFloatingActionsConfig('onFetchingFloatingActions');
+  return {
+    type: ON_FETCHING_FLOATING_ACTIONS,
+    floatingActionsConfig
   };
 }
     

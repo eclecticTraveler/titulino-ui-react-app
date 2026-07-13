@@ -1,6 +1,6 @@
 # Plan: Floating Action Menu
 
-**Status:** NOT STARTED  
+**Status:** UI COMPLETE — backend tasks T7–T11 remaining  
 **Branch:** TBD  
 **Flag:** `IS_FLOATING_ACTIONS_ON` in `src/configs/EnvironmentConfig.js`
 
@@ -185,13 +185,13 @@ New `contactmessages` subcommand in TitulinoMissive — reads unprocessed rows v
 
 ### Phase 1 — Spine data & models
 - [x] T1: Create `floating-actions.json` in local spine folder (`C:\Users\AlbertoArellano\t-bucket\titulino-bucket-spine\titulino-bucket\titulino-spine-data\`) and sync to GCP bucket
-- [ ] T2: `IFloatingAction` model in `titulino-ui` LOB (id, enabled, type, showUnauthenticated, showAuthenticated, imageUrl?, url?, label?, defaultUrl?)
-- [ ] T3: `IFacebookMapping` model in LOB (nativeLanguage?, targetLanguage, url)
+- [x] T2: `IFloatingAction` model in `titulino-ui` LOB (id, enabled, type, showUnauthenticated, showAuthenticated, imageUrl?, url?, label?, defaultUrl?)
+- [x] T3: `IFacebookMapping` model in LOB (nativeLanguage?, targetLanguage, url)
 
 ### Phase 2 — LOB functions (pure, testable)
-- [ ] T4: `resolveFacebookUrl(nativeLangId, targetLangId, mappings[], defaultUrl)` — most-specific match wins; returns `defaultUrl` for unauthenticated
-- [ ] T5: `resolveVisibleActions(actions[], isAuthenticated)` — filters by `enabled` + correct auth visibility flag
-- [ ] T6: Tests for T4 + T5 in `src/lob/__tests__/`
+- [x] T4: `resolveFacebookUrl(nativeLangId, targetLangId, mappings[], defaultUrl)` — most-specific match wins; returns `defaultUrl` for unauthenticated
+- [x] T5: `resolveVisibleActions(actions[], isAuthenticated)` — filters by `enabled` + correct auth visibility flag
+- [x] T6: Tests for T4 + T5 in `src/lob/__tests__/` (19 tests, all passing)
 
 ### Phase 3 — Backend (titulino-net-api)
 - [ ] T7: `GetFloatingActionsAsync()` in `GcpBucketAdapter` + `IRepositoryClient`; REST endpoint
@@ -205,15 +205,15 @@ New `contactmessages` subcommand in TitulinoMissive — reads unprocessed rows v
 - [ ] T11: Add crontab entry on `pd-titulino-lang` with log redirect to `/var/log/contact-messages.log`
 
 ### Phase 6 — titulino-ui fetch
-- [ ] T12: Redux action + service call to fetch floating actions config from API
-- [ ] T13: `IS_FLOATING_ACTIONS_ON` flag in `EnvironmentConfig.js`
+- [x] T12: Redux action + service call to fetch floating actions config from API (stubs 404 until T7)
+- [x] T13: `IS_FLOATING_ACTIONS_ON` flag in `EnvironmentConfig.js` (false in prod/commonConfig, true in dev+local)
 
 ### Phase 7 — UI components
-- [ ] T14: LESS variables for stack positioning; measure Buy Me a Coffee button height first
-- [ ] T15: `FloatingActionMenu` component — reads resolved actions + auth state; renders vertical stack
-- [ ] T16: `FacebookActionButton` — calls `resolveFacebookUrl` with Redux language IDs; opens new tab
-- [ ] T17: `ContactFormModal` — name, subject, message fields; reuse enrollment captcha; `POST /api/contact`
-- [ ] T18: `type: "link"` generic button — `imageUrl` + `url` + `label`; future-extension slot
+- [x] T14: LESS variables for stack positioning (`_floating-action-menu.less`; @bmc-button-height: 52px, @bmc-button-bottom: 18px)
+- [x] T15: `FloatingActionMenu` component — `src/components/layout-components/FloatingActionMenu/index.js`; mounted in app-layout + auth-layout
+- [x] T16: `FacebookActionButton` — inline in FloatingActionMenu; `resolveFacebookUrl` with `lrn.baseLanguage.localeCode` + `theme.contentLanguage`
+- [x] T17: `ContactFormModal` — `ContactFormModal.js`; name/subject/message + captcha; `POST /api/v1/lrn/contact`
+- [x] T18: `LinkActionButton` — inline in FloatingActionMenu; `imageUrl` + `url` + `label`
 
 ---
 

@@ -48,15 +48,18 @@ import {
   ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
   ON_USER_SELECTING_CONTENT_LANGUAGE,
   ON_UPSERTING_KNOW_ME_BY_CHAPTER,
-  ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE
+  ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE,
+  ON_FETCHING_FLOATING_ACTIONS
 } from "../constants/Lrn";
+import floatingActionsDefault from 'assets/data/floating-actions.json';
 
 const initState = {
   shippingTabKey: 'mailing',
   isToEditShippingAddress: false,
   isToEditUserProfile: false,
   isCorrectionModalOpened: false,
-  selectedCoursesToEnroll: []
+  selectedCoursesToEnroll: [],
+  floatingActionsConfig: floatingActionsDefault
 };
 
 const lrn = (state = initState, action) => {
@@ -329,6 +332,12 @@ const lrn = (state = initState, action) => {
       return {
         ...state,
         selectedLevel: action.level
+      };
+    case ON_FETCHING_FLOATING_ACTIONS:
+      return {
+        ...state,
+        // null means the API endpoint isn't deployed yet — keep the existing (initState) config
+        floatingActionsConfig: action.floatingActionsConfig ?? state.floatingActionsConfig
       };
     default:
       return state;

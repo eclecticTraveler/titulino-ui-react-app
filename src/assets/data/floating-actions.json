@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "id": "facebook",
+      "enabled": true,
+      "type": "facebook-resolver",
+      "showUnauthenticated": true,
+      "showAuthenticated": true,
+      "defaultUrl": "https://www.facebook.com/titulinoingles",
+      "label": "Facebook"
+    },
+    {
+      "id": "whatsapp",
+      "enabled": true,
+      "type": "link",
+      "showUnauthenticated": true,
+      "showAuthenticated": true,
+      "url": "https://chat.whatsapp.com/KP7t1BxxavcIQ1toT5YBtT",
+      "label": "WhatsApp"
+    },
+    {
+      "id": "contact",
+      "enabled": true,
+      "type": "contact-form",
+      "showUnauthenticated": false,
+      "showAuthenticated": true,
+      "label": "Contact"
+    },
+    {
+      "id": "custom-slot",
+      "enabled": false,
+      "type": "link",
+      "showUnauthenticated": true,
+      "showAuthenticated": true,
+      "imageUrl": "",
+      "url": "",
+      "label": ""
+    }
+  ],
+  "facebookMappings": [
+    { "targetLanguage": "en",                           "url": "https://www.facebook.com/titulinoingles" },
+    { "nativeLanguage": "pt", "targetLanguage": "es",   "url": "https://www.facebook.com/titulinoespanhol/" },
+    { "nativeLanguage": "en", "targetLanguage": "es",   "url": "https://www.facebook.com/titulinospanish/" },
+    { "targetLanguage": "es",                           "url": "https://www.facebook.com/titulinospanish/" },
+    { "targetLanguage": "pt",                           "url": "https://www.facebook.com/titulinoportugues/" }
+  ]
+}

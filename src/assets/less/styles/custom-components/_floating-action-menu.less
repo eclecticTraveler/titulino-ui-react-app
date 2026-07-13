@@ -1,0 +1,67 @@
+// Buy Me a Coffee widget: data-x_margin="18", data-y_margin="18", ~52px tall
+@bmc-button-height:     52px;
+@bmc-button-bottom:     18px;
+@floating-icon-size:    64px;
+@floating-icon-inner:   36px;   // font-size of the icon glyph inside the circle — increase to make icon bigger
+@floating-icon-gap:     18px;
+@floating-stack-right:  18px;   // right margin — increase to move stack further from screen edge (left)
+// Stack bottom = above BMC widget with 12px clearance
+@floating-stack-bottom: (@bmc-button-height + @bmc-button-bottom + 28px);
+
+.floating-action-stack {
+  position: fixed;
+  bottom: @floating-stack-bottom;
+  right: @floating-stack-right;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: @floating-icon-gap;
+  z-index: 999;
+}
+
+.floating-action-btn {
+  width: @floating-icon-size;
+  height: @floating-icon-size;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: @floating-icon-inner;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border: none;
+  outline: none;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  &--facebook {
+    background-color: #1877f2;
+    color: #ffffff;
+  }
+
+  &--whatsapp {
+    background-color: #25d366;
+    color: #ffffff;
+  }
+
+  &--contact {
+    background-color: #da0e0e;
+    color: #ffffff;
+  }
+
+  &--link {
+    background-color: #ffffff;
+    color: #333333;
+    overflow: hidden;
+
+    img {
+      width: 60%;
+      height: 60%;
+      object-fit: contain;
+    }
+  }
+}
