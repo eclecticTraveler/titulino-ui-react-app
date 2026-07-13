@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.257](///compare/v0.1.256...v0.1.257) (2026-07-13)
+
+
+### Features
+
+* unify Advanced Search and Audience contact filters into shared ContactFilterPanel bb63f62
+
 ### [0.1.256](///compare/v0.1.255...v0.1.256) (2026-07-12)
 
 ### [0.1.255](///compare/v0.1.254...v0.1.255) (2026-07-11)
