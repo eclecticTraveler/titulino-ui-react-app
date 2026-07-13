@@ -65,8 +65,11 @@ src/views/landing/
 - [x] T6: `LandingAuthenticatedHub` component
 - [x] T7: `LandingPage/index.js`
 - [x] T8: Wire root route in `src/views/index.js` (`env.IS_ENROLLMENT_LANDING_ON` guard)
-- [ ] T9: Add `coursePath` text input to Admin Tools course **create** form
-- [ ] T10: Add `coursePath` text input to Admin Tools course **edit** form
+- [x] T9: Add `coursePath` text input to Admin Tools course **create** form (already present in `GlobalAdminToolsLandingDashboard.js` line 6479)
+- [x] T10: Add `coursePath` text input to Admin Tools course **edit** form (already present at line 6382)
+- [x] T11: Post-login redirect → `/` when `IS_ENROLLMENT_LANDING_ON` is true (`src/views/app-views/user/login/index.js` — `getRedirectPath()` fallback)
+- [x] T12: Logo click → `<Link to="/">` when `IS_ENROLLMENT_LANDING_ON` is true (`src/components/layout-components/LogoAlt.js`)
+- [x] T13: "Inicio" + `<HomeOutlined />` prepended to top nav when `IS_ENROLLMENT_LANDING_ON` is true (`src/components/layout-components/MenuContentTop.js`)
 
 ---
 

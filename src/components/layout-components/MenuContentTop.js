@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Menu, Popover } from "antd";
-import { EllipsisOutlined } from "@ant-design/icons";
+import { EllipsisOutlined, HomeOutlined } from "@ant-design/icons";
+import env from 'configs/EnvironmentConfig';
 import { Grid } from "antd";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
@@ -106,21 +107,28 @@ const MenuContentTop = (props) => {
       triggerSubMenuAction={isMobileView ? "click" : "hover"}
       openKeys={openKeys}
       onOpenChange={handleOpenChange}
-      items={dynamicUpperMainNavigation
-        ?.filter((menu) => menu?.isToDisplayInNavigation)
-        ?.map((menu, menuIndex) =>
-          menu?.topSubmenu?.length > 0
-            ? buildSubMenuItems(menu, menuIndex)
-            : {
-                key: `menu-${menuIndex}`,
-                icon: <IconAdapter icon={menu?.icon} iconPosition={menu?.iconPosition} />,
-                label: menu?.path ? (
-                  <NavLink to={menu?.path}>{setLocale(localization, menu?.title)}</NavLink>
-                ) : (
-                  setLocale(localization, menu?.title)
-                ),
-              }
-        )}
+      items={[
+        ...(env.IS_ENROLLMENT_LANDING_ON ? [{
+          key: 'home-hub',
+          icon: <HomeOutlined />,
+          label: <NavLink to="/">Inicio</NavLink>
+        }] : []),
+        ...(dynamicUpperMainNavigation
+          ?.filter((menu) => menu?.isToDisplayInNavigation)
+          ?.map((menu, menuIndex) =>
+            menu?.topSubmenu?.length > 0
+              ? buildSubMenuItems(menu, menuIndex)
+              : {
+                  key: `menu-${menuIndex}`,
+                  icon: <IconAdapter icon={menu?.icon} iconPosition={menu?.iconPosition} />,
+                  label: menu?.path ? (
+                    <NavLink to={menu?.path}>{setLocale(localization, menu?.title)}</NavLink>
+                  ) : (
+                    setLocale(localization, menu?.title)
+                  ),
+                }
+          ) ?? [])
+      ]}
     />
   );
 
