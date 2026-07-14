@@ -10,8 +10,8 @@
 ## START HERE (for any agent picking this up cold)
 
 1. Read this whole file once before touching anything — it's the single source of truth for this migration.
-2. Find the **first unchecked `[ ]` task** in the Phases section below, in order (`D01` → `D02` → ... → `R01` → ... → `A01` → ... → `M01` → ... → `W01` → ... → `X01`). That's where to resume. Do not skip ahead to a later phase's tasks even if they look easier — later phases assume earlier ones are done (e.g., Phase 2 assumes the Terraform module scaffold from Phase 0 exists).
-3. Every task that touches production must run in **dev first**, get validated, then get promoted to **prod** — see "Dev-first, prod-promotion pattern" below. Don't shortcut this even under time pressure; it's the whole point of doing this carefully.
+2. Find the **first unchecked `[ ]` task** in the Phases section below, in order (`D01` → `D02` → ... → `R01` → ... → `A01` → ... → `M01` → ... → `W01` → ... → `P01` → ... → `X01`). That's where to resume. Do not skip ahead to a later phase's tasks even if they look easier — later phases assume earlier ones are done (e.g., Phase 2 assumes the Terraform module scaffold from Phase 0 exists).
+3. **Phases 1–4 are dev-only builds — prod stays on the VM untouched until Phase 5.** Do not promote any single component to prod early, even if it's fully validated in dev and "ready" — Phase 5's whole point is a deliberate, sequential, back-to-back cutover of all four once everything's proven, not a rolling cutover as each one finishes dev validation. See "Dev-first, prod-promotion pattern" below for why.
 4. Related plans this one depends on or intersects with:
    - `docs/plans/active/nuget-shared-libraries.md` — not required, but do it first if there's time (see Phase 0).
    - `docs/plans/active/2026-07-05-missive-content-platform.md` — Phase 8's `MISSIVE_USE_VARIABLE_REGISTRY` flag must carry over correctly when Missive moves to Cloud Run Jobs (Phase 3, task M06).
@@ -56,12 +56,14 @@ Everything above shares one VM's CPU/RAM, which is what caused this week's incid
 
 ## Dev-first, prod-promotion pattern (applies to every phase below)
 
-For every component being migrated:
+**Cutover model (decided 2026-07-14):** build and validate all four components against **dev only** in Phases 1–4 — prod stays entirely on the VM the whole time. Once all four are proven in dev, **Phase 5 cuts each one over to prod in sequence, back-to-back** (Redis → API → cron jobs → worker), not simultaneously. This gets most of the "test everything once, then switch" simplicity while still isolating which component caused a problem if something breaks right after its specific cutover — if issue appears right after the API cutover, it's the API, not "everything that changed today."
+
+For every component:
 
 1. **Build one container image.** Tag it with the git commit SHA (or a version tag), push to Artifact Registry once.
-2. **Deploy that exact image to the `dev` Cloud Run resource** (service or job) via Terraform, with `dev`-scoped env vars/secrets (dev Supabase project or dev schema, dev Redis, etc. — whatever "dev" already means in the current setup).
-3. **Validate in dev** — smoke test, compare output against the current VM-hosted dev instance, watch logs for a real validation window (hours to a few days depending on the component's traffic/schedule frequency).
-4. **Promote the *same image* (not a rebuild) to the `prod` Cloud Run resource** via Terraform — only the target resource and its env vars/secrets change, the image digest stays identical between dev and prod. This is the whole point of promotion instead of two separate builds: what you validated in dev is byte-for-byte what ships to prod.
+2. **Deploy that exact image to the `dev` Cloud Run resource** (service or job) via Terraform, with `dev`-scoped env vars/secrets (dev Supabase project or dev schema, dev Redis, etc. — whatever "dev" already means in the current setup). *(Phases 1–4, below.)*
+3. **Validate in dev** — smoke test, compare output against the current VM-hosted dev instance, watch logs for a real validation window (hours to a few days depending on the component's traffic/schedule frequency). *(Phases 1–4.)*
+4. **Once all four components are validated in dev, promote the *same image* (not a rebuild) to the `prod` Cloud Run resource** via Terraform, one component at a time, in sequence — only the target resource and its env vars/secrets change, the image digest stays identical between dev and prod. *(Phase 5, not interleaved into Phases 1–4 anymore.)*
 5. **Run prod's new path alongside the old VM-hosted path** for a validation window before cutting traffic/schedules over.
 6. **Cut over, then decommission the VM-hosted copy of *that specific component*** (not the whole VM — other components may still be mid-migration).
 
@@ -165,19 +167,20 @@ jobs:
 
 ## Effort estimate
 
-Estimates assume working with AI-assisted pairing (this session's pace), not fully autonomous or fully manual. Each phase's estimate already includes its dev-then-prod validation windows (the calendar time will be longer than the hands-on-keyboard hours, since validation windows are mostly waiting/watching logs, not active work).
+Estimates assume working with AI-assisted pairing (this session's pace), not fully autonomous or fully manual. Phases 1–4 are dev-only now (per the cutover model above), so their windows shrank; Phase 5 concentrates all four prod cutovers, done sequentially and back-to-back — which stacks up more calendar time than an interleaved approach would, but that's the deliberate cost of the safety/simplicity trade-off already discussed.
 
 | Phase | Hands-on-keyboard hours | Calendar time (incl. validation windows) |
 |---|---|---|
 | Phase 0 — Groundwork, decisions, Terraform module scaffold, CI/CD pipeline template | 7–10 h | 2–3 days |
-| Phase 1 — Redis extraction | 4–6 h | 2–4 days (dev validate, then prod validate) |
-| Phase 2 — `titulino-net-api` → Cloud Run | 10–14 h | 1–2 weeks (API is highest-traffic component — wants a longer prod soak) |
-| Phase 3 — Missive cron jobs → Cloud Run Jobs + Scheduler | 12–16 h | 1–2 weeks (parallel-run window against crontab, per job) |
-| Phase 4 — Worker → event-driven Cloud Run service | 12–18 h | 1–2 weeks (real code change, not just a container wrap — most invasive phase) |
-| Phase 5 — Decommission | 2–3 h | A few days (final confirmation window before deleting anything) |
-| **Total** | **~47–67 h** | **~6–10 weeks elapsed**, mostly gated by validation windows, not raw effort |
+| Phase 1 — Redis extraction (dev only) | 2–3 h | 1–2 days |
+| Phase 2 — `titulino-net-api` → Cloud Run (dev only) | 6–8 h | 3–5 days |
+| Phase 3 — Missive cron jobs → Cloud Run Jobs + Scheduler (dev only) | 8–10 h | ~1 week (dev validation across several job types) |
+| Phase 4 — Worker → event-driven Cloud Run service (dev only) | 8–12 h | 1–2 weeks (real code change, most invasive phase; needs to catch a real or manufactured weekly-cadence submission) |
+| Phase 5 — Production cutover (Redis → API → cron → worker, sequential) | 12–16 h | 4–6 weeks (each component gets its own prod soak before the next starts — API's DNS cutover and the cron parallel-run window are the longest of these) |
+| Phase 6 — Decommission | 2–3 h | A few days (final confirmation window before deleting anything) |
+| **Total** | **~45–62 h** | **~8–12 weeks elapsed**, mostly gated by Phase 5's sequential prod soaks, not raw effort |
 
-This comfortably fits an end-of-2026 target with room for interruptions — the actual hands-on-keyboard total is under two work-weeks; the calendar spread is deliberately conservative (a resource-starved VM incident is exactly what happens when things get rushed).
+Still comfortably fits an end-of-2026 target — the actual hands-on-keyboard total is under two work-weeks, and the longer calendar spread (vs. the ~6–10 weeks an interleaved cutover would take) is the direct, deliberate cost of the recommended cutover model: safer, simpler to reason about, slightly slower.
 
 ---
 
@@ -189,7 +192,7 @@ This comfortably fits an end-of-2026 target with room for interruptions — the 
 
 ## Phases
 
-### Phase 0 — Groundwork, decisions, Terraform module scaffold
+### Phase 0 — Groundwork, decisions, Terraform module scaffold, CI/CD pipeline template
 
 - [ ] D01 — Confirm GCP Always Free `e2-micro` eligibility/limits still match assumptions above (terms can change) — verify at the current GCP free tier page before relying on it for the Redis VM
 - [ ] D02 — Decide: separate dev Redis VM (small recurring cost) vs. one shared dev/prod Redis instance with key-prefixing or separate DBs (free, less isolation) — affects Phase 1 scope
@@ -208,9 +211,8 @@ This comfortably fits an end-of-2026 target with room for interruptions — the 
 - [ ] R01 — Write the `modules/compute-vm` Terraform module (parameterized: machine type, zone, startup script) — first real VM resource in this repo, not an import
 - [ ] R02 — Instantiate it for **dev** — provision the dev Redis `e2-micro`, startup script installs/configures Redis matching current version
 - [ ] R03 — Point **dev** `titulino-net-api`, `titulino-communication`, and `TitulinoWorkerService` configs at the new dev Redis host; verify all 3 queue types flow correctly in dev
-- [ ] R04 — Instantiate the module for **prod** (same module, prod vars) — provision the prod Redis `e2-micro`
-- [ ] R05 — Point **prod** configs at the new prod Redis host (firewall rule scoped to only what needs it, not open to the world); verify all 3 queues in prod
-- [ ] R06 — Remove Redis from `pd-titulino-lang` once prod has run stable on the new host for a few days
+
+> Prod Redis provisioning + cutover happens in Phase 5 (P01), not here — see the cutover model above.
 
 ### Phase 2 — `titulino-net-api` → Cloud Run
 
@@ -220,11 +222,8 @@ This comfortably fits an end-of-2026 target with room for interruptions — the 
 - [ ] A04 — Write the `modules/cloud-run-service` Terraform module (parameterized: image, env vars, min/max instances, secrets)
 - [ ] A05 — Instantiate for **dev**: `google_cloud_run_v2_service` + IAM + (optional) domain mapping for a dev subdomain — deploy, smoke test directly against the Cloud Run URL
 - [ ] A06 — Validate in dev for a real window (does everything the current dev VM instance does — auth, enrollment, admin endpoints, whatever this API's surface covers)
-- [ ] A07 — Promote the **same image** to **prod**: instantiate the module again with prod vars, deploy alongside the still-running prod VM (don't cut DNS yet)
-- [ ] A08 — Smoke test prod Cloud Run directly via its `*.run.app` URL before touching DNS
-- [ ] A09 — Manually update Namecheap DNS (`api.titulino.com` → Cloud Run, or via a domain mapping's target) once verified — **not Terraform-managed**, see the Terraform strategy section above
-- [ ] A10 — Keep the VM's copy running for a rollback window post-cutover; decommission once confident
-- [ ] A11 — Update `titulino-net-api/docs/Deployment.md` to describe the new deploy path
+
+> Prod promotion + DNS cutover happens in Phase 5 (P02), not here — see the cutover model above.
 
 ### Phase 3 — `titulino-communication` cron jobs → Cloud Run Jobs + Cloud Scheduler
 
@@ -233,11 +232,9 @@ This comfortably fits an end-of-2026 target with room for interruptions — the 
 - [ ] M03 — Write the `modules/cloud-run-job` Terraform module (parameterized: image, args/command per job, env vars, secrets)
 - [ ] M04 — Write the Cloud Scheduler side of the module (or a paired module): one `google_cloud_scheduler_job` per current crontab line, matching the exact schedules in `titulino-communication/docs/Deployment.md`'s crontab table, targeting the Cloud Run Job via its execution API with the right `--args`
 - [ ] M05 — Instantiate both for **dev** first, one job at a time (start with something low-stakes like `testing`, not `birthdays`) — validate output/logs match what the current dev setup produces
-- [ ] M06 — Once the pattern is proven in dev across a few job types, instantiate the full set for **prod**, running *alongside* the existing crontab (don't disable crontab entries yet)
-- [ ] M07 — Validation window: compare Cloud Scheduler + Cloud Run Job output (Cloud Logging) against the parallel-running crontab output (`/var/log/*`) for each job across a few of its natural cycles
-- [ ] M08 — This is also the natural point to revisit `MISSIVE_USE_VARIABLE_REGISTRY` (see `2026-07-05-missive-content-platform.md` Phase 8) — if that flag is still mid-validation when this reaches here, make sure the Cloud Run Job's env vars carry it over correctly
-- [ ] M09 — Disable the crontab entries once every job has validated clean
-- [ ] M10 — Update `titulino-communication/docs/Deployment.md`'s crontab section to point at the new Scheduler-driven path
+- [ ] M06 — This is also the natural point to revisit `MISSIVE_USE_VARIABLE_REGISTRY` (see `2026-07-05-missive-content-platform.md` Phase 8) — if that flag is still mid-validation when this reaches here, make sure the Cloud Run Job's env vars carry it over correctly
+
+> Prod instantiation, the crontab-parallel validation window, and disabling crontab happens in Phase 5 (P03), not here — see the cutover model above.
 
 ### Phase 4 — `TitulinoWorkerService` → event-driven Cloud Run service
 
@@ -251,10 +248,19 @@ This comfortably fits an end-of-2026 target with room for interruptions — the 
 - [ ] W06 — Write `modules/pubsub-push-service` (or reuse `cloud-run-service` + a separate Pub/Sub module: `google_pubsub_topic`, `google_pubsub_subscription` with push config + OIDC auth, `google_cloud_run_v2_service_iam_member` granting the Pub/Sub service agent invoker access)
 - [ ] W07 — Instantiate for **dev** — publish a test submission from dev `titulino-net-api`, confirm it's processed end-to-end
 - [ ] W08 — Run the new dev path *alongside* the dev VM's poller for a validation window (given ~weekly real usage, this window needs to be long enough to catch at least one real submission, or manufacture test ones)
-- [ ] W09 — Promote to **prod** once dev is proven; run alongside the prod VM's poller before removing it
-- [ ] W10 — Remove the prod poller once confident; update `TitulinoWorkerService/docs/Deployment.md` (if it has one) or add one
 
-### Phase 5 — Decommission
+> Prod promotion happens in Phase 5 (P04), not here — see the cutover model above.
+
+### Phase 5 — Production cutover (sequential, back-to-back — only start this once Phases 1–4 are all validated in dev)
+
+> Each component below is promoted, validated in prod, and (where applicable) cut over — one at a time, in this order — before moving to the next. Don't start P02 until P01 is confirmed stable; don't parallelize these.
+
+- [ ] P01 — **Redis:** instantiate `modules/compute-vm` for **prod** (provision the prod Redis `e2-micro`); point prod `titulino-net-api`, `titulino-communication`, `TitulinoWorkerService` configs at it (firewall scoped to only what needs it); verify all 3 queues in prod; remove Redis from `pd-titulino-lang` once stable for a few days
+- [ ] P02 — **`titulino-net-api`:** promote the dev-validated image to **prod** via the `cloud-run-service` module, deploy alongside the still-running prod VM (don't cut DNS yet); smoke test directly via the `*.run.app` URL; manually update Namecheap DNS (`api.titulino.com`) once verified — **not Terraform-managed**; keep the VM's copy running for a rollback window; update `titulino-net-api/docs/Deployment.md`
+- [ ] P03 — **Missive cron jobs:** instantiate the dev-validated `cloud-run-job` + Cloud Scheduler set for **prod**, running *alongside* the existing crontab (don't disable crontab yet); validation window comparing Cloud Logging output against the parallel crontab output (`/var/log/*`) for each job across a few natural cycles; disable the crontab entries once every job's validated clean; update `titulino-communication/docs/Deployment.md`'s crontab section
+- [ ] P04 — **`TitulinoWorkerService`:** promote the dev-validated event-driven service to **prod**; run alongside the prod VM's poller before removing it; remove the prod poller once confident; update `TitulinoWorkerService/docs/Deployment.md`
+
+### Phase 6 — Decommission
 
 - [ ] X01 — Confirm nothing on `pd-titulino-lang` is still in use (API, worker, cron, Redis all migrated and stable in both dev and prod)
 - [ ] X02 — Snapshot the disk before deleting, just in case
