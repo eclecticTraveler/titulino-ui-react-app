@@ -1,6 +1,9 @@
 import React from 'react';
 import { Badge, Card, Button, Typography, Divider } from 'antd';
 import { ClockCircleOutlined, CalendarOutlined, EnvironmentOutlined, SoundOutlined, BookOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import IconAdapter from 'components/util-components/IconAdapter';
+import { ICON_LIBRARY_TYPE_CONFIG } from 'configs/IconConfig';
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { useIntl } from 'react-intl';
 import { AUTH_PREFIX_PATH } from 'configs/AppConfig';
@@ -41,7 +44,7 @@ const CourseStatusTile = ({ course, isEnrolled, enrollPath }) => {
   const resolvedEnrollPath = enrollPath || `${AUTH_PREFIX_PATH}/enroll`;
 
   const ribbonText = isEnrolled
-    ? formatMessage({ id: 'landing.ribbon.enrolled' })
+    ? <><IconAdapter icon={faCircleCheck} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} style={{ marginRight: 5 }} />{formatMessage({ id: 'landing.ribbon.enrolled' })}</>
     : formatMessage({ id: 'landing.ribbon.open' });
 
   const ribbonColor = isEnrolled ? '#e79547' : '#52c41a';

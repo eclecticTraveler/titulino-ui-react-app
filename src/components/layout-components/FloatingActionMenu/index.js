@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Tooltip } from 'antd';
 import { useIntl } from 'react-intl';
+import { useLocation } from 'react-router-dom';
 import { onFetchingFloatingActions } from 'redux/actions/Lrn';
 import FloatingActionsLob from 'lob/FloatingActions';
 import ContactFormModal from './ContactFormModal';
@@ -82,11 +83,11 @@ const ContactActionButton = ({ action, onOpen }) => {
   );
 };
 
-// Generic external link button for type:'link' and type:'resolver' actions.
+// Generic external link button for type:'link', type:'resolver', and type:'course-resolver' actions.
 // Icon is looked up by action.id in ACTION_ICONS; falls back to action.imageUrl.
 // To wire a new external-link action: add its id+icon to ACTION_ICONS above.
-const ExternalLinkActionButton = ({ action, nativeLangCode, targetLangCode, tooltip }) => {
-  const url = resolveExternalUrl(action, nativeLangCode, targetLangCode);
+const ExternalLinkActionButton = ({ action, nativeLangCode, targetLangCode, courseTheme, tooltip }) => {
+  const url = resolveExternalUrl(action, nativeLangCode, targetLangCode, courseTheme);
   const icon = ACTION_ICONS[action.id];
   if (!url) return null;
   return (
@@ -112,10 +113,13 @@ const FloatingActionMenu = ({
   isAuthenticated,
   nativeLangCode,
   targetLangCode,
+  courseTheme,
   onFetchingFloatingActions,
 }) => {
   const [contactModalVisible, setContactModalVisible] = useState(false);
   const { formatMessage } = useIntl();
+  const { pathname } = useLocation();
+  const resolvedCourseTheme = pathname?.endsWith('/landing') ? null : courseTheme;
 
   useEffect(() => {
     if (env.IS_FLOATING_ACTIONS_ON) {
@@ -149,13 +153,14 @@ const FloatingActionMenu = ({
         />
       );
     }
-    if (action.type === 'link' || action.type === 'resolver') {
+    if (action.type === 'link' || action.type === 'resolver' || action.type === 'course-resolver') {
       return (
         <ExternalLinkActionButton
           key={action.id}
           action={action}
           nativeLangCode={nativeLangCode}
           targetLangCode={targetLangCode}
+          courseTheme={resolvedCourseTheme}
           tooltip={formatMessage({ id: `floating.${action.id}.tooltip` })}
         />
       );
@@ -181,6 +186,7 @@ const mapStateToProps = ({ auth, lrn, theme }) => ({
   isAuthenticated: Boolean(auth.token),
   nativeLangCode: lrn.baseLanguage?.localeCode || null,
   targetLangCode: theme.contentLanguage || null,
+  courseTheme: lrn.courseTheme || null,
 });
 
 const mapDispatchToProps = (dispatch) =>

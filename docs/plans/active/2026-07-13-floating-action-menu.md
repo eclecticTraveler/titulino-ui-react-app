@@ -1,6 +1,6 @@
 # Plan: Floating Action Menu
 
-**Status:** UI COMPLETE — backend tasks T7–T11 remaining  
+**Status:** CODE COMPLETE — pending user: sqitch deploy, GCS upload, crontab (T11)  
 **Branch:** TBD  
 **Flag:** `IS_FLOATING_ACTIONS_ON` in `src/configs/EnvironmentConfig.js`
 
@@ -194,15 +194,15 @@ New `contactmessages` subcommand in TitulinoMissive — reads unprocessed rows v
 - [x] T6: Tests for T4 + T5 in `src/lob/__tests__/` (19 tests, all passing)
 
 ### Phase 3 — Backend (titulino-net-api)
-- [ ] T7: `GetFloatingActionsAsync()` in `GcpBucketAdapter` + `IRepositoryClient`; REST endpoint
-- [ ] T8: `POST /api/contact` endpoint — captcha validation + call `submit_contact_message` RPC; no email sent here
+- [x] T7: `GetFloatingActionsAsync()` in `GcpBucketAdapter` + `IRepositoryClient`; REST endpoint `GET /api/v1/lrn/floating-actions`
+- [x] T8: `POST /api/contact` endpoint — captcha validation + call `SubmitContactMessage` RPC; `ContactMessageRequest` DTO; no email sent here
 
 ### Phase 4 — Warehouse migration (titulino-warehouse)
-- [ ] T9: Sqitch migration — `"ContactMessages"` table with column comments; `upsert_contact_message` inner fn; `get_pending_contact_messages` inner fn; `submit_contact_message` wrapper (all titulino_* roles); `admin_get_pending_contact_messages` wrapper (admin+super_admin only)
+- [x] T9: Sqitch — `13_create_contact_messages_table` (table + `contact_message_type` composite); `13_add_contact_message_engine` (inner fns take composite type — per pattern); `13_add_contact_message_wrappers` (API wrappers — wrapper owns JSONB deserialization → ROW() cast → inner fn). **Pending: user runs `sqitch deploy`.**
 
 ### Phase 5 — TitulinoMissive subcommand (titulino-communication)
-- [ ] T10: `contactmessages` subcommand — reads pending rows, sends email to `titulinoenglish@gmail.com`, marks processed via `upsert_contact_message`
-- [ ] T11: Add crontab entry on `pd-titulino-lang` with log redirect to `/var/log/contact-messages.log`
+- [x] T10: `contactmessages` subcommand — reads pending rows via `AdminGetPendingContactMessages`, sends email, marks processed via `SubmitContactMessage` with `Id + IsProcessed=true`
+- [ ] T11: Add crontab entry on `pd-titulino-lang` — entry documented in `TitulinoMissive/Program.cs` comment. **Pending: user adds manually.**
 
 ### Phase 6 — titulino-ui fetch
 - [x] T12: Redux action + service call to fetch floating actions config from API (stubs 404 until T7)

@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
-import { geteBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse }  from 'redux/actions/Lrn';
+import { geteBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse, onResettingEnrollmentCheck }  from 'redux/actions/Lrn';
 import { onLoadingAuthenticatedLandingPage, onAuthenticatingWithSSO } from 'redux/actions/Grant';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
@@ -13,8 +13,10 @@ import Loading from 'components/shared-components/Loading';
 class AuthCourseLevel extends Component {
 
     loadCourseLandingData = () => {
-        const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
-        const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname); 
+        this.props.onResettingEnrollmentCheck();
+
+        const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname);
+        const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname);
 
         this.props.geteBookUrl(pathInfo?.levelNo, this.props.baseLanguage?.localeCode, this.props.contentLanguage );
         this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme);
@@ -123,7 +125,8 @@ function mapDispatchToProps(dispatch){
         onLoadingUserResourcesByCourseTheme: onLoadingUserResourcesByCourseTheme,
         onLoadingAuthenticatedLandingPage: onLoadingAuthenticatedLandingPage,
         onAuthenticatingWithSSO: onAuthenticatingWithSSO,
-        onVerifyingIfUserIsEnrolledInCourse: onVerifyingIfUserIsEnrolledInCourse
+        onVerifyingIfUserIsEnrolledInCourse: onVerifyingIfUserIsEnrolledInCourse,
+        onResettingEnrollmentCheck: onResettingEnrollmentCheck
 	}, dispatch)
 }
 

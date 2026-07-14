@@ -3,14 +3,15 @@
  * {
  *   id:                  string
  *   enabled:             boolean
- *   type:                'facebook-resolver' | 'contact-form' | 'link' | 'resolver'
+ *   type:                'facebook-resolver' | 'contact-form' | 'link' | 'resolver' | 'course-resolver'
  *   showUnauthenticated: boolean
  *   showAuthenticated:   boolean
  *   label:               string
- *   url?:                string   (link type — single fixed URL)
- *   defaultUrl?:         string   (facebook-resolver | resolver — fallback URL)
- *   mappings?:           IMapping[]  (resolver type — inline mapping array)
- *   imageUrl?:           string   (link type with custom image, no ACTION_ICONS entry)
+ *   url?:                string           (link type — single fixed URL)
+ *   defaultUrl?:         string           (facebook-resolver | resolver | course-resolver — fallback URL)
+ *   mappings?:           IMapping[]       (resolver type — inline mapping array)
+ *   courseMappings?:     ICourseMapping[] (course-resolver type)
+ *   imageUrl?:           string           (link type with custom image, no ACTION_ICONS entry)
  * }
  *
  * IMapping shape (used by 'resolver' type actions and by resolveFacebookUrl for 'facebook-resolver')
@@ -20,9 +21,16 @@
  *   url:             string
  * }
  *
+ * ICourseMapping shape (used by 'course-resolver' type actions)
+ * {
+ *   courseTheme: string   (e.g. 'meditaciones', 'speeches', 'english-connect')
+ *   url:         string
+ * }
+ *
  * --- Adding a new external link action ---
  * 1. Add JSON entry: { "id": "telegram", "type": "link", "url": "...", ... }
  *    For mapping-based: { "type": "resolver", "defaultUrl": "...", "mappings": [...], ... }
+ *    For course-based:  { "type": "course-resolver", "defaultUrl": "...", "courseMappings": [...], ... }
  * 2. Add icon to ACTION_ICONS in FloatingActionMenu/index.js: telegram: <TelegramSvg />
  * 3. Add LESS modifier in _floating-action-menu.less: .floating-action-btn--telegram { background-color: #0088cc; }
  * 4. Add localization key: "floating.telegram.tooltip": "..."
@@ -62,6 +70,19 @@ export const resolveFacebookUrl = (nativeLangId, targetLangId, mappings = [], de
 };
 
 /**
+ * Resolve a WhatsApp (or similar) URL by current course theme.
+ * Falls back to defaultUrl when courseTheme is absent or has no mapping.
+ */
+export const resolveCourseUrl = (courseTheme, courseMappings = [], defaultUrl = '') => {
+  if (!Array.isArray(courseMappings) || courseMappings.length === 0) return defaultUrl;
+  if (courseTheme) {
+    const match = courseMappings.find(m => m.courseTheme === courseTheme.toLowerCase());
+    if (match) return match.url;
+  }
+  return defaultUrl;
+};
+
+/**
  * T5: Filter the actions array to only those visible to the current user.
  *
  * Rules:
@@ -81,15 +102,23 @@ export const resolveVisibleActions = (actions = [], isAuthenticated = false) => 
 };
 
 /**
- * Generic URL resolver for 'link' and 'resolver' type actions.
+ * Generic URL resolver for 'link', 'resolver', and 'course-resolver' type actions.
  *
- * type: 'resolver' → mapping-based lookup using action.mappings + action.defaultUrl
- *                    (same priority logic as resolveFacebookUrl)
- * type: 'link'     → returns action.url (single fixed URL)
- * anything else    → returns action.url ?? action.defaultUrl ?? ''
+ * type: 'course-resolver' → lookup by courseTheme using action.courseMappings + action.defaultUrl
+ * type: 'resolver'        → mapping-based lookup using action.mappings + action.defaultUrl
+ *                           (same priority logic as resolveFacebookUrl)
+ * type: 'link'            → returns action.url (single fixed URL)
+ * anything else           → returns action.url ?? action.defaultUrl ?? ''
  */
-export const resolveExternalUrl = (action, nativeLangId = null, targetLangId = null) => {
+export const resolveExternalUrl = (action, nativeLangId = null, targetLangId = null, courseTheme = null) => {
   if (!action) return '';
+  if (action.type === 'course-resolver') {
+    return resolveCourseUrl(
+      courseTheme,
+      Array.isArray(action.courseMappings) ? action.courseMappings : [],
+      action.defaultUrl ?? ''
+    );
+  }
   if (action.type === 'resolver') {
     return resolveFacebookUrl(
       nativeLangId,
@@ -103,6 +132,7 @@ export const resolveExternalUrl = (action, nativeLangId = null, targetLangId = n
 
 const FloatingActions = {
   resolveFacebookUrl,
+  resolveCourseUrl,
   resolveExternalUrl,
   resolveVisibleActions,
 };

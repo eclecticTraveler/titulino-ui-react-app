@@ -42,7 +42,7 @@ const MenuContentTop = (props) => {
   }, [isMobileView]);
 
   useEffect(() => {
-    getUpperNavigationBasedOnUserConfig(((user?.contactId && token) ? true : false), user?.emailId);
+    getUpperNavigationBasedOnUserConfig(((user?.contactId && token) ? true : false), user?.emailId, contentLanguage);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.contactId, token, user?.emailId, contentLanguage]);
 

@@ -1,6 +1,6 @@
 import FloatingActions from '../FloatingActions';
 
-const { resolveFacebookUrl, resolveExternalUrl, resolveVisibleActions } = FloatingActions;
+const { resolveFacebookUrl, resolveCourseUrl, resolveExternalUrl, resolveVisibleActions } = FloatingActions;
 
 const MAPPINGS = [
   { targetLanguage: 'en', url: 'https://www.facebook.com/titulinoingles' },
@@ -123,6 +123,54 @@ describe('resolveVisibleActions', () => {
 });
 
 // ---------------------------------------------------------------------------
+// resolveCourseUrl
+// ---------------------------------------------------------------------------
+const COMMUNITY_URL = 'https://chat.whatsapp.com/KP7t1BxxavcIQ1toT5YBtT';
+const COURSE_MAPPINGS = [
+  { courseTheme: 'meditaciones',    url: 'https://chat.whatsapp.com/meditaciones' },
+  { courseTheme: 'speeches',        url: 'https://chat.whatsapp.com/speeches' },
+  { courseTheme: 'english-connect', url: 'https://chat.whatsapp.com/ec' },
+];
+
+describe('resolveCourseUrl', () => {
+  it('returns defaultUrl when mappings is empty', () => {
+    expect(resolveCourseUrl('meditaciones', [], COMMUNITY_URL)).toBe(COMMUNITY_URL);
+  });
+
+  it('returns defaultUrl when mappings is undefined', () => {
+    expect(resolveCourseUrl('meditaciones', undefined, COMMUNITY_URL)).toBe(COMMUNITY_URL);
+  });
+
+  it('returns defaultUrl when courseTheme is null', () => {
+    expect(resolveCourseUrl(null, COURSE_MAPPINGS, COMMUNITY_URL)).toBe(COMMUNITY_URL);
+  });
+
+  it('returns defaultUrl when courseTheme has no mapping', () => {
+    expect(resolveCourseUrl('supermarket', COURSE_MAPPINGS, COMMUNITY_URL)).toBe(COMMUNITY_URL);
+  });
+
+  it('matches meditaciones', () => {
+    expect(resolveCourseUrl('meditaciones', COURSE_MAPPINGS, COMMUNITY_URL))
+      .toBe('https://chat.whatsapp.com/meditaciones');
+  });
+
+  it('matches speeches', () => {
+    expect(resolveCourseUrl('speeches', COURSE_MAPPINGS, COMMUNITY_URL))
+      .toBe('https://chat.whatsapp.com/speeches');
+  });
+
+  it('matches english-connect', () => {
+    expect(resolveCourseUrl('english-connect', COURSE_MAPPINGS, COMMUNITY_URL))
+      .toBe('https://chat.whatsapp.com/ec');
+  });
+
+  it('is case-insensitive (uppercased input matches lowercase mapping)', () => {
+    expect(resolveCourseUrl('MEDITACIONES', COURSE_MAPPINGS, COMMUNITY_URL))
+      .toBe('https://chat.whatsapp.com/meditaciones');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // resolveExternalUrl
 // ---------------------------------------------------------------------------
 const WA_URL = 'https://chat.whatsapp.com/KP7t1BxxavcIQ1toT5YBtT';
@@ -145,6 +193,33 @@ describe('resolveExternalUrl', () => {
 
     it('returns empty string when url is missing', () => {
       expect(resolveExternalUrl({ id: 'x', type: 'link' })).toBe('');
+    });
+  });
+
+  describe('type: course-resolver', () => {
+    const action = {
+      id: 'whatsapp',
+      type: 'course-resolver',
+      defaultUrl: COMMUNITY_URL,
+      courseMappings: COURSE_MAPPINGS,
+    };
+
+    it('returns course-specific URL when courseTheme matches', () => {
+      expect(resolveExternalUrl(action, null, null, 'meditaciones'))
+        .toBe('https://chat.whatsapp.com/meditaciones');
+    });
+
+    it('returns defaultUrl when courseTheme is null (no course loaded)', () => {
+      expect(resolveExternalUrl(action, null, null, null)).toBe(COMMUNITY_URL);
+    });
+
+    it('returns defaultUrl when courseTheme has no mapping', () => {
+      expect(resolveExternalUrl(action, null, null, 'supermarket')).toBe(COMMUNITY_URL);
+    });
+
+    it('ignores nativeLangId and targetLangId (not used for this type)', () => {
+      expect(resolveExternalUrl(action, 'pt', 'es', 'speeches'))
+        .toBe('https://chat.whatsapp.com/speeches');
     });
   });
 

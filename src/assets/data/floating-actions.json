@@ -13,11 +13,16 @@
     {
       "id": "whatsapp",
       "enabled": true,
-      "type": "link",
-      "showUnauthenticated": true,
+      "type": "course-resolver",
+      "showUnauthenticated": false,
       "showAuthenticated": true,
-      "url": "https://chat.whatsapp.com/KP7t1BxxavcIQ1toT5YBtT",
-      "label": "WhatsApp"
+      "defaultUrl": "https://chat.whatsapp.com/KP7t1BxxavcIQ1toT5YBtT",
+      "label": "WhatsApp",
+      "courseMappings": [
+        { "courseTheme": "meditaciones",    "url": "https://chat.whatsapp.com/ImBteQ4oRKPLSnkYjLvPtt" },
+        { "courseTheme": "speeches",        "url": "https://chat.whatsapp.com/G1Esgju6Jxh4KlKTRiGj3z" },
+        { "courseTheme": "english-connect", "url": "https://chat.whatsapp.com/GfIhOVqnTM19KloXHftWNJ" }
+      ]
     },
     {
       "id": "contact",

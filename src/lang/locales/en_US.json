@@ -463,6 +463,8 @@
 	"profile.contact.firstName": "Contact First Name",
 	"profile.contact.primaryLanguage": "Contact Primary Language",
 	"nav.search.placeholder": "Search...",
+	"nav.home.tooltip": "Home",
+	"nav.search.tooltip": "Search",
 	"forgot.password.emailAddress": "Email Address",
 	"admin.dashboard.insights.selectCourse": "Select Course",
 	"admin.dashboard.insights.selectLocationType": "Select Location Type",

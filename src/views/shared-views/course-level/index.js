@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import LandingWrapper from '../../../components/layout-components/Landing/LandingWrapper';
 import CourseLandingDashboard from 'components/layout-components/Landing/Unauthenticated/CourseLandingDashboard';
-import { geteBookUrl, getUserEBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse, onResolvingFacilitadorForThemeCourse }  from 'redux/actions/Lrn';
+import { geteBookUrl, getUserEBookUrl, onLoadingEnrolleeByRegion, onLoadingUserResourcesByCourseTheme, onVerifyingIfUserIsEnrolledInCourse, onResolvingFacilitadorForThemeCourse, onResettingEnrollmentCheck }  from 'redux/actions/Lrn';
 import { onLoadingAuthenticatedLandingPage, onAuthenticatingWithSSO } from 'redux/actions/Grant';
 import ProgressDashboardByEmailV4 from 'components/layout-components/ProgressDashboardByEmailV4';
 import InternalIFrame from 'components/layout-components/InternalIFrame';
@@ -15,7 +15,8 @@ import FacilitatorsLandingDashboard from 'components/admin-components/Insights/F
 class CourseLevel extends Component {
 
     loadCourseLandingData = () => {
-        const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname); 
+        this.props.onResettingEnrollmentCheck();
+        const pathInfo = utils.getCourseInfoFromUrl(this.props.location?.pathname);
         const pathTheme = utils.getThemeCourseInfoFromUrl(this.props.location?.pathname); 
         
         this.props.onLoadingEnrolleeByRegion(pathTheme?.courseTheme);
@@ -164,6 +165,7 @@ function mapDispatchToProps(dispatch){
         onAuthenticatingWithSSO: onAuthenticatingWithSSO,
         onVerifyingIfUserIsEnrolledInCourse: onVerifyingIfUserIsEnrolledInCourse,
         onResolvingFacilitadorForThemeCourse: onResolvingFacilitadorForThemeCourse,
+        onResettingEnrollmentCheck: onResettingEnrollmentCheck,
         getUserEBookUrl: getUserEBookUrl,
         geteBookUrl: geteBookUrl
 	}, dispatch)

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { Layout } from "antd";
+import { Layout, Tooltip } from "antd";
 import LogoAlt from './LogoAlt';
 import NavSearch  from './NavSearch';
 import NavProfile from './NavProfile';
@@ -13,6 +13,7 @@ import "react-toggle/style.css";
 import { toggleCollapsedNav, onMobileNavToggle } from '../../redux/actions/Theme';
 import { SearchOutlined, HomeOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
+import { useIntl } from 'react-intl';
 import { env } from 'configs/EnvironmentConfig';
 
 
@@ -21,6 +22,7 @@ const { Header } = Layout;
 export const HeaderNav = props => {
 	const { navCollapsed, mobileNav, toggleCollapsedNav, onMobileNavToggle, isMobile,
 		    direction } = props;
+	const { formatMessage } = useIntl();
 	const [searchActive, setSearchActive] = useState(false)
 
 	const isToogleToBeDisplayedToUser =  false;
@@ -61,21 +63,18 @@ export const HeaderNav = props => {
 				
 				<div className="nav-right menu-right-padding">
 					{!isMobile && !searchActive && env.IS_ENROLLMENT_LANDING_ON && (
-						<Link
-							to="/lrn/landing"
-							style={{ cursor: 'pointer', marginRight: 16, fontSize: 18, display: 'inline-flex', alignItems: 'center', color: 'inherit' }}
-						>
-							<HomeOutlined />
+						<Tooltip title={formatMessage({ id: 'nav.home.tooltip' })} placement="bottom">
+						<Link to="/lrn/landing" className="nav-icon-container" style={{ color: 'inherit' }}>
+							<HomeOutlined className="nav-icon" />
 						</Link>
+						</Tooltip>
 					)}
 					{!isMobile && !searchActive && (
-						<span
-							className="nav-icon desktop-search-toggle"
-							onClick={onSearchToggle}
-							style={{ cursor: 'pointer', marginRight: 16, fontSize: 18, display: 'inline-flex', alignItems: 'center' }}
-						>
-							<SearchOutlined />
+						<Tooltip title={formatMessage({ id: 'nav.search.tooltip' })} placement="bottom">
+						<span className="nav-icon-container desktop-search-toggle" onClick={onSearchToggle}>
+							<SearchOutlined className="nav-icon" />
 						</span>
+						</Tooltip>
 					)}
 					<NavCourseSwitcher />
 					<NavProfile direction={direction} />

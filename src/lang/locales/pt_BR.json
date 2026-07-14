@@ -464,6 +464,8 @@
 	"profile.contact.firstName": "Nome do contato",
 	"profile.contact.primaryLanguage": "Idioma principal do contato",
 	"nav.search.placeholder": "Pesquisar...",
+	"nav.home.tooltip": "Início",
+	"nav.search.tooltip": "Pesquisar",
 	"forgot.password.emailAddress": "Endereço de e-mail",
 	"admin.dashboard.insights.selectCourse": "Selecionar curso",
 	"admin.dashboard.insights.selectLocationType": "Selecionar tipo de localização",

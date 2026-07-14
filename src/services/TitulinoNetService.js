@@ -699,7 +699,8 @@ export const uploadCourseCoverImage = async (token, file, courseCodeId, whoCalle
 };
 
 export const getFloatingActionsConfig = async (whoCalledMe = 'getFloatingActionsConfig') => {
-  const url = `${env.TITULINO_NET_API}/v1/lrn/floating-actions`;
+  if (env.IS_TO_USE_LOCAL_FLOATING_ACTIONS_DATA) return null; // use initState (local JSON) — no remote override
+  const url = `${titulinoNetLrnApiUri}/floating-actions`;
   const requestOptions = { method: 'GET', headers: getHeaders() };
 
   try {

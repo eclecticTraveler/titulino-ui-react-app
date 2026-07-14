@@ -6404,7 +6404,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               {targetLang ? <><Flag code={targetLang.icon} style={{ width: 20, marginRight: 6, verticalAlign: 'middle' }} />{targetLang.langName}</> : (c.TargetLanguageId || '—')}
             </Descriptions.Item>
             <Descriptions.Item label={<span><MessageOutlined style={{ marginRight: 4, color: '#25D366' }} />{setLocale(locale, 'admin.tools.course.label.whatsAppLink')}</span>}>
-              {cd.whatsAppLink ? <a href={cd.whatsAppLink} target="_blank" rel="noreferrer">{cd.whatsAppLink}</a> : '—'}
+              {cd.whatsAppLink ? <><a href={cd.whatsAppLink} target="_blank" rel="noreferrer">{cd.whatsAppLink}</a><CopyOutlined style={{ cursor: 'pointer', color: '#1890ff', marginLeft: 6 }} onClick={() => { navigator.clipboard.writeText(cd.whatsAppLink); messageApi.success(t('admin.tools.copied')); }} /></> : '—'}
             </Descriptions.Item>
             <Descriptions.Item label={setLocale(locale, 'admin.tools.course.label.coursePath')}>
               {cd.coursePath || '—'}
