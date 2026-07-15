@@ -2,7 +2,7 @@
 
 **Created:** 2026-07-14
 **Target:** End of 2026
-**Repos affected:** titulino-net-api · titulino-communication · TitulinoWorkerService · titulino-infra
+**Repos affected:** titulino-net-api · titulino-communication · TitulinoWorkerService · titulino-infra · titulino-warehouse
 **Goal:** Replace one always-on VM running everything (API + worker + Redis + cron jobs) with a Terraform-driven, pay-per-use architecture that costs as close to $0 as possible at current traffic levels, deployed to `dev` first and promoted to `prod` for every component, without sacrificing reliability or the ability to scale up if traffic grows.
 
 ---
@@ -10,7 +10,7 @@
 ## START HERE (for any agent picking this up cold)
 
 1. Read this whole file once before touching anything — it's the single source of truth for this migration.
-2. Find the **first unchecked `[ ]` task** in the Phases section below, in order (`D01` → `D02` → ... → `R01` → ... → `A01` → ... → `M01` → ... → `W01` → ... → `P01` → ... → `X01`). That's where to resume. Do not skip ahead to a later phase's tasks even if they look easier — later phases assume earlier ones are done (e.g., Phase 2 assumes the Terraform module scaffold from Phase 0 exists).
+2. Find the **first unchecked `[ ]` task** in the Phases section below, in order (`D01` → `D02` → ... → `R01` → ... → `A01` → ... → `M01` → ... → `W01` → ... → `P01` → ... → `X01`). That's where to resume. Do not skip ahead to a later phase's tasks even if they look easier — later phases assume earlier ones are done (e.g., Phase 2 assumes the Terraform module scaffold from Phase 0 exists). **Exception: Phase S (`titulino-warehouse`/Sqitch) is independent** — it can be worked any time after Phase 0, in parallel with everything else, since it doesn't touch or depend on Redis/API/cron/worker.
 3. **Phases 1–4 are dev-only builds — prod stays on the VM untouched until Phase 5.** Do not promote any single component to prod early, even if it's fully validated in dev and "ready" — Phase 5's whole point is a deliberate, sequential, back-to-back cutover of all four once everything's proven, not a rolling cutover as each one finishes dev validation. See "Dev-first, prod-promotion pattern" below for why.
 4. Related plans this one depends on or intersects with:
    - `docs/plans/active/nuget-shared-libraries.md` — not required, but do it first if there's time (see Phase 0).
@@ -172,13 +172,14 @@ Estimates assume working with AI-assisted pairing (this session's pace), not ful
 | Phase | Hands-on-keyboard hours | Calendar time (incl. validation windows) |
 |---|---|---|
 | Phase 0 — Groundwork, decisions, Terraform module scaffold, CI/CD pipeline template | 7–10 h | 2–3 days |
+| Phase S — Sqitch migrations → CI-driven (independent, run any time in parallel) | 3–4 h | 2–4 days |
 | Phase 1 — Redis extraction (dev only) | 2–3 h | 1–2 days |
 | Phase 2 — `titulino-net-api` → Cloud Run (dev only) | 6–8 h | 3–5 days |
 | Phase 3 — Missive cron jobs → Cloud Run Jobs + Scheduler (dev only) | 8–10 h | ~1 week (dev validation across several job types) |
 | Phase 4 — Worker → event-driven Cloud Run service (dev only) | 8–12 h | 1–2 weeks (real code change, most invasive phase; needs to catch a real or manufactured weekly-cadence submission) |
 | Phase 5 — Production cutover (Redis → API → cron → worker, sequential) | 12–16 h | 4–6 weeks (each component gets its own prod soak before the next starts — API's DNS cutover and the cron parallel-run window are the longest of these) |
 | Phase 6 — Decommission | 2–3 h | A few days (final confirmation window before deleting anything) |
-| **Total** | **~45–62 h** | **~8–12 weeks elapsed**, mostly gated by Phase 5's sequential prod soaks, not raw effort |
+| **Total** | **~48–66 h** | **~8–12 weeks elapsed**, mostly gated by Phase 5's sequential prod soaks, not raw effort (Phase S runs in parallel, so it doesn't add to the critical path) |
 
 Still comfortably fits an end-of-2026 target — the actual hands-on-keyboard total is under two work-weeks, and the longer calendar spread (vs. the ~6–10 weeks an interleaved cutover would take) is the direct, deliberate cost of the recommended cutover model: safer, simpler to reason about, slightly slower.
 
@@ -203,6 +204,25 @@ Still comfortably fits an end-of-2026 target — the actual hands-on-keyboard to
 - [ ] D07 — Generate the cross-repo access token (`INFRA_REPO_TOKEN`) each service repo's workflow needs to check out `titulino-infra` — fine-grained PAT or GitHub App, read-only to that one repo
 - [ ] D08 — Configure GitHub Environments in each of the 3 service repos: `dev` (no protection rules) and `production` (required reviewers) — see "CI/CD pipeline design" above
 - [ ] D09 — Write the shared workflow template (skeleton in "CI/CD pipeline design" above) once against `titulino-net-api` first, prove it end-to-end (a real PR deploys to dev, a real merge deploys to prod behind the approval gate), then copy the pattern to `titulino-communication` and `TitulinoWorkerService` in their respective phases
+
+### Phase S — `titulino-warehouse` (Sqitch) migrations → CI-driven, no VM involved
+
+> Independent of Phases 1–4 — doesn't block them and isn't blocked by them, can happen any time after Phase 0's CI groundwork exists. Today, migrations are deployed by hand: SSH into `pd-titulino-lang`, `git pull`, `sqitch deploy`. The DB itself is Supabase, not the VM — the VM is only used today because that's where someone already has SSH access set up, not because it's technically required. This phase removes the VM (and the manual SSH step) from the loop entirely.
+>
+> **No instance to create or manage, for deploy or revert.** GitHub Actions runners (`runs-on: ubuntu-latest`) are ephemeral — GitHub automatically boots a fresh, temporary VM for every workflow run and destroys it afterward. You never provision, size, or maintain this yourself; it's the same automatic mechanism whether the workflow is triggered by a push (deploy) or a manual click (revert) — two separate YAML files, each independently getting its own throwaway runner when triggered. `ubuntu-latest` doesn't ship with `sqitch` preinstalled, so each job runs it via the official `sqitch/sqitch` Docker image rather than installing Perl+DBI by hand:
+> ```yaml
+> - name: Sqitch deploy
+>   run: docker run --rm -v "$PWD:/repo" -w /repo sqitch/sqitch deploy "$SQITCH_TARGET"
+>   env:
+>     SQITCH_TARGET: ${{ secrets.SUPABASE_DEV_URI }}
+> ```
+> Same image, same pattern, for `sqitch verify` and the revert workflow's `sqitch revert ... --to ...` — just swap the command.
+
+- [ ] S01 — Write a GitHub Actions workflow in `titulino-warehouse`, same PR→dev / merge→prod shape as everything else: on PR, `sqitch verify` then `sqitch deploy` against the **dev** Supabase target (no approval gate); on merge to `main`, `sqitch deploy` against the **prod** Supabase target, gated behind a `production` GitHub Environment with required reviewers (same pattern as D08)
+- [ ] S02 — Store dev/prod Supabase connection credentials as environment-scoped GitHub secrets (not repo-wide) so the dev job can never accidentally target prod
+- [ ] S03 — Add a separate `workflow_dispatch` workflow for manual revert: `target` (choice: dev/prod) and `revert_to` (required string, no default — the change/tag to revert back to, found via `sqitch log <target>` or `sqitch.plan`) as inputs, running `sqitch revert <target> --to "<revert_to>" -y`. `revert_to` is deliberately required with no default — a bare `sqitch revert` with no `--to` reverts everything back to nothing, which is almost never the intent during an actual incident. Targeting `prod` goes through the same `production` Environment approval gate as a normal deploy.
+- [ ] S04 — Run the new dev pipeline for a few real migrations to validate before trusting it for prod
+- [ ] S05 — Cut prod over to the new pipeline; the manual SSH+`git pull`+`sqitch deploy` habit is retired at this point, independent of how far along Phases 1–5 are
 
 ### Phase 1 — Redis extraction
 

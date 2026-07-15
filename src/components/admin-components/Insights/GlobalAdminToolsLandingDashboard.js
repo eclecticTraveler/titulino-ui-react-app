@@ -1677,6 +1677,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
       messageApi.success(t('admin.tools.messaging.sendSuccess'));
       setAudienceMessageDraft({ subject: '', bodyHtml: '', bodyText: '', categoryId: null, courseCodeId: '' });
+      setSelectedAudienceRows([]);
+      setSelectedAudienceRowKeys([]);
+      setMessagingInnerTabKey('compose');
     } catch (error) {
       console.error(error);
       messageApi.error(t('admin.tools.messaging.sendError'));
@@ -7194,6 +7197,23 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           }
         />
       )}
+      {selectedAudienceRows.length > 0 && (
+        <Alert
+          type="success"
+          showIcon
+          style={{ marginBottom: 12 }}
+          message={t('admin.tools.messaging.audienceReadyForReview', { count: selectedAudienceRows.length })}
+          action={
+            <Button
+              size="small"
+              type="primary"
+              onClick={() => setMessagingInnerTabKey('review')}
+            >
+              {t('admin.tools.messaging.goToReview')}
+            </Button>
+          }
+        />
+      )}
       <Divider titlePlacement="left">
         <TeamOutlined style={{ marginRight: 8 }} />
         {t('admin.tools.messaging.audienceTitle', { loaded: audienceRows.length, total: audienceDisplayCount })}
@@ -8076,6 +8096,19 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           })()}
         </div>
       )}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+        <Button
+          type="primary"
+          disabled={
+            audienceMessageDraft.categoryId == null ||
+            !audienceMessageDraft.subject?.trim() ||
+            !hasAudienceMessageDraftContent
+          }
+          onClick={() => setMessagingInnerTabKey('audience')}
+        >
+          {t('admin.tools.messaging.nextAudience')}
+        </Button>
+      </div>
     </div>
   );
 
@@ -8847,78 +8880,104 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         style={{ marginBottom: 16 }}
       />
       <Tabs
-        activeKey={messagingInnerTabKey}
+        activeKey={['compose', 'audience', 'review'].includes(messagingInnerTabKey) ? messagingInnerTabKey : null}
         onChange={setMessagingInnerTabKey}
+        tabBarExtraContent={{
+          right: (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0, paddingBottom: 1 }}>
+              {[
+                { key: 'messagingHistory', icon: <UnorderedListOutlined />, label: t('admin.tools.messaging.tab.history') },
+                { key: 'certifications', icon: <SafetyCertificateOutlined />, label: t('admin.tools.messaging.tab.certifications') },
+                { key: 'setup', icon: <SettingOutlined />, label: t('admin.tools.messaging.tab.setup') }
+              ].map(item => (
+                <button
+                  key={item.key}
+                  onClick={() => setMessagingInnerTabKey(item.key)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: messagingInnerTabKey === item.key ? '2px solid var(--ant-color-primary, #fa8c16)' : '2px solid transparent',
+                    cursor: 'pointer',
+                    padding: '0 12px',
+                    height: 40,
+                    color: messagingInnerTabKey === item.key ? 'var(--ant-color-primary, #fa8c16)' : 'rgba(0,0,0,0.65)',
+                    fontSize: 14,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    transition: 'color 0.2s'
+                  }}
+                >
+                  {item.icon}{item.label}
+                </button>
+              ))}
+            </div>
+          )
+        }}
         items={[
           {
             key: 'compose',
             label: (
               <span>
-                <MessageOutlined style={{ marginRight: 6 }} />
+                {(audienceMessageDraft.categoryId != null && !!audienceMessageDraft.subject?.trim() && hasAudienceMessageDraftContent)
+                  ? <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 4 }} />
+                  : <span style={{ fontWeight: 600, marginRight: 6, opacity: 0.55, fontSize: 12 }}>1</span>
+                }
+                <MessageOutlined style={{ marginRight: 4 }} />
                 {t('admin.tools.messaging.tab.compose')}
               </span>
             ),
             children: renderAudienceMessageComposer()
           },
           {
+            key: '__sep1',
+            label: <span style={{ color: '#d9d9d9', cursor: 'default', userSelect: 'none', padding: '0 2px', fontWeight: 300, fontSize: 16 }}>›</span>,
+            disabled: true
+          },
+          {
             key: 'audience',
             label: (
               <span>
-                <TeamOutlined style={{ marginRight: 6 }} />
+                {selectedAudienceRows.length > 0
+                  ? <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 4 }} />
+                  : <span style={{ fontWeight: 600, marginRight: 6, opacity: 0.55, fontSize: 12 }}>2</span>
+                }
+                <TeamOutlined style={{ marginRight: 4 }} />
                 {setLocale(locale, 'admin.tools.messaging.tab.audience')}
               </span>
             ),
             children: renderAudienceTable()
           },
           {
+            key: '__sep2',
+            label: <span style={{ color: '#d9d9d9', cursor: 'default', userSelect: 'none', padding: '0 2px', fontWeight: 300, fontSize: 16 }}>›</span>,
+            disabled: true
+          },
+          {
             key: 'review',
             label: (
               <span>
-                <BarChartOutlined style={{ marginRight: 6 }} />
+                {canSendAudienceMessage
+                  ? <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 4 }} />
+                  : <span style={{ fontWeight: 600, marginRight: 6, opacity: 0.55, fontSize: 12 }}>3</span>
+                }
+                <BarChartOutlined style={{ marginRight: 4 }} />
                 {t('admin.tools.messaging.tab.review')}
               </span>
             ),
             children: renderAudienceReview()
-          },
-          {
-            key: '__divider',
-            label: (
-              <span style={{ color: '#d9d9d9', cursor: 'default', userSelect: 'none', padding: '0 2px', fontWeight: 300 }}>|</span>
-            ),
-            disabled: true
-          },
-          {
-            key: 'messagingHistory',
-            label: (
-              <span>
-                <UnorderedListOutlined style={{ marginRight: 6 }} />
-                {t('admin.tools.messaging.tab.history')}
-              </span>
-            ),
-            children: renderMessagingHistory()
-          },
-          {
-            key: 'certifications',
-            label: (
-              <span>
-                <SafetyCertificateOutlined style={{ marginRight: 6 }} />
-                {t('admin.tools.messaging.tab.certifications')}
-              </span>
-            ),
-            children: renderAudienceCertificationReport()
-          },
-          {
-            key: 'setup',
-            label: (
-              <span>
-                <SettingOutlined style={{ marginRight: 6 }} />
-                {t('admin.tools.messaging.tab.setup')}
-              </span>
-            ),
-            children: renderSetupTab()
           }
         ]}
       />
+      {messagingInnerTabKey === 'messagingHistory' && (
+        <div style={{ paddingTop: 16 }}>{renderMessagingHistory()}</div>
+      )}
+      {messagingInnerTabKey === 'certifications' && (
+        <div style={{ paddingTop: 16 }}>{renderAudienceCertificationReport()}</div>
+      )}
+      {messagingInnerTabKey === 'setup' && (
+        <div style={{ paddingTop: 16 }}>{renderSetupTab()}</div>
+      )}
       {renderCategoryManager()}
       {renderVariableManager()}
       {renderTemplateManager()}
