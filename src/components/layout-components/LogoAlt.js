@@ -3,7 +3,9 @@ import {toggleCollapsedNav, onMobileNavToggle} from 'redux/actions/Theme';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux'
 import { Grid } from "antd";
+import { Link } from 'react-router-dom';
 import utils from 'utils'
+import { env } from 'configs/EnvironmentConfig';
 
 export const LogoAlt = (props, { title }) => {
 	const { mobileNav, onMobileNavToggle, toggleCollapsedNav, navCollapsed } = props;
@@ -17,6 +19,14 @@ export const LogoAlt = (props, { title }) => {
 		}
 	  }
 
+
+	if (env.IS_ENROLLMENT_LANDING_ON) {
+		return (
+			<Link to="/lrn/landing" className="logo-alt-parent-container">
+				<img className="logo-alt" src="/img/titulino-logo-1.png" alt="" />
+			</Link>
+		);
+	}
 
 	return (
 		<div className="logo-alt-parent-container" onClick={() => {onToggle()}}>

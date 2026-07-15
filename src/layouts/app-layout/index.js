@@ -11,6 +11,7 @@ import Footer from 'components/layout-components/Footer';
 import AppViews from '../../views/app-views';
 import AuthenticatedProfileGate from 'components/layout-components/AuthenticatedProfileGate';
 import ImpersonationBanner from 'components/layout-components/ImpersonationBanner';
+import FloatingActionMenu from 'components/layout-components/FloatingActionMenu';
 import {
   Layout,
   Grid,
@@ -103,6 +104,7 @@ export const AppLayout = ({
 				</Layout>
 			</Layout>
 			{isMobile && <MobileNav routeInfo={currentRouteInfo} />}
+      <FloatingActionMenu />
 		</Layout>
   )
 }

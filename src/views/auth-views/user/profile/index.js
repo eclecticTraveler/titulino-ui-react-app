@@ -46,7 +46,7 @@ import Loading from 'components/shared-components/Loading';
 import IntlMessage from 'components/util-components/IntlMessage';
 import ContactProfileEditorLob, { CONTACT_PROFILE_EDIT_SCOPES } from 'lob/ContactProfileEditor';
 import KnowMeProfiles from 'lob/KnowMeProfiles';
-import { onLoadingAuthenticatedEnrolleeProfile } from 'redux/actions/Grant';
+import { onLoadingAuthenticatedEnrolleeProfile, onSessionTokenExpired } from 'redux/actions/Grant';
 import {
   getAllLanguageOptions,
   onRenderingCourseRegistration,
@@ -58,6 +58,7 @@ import {
   onLoadingContactShopPurchaseHistory,
   onUpsertingSelectedContactProfile
 } from 'redux/actions/AdminTools';
+import useSessionTokenExpiryGuard from 'hooks/useSessionTokenExpiryGuard';
 
 const PROFILE_PICTURE_FIELD_NAME = 'profilePictureUpload';
 const ACCEPTED_PROFILE_PICTURE_TYPES = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/x-png', 'image/webp', 'image/gif']);
@@ -503,9 +504,11 @@ const EnrolleeProfile = ({
   onLoadingContactGeoMaps,
   onLoadingContactCertificationHistory,
   onLoadingContactShopPurchaseHistory,
-  onUpsertingSelectedContactProfile
+  onUpsertingSelectedContactProfile,
+  onSessionTokenExpired
 }) => {
   const { message } = App.useApp();
+  const ensureValidSession = useSessionTokenExpiryGuard(user, onSessionTokenExpired);
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState(enrolleeProfile);
   const [editOpen, setEditOpen] = useState(false);
@@ -628,6 +631,8 @@ const EnrolleeProfile = ({
       return;
     }
 
+    if (!ensureValidSession()) return;
+
     let isActive = true;
     KnowMeProfiles.getOwnKnowMeProfileUrlMap(
       knowMeToken,
@@ -646,11 +651,16 @@ const EnrolleeProfile = ({
     return () => {
       isActive = false;
     };
-  }, [contactInternalId, knowMeToken, user?.emailId]);
+  }, [contactInternalId, knowMeToken, user?.emailId, ensureValidSession]);
 
   useEffect(() => {
     if (!contactInternalId) {
       setAwardRows([]);
+      setAwardsLoading(false);
+      return;
+    }
+
+    if (!ensureValidSession()) {
       setAwardsLoading(false);
       return;
     }
@@ -712,10 +722,11 @@ const EnrolleeProfile = ({
     return () => {
       isActive = false;
     };
-  }, [awardCourseRows, contactInternalId, onLoadingContactCertificationHistory, profileAwardsByCourse, user?.emailId]);
+  }, [awardCourseRows, contactInternalId, onLoadingContactCertificationHistory, profileAwardsByCourse, user?.emailId, ensureValidSession]);
 
   useEffect(() => {
     if (!contactInternalId || !user?.emailId) return;
+    if (!ensureValidSession()) return;
 
     let isActive = true;
     setPurchaseLoading(true);
@@ -730,7 +741,7 @@ const EnrolleeProfile = ({
     return () => {
       isActive = false;
     };
-  }, [contactInternalId, onLoadingContactShopPurchaseHistory, user?.emailId]);
+  }, [contactInternalId, onLoadingContactShopPurchaseHistory, user?.emailId, ensureValidSession]);
 
   useEffect(() => {
     if (!birth.countryCode && !residency.countryCode) {
@@ -1079,6 +1090,8 @@ const EnrolleeProfile = ({
 
   const handleSave = async () => {
     const values = await form.validateFields();
+    if (!ensureValidSession()) return;
+
     const selectedProfileFile = getRawUploadFile(normalizeArray(values[PROFILE_PICTURE_FIELD_NAME])[0]);
     const nextEmails = normalizeArray(values.emails).map(normalizeIdentifier);
     const missingExistingEmails = emails.filter(email => !nextEmails.includes(normalizeIdentifier(email)));
@@ -1677,7 +1690,8 @@ function mapDispatchToProps(dispatch) {
     onLoadingContactGeoMaps: onLoadingContactGeoMapsAction,
     onLoadingContactCertificationHistory,
     onLoadingContactShopPurchaseHistory,
-    onUpsertingSelectedContactProfile
+    onUpsertingSelectedContactProfile,
+    onSessionTokenExpired
   }, dispatch);
 }
 

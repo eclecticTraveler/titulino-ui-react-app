@@ -176,6 +176,21 @@ Services are thin wrappers around external systems (HTTP APIs, localStorage, thi
 - Services do **not** contain business logic — they only serialize the request and deserialize the response.
 - Services do **not** import Redux or React.
 - `LocalStorageService` uses AES encryption (CryptoJS) and TTL — always use it for sensitive cached data instead of raw `localStorage`.
+- **URL construction:** always use the pre-built base URI constants defined at the top of `TitulinoNetService.js` — never build a URL by concatenating `env.TITULINO_NET_API` directly inside a function body.
+
+```js
+// Top of TitulinoNetService.js — these are the only place env is read for URLs:
+const titulinoNetLrnApiUri        = `${env.TITULINO_NET_API}/v1/lrn`;
+const titulinoNetEnrollmentApiUri = `${env.TITULINO_NET_API}/v1/enrollment`;
+const titulinoNetShopApiUri       = `${env.TITULINO_NET_API}/v1/shop`;
+const titulinoNetAdminApiUri      = `${env.TITULINO_NET_API}/v1/admin`;
+
+// ✅ correct
+const url = `${titulinoNetLrnApiUri}/floating-actions`;
+
+// ❌ wrong — never inline env inside a function
+const url = `${env.TITULINO_NET_API}/v1/lrn/floating-actions`;
+```
 
 ### HTTP pattern
 ```js

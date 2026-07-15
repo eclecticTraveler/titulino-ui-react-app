@@ -20,6 +20,8 @@ import getLocaleText from "components/util-components/IntString";
 import TermsModal from "./TermsModal";
 import EnrollmentModal from "./EnrollmentModal";
 import { env } from "configs/EnvironmentConfig";
+import { onSessionTokenExpired } from "redux/actions/Grant";
+import useSessionTokenExpiryGuard from "hooks/useSessionTokenExpiryGuard";
 
 export const AuthenticatedQuickEnrollment = (props) => {
   const {
@@ -34,8 +36,10 @@ export const AuthenticatedQuickEnrollment = (props) => {
     user,
     token,
     selectedCoursesToEnroll,
-    onSelectingEnrollmentCourses
+    onSelectingEnrollmentCourses,
+    onSessionTokenExpired
   } = props;
+  const ensureValidSession = useSessionTokenExpiryGuard(user, onSessionTokenExpired);
   const [form] = Form.useForm();
   const [, setConfirmVisible] = useState(false);
   const [isGeographyInfoVisible, setGeographyInfoVisible] = useState(false);
@@ -117,6 +121,12 @@ export const AuthenticatedQuickEnrollment = (props) => {
     if (!pendingSubmission?.records?.length) return;
 
     const upsertFormattedData = async () => {
+      if (!ensureValidSession()) {
+        setSubmittingLoading(false);
+        setPendingSubmission(null);
+        return;
+      }
+
       const { records, filesMap, recaptchaToken } = pendingSubmission;
       const upsertedRecords = await onSubmittingAuthenticatedEnrollee(records, filesMap, user, recaptchaToken);
       const wasSuccessful = upsertedRecords?.wasSubmittingEnrolleeSucessful;
@@ -790,7 +800,8 @@ function mapDispatchToProps(dispatch) {
     onRequestingGeographicalDivision,
     onSubmittingAuthenticatedEnrollee,
     onResetSubmittingEnrollee,
-    onSelectingEnrollmentCourses
+    onSelectingEnrollmentCourses,
+    onSessionTokenExpired
   }, dispatch);
 }
 

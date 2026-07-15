@@ -1,4 +1,5 @@
 import TitulinoManager from "managers/GrantManager";
+import LocalStorageService from "services/LocalStorageService";
 
 import {
 ON_AUTHENTICATING_WITH_INTERNAL_RESOURCES,
@@ -9,7 +10,8 @@ ON_LOADING_AUTHENTICATED_LANDING_PAGE,
 ON_MODIFYING_COURSE_ACCESS_FOR_USER_AFTER_SUCCESSFUL_PURCHASE_SHORTCUT,
 ON_ACTIVATING_IMPERSONATION_PROFILE,
 ON_STOPPING_IMPERSONATION_PROFILE,
-ON_LOADING_AUTHENTICATED_ENROLLEE_PROFILE
+ON_LOADING_AUTHENTICATED_ENROLLEE_PROFILE,
+ON_SESSION_TOKEN_EXPIRED
 } from '../constants/Grant';
 
 export const onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut = async (purchasedTierAccess, courseCodeIdOfPurchasedItem, emailId) => {   
@@ -80,6 +82,17 @@ export const onAuthenticatingWithSSO = async (emailId) => {
   };  
 };
 
+
+export const onSessionTokenExpired = async (emailId) => {
+  if (emailId) {
+    LocalStorageService.removeCachedObject(`UserProfile_${emailId}`);
+  }
+  localStorage.removeItem(AUTH_TITULINO_INTERNAL_TOKEN);
+
+  return {
+    type: ON_SESSION_TOKEN_EXPIRED
+  };
+};
 
 ///
 export const setAuthInnerToken = async (token) => {

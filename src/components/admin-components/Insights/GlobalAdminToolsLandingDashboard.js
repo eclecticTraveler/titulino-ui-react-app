@@ -2,8 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { useIntl } from 'react-intl';
-import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Checkbox, Space, Modal, Switch, Pagination } from 'antd';
-import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined, UnorderedListOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { App, Row, Col, Card, Input, InputNumber, Select, Radio, Tag, Button, AutoComplete, Tooltip, Descriptions, Empty, Avatar, Divider, Timeline, Tabs, DatePicker, Upload, TimePicker, Popconfirm, Image, Alert, Table, Statistic, Space, Modal, Switch, Pagination } from 'antd';
+import { SearchOutlined, UserOutlined, BookOutlined, SafetyCertificateOutlined, SolutionOutlined, CopyOutlined, EnvironmentOutlined, GlobalOutlined, CloseCircleOutlined, EditOutlined, SaveOutlined, PlusOutlined, UploadOutlined, MessageOutlined, LineChartOutlined, LoginOutlined, DashboardOutlined, TableOutlined, ReloadOutlined, DollarOutlined, ShoppingCartOutlined, UserSwitchOutlined, MailOutlined, SendOutlined, TeamOutlined, BarChartOutlined, DownloadOutlined, UnorderedListOutlined, QuestionCircleOutlined, SettingOutlined, CheckCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import JsonView from '@uiw/react-json-view';
 import Flag from 'react-world-flags';
 import langData from 'assets/data/language.data.json';
@@ -15,13 +15,17 @@ import { Area, Heatmap } from '@ant-design/plots';
 import LoginFootprintHeatmapGraph from 'components/layout-components/Graphs/LoginFootprintHeatmapGraph';
 import LoginFootprintBubbleScatterGraph from 'components/layout-components/Graphs/LoginFootprintBubbleScatterGraph';
 import ContactProfileEditor from 'components/shared-components/ContactProfileEditor';
+import ContactFilterPanel from 'components/shared-components/ContactFilterPanel';
 import AbstractTable from 'components/shared-components/Table/AbstractTable';
+import DraggableDashboardGrid from 'components/shared-components/DraggableDashboardGrid';
 import WorldMap from 'assets/maps/world-countries-sans-antarctica.json';
 import { env } from 'configs/EnvironmentConfig';
 import { APP_PREFIX_PATH } from 'configs/AppConfig';
 import AdminToolsManager from 'managers/AdminToolsManager';
 import dayjs from 'dayjs';
 import { onRenderingCourseRegistration, onRequestingGeographicalDivision } from 'redux/actions/Lrn';
+import { onSessionTokenExpired } from 'redux/actions/Grant';
+import useSessionTokenExpiryGuard from 'hooks/useSessionTokenExpiryGuard';
 import {
   onLoadingAdminToolsInit,
   onAssigningEnrolleeRoleToCourse,
@@ -86,6 +90,7 @@ import {
   buildProcessLogTableColumns,
   buildProcessLogRoleSelectionOptions,
   getAudienceDefaultFilters,
+  computeNextContactFilters,
   buildAudienceMetadataOptions,
   buildAudienceCountryOptionsForLocation,
   buildAudienceCountryDivisionOptions,
@@ -97,13 +102,19 @@ import {
   hasAudienceMessageContent,
   isContactMergeMutationSuccessful,
   buildHistoryCourseOptions,
+  buildCourseSearchGroupsByYear,
   buildCommunicationTrackingHistoryTrendData,
   buildCommunicationTrackingHistoryCategoryTotals,
   buildCommunicationTrackingHistoryCourseTotals,
   buildCommunicationTrackingHistoryHeatmapData,
   buildCommunicationCategoryKey,
-  buildAudienceFilterClauses
+  buildAudienceFilterClauses,
+  onLoadingAdminToolsTabOrder,
+  onSavingAdminToolsTabOrder
 } from "redux/actions/AdminTools";
+
+const ADMIN_TOOLS_OUTER_TAB_DASHBOARD_KEY = 'adminToolsOuterTabs';
+const DEFAULT_OUTER_TAB_ORDER = ['access', 'stewardship', 'courses', 'revenue', 'messaging', 'monitoring'];
 
 const normalizeContactInternalId = (value) => (
   value == null ? '' : String(value).trim().toLowerCase()
@@ -531,58 +542,58 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     allRawCourses,
     countries,
     selfLanguageLevel,
-    onLoadingAdminToolsInit,
-    onAssigningEnrolleeRoleToCourse,
-    onRevokingCourseFacilitatorAccess,
-    onLoadingGlobalUserRole,
-    onAssigningGlobalRole,
-    onRevokingGlobalRole,
+    onLoadingAdminToolsInit: rawOnLoadingAdminToolsInit,
+    onAssigningEnrolleeRoleToCourse: rawOnAssigningEnrolleeRoleToCourse,
+    onRevokingCourseFacilitatorAccess: rawOnRevokingCourseFacilitatorAccess,
+    onLoadingGlobalUserRole: rawOnLoadingGlobalUserRole,
+    onAssigningGlobalRole: rawOnAssigningGlobalRole,
+    onRevokingGlobalRole: rawOnRevokingGlobalRole,
     onClearSelectedContact,
-    onUpsertingCourse,
+    onUpsertingCourse: rawOnUpsertingCourse,
     onLoadingContactCourseProgressActivity,
-    onLoadingContactShopPurchaseHistory,
-    onLoadingContactLoginFootprint,
+    onLoadingContactShopPurchaseHistory: rawOnLoadingContactShopPurchaseHistory,
+    onLoadingContactLoginFootprint: rawOnLoadingContactLoginFootprint,
     contactCourseProgressActivity,
     contactShopPurchaseHistory,
     contactLoginFootprint,
-    onLoadingAllUserLoginFootprint,
+    onLoadingAllUserLoginFootprint: rawOnLoadingAllUserLoginFootprint,
     allUserLoginFootprint,
-    onLoadingContactProfileMonitoring,
-    onLoadingProcessLogEvents,
-    onTogglingContactEmailOptOut,
-    onTogglingContactActive,
-    onTogglingSelectedContactEmailOptOut,
-    onTogglingSelectedContactActive,
+    onLoadingContactProfileMonitoring: rawOnLoadingContactProfileMonitoring,
+    onLoadingProcessLogEvents: rawOnLoadingProcessLogEvents,
+    onTogglingContactEmailOptOut: rawOnTogglingContactEmailOptOut,
+    onTogglingContactActive: rawOnTogglingContactActive,
+    onTogglingSelectedContactEmailOptOut: rawOnTogglingSelectedContactEmailOptOut,
+    onTogglingSelectedContactActive: rawOnTogglingSelectedContactActive,
     contactProfileMonitoring,
     contactGlobalUserRole,
-    onHydratingAdminToolAvatars,
+    onHydratingAdminToolAvatars: rawOnHydratingAdminToolAvatars,
     avatarUrlMap,
     onLoadingContactGeoMaps,
     contactGeoMaps,
-    onUploadingCourseCoverImage,
-    onUpsertingSelectedContactProfile,
-    onLoadingShopRevenueDashboard,
-    onUpsertingShopProductCourseTier,
-    onUpsertingShopTiers,
-    onUpsertingShopPaymentProviders,
-    onStartingContactImpersonation,
-    onLoadingContactSegmentMetadata,
-    onLoadingContactSegmentCountryDivisions,
-    onLoadingContactSegment,
-    onLoadingContactCertificationHistory,
-    onLoadingContactMergeDashboard,
-    onPreviewingContactMerge,
-    onExecutingContactMerge,
-    onRollingBackContactMerge,
-    onLoadingAudienceMessageVariables,
-    onSendingAudienceMessage,
-    onLoadingCommunicationCategories,
-    onLoadingCommunicationTrackingHistory,
-    onUpsertingCommunicationCategory,
-    onLoadingMessageVariables,
-    onUpsertingMessageVariable,
-    onLoadingMessageTemplates,
-    onUpsertingMessageTemplate,
+    onUploadingCourseCoverImage: rawOnUploadingCourseCoverImage,
+    onUpsertingSelectedContactProfile: rawOnUpsertingSelectedContactProfile,
+    onLoadingShopRevenueDashboard: rawOnLoadingShopRevenueDashboard,
+    onUpsertingShopProductCourseTier: rawOnUpsertingShopProductCourseTier,
+    onUpsertingShopTiers: rawOnUpsertingShopTiers,
+    onUpsertingShopPaymentProviders: rawOnUpsertingShopPaymentProviders,
+    onStartingContactImpersonation: rawOnStartingContactImpersonation,
+    onLoadingContactSegmentMetadata: rawOnLoadingContactSegmentMetadata,
+    onLoadingContactSegmentCountryDivisions: rawOnLoadingContactSegmentCountryDivisions,
+    onLoadingContactSegment: rawOnLoadingContactSegment,
+    onLoadingContactCertificationHistory: rawOnLoadingContactCertificationHistory,
+    onLoadingContactMergeDashboard: rawOnLoadingContactMergeDashboard,
+    onPreviewingContactMerge: rawOnPreviewingContactMerge,
+    onExecutingContactMerge: rawOnExecutingContactMerge,
+    onRollingBackContactMerge: rawOnRollingBackContactMerge,
+    onLoadingAudienceMessageVariables: rawOnLoadingAudienceMessageVariables,
+    onSendingAudienceMessage: rawOnSendingAudienceMessage,
+    onLoadingCommunicationCategories: rawOnLoadingCommunicationCategories,
+    onLoadingCommunicationTrackingHistory: rawOnLoadingCommunicationTrackingHistory,
+    onUpsertingCommunicationCategory: rawOnUpsertingCommunicationCategory,
+    onLoadingMessageVariables: rawOnLoadingMessageVariables,
+    onUpsertingMessageVariable: rawOnUpsertingMessageVariable,
+    onLoadingMessageTemplates: rawOnLoadingMessageTemplates,
+    onUpsertingMessageTemplate: rawOnUpsertingMessageTemplate,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     processLogEventsBySource,
@@ -597,8 +608,98 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     messageVariables,
     messageTemplates,
     onRenderingCourseRegistration,
-    onRequestingGeographicalDivision
+    onRequestingGeographicalDivision,
+    onSessionTokenExpired,
+    onLoadingAdminToolsTabOrder: rawOnLoadingAdminToolsTabOrder,
+    onSavingAdminToolsTabOrder: rawOnSavingAdminToolsTabOrder,
+    adminToolsTabOrders
   } = props;
+
+  // Every AdminToolsManager-cluster action above resolves its token the same
+  // way (LocalStorageService cache for user.emailId, which is grant.user.innerToken
+  // for the current identity) — one guard here covers all of them instead of
+  // touching 40+ scattered call sites throughout this file. See
+  // docs/plans/active/2026-07-09-data-fetch-time-token-expiry.md Task 7.
+  const ensureValidSession = useSessionTokenExpiryGuard(user, onSessionTokenExpired);
+  const withSessionGuard = (actionCreator) => (...args) => {
+    if (!ensureValidSession()) return Promise.resolve(null);
+    return actionCreator(...args);
+  };
+  const onLoadingAdminToolsInit = withSessionGuard(rawOnLoadingAdminToolsInit);
+  const onAssigningEnrolleeRoleToCourse = withSessionGuard(rawOnAssigningEnrolleeRoleToCourse);
+  const onRevokingCourseFacilitatorAccess = withSessionGuard(rawOnRevokingCourseFacilitatorAccess);
+  const onLoadingGlobalUserRole = withSessionGuard(rawOnLoadingGlobalUserRole);
+  const onAssigningGlobalRole = withSessionGuard(rawOnAssigningGlobalRole);
+  const onRevokingGlobalRole = withSessionGuard(rawOnRevokingGlobalRole);
+  const onUpsertingCourse = withSessionGuard(rawOnUpsertingCourse);
+  const onLoadingContactShopPurchaseHistory = withSessionGuard(rawOnLoadingContactShopPurchaseHistory);
+  const onLoadingContactLoginFootprint = withSessionGuard(rawOnLoadingContactLoginFootprint);
+  const onLoadingAllUserLoginFootprint = withSessionGuard(rawOnLoadingAllUserLoginFootprint);
+  const onLoadingContactProfileMonitoring = withSessionGuard(rawOnLoadingContactProfileMonitoring);
+  const onLoadingProcessLogEvents = withSessionGuard(rawOnLoadingProcessLogEvents);
+  const onTogglingContactEmailOptOut = withSessionGuard(rawOnTogglingContactEmailOptOut);
+  const onTogglingContactActive = withSessionGuard(rawOnTogglingContactActive);
+  const onTogglingSelectedContactEmailOptOut = withSessionGuard(rawOnTogglingSelectedContactEmailOptOut);
+  const onTogglingSelectedContactActive = withSessionGuard(rawOnTogglingSelectedContactActive);
+  const onHydratingAdminToolAvatars = withSessionGuard(rawOnHydratingAdminToolAvatars);
+  const onUploadingCourseCoverImage = withSessionGuard(rawOnUploadingCourseCoverImage);
+  const onUpsertingSelectedContactProfile = withSessionGuard(rawOnUpsertingSelectedContactProfile);
+  const onLoadingShopRevenueDashboard = withSessionGuard(rawOnLoadingShopRevenueDashboard);
+  const onUpsertingShopProductCourseTier = withSessionGuard(rawOnUpsertingShopProductCourseTier);
+  const onUpsertingShopTiers = withSessionGuard(rawOnUpsertingShopTiers);
+  const onUpsertingShopPaymentProviders = withSessionGuard(rawOnUpsertingShopPaymentProviders);
+  const onStartingContactImpersonation = withSessionGuard(rawOnStartingContactImpersonation);
+  const onLoadingContactSegmentMetadata = withSessionGuard(rawOnLoadingContactSegmentMetadata);
+  const onLoadingContactSegmentCountryDivisions = withSessionGuard(rawOnLoadingContactSegmentCountryDivisions);
+  const onLoadingContactSegment = withSessionGuard(rawOnLoadingContactSegment);
+  const onLoadingContactCertificationHistory = withSessionGuard(rawOnLoadingContactCertificationHistory);
+  const onLoadingContactMergeDashboard = withSessionGuard(rawOnLoadingContactMergeDashboard);
+  const onPreviewingContactMerge = withSessionGuard(rawOnPreviewingContactMerge);
+  const onExecutingContactMerge = withSessionGuard(rawOnExecutingContactMerge);
+  const onRollingBackContactMerge = withSessionGuard(rawOnRollingBackContactMerge);
+  const onLoadingAudienceMessageVariables = withSessionGuard(rawOnLoadingAudienceMessageVariables);
+  const onSendingAudienceMessage = withSessionGuard(rawOnSendingAudienceMessage);
+  const onLoadingCommunicationCategories = withSessionGuard(rawOnLoadingCommunicationCategories);
+  const onLoadingCommunicationTrackingHistory = withSessionGuard(rawOnLoadingCommunicationTrackingHistory);
+  const onUpsertingCommunicationCategory = withSessionGuard(rawOnUpsertingCommunicationCategory);
+  const onLoadingMessageVariables = withSessionGuard(rawOnLoadingMessageVariables);
+  const onUpsertingMessageVariable = withSessionGuard(rawOnUpsertingMessageVariable);
+  const onLoadingMessageTemplates = withSessionGuard(rawOnLoadingMessageTemplates);
+  const onUpsertingMessageTemplate = withSessionGuard(rawOnUpsertingMessageTemplate);
+  const onLoadingAdminToolsTabOrder = withSessionGuard(rawOnLoadingAdminToolsTabOrder);
+  const onSavingAdminToolsTabOrder = withSessionGuard(rawOnSavingAdminToolsTabOrder);
+
+  const [outerTabOrder, setOuterTabOrder] = useState(
+    () => adminToolsTabOrders?.[ADMIN_TOOLS_OUTER_TAB_DASHBOARD_KEY] || DEFAULT_OUTER_TAB_ORDER
+  );
+  const [isReorderingOuterTabs, setIsReorderingOuterTabs] = useState(false);
+
+  // Hydrate the admin's saved tab order once their identity is known — same
+  // per-admin preference mechanism as dashboard card order (cached locally
+  // under DashboardCardOrder_, synced to the backend preferences bucket).
+  useEffect(() => {
+    if (!user?.emailId) return;
+    let isActive = true;
+    onLoadingAdminToolsTabOrder(ADMIN_TOOLS_OUTER_TAB_DASHBOARD_KEY, user.emailId, DEFAULT_OUTER_TAB_ORDER)
+      .then((action) => {
+        if (isActive && action?.tabOrder?.length) {
+          setOuterTabOrder(action.tabOrder);
+        }
+      });
+    return () => { isActive = false; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.emailId]);
+
+  const handleDoneReorderingOuterTabs = () => {
+    setIsReorderingOuterTabs(false);
+    if (user?.emailId) {
+      onSavingAdminToolsTabOrder(ADMIN_TOOLS_OUTER_TAB_DASHBOARD_KEY, user.emailId, outerTabOrder, DEFAULT_OUTER_TAB_ORDER);
+    }
+  };
+
+  const handleResetOuterTabOrder = () => {
+    setOuterTabOrder(DEFAULT_OUTER_TAB_ORDER);
+  };
 
   const [activeOuterTabKey, setActiveOuterTabKey] = useState('access');
   const [searchText, setSearchText] = useState('');
@@ -610,8 +711,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }));
   const [advancedContactSearchLoading, setAdvancedContactSearchLoading] = useState(false);
   const [advancedContactSearchResult, setAdvancedContactSearchResult] = useState(null);
-  const [advancedContactCountryDivisions, setAdvancedContactCountryDivisions] = useState([]);
-  const [advancedContactCountryDivisionsLoading, setAdvancedContactCountryDivisionsLoading] = useState(false);
+  const [advancedContactResidencyDivisions, setAdvancedContactResidencyDivisions] = useState([]);
+  const [advancedContactResidencyDivisionsLoading, setAdvancedContactResidencyDivisionsLoading] = useState(false);
+  const [advancedContactBirthDivisions, setAdvancedContactBirthDivisions] = useState([]);
+  const [advancedContactBirthDivisionsLoading, setAdvancedContactBirthDivisionsLoading] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [actionType, setActionType] = useState('enroll');
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -641,7 +744,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [contactPurchaseHistoryLoading, setContactPurchaseHistoryLoading] = useState(false);
   const [contactLoginLoading, setContactLoginLoading] = useState(false);
   const [monitoringLoading, setMonitoringLoading] = useState(false);
-  const [monitoringInnerTabKey, setMonitoringInnerTabKey] = useState('general-access');
+  const [monitoringInnerTabKey, setMonitoringInnerTabKey] = useState('process-logs');
   const [processLogSourceKey, setProcessLogSourceKey] = useState('general');
   const [processLogLoading, setProcessLogLoading] = useState(false);
   const [processLogFilters, setProcessLogFilters] = useState({
@@ -654,7 +757,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     limit: 50,
     offset: 0
   });
-  const [messagingInnerTabKey, setMessagingInnerTabKey] = useState('message');
+  const [messagingInnerTabKey, setMessagingInnerTabKey] = useState('compose');
   const [audienceFilters, setAudienceFilters] = useState(() => getAudienceDefaultFilters());
   const [audienceLoading, setAudienceLoading] = useState(false);
   const [audienceMetadataLoading, setAudienceMetadataLoading] = useState(false);
@@ -1235,12 +1338,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }, [emailId, messagingHistoryFilters, onLoadingCommunicationTrackingHistory]);
 
   const updateAudienceFilter = useCallback((fieldName, value, shouldReload = false) => {
-    const nextFilters = {
-      ...audienceFilters,
-      [fieldName]: value,
-      ...(fieldName !== 'offset' ? { offset: 0 } : {})
-    };
-
+    const nextFilters = computeNextContactFilters(audienceFilters, fieldName, value);
     setAudienceFilters(nextFilters);
 
     if (shouldReload) {
@@ -1255,12 +1353,24 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }, [loadAudienceSegment]);
 
   const updateAdvancedContactFilter = useCallback((fieldName, value) => {
-    setAdvancedContactFilters(previousFilters => ({
-      ...previousFilters,
-      [fieldName]: value,
-      ...(fieldName !== 'offset' ? { offset: 0 } : {})
-    }));
+    setAdvancedContactFilters(previousFilters => computeNextContactFilters(previousFilters, fieldName, value));
   }, []);
+
+  const loadAdvancedContactCountryDivisions = useCallback(async (locationKey, countryNameOrId) => {
+    if (!emailId || !countryNameOrId) return;
+    const setDivisions = locationKey === 'birth' ? setAdvancedContactBirthDivisions : setAdvancedContactResidencyDivisions;
+    const setLoading = locationKey === 'birth' ? setAdvancedContactBirthDivisionsLoading : setAdvancedContactResidencyDivisionsLoading;
+    setLoading(true);
+    try {
+      const result = await AdminToolsManager.getCountryDivisions(emailId, { locationType: locationKey, countryNameOrId });
+      setDivisions(result?.rows || []);
+    } catch (error) {
+      console.error('Failed to load advanced contact search regions', error);
+      setDivisions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [emailId]);
 
   const resetAdvancedContactFilters = useCallback(() => {
     setAdvancedContactFilters({
@@ -1269,7 +1379,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       offset: 0
     });
     setAdvancedContactSearchResult(null);
-    setAdvancedContactCountryDivisions([]);
+    setAdvancedContactResidencyDivisions([]);
+    setAdvancedContactBirthDivisions([]);
   }, []);
 
   const loadAdvancedContactSearch = useCallback(async (nextFilters = advancedContactFilters) => {
@@ -1919,46 +2030,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   useEffect(() => {
     if (
       activeOuterTabKey !== 'access' ||
-      !advancedContactSearchOpen ||
-      !emailId ||
-      !advancedContactFilters.countryNameOrId
-    ) {
-      setAdvancedContactCountryDivisions([]);
-      return;
-    }
-
-    let isActive = true;
-    setAdvancedContactCountryDivisionsLoading(true);
-
-    AdminToolsManager.getCountryDivisions(emailId, {
-      locationType: advancedContactFilters.locationType,
-      countryNameOrId: advancedContactFilters.countryNameOrId
-    })
-      .then((result) => {
-        if (isActive) setAdvancedContactCountryDivisions(result?.rows || []);
-      })
-      .catch((error) => {
-        console.error('Failed to load advanced contact search regions', error);
-        if (isActive) setAdvancedContactCountryDivisions([]);
-      })
-      .finally(() => {
-        if (isActive) setAdvancedContactCountryDivisionsLoading(false);
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, [
-    activeOuterTabKey,
-    advancedContactFilters.countryNameOrId,
-    advancedContactFilters.locationType,
-    advancedContactSearchOpen,
-    emailId
-  ]);
-
-  useEffect(() => {
-    if (
-      activeOuterTabKey !== 'access' ||
       !selectedContact?.ContactInternalId ||
       !emailId
     ) {
@@ -2146,21 +2217,24 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }, [activeOuterTabKey, emailId, allEnrollees, visibleContactIdsForAvatarHydration, avatarUrlMap, onHydratingAdminToolAvatars]);
 
   /* ── Course search memos (must be before early return) ── */
-  const latestCourses = useMemo(() => {
-    if (!allRawCourses?.length) return [];
-    return [...allRawCourses]
-      .sort((a, b) => new Date(b.EndDate || 0) - new Date(a.EndDate || 0))
-      .slice(0, 3);
-  }, [allRawCourses]);
-
+  // Grouped by year (most recent first), capped to the 5 most recent courses
+  // per year — same year-grouped shape as the History tab's course filter
+  // (buildHistoryCourseOptions), just returning raw course objects so this
+  // component can render its own rich option labels (avatar, flag, name).
   const filteredCourses = useMemo(() => {
-    if (!courseSearchText || courseSearchText.length < 1 || !allRawCourses?.length) return latestCourses;
+    if (!allRawCourses?.length) return [];
+    if (!courseSearchText || courseSearchText.length < 1) return allRawCourses;
     const lower = courseSearchText.toLowerCase();
     return allRawCourses.filter(c =>
       (c.CourseDetails?.course || '').toLowerCase().includes(lower) ||
       (c.CourseCodeId || '').toLowerCase().includes(lower)
-    ).slice(0, 20);
-  }, [courseSearchText, allRawCourses, latestCourses]);
+    );
+  }, [courseSearchText, allRawCourses]);
+
+  const courseSearchGroups = useMemo(
+    () => buildCourseSearchGroupsByYear(filteredCourses, { maxPerYear: 5 }),
+    [filteredCourses]
+  );
 
   const selectedContactCourseIds = useMemo(() => {
     if (!selectedContact) return [];
@@ -2743,21 +2817,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       label: renderCountrySummary(option.label, option.alpha3)
     }))
   ), [audienceMetadataCountryOptions, audienceRows, renderCountrySummary]);
-  const advancedContactCountryOptions = useMemo(() => (
-    buildAudienceCountryOptionsForLocation({
-      metadataOptions: audienceMetadataCountryOptions,
-      rows: audienceRows,
-      locationType: advancedContactFilters.locationType
-    }).map(option => ({
-      ...option,
-      label: renderCountrySummary(option.label, option.alpha3)
-    }))
-  ), [
-    advancedContactFilters.locationType,
-    audienceMetadataCountryOptions,
-    audienceRows,
-    renderCountrySummary
-  ]);
   const audienceResidencyDivisionRows = useMemo(() => {
     if (!audienceFilters.residencyCountry) return [];
     if (contactSegmentCountryDivisions?.emailId !== emailId) return [];
@@ -2803,12 +2862,20 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       t('admin.tools.messaging.regionUnknown')
     )
   ), [audienceBirthDivisionRows, t]);
-  const advancedContactRegionOptions = useMemo(() => (
+  const advancedContactResidencyRegionOptions = useMemo(() => (
     buildAudienceCountryDivisionOptions(
-      advancedContactCountryDivisions,
-      t('admin.tools.messaging.regionNotAvailable')
+      advancedContactResidencyDivisions,
+      t('admin.tools.messaging.regionNotAvailable'),
+      t('admin.tools.messaging.regionUnknown')
     )
-  ), [advancedContactCountryDivisions, t]);
+  ), [advancedContactResidencyDivisions, t]);
+  const advancedContactBirthRegionOptions = useMemo(() => (
+    buildAudienceCountryDivisionOptions(
+      advancedContactBirthDivisions,
+      t('admin.tools.messaging.regionNotAvailable'),
+      t('admin.tools.messaging.regionUnknown')
+    )
+  ), [advancedContactBirthDivisions, t]);
   const audienceDisplayCount = audienceTotalCount;
   const getAudienceLanguageLevelLabel = useCallback((level) => {
     const normalizedLevel = String(level || '').trim().toLowerCase();
@@ -2918,7 +2985,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const canSendAudienceMessage = (
     selectedAudienceRows.length > 0 &&
     hasAudienceMessageDraftContent &&
-    audienceMessageDraft.categoryId != null
+    audienceMessageDraft.categoryId != null &&
+    !!audienceMessageDraft.courseCodeId
   );
   const audienceMessageSendDisabledHint = selectedAudienceRows.length === 0
     ? t('admin.tools.messaging.chooseAudienceHint')
@@ -2926,7 +2994,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       ? t('admin.tools.messaging.writeMessageHint')
       : audienceMessageDraft.categoryId == null
         ? t('admin.tools.messaging.chooseCategoryHint')
-        : '';
+        : !audienceMessageDraft.courseCodeId
+          ? t('admin.tools.messaging.chooseCourseCodeHint')
+          : '';
 
   useEffect(() => {
     setContactProfileTableCounts({
@@ -5290,232 +5360,45 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           borderTop: '1px solid #f0f0f0'
         }}
       >
-        <Row gutter={[12, 12]}>
-          <Col xs={24} lg={8}>
-            <Input
-              allowClear
-              prefix={<SearchOutlined />}
-              placeholder={t('admin.tools.messaging.searchPlaceholder')}
-              value={advancedContactFilters.searchText}
-              onChange={event => updateAdvancedContactFilter('searchText', event.target.value)}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={4}>
-            <Select
-              value={advancedContactFilters.sex}
-              options={audienceOptions.sex}
-              onChange={value => updateAdvancedContactFilter('sex', value)}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            <InputNumber
-              min={0}
-              max={120}
-              value={advancedContactFilters.minAge}
-              onChange={value => updateAdvancedContactFilter('minAge', value)}
-              placeholder={t('admin.tools.messaging.minAge')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            <InputNumber
-              min={0}
-              max={120}
-              value={advancedContactFilters.maxAge}
-              onChange={value => updateAdvancedContactFilter('maxAge', value)}
-              placeholder={t('admin.tools.messaging.maxAge')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            <Select
-              value={advancedContactFilters.limit}
-              options={[10, 20, 50, 100, 250].map(value => ({ value, label: String(value) }))}
-              onChange={value => updateAdvancedContactFilter('limit', value)}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            <InputNumber
-              min={0}
-              step={advancedContactFilters.limit}
-              value={advancedContactFilters.offset}
-              onChange={value => updateAdvancedContactFilter('offset', Number(value || 0))}
-              placeholder={t('admin.tools.messaging.offset')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-
-          <Col xs={24} md={8} lg={4}>
-            <Select
-              value={advancedContactFilters.locationType}
-              options={audienceOptions.locationTypes}
-              onChange={(value) => {
-                setAdvancedContactFilters(previousFilters => ({
-                  ...previousFilters,
-                  locationType: value,
-                  countryNameOrId: null,
-                  locationRegionName: null,
-                  offset: 0
-                }));
-              }}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={8} lg={5}>
-            <Select
-              allowClear
-              showSearch
-              value={advancedContactFilters.countryNameOrId}
-              placeholder={t('admin.tools.messaging.countryPlaceholder')}
-              options={advancedContactCountryOptions}
-              optionFilterProp="searchText"
-              onChange={(value) => {
-                setAdvancedContactFilters(previousFilters => ({
-                  ...previousFilters,
-                  countryNameOrId: value || null,
-                  locationRegionName: null,
-                  offset: 0
-                }));
-              }}
-              loading={audienceMetadataLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={8} lg={5}>
-            <Select
-              allowClear
-              showSearch
-              disabled={!advancedContactFilters.countryNameOrId}
-              value={advancedContactFilters.locationRegionName}
-              placeholder={t('admin.tools.messaging.regionPlaceholder')}
-              options={advancedContactRegionOptions}
-              optionFilterProp="searchText"
-              onChange={value => updateAdvancedContactFilter('locationRegionName', value || null)}
-              loading={advancedContactCountryDivisionsLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={8} lg={5}>
-            <Select
-              allowClear
-              showSearch
-              value={advancedContactFilters.languageId}
-              placeholder={t('admin.tools.messaging.languagePlaceholder')}
-              options={[
-                { value: 'all', label: t('admin.tools.messaging.option.all') },
-                ...audienceLanguageOptions
-              ]}
-              optionFilterProp="searchText"
-              onChange={value => updateAdvancedContactFilter('languageId', value || 'all')}
-              loading={audienceMetadataLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={8} lg={5}>
-            <Select
-              allowClear
-              showSearch
-              value={advancedContactFilters.languageLevel}
-              placeholder={t('admin.tools.messaging.languageLevelPlaceholder')}
-              options={[
-                { value: 'all', label: t('admin.tools.messaging.option.all') },
-                ...audienceLanguageLevelOptions
-              ]}
-              optionFilterProp="searchText"
-              onChange={value => updateAdvancedContactFilter('languageLevel', value || 'all')}
-              loading={audienceMetadataLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-
-          <Col xs={24} lg={10}>
-            <Select
-              mode="multiple"
-              allowClear
-              showSearch
-              value={advancedContactFilters.courseCodeIds}
-              placeholder={t('admin.tools.messaging.includeCoursesPlaceholder')}
-              options={audienceCourseOptions}
-              optionFilterProp="searchText"
-              onChange={value => updateAdvancedContactFilter('courseCodeIds', value || [])}
-              loading={audienceMetadataLoading}
-              maxTagCount={2}
-              tagRender={renderAudienceCourseTag}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} lg={10}>
-            <Select
-              mode="multiple"
-              allowClear
-              showSearch
-              value={advancedContactFilters.excludeCourseCodeIds}
-              placeholder={t('admin.tools.messaging.excludeCoursesPlaceholder')}
-              options={audienceCourseOptions}
-              optionFilterProp="searchText"
-              onChange={value => updateAdvancedContactFilter('excludeCourseCodeIds', value || [])}
-              loading={audienceMetadataLoading}
-              maxTagCount={2}
-              tagRender={renderAudienceCourseTag}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} lg={4}>
-            <Checkbox
-              checked={advancedContactFilters.matchAllCourses}
-              onChange={event => updateAdvancedContactFilter('matchAllCourses', event.target.checked)}
-            >
-              {setLocale(locale, 'admin.tools.messaging.matchAllCourses')}
-            </Checkbox>
-          </Col>
-
-          <Col xs={24} md={6}>
-            <Select
-              value={advancedContactFilters.hasProgress}
-              options={audienceOptions.triState}
-              onChange={value => updateAdvancedContactFilter('hasProgress', value)}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={6}>
-            <Select
-              value={advancedContactFilters.hasCertifications}
-              options={audienceOptions.triState}
-              onChange={value => updateAdvancedContactFilter('hasCertifications', value)}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={6}>
-            <Select
-              value={advancedContactFilters.hasPurchases}
-              options={audienceOptions.triState}
-              onChange={value => updateAdvancedContactFilter('hasPurchases', value)}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={12} md={3}>
-            <Button
-              type="primary"
-              icon={<SearchOutlined />}
-              loading={advancedContactSearchLoading}
-              onClick={() => loadAdvancedContactSearch()}
-              block
-            >
-              {setLocale(locale, 'admin.tools.messaging.applyFilters')}
-            </Button>
-          </Col>
-          <Col xs={12} md={3}>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={resetAdvancedContactFilters}
-              block
-            >
-              {setLocale(locale, 'admin.tools.messaging.clearFilters')}
-            </Button>
-          </Col>
-        </Row>
+        <ContactFilterPanel
+          filters={advancedContactFilters}
+          onFieldChange={updateAdvancedContactFilter}
+          onResidencyCountryChange={(value) => {
+            setAdvancedContactFilters(previousFilters => ({ ...previousFilters, residencyCountry: value || null, residencyRegion: null, offset: 0 }));
+            if (value) loadAdvancedContactCountryDivisions('residency', value);
+          }}
+          onBirthCountryChange={(value) => {
+            setAdvancedContactFilters(previousFilters => ({ ...previousFilters, birthCountry: value || null, birthRegion: null, offset: 0 }));
+            if (value) loadAdvancedContactCountryDivisions('birth', value);
+          }}
+          onExcludeCategoryChange={(value) => {
+            setAdvancedContactFilters(previousFilters => ({
+              ...previousFilters,
+              excludeCategoryId: value,
+              ...(value ? {} : { excludeCourseCodeId: '' }),
+              offset: 0,
+            }));
+          }}
+          onApply={() => loadAdvancedContactSearch()}
+          onReset={resetAdvancedContactFilters}
+          applyLoading={advancedContactSearchLoading}
+          metadataLoading={audienceMetadataLoading}
+          residencyDivisionsLoading={advancedContactResidencyDivisionsLoading}
+          birthDivisionsLoading={advancedContactBirthDivisionsLoading}
+          renderCourseTag={renderAudienceCourseTag}
+          showPaging
+          options={{
+            sex: audienceOptions.sex,
+            residencyCountries: audienceResidencyCountryOptions,
+            birthCountries: audienceBirthCountryOptions,
+            residencyRegions: advancedContactResidencyRegionOptions,
+            birthRegions: advancedContactBirthRegionOptions,
+            languages: audienceLanguageOptions,
+            languageLevels: audienceLanguageLevelOptions,
+            courses: audienceCourseGroupedOptions,
+            communicationCategories: communicationCategoryOptions
+          }}
+        />
 
         {advancedContactSearchResult && (
           <div style={{ marginTop: 12 }}>
@@ -6187,7 +6070,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   }));
 
   const langDataById = new Map(langData.map(l => [l.langId, l]));
-  const courseSearchOptions = filteredCourses.map(c => {
+  const buildCourseSearchOption = (c) => {
     const langInfo = langDataById.get(c.TargetLanguageId);
     return {
       key: c.CourseCodeId,
@@ -6204,7 +6087,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </div>
       )
     };
-  });
+  };
+  // Grouped by year, matching the History tab's course filter pattern —
+  // each year shows only its 5 most recent courses (courseSearchGroups).
+  const courseSearchOptions = courseSearchGroups.map(group => ({
+    label: group.year ? String(group.year) : 'Unknown',
+    options: group.courses.map(buildCourseSearchOption)
+  }));
 
   const handleCourseSearchChange = (value) => setCourseSearchText(value);
 
@@ -6231,7 +6120,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         ...prev,
         ...(section === 'info' && { course: cd.course, teacher: cd.teacher, imageUrl: cd.imageUrl, location: cd.location, gatheringDay: cd.gatheringDay, gatheringTime: cd.gatheringTime, gatheringStartingDate: cd.gatheringStartingDate, courseWeeksLength: cd.courseWeeksLength }),
         ...(section === 'dates' && { StartDate: selectedCourseObj.StartDate, EndDate: selectedCourseObj.EndDate }),
-        ...(section === 'links' && { whatsAppLink: cd.whatsAppLink, targetAudienceNativeLanguage: cd.targetAudienceNativeLanguage, NativeLanguageId: selectedCourseObj.NativeLanguageId, TargetLanguageId: selectedCourseObj.TargetLanguageId })
+        ...(section === 'links' && { whatsAppLink: cd.whatsAppLink, coursePath: cd.coursePath, targetAudienceNativeLanguage: cd.targetAudienceNativeLanguage, NativeLanguageId: selectedCourseObj.NativeLanguageId, TargetLanguageId: selectedCourseObj.TargetLanguageId })
       }));
     }
     setEditingSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -6244,7 +6133,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       const merged = {
         ...cd,
         ...(section === 'info' && { course: courseFormValues.course, teacher: courseFormValues.teacher, imageUrl: courseFormValues.imageUrl, location: courseFormValues.location, gatheringDay: courseFormValues.gatheringDay, gatheringTime: courseFormValues.gatheringTime, gatheringStartingDate: courseFormValues.gatheringStartingDate, courseWeeksLength: courseFormValues.courseWeeksLength }),
-        ...(section === 'links' && { whatsAppLink: courseFormValues.whatsAppLink, targetAudienceNativeLanguage: courseFormValues.targetAudienceNativeLanguage })
+        ...(section === 'links' && { whatsAppLink: courseFormValues.whatsAppLink, coursePath: courseFormValues.coursePath, targetAudienceNativeLanguage: courseFormValues.targetAudienceNativeLanguage })
       };
       const payload = buildCourseUpsertPayload({
         CourseCodeId: selectedCourseObj.CourseCodeId,
@@ -6490,6 +6379,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           <div style={{ marginBottom: 16 }}>
             <Row gutter={16}>
               <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong><MessageOutlined style={{ marginRight: 4, color: '#25D366' }} />{t('admin.tools.course.label.whatsAppLink')}</strong></div><Input value={courseFormValues.whatsAppLink || ''} onChange={e => setCourseFormValues(p => ({ ...p, whatsAppLink: e.target.value }))} /></Col>
+              <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.coursePath')}</strong></div><Input value={courseFormValues.coursePath || ''} placeholder="/lrn/en/level-1" onChange={e => setCourseFormValues(p => ({ ...p, coursePath: e.target.value }))} /></Col>
               <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.targetAudience')}</strong></div><Select value={courseFormValues.targetAudienceNativeLanguage || undefined} onChange={v => setCourseFormValues(p => ({ ...p, targetAudienceNativeLanguage: v }))} options={langData.map(l => ({ value: l.langName, label: l.langName }))} style={{ width: '100%' }} /></Col>
               <Col xs={24} sm={8} style={{ marginTop: 8 }}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.nativeLanguage')}</strong></div><Select value={courseFormValues.NativeLanguageId || undefined} onChange={v => setCourseFormValues(p => ({ ...p, NativeLanguageId: v }))} options={langOptions} style={{ width: '100%' }} /></Col>
               <Col xs={24} sm={8} style={{ marginTop: 8 }}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.targetLanguage')}</strong></div><Select value={courseFormValues.TargetLanguageId || undefined} onChange={v => setCourseFormValues(p => ({ ...p, TargetLanguageId: v }))} options={langOptions} style={{ width: '100%' }} /></Col>
@@ -6514,7 +6404,10 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               {targetLang ? <><Flag code={targetLang.icon} style={{ width: 20, marginRight: 6, verticalAlign: 'middle' }} />{targetLang.langName}</> : (c.TargetLanguageId || '—')}
             </Descriptions.Item>
             <Descriptions.Item label={<span><MessageOutlined style={{ marginRight: 4, color: '#25D366' }} />{setLocale(locale, 'admin.tools.course.label.whatsAppLink')}</span>}>
-              {cd.whatsAppLink ? <a href={cd.whatsAppLink} target="_blank" rel="noreferrer">{cd.whatsAppLink}</a> : '—'}
+              {cd.whatsAppLink ? <><a href={cd.whatsAppLink} target="_blank" rel="noreferrer">{cd.whatsAppLink}</a><CopyOutlined style={{ cursor: 'pointer', color: '#1890ff', marginLeft: 6 }} onClick={() => { navigator.clipboard.writeText(cd.whatsAppLink); messageApi.success(t('admin.tools.copied')); }} /></> : '—'}
+            </Descriptions.Item>
+            <Descriptions.Item label={setLocale(locale, 'admin.tools.course.label.coursePath')}>
+              {cd.coursePath || '—'}
             </Descriptions.Item>
             <Descriptions.Item label={setLocale(locale, 'admin.tools.course.label.targetAudience')}>{cd.targetAudienceNativeLanguage || '—'}</Descriptions.Item>
           </Descriptions>
@@ -6583,6 +6476,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         <Row gutter={16} style={{ marginTop: 12 }}>
           <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.targetAudience')} *</strong></div><Select value={courseFormValues.targetAudienceNativeLanguage || undefined} onChange={v => setCourseFormValues(p => ({ ...p, targetAudienceNativeLanguage: v }))} options={langData.map(l => ({ value: l.langName, label: l.langName }))} style={{ width: '100%' }} /></Col>
           <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong><MessageOutlined style={{ marginRight: 4, color: '#25D366' }} />{t('admin.tools.course.label.whatsAppLink')} *</strong></div><Input value={courseFormValues.whatsAppLink || ''} onChange={e => setCourseFormValues(p => ({ ...p, whatsAppLink: e.target.value }))} /></Col>
+          <Col xs={24} sm={12}><div style={{ marginBottom: 4 }}><strong>{t('admin.tools.course.label.coursePath')}</strong></div><Input value={courseFormValues.coursePath || ''} placeholder="/lrn/en/level-1" onChange={e => setCourseFormValues(p => ({ ...p, coursePath: e.target.value }))} /></Col>
         </Row>
         <Row gutter={16} style={{ marginTop: 12 }}>
           <Col xs={24}>
@@ -7174,9 +7068,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         onChange={(event) => setMonitoringInnerTabKey(event.target.value)}
         style={{ marginBottom: 16 }}
       >
-        <Radio.Button value="general-access"><LoginOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.generalAccess')}</Radio.Button>
-        <Radio.Button value="contact-profiles"><UserOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}</Radio.Button>
         <Radio.Button value="process-logs"><UnorderedListOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.processLogs')}</Radio.Button>
+        <Radio.Button value="contact-profiles"><UserOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.contactProfiles')}</Radio.Button>
+        <Radio.Button value="general-access"><LoginOutlined /> {setLocale(locale, 'admin.tools.monitoring.tab.generalAccess')}</Radio.Button>
       </Radio.Group>
 
       {monitoringInnerTabKey === 'general-access' && renderGeneralAccessMonitoring()}
@@ -7185,428 +7079,54 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </Card>
   );
 
-  const renderMessagingFilters = () => {
-    const renderFilterTooltip = (tooltipKey, child) => (
-      <Tooltip title={t(tooltipKey)} placement="topLeft">
-        <div>{child}</div>
-      </Tooltip>
-    );
-
-    return (
-      <div>
-        <Alert
-          type="info"
-          showIcon
-          title={setLocale(locale, 'admin.tools.messaging.filtersDescription')}
-          style={{ marginBottom: 12 }}
-        />
-
-        <Card
-          size="small"
-          title={setLocale(locale, 'admin.tools.messaging.filterSection.search')}
-          style={{ marginBottom: 12 }}
-        >
-        <Row gutter={[12, 12]}>
-          <Col xs={24}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.search', (
-              <Input
-                allowClear
-                prefix={<SearchOutlined />}
-                placeholder={t('admin.tools.messaging.searchPlaceholder')}
-                value={audienceFilters.searchText}
-                onChange={event => updateAudienceFilter('searchText', event.target.value)}
-              />
-            ))}
-          </Col>
-        </Row>
-        </Card>
-
-        <Card
-          size="small"
-          title={setLocale(locale, 'admin.tools.messaging.filterSection.searchAndPaging')}
-          style={{ marginBottom: 12 }}
-        >
-        <Row gutter={[12, 12]}>
-          <Col xs={12} sm={8} lg={4}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.sex', (
-              <Select
-                value={audienceFilters.sex}
-                options={audienceOptions.sex}
-                onChange={value => updateAudienceFilter('sex', value)}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.minAge', (
-              <InputNumber
-                min={0}
-                max={120}
-                value={audienceFilters.minAge}
-                onChange={value => updateAudienceFilter('minAge', value)}
-                placeholder={t('admin.tools.messaging.minAge')}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={12} sm={8} lg={3}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.maxAge', (
-              <InputNumber
-                min={0}
-                max={120}
-                value={audienceFilters.maxAge}
-                onChange={value => updateAudienceFilter('maxAge', value)}
-                placeholder={t('admin.tools.messaging.maxAge')}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-        </Row>
-        </Card>
-
-        <Card
-          size="small"
-          title={setLocale(locale, 'admin.tools.messaging.filterSection.demographics')}
-          style={{ marginBottom: 12 }}
-        >
-        {!audienceFilters.residencyCountry && !audienceFilters.birthCountry && (
-          <Row style={{ marginBottom: 8 }}>
-            <Col>
-              <span style={{ color: 'rgba(0,0,0,0.45)', fontSize: 13 }}>
-                {t('admin.tools.messaging.allLocations')}
-              </span>
-            </Col>
-          </Row>
-        )}
-        <Row gutter={[12, 8]} align="middle" style={{ marginBottom: 8 }}>
-          <Col xs={24} md={3} lg={3}>
-            <span style={{ fontWeight: 500, opacity: audienceFilters.residencyCountry ? 1 : 0.45 }}>Residency</span>
-          </Col>
-          <Col xs={24} md={6} lg={6}>
-            <Select
-              allowClear
-              showSearch
-              value={audienceFilters.residencyCountry}
-              placeholder={t('admin.tools.messaging.countryPlaceholder')}
-              options={audienceResidencyCountryOptions}
-              optionFilterProp="searchText"
-              onChange={(value) => {
-                setAudienceFilters(prev => ({ ...prev, residencyCountry: value || null, residencyRegion: null, offset: 0 }));
-                if (value) loadAudienceCountryDivisions({ locationType: 'residency', countryNameOrId: value });
-              }}
-              loading={audienceMetadataLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={6} lg={6}>
-            <Select
-              mode="multiple"
-              allowClear
-              showSearch
-              disabled={!audienceFilters.residencyCountry}
-              value={audienceFilters.residencyRegion || []}
-              placeholder={t('admin.tools.messaging.regionPlaceholder')}
-              options={audienceResidencyRegionOptions}
-              optionFilterProp="searchText"
-              onChange={values => updateAudienceFilter('residencyRegion', values?.length ? values : null)}
-              loading={audienceCountryDivisionsLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={4} lg={4}>
-            <Select
-              disabled={!audienceFilters.residencyCountry}
-              value={audienceFilters.residencyExclude ? 'exclude' : 'include'}
-              options={[
-                { value: 'include', label: 'Include' },
-                { value: 'exclude', label: 'Exclude' }
-              ]}
-              onChange={value => updateAudienceFilter('residencyExclude', value === 'exclude')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-        </Row>
-        <Row gutter={[12, 8]} align="middle" style={{ marginBottom: 8 }}>
-          <Col xs={24} md={3} lg={3}>
-            <span style={{ fontWeight: 500, opacity: audienceFilters.birthCountry ? 1 : 0.45 }}>Birth</span>
-          </Col>
-          <Col xs={24} md={6} lg={6}>
-            <Select
-              allowClear
-              showSearch
-              value={audienceFilters.birthCountry}
-              placeholder={t('admin.tools.messaging.countryPlaceholder')}
-              options={audienceBirthCountryOptions}
-              optionFilterProp="searchText"
-              onChange={(value) => {
-                setAudienceFilters(prev => ({ ...prev, birthCountry: value || null, birthRegion: null, offset: 0 }));
-                if (value) loadAudienceCountryDivisions({ locationType: 'birth', countryNameOrId: value });
-              }}
-              loading={audienceMetadataLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={6} lg={6}>
-            <Select
-              mode="multiple"
-              allowClear
-              showSearch
-              disabled={!audienceFilters.birthCountry}
-              value={audienceFilters.birthRegion || []}
-              placeholder={t('admin.tools.messaging.regionPlaceholder')}
-              options={audienceBirthRegionOptions}
-              optionFilterProp="searchText"
-              onChange={values => updateAudienceFilter('birthRegion', values?.length ? values : null)}
-              loading={audienceCountryDivisionsLoading}
-              style={{ width: '100%' }}
-            />
-          </Col>
-          <Col xs={24} md={4} lg={4}>
-            <Select
-              disabled={!audienceFilters.birthCountry}
-              value={audienceFilters.birthExclude ? 'exclude' : 'include'}
-              options={[
-                { value: 'include', label: 'Include' },
-                { value: 'exclude', label: 'Exclude' }
-              ]}
-              onChange={value => updateAudienceFilter('birthExclude', value === 'exclude')}
-              style={{ width: '100%' }}
-            />
-          </Col>
-        </Row>
-        <Row gutter={[12, 8]}>
-          <Col xs={24} md={3} lg={3} />
-          <Col xs={24} md={6} lg={6}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.language', (
-              <Select
-                allowClear
-                showSearch
-                value={audienceFilters.languageId}
-                placeholder={t('admin.tools.messaging.languagePlaceholder')}
-                options={[
-                  { value: 'all', label: t('admin.tools.messaging.option.all') },
-                  ...audienceLanguageOptions
-                ]}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('languageId', value || 'all')}
-                loading={audienceMetadataLoading}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={24} md={6} lg={6}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.languageLevel', (
-              <Select
-                allowClear
-                showSearch
-                value={audienceFilters.languageLevel}
-                placeholder={t('admin.tools.messaging.languageLevelPlaceholder')}
-                options={[
-                  { value: 'all', label: t('admin.tools.messaging.option.all') },
-                  ...audienceLanguageLevelOptions
-                ]}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('languageLevel', value || 'all')}
-                loading={audienceMetadataLoading}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-        </Row>
-        </Card>
-
-        <Card
-          size="small"
-          title={setLocale(locale, 'admin.tools.messaging.filterSection.coursesAndSignals')}
-          style={{ marginBottom: 12 }}
-        >
-
-        {/* Course Membership */}
-        <Row gutter={[12, 12]} style={{ marginBottom: 12 }}>
-          <Col xs={24} lg={10}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.includeCourses', (
-              <Select
-                mode="multiple"
-                allowClear
-                showSearch
-                value={audienceFilters.courseCodeIds}
-                placeholder={t('admin.tools.messaging.includeCoursesPlaceholder')}
-                options={audienceCourseGroupedOptions}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('courseCodeIds', value || [])}
-                loading={audienceMetadataLoading}
-                maxTagCount={3}
-                tagRender={renderAudienceCourseTag}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={24} lg={10}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.excludeCourses', (
-              <Select
-                mode="multiple"
-                allowClear
-                showSearch
-                value={audienceFilters.excludeCourseCodeIds}
-                placeholder={t('admin.tools.messaging.excludeCoursesPlaceholder')}
-                options={audienceCourseGroupedOptions}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('excludeCourseCodeIds', value || [])}
-                loading={audienceMetadataLoading}
-                maxTagCount={3}
-                tagRender={renderAudienceCourseTag}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-          <Col xs={24} lg={4} style={{ display: 'flex', alignItems: 'center' }}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.matchAllCourses', (
-              <Checkbox
-                checked={audienceFilters.matchAllCourses}
-                onChange={event => updateAudienceFilter('matchAllCourses', event.target.checked)}
-              >
-                {setLocale(locale, 'admin.tools.messaging.matchAllCourses')}
-              </Checkbox>
-            ))}
-          </Col>
-        </Row>
-
-        {/* Engagement Signals */}
-        <Divider orientation="left" style={{ margin: '4px 0 10px', fontSize: 12, color: '#8c8c8c' }}>
-          {t('admin.tools.messaging.filterSection.engagementSignals')}
-        </Divider>
-        <Row gutter={[12, 12]} style={{ marginBottom: 16 }}>
-          <Col xs={24} md={6}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.progress', (
-              <div>
-                <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 3 }}>{t('admin.tools.messaging.signal.progress')}</div>
-                <Select
-                  value={audienceFilters.hasProgress}
-                  options={[
-                    { value: 'all', label: t('admin.tools.messaging.option.any') },
-                    { value: 'with', label: t('admin.tools.messaging.option.withProgress') },
-                    { value: 'without', label: t('admin.tools.messaging.option.withoutProgress') }
-                  ]}
-                  onChange={value => updateAudienceFilter('hasProgress', value)}
-                  style={{ width: '100%' }}
-                />
-              </div>
-            ))}
-          </Col>
-          <Col xs={24} md={6}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.certifications', (
-              <div>
-                <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 3 }}>{t('admin.tools.messaging.signal.certifications')}</div>
-                <Select
-                  value={audienceFilters.hasCertifications}
-                  options={[
-                    { value: 'all', label: t('admin.tools.messaging.option.any') },
-                    { value: 'with', label: t('admin.tools.messaging.option.withCertification') },
-                    { value: 'without', label: t('admin.tools.messaging.option.withoutCertification') }
-                  ]}
-                  onChange={value => updateAudienceFilter('hasCertifications', value)}
-                  style={{ width: '100%' }}
-                />
-              </div>
-            ))}
-          </Col>
-          <Col xs={24} md={6}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.purchases', (
-              <div>
-                <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 3 }}>{t('admin.tools.messaging.signal.purchases')}</div>
-                <Select
-                  value={audienceFilters.hasPurchases}
-                  options={[
-                    { value: 'all', label: t('admin.tools.messaging.option.any') },
-                    { value: 'with', label: t('admin.tools.messaging.option.withAccess') },
-                    { value: 'without', label: t('admin.tools.messaging.option.withoutAccess') }
-                  ]}
-                  onChange={value => updateAudienceFilter('hasPurchases', value)}
-                  style={{ width: '100%' }}
-                />
-              </div>
-            ))}
-          </Col>
-          <Col xs={12} md={3}>
-            <Button
-              type="primary"
-              icon={<SearchOutlined />}
-              loading={audienceLoading}
-              onClick={() => loadAudienceSegment()}
-              block
-              style={{ marginTop: 20 }}
-            >
-              {setLocale(locale, 'admin.tools.messaging.applyFilters')}
-            </Button>
-          </Col>
-          <Col xs={12} md={3}>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={resetAudienceFilters}
-              block
-              style={{ marginTop: 20 }}
-            >
-              {setLocale(locale, 'admin.tools.messaging.clearFilters')}
-            </Button>
-          </Col>
-        </Row>
-
-        {/* Deduplication */}
-        <Divider orientation="left" style={{ margin: '4px 0 10px', fontSize: 12, color: '#8c8c8c' }}>
-          {t('admin.tools.messaging.filterSection.deduplication')}
-        </Divider>
-        <Row gutter={[12, 12]} style={{ marginBottom: 4 }}>
-          <Col xs={24} md={8}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.excludeCategory', (
-              <Select
-                value={audienceFilters.excludeCategoryId ?? undefined}
-                placeholder={t('admin.tools.messaging.excludeCategoryPlaceholder')}
-                options={communicationCategoryOptions}
-                onChange={value => {
-                  setAudienceFilters(prev => ({
-                    ...prev,
-                    excludeCategoryId: value,
-                    ...(value ? {} : { excludeCourseCodeId: '' }),
-                    offset: 0,
-                  }));
-                }}
-                style={{ width: '100%' }}
-                allowClear
-              />
-            ))}
-          </Col>
-          <Col xs={24} md={8}>
-            {renderFilterTooltip('admin.tools.messaging.tooltip.excludeCourseCodeId', (
-              <Select
-                allowClear
-                showSearch
-                disabled={!audienceFilters.excludeCategoryId}
-                value={audienceFilters.excludeCourseCodeId || undefined}
-                placeholder={
-                  audienceFilters.excludeCategoryId
-                    ? t('admin.tools.messaging.excludeCourseCodeIdPlaceholder')
-                    : t('admin.tools.messaging.excludeCourseCodeIdDisabledPlaceholder')
-                }
-                options={audienceCourseGroupedOptions}
-                optionFilterProp="searchText"
-                onChange={value => updateAudienceFilter('excludeCourseCodeId', value || '')}
-                loading={audienceMetadataLoading}
-                style={{ width: '100%' }}
-              />
-            ))}
-          </Col>
-        </Row>
-        <Row style={{ marginBottom: 8 }}>
-          <Col xs={24} md={16}>
-            <div style={{ fontSize: 11, color: '#8c8c8c', paddingLeft: 2 }}>
-              {t('admin.tools.messaging.deduplication.hint')}
-            </div>
-          </Col>
-        </Row>
-        </Card>
-      </div>
-    );
-  };
+  const renderMessagingFilters = () => (
+    <div>
+      <Alert
+        type="info"
+        showIcon
+        title={setLocale(locale, 'admin.tools.messaging.filtersDescription')}
+        style={{ marginBottom: 12 }}
+      />
+      <ContactFilterPanel
+        filters={audienceFilters}
+        onFieldChange={updateAudienceFilter}
+        onResidencyCountryChange={(value) => {
+          setAudienceFilters(prev => ({ ...prev, residencyCountry: value || null, residencyRegion: null, offset: 0 }));
+          if (value) loadAudienceCountryDivisions({ locationType: 'residency', countryNameOrId: value });
+        }}
+        onBirthCountryChange={(value) => {
+          setAudienceFilters(prev => ({ ...prev, birthCountry: value || null, birthRegion: null, offset: 0 }));
+          if (value) loadAudienceCountryDivisions({ locationType: 'birth', countryNameOrId: value });
+        }}
+        onExcludeCategoryChange={(value) => {
+          setAudienceFilters(prev => ({
+            ...prev,
+            excludeCategoryId: value,
+            ...(value ? {} : { excludeCourseCodeId: '' }),
+            offset: 0,
+          }));
+        }}
+        onApply={() => loadAudienceSegment()}
+        onReset={resetAudienceFilters}
+        applyLoading={audienceLoading}
+        metadataLoading={audienceMetadataLoading}
+        residencyDivisionsLoading={audienceCountryDivisionsLoading}
+        birthDivisionsLoading={audienceCountryDivisionsLoading}
+        renderCourseTag={renderAudienceCourseTag}
+        options={{
+          sex: audienceOptions.sex,
+          residencyCountries: audienceResidencyCountryOptions,
+          birthCountries: audienceBirthCountryOptions,
+          residencyRegions: audienceResidencyRegionOptions,
+          birthRegions: audienceBirthRegionOptions,
+          languages: audienceLanguageOptions,
+          languageLevels: audienceLanguageLevelOptions,
+          courses: audienceCourseGroupedOptions,
+          communicationCategories: communicationCategoryOptions
+        }}
+      />
+    </div>
+  );
 
   const renderAudienceExpandedRow = (record) => (
     <Descriptions size="small" column={2} bordered>
@@ -7760,59 +7280,230 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     </>
   );
 
-  const renderAudienceVisualization = () => {
-    const genderEntries = Object.entries(audienceSummary.genderCounts || {});
-    const countryEntries = Object.entries(audienceSummary.residencyCounts || {})
+  // Shared by both the Cargados and Seleccionados cards below — same three
+  // breakdown sections, fed from whichever row set (loaded or selected) the
+  // caller passes in. When the source array is empty (e.g. nothing selected
+  // yet), the entries lists are simply empty and each section shows the
+  // existing "no rows" Empty state — no separate placeholder needed.
+  const renderAudienceSummaryMetric = (icon, color, label, value) => (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      {React.cloneElement(icon, { style: { color } })}
+      <span style={{ color: '#8c8c8c' }}>{label}: <span style={{ color, fontWeight: 600 }}>{value}</span></span>
+    </span>
+  );
+
+  const renderAudienceSummaryCard = (
+    titleKey,
+    rowCount,
+    rowCountLabelKey,
+    rowIcon,
+    rowIconColor,
+    emailCount,
+    genderCounts,
+    residencyCounts,
+    residencyCountryAlpha3ByName,
+    languageLevelCounts
+  ) => {
+    const genderEntries = Object.entries(genderCounts || {});
+    const countryEntries = Object.entries(residencyCounts || {})
       .sort((a, b) => b[1] - a[1])
       .slice(0, 12);
-    const languageLevelEntries = Object.entries(audienceSummary.languageLevelCounts || {})
+    const languageLevelEntries = Object.entries(languageLevelCounts || {})
       .sort((a, b) => b[1] - a[1])
       .slice(0, 12);
 
     return (
+      <Card
+        size="small"
+        title={setLocale(locale, titleKey)}
+        extra={
+          <span style={{ display: 'flex', gap: 16, fontSize: 12 }}>
+            {renderAudienceSummaryMetric(rowIcon, rowIconColor, setLocale(locale, rowCountLabelKey), rowCount)}
+            {renderAudienceSummaryMetric(<MailOutlined />, '#fa8c16', setLocale(locale, 'admin.tools.messaging.metric.emails'), emailCount)}
+          </span>
+        }
+      >
+        <Card size="small" type="inner" title={setLocale(locale, 'admin.tools.messaging.genderSnapshot')} style={{ marginBottom: 12 }}>
+          {genderEntries.length > 0 ? genderEntries.map(([sex, count]) => (
+            <Tag key={sex} color={getSexTagColor(sex)}>
+              {getSexDisplayLabel(sex)}: {count}
+            </Tag>
+          )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
+        </Card>
+        <Card size="small" type="inner" title={setLocale(locale, 'admin.tools.messaging.residencySnapshot')} style={{ marginBottom: 12 }}>
+          {countryEntries.length > 0 ? countryEntries.map(([country, count]) => (
+            <Tag key={country} color="green" style={{ marginBottom: 6 }}>
+              {renderCountrySummary(country, residencyCountryAlpha3ByName?.[country])}: {count}
+            </Tag>
+          )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
+        </Card>
+        <Card size="small" type="inner" title={setLocale(locale, 'admin.tools.messaging.languageLevelSnapshot')}>
+          {languageLevelEntries.length > 0 ? languageLevelEntries.map(([languageLevelKey, count]) => {
+            const [languageId, level] = languageLevelKey.split(':');
+            const label = level ? `${languageId} ${getAudienceLanguageLevelLabel(level)}`.trim() : languageLevelKey;
+            return (
+              <Tag key={languageLevelKey} color="blue" style={{ marginBottom: 6 }}>
+                {label}: {count}
+              </Tag>
+            );
+          }) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
+        </Card>
+      </Card>
+    );
+  };
+
+  const renderAudienceVisualization = () => (
+    <div>
+      <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+        {renderRevenueMetricCard('admin.tools.messaging.metric.backendCount', audienceTotalCount, <TeamOutlined />, '#1677ff')}
+      </Row>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={12}>
+          {renderAudienceSummaryCard(
+            'admin.tools.messaging.loadedSection.title',
+            audienceSummary.totalRows,
+            'admin.tools.messaging.metric.loadedRows',
+            <TableOutlined />,
+            '#52c41a',
+            audienceSummary.totalEmails,
+            audienceSummary.genderCounts,
+            audienceSummary.residencyCounts,
+            audienceSummary.residencyCountryAlpha3ByName,
+            audienceSummary.languageLevelCounts
+          )}
+        </Col>
+        <Col xs={24} md={12}>
+          {renderAudienceSummaryCard(
+            'admin.tools.messaging.selectedSection.title',
+            audienceSummary.selectedRows,
+            'admin.tools.messaging.metric.selectedRows',
+            <UserOutlined />,
+            '#722ed1',
+            audienceSummary.selectedEmails,
+            audienceSummary.selectedGenderCounts,
+            audienceSummary.selectedResidencyCounts,
+            audienceSummary.selectedResidencyCountryAlpha3ByName,
+            audienceSummary.selectedLanguageLevelCounts
+          )}
+        </Col>
+      </Row>
+    </div>
+  );
+
+  const renderAudienceReview = () => {
+    const checklistItems = [
+      {
+        done: audienceMessageDraft.categoryId != null,
+        label: t('admin.tools.messaging.checklist.category'),
+        hint: audienceMessageDraft.categoryId == null ? t('admin.tools.messaging.chooseCategoryHint') : null
+      },
+      {
+        done: !!audienceMessageDraft.courseCodeId,
+        label: t('admin.tools.messaging.checklist.courseCode'),
+        hint: !audienceMessageDraft.courseCodeId ? t('admin.tools.messaging.chooseCourseCodeHint') : null
+      },
+      {
+        done: !!audienceMessageDraft.subject?.trim(),
+        label: t('admin.tools.messaging.checklist.subject'),
+        hint: !audienceMessageDraft.subject?.trim() ? t('admin.tools.messaging.checklist.subjectHint') : null
+      },
+      {
+        done: !!audienceMessageDraft.bodyText?.trim(),
+        label: t('admin.tools.messaging.checklist.body'),
+        hint: !audienceMessageDraft.bodyText?.trim() ? t('admin.tools.messaging.checklist.bodyHint') : null
+      },
+      {
+        done: selectedAudienceRows.length > 0,
+        label: t('admin.tools.messaging.checklist.audience', { count: selectedAudienceRows.length }),
+        hint: selectedAudienceRows.length === 0 ? t('admin.tools.messaging.chooseAudienceHint') : null
+      }
+    ];
+
+    return (
       <div>
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          {renderRevenueMetricCard('admin.tools.messaging.metric.backendCount', audienceTotalCount, <TeamOutlined />, '#1677ff')}
-          {renderRevenueMetricCard('admin.tools.messaging.metric.loadedRows', audienceSummary.totalRows, <TableOutlined />, '#52c41a')}
-          {renderRevenueMetricCard('admin.tools.messaging.metric.selectedRows', audienceSummary.selectedRows, <UserOutlined />, '#722ed1')}
-          {renderRevenueMetricCard('admin.tools.messaging.metric.emails', audienceSummary.totalEmails, <MailOutlined />, '#fa8c16')}
-        </Row>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} lg={12}>
-            <Card size="small" title={setLocale(locale, 'admin.tools.messaging.genderSnapshot')}>
-              {genderEntries.length > 0 ? genderEntries.map(([sex, count]) => (
-                <Tag key={sex} color={getSexTagColor(sex)}>
-                  {getSexDisplayLabel(sex)}: {count}
-                </Tag>
-              )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
-            </Card>
-          </Col>
-          <Col xs={24} lg={12}>
-            <Card size="small" title={setLocale(locale, 'admin.tools.messaging.residencySnapshot')}>
-              {countryEntries.length > 0 ? countryEntries.map(([country, count]) => (
-                <Tag key={country} color="green" style={{ marginBottom: 6 }}>
-                  {renderCountrySummary(country, audienceSummary.residencyCountryAlpha3ByName?.[country])}: {count}
-                </Tag>
-              )) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
-            </Card>
-          </Col>
-          <Col xs={24} lg={12}>
-            <Card size="small" title={setLocale(locale, 'admin.tools.messaging.languageLevelSnapshot')}>
-              {languageLevelEntries.length > 0 ? languageLevelEntries.map(([languageLevelKey, count]) => {
-                const [languageId, level] = languageLevelKey.split(':');
-                const label = level ? `${languageId} ${getAudienceLanguageLevelLabel(level)}`.trim() : languageLevelKey;
-                return (
-                  <Tag key={languageLevelKey} color="blue" style={{ marginBottom: 6 }}>
-                    {label}: {count}
-                  </Tag>
-                );
-              }) : <Empty description={setLocale(locale, 'admin.tools.messaging.noAudienceRows')} />}
-            </Card>
-          </Col>
-        </Row>
+        <Card size="small" title={t('admin.tools.messaging.checklist.title')} style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+            {checklistItems.map(({ done, label, hint }) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                {done
+                  ? <CheckCircleOutlined style={{ color: '#52c41a', fontSize: 16, marginTop: 1, flexShrink: 0 }} />
+                  : <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: 16, marginTop: 1, flexShrink: 0 }} />
+                }
+                <span style={{ fontSize: 13 }}>
+                  <span style={{ color: done ? '#262626' : '#595959' }}>{label}</span>
+                  {hint && <span style={{ color: '#8c8c8c', marginLeft: 6, fontSize: 12 }}>— {hint}</span>}
+                </span>
+              </div>
+            ))}
+          </div>
+          <Tooltip title={!canSendAudienceMessage ? audienceMessageSendDisabledHint : undefined}>
+            <span style={{ display: 'inline-block' }}>
+              <Popconfirm
+                title={t('admin.tools.messaging.confirmSend', { count: selectedAudienceRows.length })}
+                onConfirm={handleSendAudienceMessage}
+                okText={t('admin.tools.confirmYes')}
+                cancelText={t('admin.tools.confirmNo')}
+                disabled={!canSendAudienceMessage}
+              >
+                <Button
+                  type="primary"
+                  icon={<SendOutlined />}
+                  loading={audienceMessageSending}
+                  disabled={!canSendAudienceMessage}
+                >
+                  {t('admin.tools.messaging.sendMessage')}
+                </Button>
+              </Popconfirm>
+            </span>
+          </Tooltip>
+        </Card>
+        {renderAudienceVisualization()}
       </div>
     );
   };
+
+  const renderSetupTab = () => (
+    <div>
+      <Alert
+        type="info"
+        showIcon
+        message={t('admin.tools.messaging.setup.description')}
+        style={{ marginBottom: 16 }}
+      />
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={8}>
+          <Card size="small" title={t('admin.tools.messaging.categoryManager.title')}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.categoryDesc')}</span>
+              <Button type="primary" icon={<EditOutlined />} onClick={openCategoryManager} block>
+                {t('admin.tools.messaging.categoryManager.cta')}
+              </Button>
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card size="small" title={t('admin.tools.messaging.variableManager.title')}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.variableDesc')}</span>
+              <Button type="primary" icon={<EditOutlined />} onClick={() => setVariableManagerVisible(true)} block>
+                {t('admin.tools.messaging.variableManager.cta')}
+              </Button>
+            </div>
+          </Card>
+        </Col>
+        <Col xs={24} md={8}>
+          <Card size="small" title={t('admin.tools.messaging.templateManager.title')}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.templateDesc')}</span>
+              <Button type="primary" icon={<EditOutlined />} onClick={() => setTemplateManagerVisible(true)} block>
+                {t('admin.tools.messaging.templateManager.cta')}
+              </Button>
+            </div>
+          </Card>
+        </Col>
+      </Row>
+    </div>
+  );
 
   const renderAudienceCertificationReport = () => {
     const certificationRows = [...(audienceCertificationHistory?.rows || [])]
@@ -7856,7 +7547,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 showSearch
                 value={audienceCertificationFilters.courseCodeIds}
                 placeholder="Course"
-                options={audienceCourseOptions}
+                options={audienceCourseGroupedOptions}
                 optionFilterProp="searchText"
                 tagRender={renderAudienceCourseTag}
                 maxTagCount={2}
@@ -8213,9 +7904,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         type="warning"
         showIcon
         message={t('admin.tools.messaging.dailyLimitBanner')}
-        style={{ marginBottom: 16 }}
+        style={{ marginBottom: 8 }}
       />
-      <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+      <Divider orientation="left" style={{ margin: '12px 0 10px', fontSize: 13, color: '#595959' }}>
+        {t('admin.tools.messaging.section.routing')}
+      </Divider>
+      <Row gutter={[8, 8]} style={{ marginBottom: 4 }}>
         <Col xs={24} md={12}>
           <Select
             value={audienceMessageDraft.categoryId}
@@ -8225,19 +7919,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             style={{ width: '100%' }}
             allowClear
           />
-          <div style={{ textAlign: 'right', marginTop: 2 }}>
-            <Space size="small">
-              <Button type="link" size="small" icon={<EditOutlined />} onClick={openCategoryManager}>
-                {t('admin.tools.messaging.manage')}
-              </Button>
-              <Button type="link" size="small" icon={<EditOutlined />} onClick={() => setVariableManagerVisible(true)}>
-                {t('admin.tools.messaging.variableManager.title')}
-              </Button>
-              <Button type="link" size="small" icon={<EditOutlined />} onClick={() => setTemplateManagerVisible(true)}>
-                {t('admin.tools.messaging.templateManager.title')}
-              </Button>
-            </Space>
-          </div>
         </Col>
         <Col xs={24} md={12}>
           <Select
@@ -8253,30 +7934,38 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </Col>
       </Row>
       {messageTemplateSelectOptions.length > 0 && (
-        <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
-          <Col xs={24}>
-            <Select
-              value={undefined}
-              placeholder={t('admin.tools.messaging.loadTemplate')}
-              options={messageTemplateSelectOptions}
-              style={{ width: '100%', maxWidth: 480 }}
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              onChange={(_, option) => {
-                if (!option) return;
-                setAudienceMessageDraft(prev => ({
-                  ...prev,
-                  subject: option.subject || prev.subject,
-                  bodyText: option.body || prev.bodyText,
-                  bodyHtml: ''
-                }));
-              }}
-            />
-          </Col>
-        </Row>
+        <>
+          <Divider orientation="left" style={{ margin: '12px 0 10px', fontSize: 13, color: '#595959' }}>
+            {t('admin.tools.messaging.section.template')}
+          </Divider>
+          <Row gutter={[8, 8]} style={{ marginBottom: 4 }}>
+            <Col xs={24}>
+              <Select
+                value={undefined}
+                placeholder={t('admin.tools.messaging.loadTemplate')}
+                options={messageTemplateSelectOptions}
+                style={{ width: '100%', maxWidth: 480 }}
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                onChange={(_, option) => {
+                  if (!option) return;
+                  setAudienceMessageDraft(prev => ({
+                    ...prev,
+                    subject: option.subject || prev.subject,
+                    bodyText: option.body || prev.bodyText,
+                    bodyHtml: ''
+                  }));
+                }}
+              />
+            </Col>
+          </Row>
+        </>
       )}
-      <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+      <Divider orientation="left" style={{ margin: '12px 0 10px', fontSize: 13, color: '#595959' }}>
+        {t('admin.tools.messaging.section.subject')}
+      </Divider>
+      <Row gutter={[8, 8]} style={{ marginBottom: 4 }}>
         <Col xs={24} md={18}>
           <Input
             ref={audienceSubjectInputRef}
@@ -8307,6 +7996,9 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           />
         </Col>
       </Row>
+      <Divider orientation="left" style={{ margin: '12px 0 10px', fontSize: 13, color: '#595959' }}>
+        {t('admin.tools.messaging.section.messageBody')}
+      </Divider>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
         <Select
           value={undefined}
@@ -8382,37 +8074,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               </div>
             );
           })()}
-        </div>
-      )}
-      <Tooltip title={audienceMessageSendDisabledHint}>
-        <span style={{ display: 'inline-block' }}>
-          <Popconfirm
-            title={t('admin.tools.messaging.confirmSend', { count: selectedAudienceRows.length })}
-            onConfirm={handleSendAudienceMessage}
-            okText={t('admin.tools.confirmYes')}
-            cancelText={t('admin.tools.confirmNo')}
-            disabled={!canSendAudienceMessage}
-          >
-            <Button
-              type="primary"
-              icon={<SendOutlined />}
-              loading={audienceMessageSending}
-              disabled={!canSendAudienceMessage}
-            >
-              {setLocale(locale, 'admin.tools.messaging.sendMessage')}
-            </Button>
-          </Popconfirm>
-        </span>
-      </Tooltip>
-      {selectedAudienceRows.length === 0 && (
-        <div
-          style={{
-            color: '#72849a',
-            fontSize: 12,
-            marginTop: 8
-          }}
-        >
-          {setLocale(locale, 'admin.tools.messaging.chooseAudienceHint')}
         </div>
       )}
     </div>
@@ -9190,11 +8851,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         onChange={setMessagingInnerTabKey}
         items={[
           {
-            key: 'message',
+            key: 'compose',
             label: (
               <span>
                 <MessageOutlined style={{ marginRight: 6 }} />
-                {setLocale(locale, 'admin.tools.messaging.tab.message')}
+                {t('admin.tools.messaging.tab.compose')}
               </span>
             ),
             children: renderAudienceMessageComposer()
@@ -9210,24 +8871,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             children: renderAudienceTable()
           },
           {
-            key: 'visualization',
+            key: 'review',
             label: (
               <span>
                 <BarChartOutlined style={{ marginRight: 6 }} />
-                {setLocale(locale, 'admin.tools.messaging.tab.visualization')}
+                {t('admin.tools.messaging.tab.review')}
               </span>
             ),
-            children: renderAudienceVisualization()
+            children: renderAudienceReview()
           },
           {
-            key: 'certifications',
+            key: '__divider',
             label: (
-              <span>
-                <SafetyCertificateOutlined style={{ marginRight: 6 }} />
-                Certifications
-              </span>
+              <span style={{ color: '#d9d9d9', cursor: 'default', userSelect: 'none', padding: '0 2px', fontWeight: 300 }}>|</span>
             ),
-            children: renderAudienceCertificationReport()
+            disabled: true
           },
           {
             key: 'messagingHistory',
@@ -9238,6 +8896,26 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               </span>
             ),
             children: renderMessagingHistory()
+          },
+          {
+            key: 'certifications',
+            label: (
+              <span>
+                <SafetyCertificateOutlined style={{ marginRight: 6 }} />
+                {t('admin.tools.messaging.tab.certifications')}
+              </span>
+            ),
+            children: renderAudienceCertificationReport()
+          },
+          {
+            key: 'setup',
+            label: (
+              <span>
+                <SettingOutlined style={{ marginRight: 6 }} />
+                {t('admin.tools.messaging.tab.setup')}
+              </span>
+            ),
+            children: renderSetupTab()
           }
         ]}
       />
@@ -9741,14 +9419,35 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
   const coverUrl = 'https://images.unsplash.com/photo-1593153041370-5ebf6b82886a?q=80&w=1461&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
 
-  const outerTabsConfig = [
-    { key: 'access', tab: <span><UserOutlined /> {setLocale(locale, 'admin.tools.tab.accessManagement')}</span> },
-    { key: 'stewardship', tab: <span><TeamOutlined /> {setLocale(locale, 'admin.tools.tab.contactStewardship')}</span> },
-    { key: 'courses', tab: <span><BookOutlined /> {setLocale(locale, 'admin.tools.tab.courseManagement')}</span> },
-    { key: 'revenue', tab: <span><DollarOutlined /> {setLocale(locale, 'admin.tools.tab.revenue')}</span> },
-    { key: 'messaging', tab: <span><MailOutlined /> {setLocale(locale, 'admin.tools.tab.messaging')}</span> },
-    { key: 'monitoring', tab: <span><DashboardOutlined /> {setLocale(locale, 'admin.tools.tab.monitoring')}</span> }
-  ];
+  const outerTabsByKey = {
+    access: { key: 'access', tab: <span><UserOutlined /> {setLocale(locale, 'admin.tools.tab.accessManagement')}</span> },
+    stewardship: { key: 'stewardship', tab: <span><TeamOutlined /> {setLocale(locale, 'admin.tools.tab.contactStewardship')}</span> },
+    courses: { key: 'courses', tab: <span><BookOutlined /> {setLocale(locale, 'admin.tools.tab.courseManagement')}</span> },
+    revenue: { key: 'revenue', tab: <span><DollarOutlined /> {setLocale(locale, 'admin.tools.tab.revenue')}</span> },
+    messaging: { key: 'messaging', tab: <span><MailOutlined /> {setLocale(locale, 'admin.tools.tab.messaging')}</span> },
+    monitoring: { key: 'monitoring', tab: <span><DashboardOutlined /> {setLocale(locale, 'admin.tools.tab.monitoring')}</span> }
+  };
+
+  // Reconciled the same way DraggableDashboardGrid reconciles card order
+  // internally: known keys in the saved order, then any default keys not
+  // yet seen (covers a future tab being added without breaking old orders).
+  const orderedOuterTabsConfig = (() => {
+    const seen = new Set();
+    const ordered = [];
+    outerTabOrder.forEach((key) => {
+      if (outerTabsByKey[key] && !seen.has(key)) {
+        ordered.push(outerTabsByKey[key]);
+        seen.add(key);
+      }
+    });
+    DEFAULT_OUTER_TAB_ORDER.forEach((key) => {
+      if (!seen.has(key)) {
+        ordered.push(outerTabsByKey[key]);
+        seen.add(key);
+      }
+    });
+    return ordered;
+  })();
 
   return (
     <div className="container customerName">
@@ -9761,19 +9460,58 @@ const GlobalAdminToolsLandingDashboard = (props) => {
         </h1>
       </Card>
 
-      <Card
-        variant="outlined"
-        tabList={outerTabsConfig}
-        activeTabKey={activeOuterTabKey}
-        onTabChange={setActiveOuterTabKey}
-      >
-        {activeOuterTabKey === 'access' && renderAccessManagement()}
-        {activeOuterTabKey === 'stewardship' && renderContactStewardship()}
-        {activeOuterTabKey === 'courses' && renderCourseManagement()}
-        {activeOuterTabKey === 'revenue' && renderRevenueDashboard()}
-        {activeOuterTabKey === 'messaging' && renderMessagingDashboard()}
-        {activeOuterTabKey === 'monitoring' && renderMonitoring()}
-      </Card>
+      {isReorderingOuterTabs ? (
+        <Card
+          variant="outlined"
+          title={setLocale(locale, 'admin.tools.reorderTabs.title')}
+          extra={
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button size="small" onClick={handleResetOuterTabOrder}>
+                {setLocale(locale, 'admin.tools.reorderTabs.reset')}
+              </Button>
+              <Button type="primary" size="small" icon={<CheckCircleOutlined />} onClick={handleDoneReorderingOuterTabs}>
+                {setLocale(locale, 'admin.tools.reorderTabs.done')}
+              </Button>
+            </div>
+          }
+        >
+          <DraggableDashboardGrid
+            cards={outerTabOrder
+              .filter((key) => outerTabsByKey[key])
+              .map((key) => ({
+                key,
+                content: (
+                  <Card size="small" variant="outlined" style={{ textAlign: 'center' }}>
+                    {outerTabsByKey[key].tab}
+                  </Card>
+                )
+              }))}
+            cardOrder={outerTabOrder}
+            onCardOrderChange={setOuterTabOrder}
+            gutter={12}
+            colProps={{ xs: 12, sm: 8, md: 4 }}
+          />
+        </Card>
+      ) : (
+        <Card
+          variant="outlined"
+          tabList={orderedOuterTabsConfig}
+          activeTabKey={activeOuterTabKey}
+          onTabChange={setActiveOuterTabKey}
+          tabBarExtraContent={
+            <Button type="text" size="small" icon={<EditOutlined />} onClick={() => setIsReorderingOuterTabs(true)}>
+              {setLocale(locale, 'admin.tools.reorderTabs.toggle')}
+            </Button>
+          }
+        >
+          {activeOuterTabKey === 'access' && renderAccessManagement()}
+          {activeOuterTabKey === 'stewardship' && renderContactStewardship()}
+          {activeOuterTabKey === 'courses' && renderCourseManagement()}
+          {activeOuterTabKey === 'revenue' && renderRevenueDashboard()}
+          {activeOuterTabKey === 'messaging' && renderMessagingDashboard()}
+          {activeOuterTabKey === 'monitoring' && renderMonitoring()}
+        </Card>
+      )}
     </div>
   );
 };
@@ -9825,7 +9563,10 @@ function mapDispatchToProps(dispatch) {
     onLoadingMessageTemplates,
     onUpsertingMessageTemplate,
     onRenderingCourseRegistration,
-    onRequestingGeographicalDivision
+    onRequestingGeographicalDivision,
+    onSessionTokenExpired,
+    onLoadingAdminToolsTabOrder,
+    onSavingAdminToolsTabOrder
   }, dispatch);
 }
 
@@ -9858,7 +9599,8 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     communicationCategories,
     communicationTrackingHistory,
     messageVariables,
-    messageTemplates
+    messageTemplates,
+    adminToolsTabOrders
   } = adminTools;
   return {
     user,
@@ -9889,7 +9631,8 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     communicationCategories,
     communicationTrackingHistory,
     messageVariables,
-    messageTemplates
+    messageTemplates,
+    adminToolsTabOrders
   };
 };
 

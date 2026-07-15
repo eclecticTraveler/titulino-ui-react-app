@@ -98,6 +98,7 @@ export const buildCourseUpsertPayload = (formValues = {}) => {
     gatheringStartingDate,
     courseWeeksLength,
     whatsAppLink,
+    coursePath,
     targetAudienceNativeLanguage
   } = formValues;
   const details = CourseDetails || courseDetails || {};
@@ -119,6 +120,7 @@ export const buildCourseUpsertPayload = (formValues = {}) => {
       gatheringStartingDate: gatheringStartingDate ?? details.gatheringStartingDate ?? '',
       courseWeeksLength: courseWeeksLength ?? details.courseWeeksLength ?? null,
       whatsAppLink: whatsAppLink ?? details.whatsAppLink ?? '',
+      coursePath: coursePath ?? details.coursePath ?? '',
       targetAudienceNativeLanguage: targetAudienceNativeLanguage ?? details.targetAudienceNativeLanguage ?? ''
     }
   }];

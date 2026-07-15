@@ -4,6 +4,8 @@ import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import DynamicFormRenderer from "./DynamicFormRenderer";
 import { onUpsertingKnowMeByChapter } from "redux/actions/Lrn"; // your redux action
+import { onSessionTokenExpired } from "redux/actions/Grant";
+import useSessionTokenExpiryGuard from "hooks/useSessionTokenExpiryGuard";
 
 
 const questions = [
@@ -69,11 +71,12 @@ const questions = [
 
 
 export const KnowMeV1 = (props) => {
-  const { user, onUpsertingKnowMeByChapter, chapterNo, levelTheme } = props;
+  const { user, onUpsertingKnowMeByChapter, chapterNo, levelTheme, onSessionTokenExpired } = props;
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [submittedKnowMe, setSubmittedKnowMe] = useState(null);
+  const ensureValidSession = useSessionTokenExpiryGuard(user, onSessionTokenExpired);
 
 const onFinish = async (values) => {
   setLoading(true);
@@ -115,7 +118,12 @@ const onFinish = async (values) => {
 // watch for new submission and push it through Redux
 useEffect(() => {
   if (submittedKnowMe) {
-    const doUpsert = async () => {      
+    const doUpsert = async () => {
+      if (!ensureValidSession()) {
+        setSubmittedKnowMe(null);
+        return;
+      }
+
       const upserted = await onUpsertingKnowMeByChapter(submittedKnowMe, levelTheme, user?.emailId);
       const success = upserted && !upserted.error;
       if (success) {
@@ -147,7 +155,8 @@ useEffect(() => {
 
 function mapDispatchToProps(dispatch) {
   return bindActionCreators({
-    onUpsertingKnowMeByChapter
+    onUpsertingKnowMeByChapter,
+    onSessionTokenExpired
   }, dispatch);
 }
 

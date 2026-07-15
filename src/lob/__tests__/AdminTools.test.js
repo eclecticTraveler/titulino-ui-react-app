@@ -135,6 +135,24 @@ describe('buildCourseUpsertPayload', () => {
     const result = buildCourseUpsertPayload({ CourseCodeId: 'TEST_JAN_2024_COURSE_01' });
     expect(result[0]).toMatchObject({ courseCodeId: 'TEST_JAN_2024_COURSE_01' });
   });
+
+  it('passes coursePath from top-level formValues into courseDetails', () => {
+    const result = buildCourseUpsertPayload({ CourseCodeId: 'X', coursePath: '/lrn/en/level-1' });
+    expect(result[0].courseDetails.coursePath).toBe('/lrn/en/level-1');
+  });
+
+  it('falls back to CourseDetails.coursePath when no top-level coursePath supplied', () => {
+    const result = buildCourseUpsertPayload({
+      CourseCodeId: 'X',
+      CourseDetails: { coursePath: '/lrn-auth/es/nivel-meditaciones' }
+    });
+    expect(result[0].courseDetails.coursePath).toBe('/lrn-auth/es/nivel-meditaciones');
+  });
+
+  it('defaults coursePath to empty string when absent', () => {
+    const result = buildCourseUpsertPayload({ CourseCodeId: 'X' });
+    expect(result[0].courseDetails.coursePath).toBe('');
+  });
 });
 
 // ---------------------------------------------------------------------------

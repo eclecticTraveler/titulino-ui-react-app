@@ -7,7 +7,8 @@ import IntlMessage from "components/util-components/IntlMessage";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase } from "redux/actions/Shop";
-import {onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut} from "redux/actions/Grant";
+import {onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut, onSessionTokenExpired} from "redux/actions/Grant";
+import useSessionTokenExpiryGuard from "hooks/useSessionTokenExpiryGuard";
 import utils from "utils";
 import { loadStripe } from "@stripe/stripe-js";
 import ConfettiExplosion from 'react-confetti-explosion';
@@ -23,7 +24,8 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 const SHOPPING_PARAMETERS_STORED_KEY = "postQueryParams";
 
 const ShopWindow = (props) => {
-  const { user, baseLanguage, contentLanguage, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase, onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut } = props;
+  const { user, baseLanguage, contentLanguage, productCatalog, onProcessingPurchaseOfProduct, onGettingProductsAvailableForPurchase, onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut, onSessionTokenExpired } = props;
+  const ensureValidSession = useSessionTokenExpiryGuard(user, onSessionTokenExpired);
   const [hoveredTier, setHoveredTier] = useState(null);
   const screens = utils.getBreakPoint(useBreakpoint());
   const isMobile = !screens.includes("md");
@@ -186,7 +188,8 @@ const ShopWindow = (props) => {
 
   const handlePurchase = async (priceId) => {
     if (!user?.emailId) return;
-  
+    if (!ensureValidSession()) return;
+
     try {
       const result = await onProcessingPurchaseOfProduct({
         courseCodeId: activeCourseCode,
@@ -535,7 +538,8 @@ function mapDispatchToProps(dispatch) {
     {
       onProcessingPurchaseOfProduct,
       onGettingProductsAvailableForPurchase,
-      onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut
+      onModifyingCourseAccessForUserAfterSuccessfulPurchaseShortcut,
+      onSessionTokenExpired
     },
     dispatch
   );

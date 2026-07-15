@@ -11,7 +11,7 @@ import SpeakingPracticeService from "services/SpeakingPracticeService";
 import PdfFileService from "services/PdfFileService";
 import GoogleService from "services/GoogleService";
 import TitulinoRestService from "services/TitulinoRestService";
-import TitulinoNetService from "services/TitulinoNetService";
+import TitulinoNetService, { getFloatingActionsConfig } from "services/TitulinoNetService";
 import StudentProgress from "lob/StudentProgress";
 import LrnConfiguration from "lob/LrnConfiguration"
 import TitulinoManager from "managers/LrnManager";
@@ -69,7 +69,8 @@ import {
   ON_UPSERTING_KNOW_ME_BY_CHAPTER,
   ON_FETCHING_KNOW_ME_SURVEY_QUESTIONS,
   ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE,
-  ON_FETCHING_KNOW_ME_AI_RESULT
+  ON_FETCHING_KNOW_ME_AI_RESULT,
+  ON_FETCHING_FLOATING_ACTIONS
 } from "../constants/Lrn";
 import LrnManager from "managers/LrnManager";
 
@@ -534,8 +535,8 @@ export const getIsLanguageConfiguredFlag = async (keyword) => {
   }
 }
 
-export const getUpperNavigationBasedOnUserConfig = async (isAuthenticated, emailId) => {  
-  const upperMainNavigation = await LrnManager.getUserUpperNavigationConfig(isAuthenticated, emailId);
+export const getUpperNavigationBasedOnUserConfig = async (isAuthenticated, emailId, contentLanguage) => {
+  const upperMainNavigation = await LrnManager.getUserUpperNavigationConfig(isAuthenticated, emailId, contentLanguage);
   return {
     type: GET_UPPER_NAV_BASED_ON_USER_CONFIG,
     upperMainNavigation: upperMainNavigation
@@ -623,16 +624,21 @@ export const onSubmittingUserAuthenticatedProgressForCourse = async (courseProgr
   }
 }
 
-export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) => {
+export const onResettingEnrollmentCheck = () => ({
+  type: ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
+  userIsEnrolledInCourse: null
+})
 
-  // Get courseId in Factory
- const courseCodeId = await getCourseCodeIdForTheme(courseTheme);
- const userIsEnrolled = await TitulinoManager.isUserEnrolledInCourse(courseCodeId, emailId)
- 
-  return {
-    type: ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE,
-    userIsEnrolledInCourse: !!userIsEnrolled
+export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) => {
+  const registry = await LrnManager.getCourseThemeRegistry();
+  const courseCodeIds = registry[courseTheme?.toLowerCase()] || [];
+  for (const courseCodeId of courseCodeIds) {
+    const enrolled = await TitulinoManager.isUserEnrolledInCourse(courseCodeId, emailId);
+    if (enrolled) {
+      return { type: ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE, userIsEnrolledInCourse: true }
+    }
   }
+  return { type: ON_VERIFYING_IF_USER_IS_ENROLLED_IN_COURSE, userIsEnrolledInCourse: false }
 }
 
 export const onResolvingFacilitadorForThemeCourse = async (courseTheme, emailId) => {
@@ -712,6 +718,14 @@ export const onFetchingKnowMeAiResult = async (levelTheme, emailId, chapterNo) =
   return {
     type: ON_FETCHING_KNOW_ME_AI_RESULT,
     aiResult
+  };
+}
+
+export const onFetchingFloatingActions = async () => {
+  const floatingActionsConfig = await getFloatingActionsConfig('onFetchingFloatingActions');
+  return {
+    type: ON_FETCHING_FLOATING_ACTIONS,
+    floatingActionsConfig
   };
 }
     

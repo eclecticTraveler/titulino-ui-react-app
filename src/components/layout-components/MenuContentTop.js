@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Menu, Popover } from "antd";
-import { EllipsisOutlined } from "@ant-design/icons";
+import { EllipsisOutlined, HomeOutlined } from "@ant-design/icons";
+import { env } from 'configs/EnvironmentConfig';
 import { Grid } from "antd";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
@@ -41,7 +42,7 @@ const MenuContentTop = (props) => {
   }, [isMobileView]);
 
   useEffect(() => {
-    getUpperNavigationBasedOnUserConfig(((user?.contactId && token) ? true : false), user?.emailId);
+    getUpperNavigationBasedOnUserConfig(((user?.contactId && token) ? true : false), user?.emailId, contentLanguage);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.contactId, token, user?.emailId, contentLanguage]);
 

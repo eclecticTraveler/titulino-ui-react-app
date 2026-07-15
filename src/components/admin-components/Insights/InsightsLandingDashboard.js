@@ -17,6 +17,8 @@ import {
   onLoadingAnalyticsDashboardCardOrder,
   onSavingAnalyticsDashboardCardOrder
 } from "redux/actions/Analytics";
+import { onSessionTokenExpired } from "redux/actions/Grant";
+import useSessionTokenExpiryGuard from "hooks/useSessionTokenExpiryGuard";
 import CounterDisplay from 'components/layout-components/CounterDisplay';
 import DoubleCounterDisplay from 'components/layout-components/DoubleCounterDisplay';
 import BarGraph from 'components/layout-components/Graphs/BarGraph';
@@ -115,8 +117,10 @@ const InsightsLandingDashboard = (props) => {
     avatarUrlMap,
     analyticsDashboardCardOrders,
     onLoadingAnalyticsDashboardCardOrder,
-    onSavingAnalyticsDashboardCardOrder
+    onSavingAnalyticsDashboardCardOrder,
+    onSessionTokenExpired
   } = props;
+  const ensureValidSession = useSessionTokenExpiryGuard(user, onSessionTokenExpired);
 
   const intl = useIntl();
   const { message: messageApi } = App.useApp();
@@ -139,7 +143,7 @@ const InsightsLandingDashboard = (props) => {
 	try {
 		console.log("Submitting admin progress:", formattedData, selectedCourseCodeId);
 
-		// 1) submit (redux action)
+		// 1) submit (redux action) — course-token-gated, not user.innerToken; no guard here
 		await onSubmittingAdminEnrolleeProgress(
 		formattedData,
 		selectedCourseCodeId, // ✅ from redux analytics state
@@ -149,7 +153,7 @@ const InsightsLandingDashboard = (props) => {
 		messageApi.success("Progress saved successfully!");
 
 		// 2) refresh dashboards (recommended: reload current selection)
-		if (selectedCourseCodeId && selectedLocationType && selectedCountryId && user?.emailId) {
+		if (selectedCourseCodeId && selectedLocationType && selectedCountryId && user?.emailId && ensureValidSession()) {
 		await onLoadingAllDashboardContents(
 			selectedCourseCodeId,
 			selectedLocationType,
@@ -279,11 +283,12 @@ const InsightsLandingDashboard = (props) => {
     ) {
       return;
     }
+    if (!ensureValidSession()) return;
 
     onHydratingAnalyticsAvatars(user.emailId, avatarUrlMap, {
       enrolleDashboardData
     });
-  }, [activeOuterTabKey, activeInnerTabs.general, enrolleDashboardData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars]);
+  }, [activeOuterTabKey, activeInnerTabs.general, enrolleDashboardData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars, ensureValidSession]);
 
   useEffect(() => {
     if (
@@ -294,11 +299,12 @@ const InsightsLandingDashboard = (props) => {
     ) {
       return;
     }
+    if (!ensureValidSession()) return;
 
     onHydratingAnalyticsAvatars(user.emailId, avatarUrlMap, {
       enrolleesCourseProgressData
     });
-  }, [activeOuterTabKey, activeInnerTabs.progress, enrolleesCourseProgressData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars]);
+  }, [activeOuterTabKey, activeInnerTabs.progress, enrolleesCourseProgressData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars, ensureValidSession]);
 
   useEffect(() => {
     if (
@@ -309,11 +315,12 @@ const InsightsLandingDashboard = (props) => {
     ) {
       return;
     }
+    if (!ensureValidSession()) return;
 
     onHydratingAnalyticsAvatars(user.emailId, avatarUrlMap, {
       shopPurchaserDashboardData
     });
-  }, [activeOuterTabKey, activeInnerTabs.shop, shopPurchaserDashboardData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars]);
+  }, [activeOuterTabKey, activeInnerTabs.shop, shopPurchaserDashboardData, user?.emailId, avatarUrlMap, onHydratingAnalyticsAvatars, ensureValidSession]);
 
 	useEffect(() => {
 		// Load data only if necessary
@@ -857,7 +864,8 @@ function mapDispatchToProps(dispatch) {
 		onLoadingAllDashboardContents: onLoadingAllDashboardContents,
     onHydratingAnalyticsAvatars: onHydratingAnalyticsAvatars,
     onLoadingAnalyticsDashboardCardOrder: onLoadingAnalyticsDashboardCardOrder,
-    onSavingAnalyticsDashboardCardOrder: onSavingAnalyticsDashboardCardOrder
+    onSavingAnalyticsDashboardCardOrder: onSavingAnalyticsDashboardCardOrder,
+    onSessionTokenExpired
 	}, dispatch);
 }
 

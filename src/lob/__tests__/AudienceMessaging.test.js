@@ -15,8 +15,39 @@ const {
   buildMessageVariableRegistryOptions,
   buildMessageTemplateTableModel,
   buildMessageTemplateOptions,
-  buildAudienceFilterClauses
+  buildAudienceFilterClauses,
+  buildAudienceSummary,
+  buildCourseSearchGroupsByYear,
+  computeNextContactFilters
 } = AudienceMessaging;
+
+// ---------------------------------------------------------------------------
+// computeNextContactFilters
+// ---------------------------------------------------------------------------
+describe('computeNextContactFilters', () => {
+  it('sets the given field and resets offset to 0', () => {
+    const filters = { sex: 'all', offset: 40 };
+    const next = computeNextContactFilters(filters, 'sex', 'F');
+    expect(next).toEqual({ sex: 'F', offset: 0 });
+  });
+
+  it('does not force offset back to 0 when the changed field is offset itself', () => {
+    const filters = { sex: 'F', offset: 0 };
+    const next = computeNextContactFilters(filters, 'offset', 60);
+    expect(next).toEqual({ sex: 'F', offset: 60 });
+  });
+
+  it('does not mutate the original filters object', () => {
+    const filters = { sex: 'all', offset: 20 };
+    computeNextContactFilters(filters, 'sex', 'M');
+    expect(filters).toEqual({ sex: 'all', offset: 20 });
+  });
+
+  it('defaults to an empty filters object when none is given', () => {
+    const next = computeNextContactFilters(undefined, 'sex', 'M');
+    expect(next).toEqual({ sex: 'M', offset: 0 });
+  });
+});
 
 // ---------------------------------------------------------------------------
 // buildCountryDivisionOptions
@@ -1064,5 +1095,125 @@ describe('buildAudienceFilterClauses', () => {
   it('falls back to id when category name not in lookup', () => {
     const result = buildAudienceFilterClauses({ excludeCategoryId: 99 });
     expect(result).toContain('Skip already sent: Category #99');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildAudienceSummary
+// ---------------------------------------------------------------------------
+describe('buildAudienceSummary', () => {
+  const loadedRows = [
+    { sex: 'M', residencyCountryName: 'Argentina', residencyCountryAlpha3: 'ARG', languageId: 'en', languageLevel: 'ba', emailList: ['a@x.com'] },
+    { sex: 'F', residencyCountryName: 'Argentina', residencyCountryAlpha3: 'ARG', languageId: 'en', languageLevel: 'ba', emailList: ['b@x.com', 'c@x.com'] },
+    { sex: 'F', residencyCountryName: 'Colombia', residencyCountryAlpha3: 'COL', languageId: 'en', languageLevel: 'in', emailList: [] }
+  ];
+
+  it('computes loaded-row breakdowns and totals matching the current (regression) behavior', () => {
+    const result = buildAudienceSummary(loadedRows, []);
+
+    expect(result.totalRows).toBe(3);
+    expect(result.totalEmails).toBe(3);
+    expect(result.genderCounts).toEqual({ M: 1, F: 2 });
+    expect(result.residencyCounts).toEqual({ Argentina: 2, Colombia: 1 });
+    expect(result.residencyCountryAlpha3ByName).toEqual({ Argentina: 'ARG', Colombia: 'COL' });
+    expect(result.languageLevelCounts).toEqual({ 'en:ba': 2, 'en:in': 1 });
+  });
+
+  it('computes independent breakdowns for a selected subset, not derived from the loaded set', () => {
+    const selectedRows = [loadedRows[1]]; // just the Argentina/F row
+    const result = buildAudienceSummary(loadedRows, selectedRows);
+
+    expect(result.selectedRows).toBe(1);
+    expect(result.selectedEmails).toBe(2);
+    expect(result.selectedGenderCounts).toEqual({ F: 1 });
+    expect(result.selectedResidencyCounts).toEqual({ Argentina: 1 });
+    expect(result.selectedResidencyCountryAlpha3ByName).toEqual({ Argentina: 'ARG' });
+    expect(result.selectedLanguageLevelCounts).toEqual({ 'en:ba': 1 });
+
+    // Loaded breakdowns must stay unaffected by the selection
+    expect(result.genderCounts).toEqual({ M: 1, F: 2 });
+  });
+
+  it('returns empty breakdown objects (not throwing) when nothing is selected', () => {
+    const result = buildAudienceSummary(loadedRows, []);
+
+    expect(result.selectedRows).toBe(0);
+    expect(result.selectedEmails).toBe(0);
+    expect(result.selectedGenderCounts).toEqual({});
+    expect(result.selectedResidencyCounts).toEqual({});
+    expect(result.selectedResidencyCountryAlpha3ByName).toEqual({});
+    expect(result.selectedLanguageLevelCounts).toEqual({});
+  });
+
+  it('uses the EMPTY_LABEL sentinel for missing sex/residency/language fields', () => {
+    const result = buildAudienceSummary([{ emailList: [] }], []);
+
+    expect(result.genderCounts).toEqual({ '-': 1 });
+    expect(result.residencyCounts).toEqual({ '-': 1 });
+    expect(result.languageLevelCounts).toEqual({ '-': 1 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildCourseSearchGroupsByYear
+// ---------------------------------------------------------------------------
+describe('buildCourseSearchGroupsByYear', () => {
+  const course = (codeId, endDate) => ({ CourseCodeId: codeId, EndDate: endDate });
+
+  it('groups courses by year extracted from EndDate, most recent year first', () => {
+    const courses = [
+      course('A_2025_COURSE_01', '2025-03-01'),
+      course('B_2026_COURSE_01', '2026-01-01'),
+      course('C_2025_COURSE_02', '2025-06-01')
+    ];
+    const result = buildCourseSearchGroupsByYear(courses);
+
+    expect(result.map(g => g.year)).toEqual([2026, 2025]);
+    expect(result.find(g => g.year === 2025).courses).toHaveLength(2);
+  });
+
+  it('caps each year group to maxPerYear, keeping the most recent by EndDate', () => {
+    const courses = Array.from({ length: 8 }, (_, i) =>
+      course(`COURSE_2025_${i}`, `2025-01-${String(i + 1).padStart(2, '0')}`)
+    );
+    const result = buildCourseSearchGroupsByYear(courses, { maxPerYear: 5 });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].courses).toHaveLength(5);
+    // most recent 5 of the 8 (days 04-08), sorted descending
+    expect(result[0].courses.map(c => c.CourseCodeId)).toEqual([
+      'COURSE_2025_7', 'COURSE_2025_6', 'COURSE_2025_5', 'COURSE_2025_4', 'COURSE_2025_3'
+    ]);
+  });
+
+  it('defaults maxPerYear to 5 when not specified', () => {
+    const courses = Array.from({ length: 6 }, (_, i) => course(`COURSE_2025_${i}`, `2025-01-0${i + 1}`));
+    const result = buildCourseSearchGroupsByYear(courses);
+
+    expect(result[0].courses).toHaveLength(5);
+  });
+
+  it('falls back to a year parsed from the course code id when no dates are present', () => {
+    const courses = [{ CourseCodeId: 'SOMETHING_2024_COURSE_01' }];
+    const result = buildCourseSearchGroupsByYear(courses);
+
+    expect(result[0].year).toBe(2024);
+  });
+
+  it('groups under year=null when no date or year-like code id is found', () => {
+    const courses = [{ CourseCodeId: 'NO_YEAR_HERE' }];
+    const result = buildCourseSearchGroupsByYear(courses);
+
+    expect(result[0].year).toBeNull();
+  });
+
+  it('skips courses with no CourseCodeId', () => {
+    const result = buildCourseSearchGroupsByYear([{ EndDate: '2025-01-01' }]);
+    expect(result).toEqual([]);
+  });
+
+  it('returns an empty array for empty input', () => {
+    expect(buildCourseSearchGroupsByYear([])).toEqual([]);
+    expect(buildCourseSearchGroupsByYear()).toEqual([]);
   });
 });

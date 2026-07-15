@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import AppLocale from "../lang";
 import useBodyClass from "../hooks/useBodyClass";
 import { connect } from "react-redux";
@@ -17,10 +17,10 @@ import { bindActionCreators } from 'redux';
 import useSupabaseSessionSync from "hooks/useSupabaseSessionSync";
 import { authenticated, signIn, onResolvingAuthenticationWhenRefreshing } from "redux/actions/Auth";
 import { onAuthenticatingWithSSO, onLoadingAuthenticatedLandingPage } from "redux/actions/Grant";
+import { onSyncingWebsitePreferences } from "redux/actions/Preferences";
 import Loading from 'components/shared-components/Loading';
 import ImpersonationSession from "lob/ImpersonationSession";
-import WebsitePreferences from "lob/WebsitePreferences";
- 
+
 function RouteInterceptor({ children, isAuthenticated }) {
   const { pathname } = useLocation();
 
@@ -50,10 +50,9 @@ function RouteInterceptor({ children, isAuthenticated }) {
 
 export const Views = (props) => { 
     const { locale, direction, contentLanguage, selectedContentLanguage, getUserBaseLanguage, onLocaleChange, baseLanguage, location, token, user, authenticated, onAuthenticatingWithSSO, isAuthResolved, onResolvingAuthenticationWhenRefreshing,
-        isLanguageConfigured, getIsLanguageConfiguredFlag, getSelectedContentLanguage, onContentLanguageChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage } = props;
+        isLanguageConfigured, getIsLanguageConfiguredFlag, getSelectedContentLanguage, onContentLanguageChange, currentTheme, onLoadingUserSelectedTheme, onLoadingAuthenticatedLandingPage, onSyncingWebsitePreferences } = props;
     const currentAppLocale = AppLocale[locale];
     const { switcher, themes } = useThemeSwitcher();
-    const preferencesHydrationKey = useRef(null);
     const [isPreferenceHydrating, setIsPreferenceHydrating] = useState(() => (
         ImpersonationSession.hasActiveImpersonationProfile()
     ));
@@ -120,26 +119,16 @@ export const Views = (props) => {
             isImpersonating ? 'impersonating' : 'normal'
         ].join(':');
 
-        WebsitePreferences.configureWebsitePreferenceSync({
-            token: user.innerToken,
-            readOnly: false,
-            storage: targetStorage
-        });
-
-        if (preferencesHydrationKey.current === hydrationKey) {
-            setIsPreferenceHydrating(false);
-            return;
-        }
-        preferencesHydrationKey.current = hydrationKey;
-
         let isActive = true;
-        const hydratePreferences = async () => {
+        const syncPreferences = async () => {
             setIsPreferenceHydrating(true);
             try {
-                const result = await WebsitePreferences.hydrateWebsitePreferences({
+                await onSyncingWebsitePreferences({
                     token: user.innerToken,
-                    targetStorage,
+                    storage: targetStorage,
                     readOnly: false,
+                    identityKey: hydrationKey,
+                    skipInitialBackup: isImpersonating,
                     whoCalledMe: 'Views.userPreferenceHydration'
                 });
 
@@ -149,14 +138,6 @@ export const Views = (props) => {
                 getIsLanguageConfiguredFlag();
                 getUserBaseLanguage();
                 getSelectedContentLanguage();
-
-                if (!isImpersonating && result?.success && result?.exists !== true) {
-                    WebsitePreferences.saveWebsitePreferencesNow({
-                        token: user.innerToken,
-                        storage: targetStorage,
-                        whoCalledMe: 'Views.initialPreferenceBackup'
-                    });
-                }
             } finally {
                 if (isActive) {
                     setIsPreferenceHydrating(false);
@@ -164,7 +145,7 @@ export const Views = (props) => {
             }
         };
 
-        hydratePreferences();
+        syncPreferences();
 
         return () => {
             isActive = false;
@@ -174,6 +155,7 @@ export const Views = (props) => {
         getSelectedContentLanguage,
         getUserBaseLanguage,
         onLoadingUserSelectedTheme,
+        onSyncingWebsitePreferences,
         user?.contactInternalId,
         user?.emailId,
         user?.impersonation?.isImpersonating,
@@ -319,7 +301,8 @@ function mapDispatchToProps(dispatch) {
         authenticated,
         signIn,
         onLoadingAuthenticatedLandingPage,
-        onResolvingAuthenticationWhenRefreshing
+        onResolvingAuthenticationWhenRefreshing,
+        onSyncingWebsitePreferences
     }, dispatch);
 }
 

@@ -21,6 +21,7 @@ Before reading any source file, before running grep, before spawning an Explore 
 | Looking for | Check first |
 |---|---|
 | How a layer works | [docs/Architecture.md](docs/Architecture.md) |
+| How to implement a recurring pattern | [docs/Patterns.md](docs/Patterns.md) |
 | Naming / coding rules | [docs/Coding Standards.md](docs/Coding%20Standards.md) |
 | How to add a feature | [docs/Feature Workflow.md](docs/Feature%20Workflow.md) |
 | How to build/deploy | [docs/Deployment.md](docs/Deployment.md) |
@@ -73,6 +74,7 @@ Full details: [docs/Architecture.md](docs/Architecture.md) · [docs/Coding Stand
 6. Do not test the service layer (REST calls). Test LOB files and Redux reducers.
 7. LESS changes require `compile-less.sh` — `npm start` alone does not recompile LESS.
 8. **Never filter, sort, or paginate data client-side as a substitute for backend filtering.** All business logic belongs in PostgreSQL. The frontend describes intent (parameters); the backend determines eligibility and results. If a filter is missing from the backend, add it to the stored procedure first — do not implement it in JavaScript. See [docs/audience-segmentation.md](docs/audience-segmentation.md) for the segmentation contract.
+9. **All database changes (schema, functions, data migrations) must be Sqitch migrations in `titulino-warehouse` at `C:\Users\AlbertoArellano\Documents\WH-T\titulino-warehouse\`. Never write a one-off SQL script.** The agent creates the deploy/verify/revert SQL files and appends the entry to `sqitch.plan`. **The new entry must always go at the END of `sqitch.plan` — never inserted before an already-deployed change.** sqitch computes each change's SHA-1 from its position in the plan; inserting before a deployed change shifts its predecessor chain, breaks its hash, and corrupts `sqitch deploy/revert` for all future changes. (This happened 2026-07-10 and required manually reordering the plan to fix.)
 
 ---
 

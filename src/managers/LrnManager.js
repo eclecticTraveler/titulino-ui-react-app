@@ -265,15 +265,16 @@ const resolveEnrollmentProfileContext = async ({
   return resolvedContext;
 };
 
-const getUserUpperNavigationConfig = async (isAuthenticated, emailId) => { 
+const getUserUpperNavigationConfig = async (isAuthenticated, emailId, contentLanguage) => {
   const user = await getCachedUserProfile(emailId);
 
   const isUserAuthenticated = !!isAuthenticated;
   const selectedLanguageForCourse =  await LocalStorageService.getSelectedContentLanguage();
-  
+  const resolvedLanguage = contentLanguage || selectedLanguageForCourse?.contentLanguageCode;
+
   const registry = await getCourseThemeRegistry();
-  const mappedCourseNames = LrnConfiguration.mapUserCoursesByTheme(user?.userCourses, registry);  
-  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(selectedLanguageForCourse?.contentLanguageCode, isUserAuthenticated, mappedCourseNames );
+  const mappedCourseNames = LrnConfiguration.mapUserCoursesByTheme(user?.userCourses, registry);
+  const upperMainNavigation = await DynamicNavigationRouter.loadMenu(resolvedLanguage, isUserAuthenticated, mappedCourseNames );
   return upperMainNavigation;
 }
 

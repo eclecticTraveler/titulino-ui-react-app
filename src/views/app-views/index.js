@@ -1,13 +1,32 @@
-import React, { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React, { lazy, Suspense, useEffect } from "react";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { RouteElement } from "utils/routerCompat";
 import { connect } from "react-redux";
 import Loading from '../../components/shared-components/Loading';
 import { APP_PREFIX_PATH } from '../../configs/AppConfig';
+import { env } from '../../configs/EnvironmentConfig';
 import { getLocalizedConfig } from '../../configs/CourseMainNavigationConfig/Submenus/ConfigureNavigationLocalization';
 import TermsConditionsCancelSubscription from "components/admin-components/ModalMessages/TermsConditionsCancelSubscription";
 import PrivacyPolicy  from "components/admin-components/ModalMessages/PrivacyPolicy";
 import { retry } from '../../helpers/index';
+import { onContentLanguageChange } from 'redux/actions/Theme';
+
+// Switches contentLanguage to match the URL prefix when a cross-language course URL is visited.
+// Renders a loading spinner while Redux updates; AppViews re-renders with matching routes immediately after.
+const VALID_CONTENT_LANGS = ['en', 'es'];
+const CourseLanguageGate = connect(
+  ({ theme }) => ({ contentLanguage: theme.contentLanguage }),
+  { onContentLanguageChange }
+)(function CourseLanguageGate({ contentLanguage, onContentLanguageChange }) {
+  const { urlLang } = useParams();
+  useEffect(() => {
+    if (urlLang && VALID_CONTENT_LANGS.includes(urlLang) && urlLang !== contentLanguage) {
+      onContentLanguageChange(urlLang);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlLang]);
+  return <Loading cover="content" />;
+});
 
 // Lazy-loaded route components (hoisted to module scope for stable references)
 const SharedCourseLevel = lazy(() => retry(() => import(`../shared-views/course-level`)));
@@ -22,6 +41,7 @@ const SessionRetrieval = lazy(() => import(`./user/session-retrieval`));
 const ImpersonationLaunch = lazy(() => import(`./user/impersonation`));
 const LoginView = lazy(() => import(`./user/login`));
 const LogoutView = lazy(() => import(`./user/logout`));
+const LandingPage = lazy(() => import(`../landing`));
 
 export const AppViews = (props) => {
 	const { contentLanguage } = props;
@@ -50,7 +70,10 @@ export const AppViews = (props) => {
 			<Route path={`impersonate`} element={<RouteElement component={ImpersonationLaunch} />} />
 			<Route path={`login`} element={<RouteElement component={LoginView} />} />
 			<Route path={`logout`} element={<RouteElement component={LogoutView} />} />
-			<Route path="" element={<Navigate to={`${APP_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${cfg?.defaultLanding}`} replace />} />
+			<Route path={`landing`} element={<RouteElement component={LandingPage} />} />
+			{/* Catches cross-language course URLs (e.g. /lrn/en/... when contentLanguage='es') and auto-switches */}
+			<Route path=":urlLang/:urlLevel" element={<CourseLanguageGate />} />
+			<Route path="" element={<Navigate to={env.IS_ENROLLMENT_LANDING_ON ? `${APP_PREFIX_PATH}/landing` : `${APP_PREFIX_PATH}/${contentLanguage}/${cfg?.level}-${cfg?.defaultLanding}`} replace />} />
 		</Routes>
 	</Suspense>
 	</>
