@@ -9053,6 +9053,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     const createEditTab = (
       <div style={{ maxWidth: 560 }}>
+        <Divider style={{ margin: '4px 0 12px' }}>{t('admin.tools.messaging.jobManager.referenceSectionTitle')}</Divider>
         <Alert
           type="info"
           showIcon
@@ -9112,6 +9113,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               onChange={e => setEditingJob(prev => ({ ...prev, notes: e.target.value }))}
             />
           </Col>
+          <Col xs={24}><Divider style={{ margin: '4px 0' }}>{t('admin.tools.messaging.jobManager.behaviorSectionTitle')}</Divider></Col>
+
           <Col xs={24}>
             <Space align="center">
               <Switch
@@ -9124,8 +9127,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               </Tooltip>
             </Space>
           </Col>
-
-          <Col xs={24}><Divider style={{ margin: '4px 0' }}>{t('admin.tools.messaging.jobManager.behaviorSectionTitle')}</Divider></Col>
 
           {editingJob?.contentSourceType === 'db_template' && (
             <Col xs={24}>
