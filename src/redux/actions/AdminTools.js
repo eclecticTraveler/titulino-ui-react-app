@@ -43,6 +43,8 @@ import {
   ON_UPSERTING_MESSAGE_VARIABLE,
   ON_LOADING_MESSAGE_TEMPLATES,
   ON_UPSERTING_MESSAGE_TEMPLATE,
+  ON_LOADING_JOBS,
+  ON_UPSERTING_JOB,
   ON_LOADING_ADMIN_TOOLS_TAB_ORDER,
   ON_SAVING_ADMIN_TOOLS_TAB_ORDER
 } from '../constants/AdminTools';
@@ -453,6 +455,22 @@ export const onUpsertingMessageTemplate = async (adminEmailId, id, templateName,
   return {
     type: ON_UPSERTING_MESSAGE_TEMPLATE,
     upsertMessageTemplateResult: result
+  };
+};
+
+export const onLoadingJobs = async (adminEmailId) => {
+  const jobs = await AdminToolsManager.getJobs(adminEmailId);
+  return {
+    type: ON_LOADING_JOBS,
+    jobs
+  };
+};
+
+export const onUpsertingJob = async (adminEmailId, jobKey, displayName, scheduleDescription, contentSourceType, templateName, bucketPath, isActive, notes) => {
+  const result = await AdminToolsManager.upsertJob(adminEmailId, jobKey, displayName, scheduleDescription, contentSourceType, templateName, bucketPath, isActive, notes);
+  return {
+    type: ON_UPSERTING_JOB,
+    upsertJobResult: result
   };
 };
 

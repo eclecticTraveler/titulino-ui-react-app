@@ -71,6 +71,8 @@ import {
   onUpsertingMessageVariable,
   onLoadingMessageTemplates,
   onUpsertingMessageTemplate,
+  onLoadingJobs,
+  onUpsertingJob,
   generateCourseCodeId,
   buildCourseUpsertPayload,
   prefillFromTemplate,
@@ -594,6 +596,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     onUpsertingMessageVariable: rawOnUpsertingMessageVariable,
     onLoadingMessageTemplates: rawOnLoadingMessageTemplates,
     onUpsertingMessageTemplate: rawOnUpsertingMessageTemplate,
+    onLoadingJobs: rawOnLoadingJobs,
+    onUpsertingJob: rawOnUpsertingJob,
     shopRevenueDashboard,
     shopCoursesWithPurchases,
     processLogEventsBySource,
@@ -607,6 +611,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     communicationTrackingHistory,
     messageVariables,
     messageTemplates,
+    jobs,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision,
     onSessionTokenExpired,
@@ -666,6 +671,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const onUpsertingMessageVariable = withSessionGuard(rawOnUpsertingMessageVariable);
   const onLoadingMessageTemplates = withSessionGuard(rawOnLoadingMessageTemplates);
   const onUpsertingMessageTemplate = withSessionGuard(rawOnUpsertingMessageTemplate);
+  const onLoadingJobs = withSessionGuard(rawOnLoadingJobs);
+  const onUpsertingJob = withSessionGuard(rawOnUpsertingJob);
   const onLoadingAdminToolsTabOrder = withSessionGuard(rawOnLoadingAdminToolsTabOrder);
   const onSavingAdminToolsTabOrder = withSessionGuard(rawOnSavingAdminToolsTabOrder);
 
@@ -795,6 +802,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
   const [editingTemplate, setEditingTemplate] = useState(null);
   const templateBodyRef = useRef(null);
   const [templateBodySelection, setTemplateBodySelection] = useState({ start: 0, end: 0 });
+  const [jobManagerVisible, setJobManagerVisible] = useState(false);
+  const [jobManagerTab, setJobManagerTab] = useState('list');
+  const [jobManagerSavingKey, setJobManagerSavingKey] = useState(null);
+  const [editingJob, setEditingJob] = useState(null);
+  const [jobLogFilters, setJobLogFilters] = useState({ severity: 'all', dateRange: [] });
+  const [jobLogsLoading, setJobLogsLoading] = useState(false);
   const [composerPreviewVisible, setComposerPreviewVisible] = useState(false);
   const [audienceCertificationLoading, setAudienceCertificationLoading] = useState(false);
   const [audienceCertificationHistory, setAudienceCertificationHistory] = useState(null);
@@ -1291,6 +1304,21 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     if (!emailId || !onLoadingMessageTemplates) return;
     await onLoadingMessageTemplates(emailId);
   }, [emailId, onLoadingMessageTemplates]);
+
+  const loadJobs = useCallback(async () => {
+    if (!emailId || !onLoadingJobs) return;
+    await onLoadingJobs(emailId);
+  }, [emailId, onLoadingJobs]);
+
+  const loadJobLogs = useCallback(async (jobKey, filters = jobLogFilters) => {
+    if (!emailId || !jobKey || !onLoadingProcessLogEvents) return;
+    setJobLogsLoading(true);
+    try {
+      await onLoadingProcessLogEvents(emailId, 'missive', { ...filters, methodSearchText: jobKey });
+    } finally {
+      setJobLogsLoading(false);
+    }
+  }, [emailId, onLoadingProcessLogEvents, jobLogFilters]);
 
   const openCategoryManager = useCallback(() => {
     const edits = (communicationCategories?.rows || []).reduce((accumulator, row) => {
@@ -2003,6 +2031,13 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       loadMessageTemplates();
     }
   }, [activeOuterTabKey, messageTemplates?.emailId, emailId, loadMessageTemplates]);
+
+  useEffect(() => {
+    if (activeOuterTabKey !== 'messaging' || !emailId) return;
+    if (!jobs?.emailId || jobs.emailId !== emailId) {
+      loadJobs();
+    }
+  }, [activeOuterTabKey, jobs?.emailId, emailId, loadJobs]);
 
   useEffect(() => {
     if (activeOuterTabKey !== 'messaging' || !emailId) return;
@@ -7521,6 +7556,16 @@ const GlobalAdminToolsLandingDashboard = (props) => {
             </div>
           </Card>
         </Col>
+        <Col xs={24} md={8}>
+          <Card size="small" title={t('admin.tools.messaging.jobManager.title')}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 13, color: '#595959' }}>{t('admin.tools.messaging.setup.jobDesc')}</span>
+              <Button type="primary" icon={<EditOutlined />} onClick={() => setJobManagerVisible(true)} block>
+                {t('admin.tools.messaging.jobManager.cta')}
+              </Button>
+            </div>
+          </Card>
+        </Col>
       </Row>
     </div>
   );
@@ -8867,6 +8912,399 @@ const GlobalAdminToolsLandingDashboard = (props) => {
     );
   };
 
+  const CONTENT_SOURCE_TYPE_OPTIONS = [
+    { value: 'db_template', label: t('admin.tools.messaging.jobManager.contentSource.dbTemplate') },
+    { value: 'spine_bucket', label: t('admin.tools.messaging.jobManager.contentSource.spineBucket') },
+    { value: 'hardcoded', label: t('admin.tools.messaging.jobManager.contentSource.hardcoded') }
+  ];
+
+  const saveJob = async () => {
+    if (!editingJob || !emailId || !onUpsertingJob) return;
+    const { jobKey, displayName, scheduleDescription, contentSourceType, templateName, bucketPath, isActive, notes } = editingJob;
+    if (!jobKey?.trim() || !displayName?.trim() || !scheduleDescription?.trim() || !contentSourceType) return;
+    setJobManagerSavingKey(jobKey);
+    try {
+      await onUpsertingJob(
+        emailId, jobKey.trim(), displayName.trim(), scheduleDescription.trim(), contentSourceType,
+        templateName?.trim() || null, bucketPath?.trim() || null, isActive !== false, notes?.trim() || null
+      );
+      await loadJobs();
+      setJobManagerTab('list');
+      setEditingJob(null);
+    } finally {
+      setJobManagerSavingKey(null);
+    }
+  };
+
+  const renderJobManager = () => {
+    const rows = jobs?.rows || [];
+    const listColumns = [
+      {
+        title: t('admin.tools.messaging.jobManager.jobKey'),
+        dataIndex: 'jobKey',
+        key: 'jobKey',
+        sorter: (a, b) => (a.jobKey || '').localeCompare(b.jobKey || ''),
+        defaultSortOrder: 'ascend'
+      },
+      {
+        title: t('admin.tools.messaging.jobManager.displayName'),
+        dataIndex: 'displayName',
+        key: 'displayName'
+      },
+      {
+        title: (
+          <Tooltip title={t('admin.tools.messaging.jobManager.scheduleHint')}>
+            {t('admin.tools.messaging.jobManager.schedule')} <QuestionCircleOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
+          </Tooltip>
+        ),
+        dataIndex: 'scheduleDescription',
+        key: 'scheduleDescription',
+        width: 120
+      },
+      {
+        title: (
+          <Tooltip title={t('admin.tools.messaging.jobManager.contentSourceHint')}>
+            {t('admin.tools.messaging.jobManager.contentSource.label')} <QuestionCircleOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
+          </Tooltip>
+        ),
+        key: 'contentSourceType',
+        width: 130,
+        filters: [
+          { text: t('admin.tools.messaging.jobManager.contentSource.dbTemplate'), value: 'db_template' },
+          { text: t('admin.tools.messaging.jobManager.contentSource.spineBucket'), value: 'spine_bucket' },
+          { text: t('admin.tools.messaging.jobManager.contentSource.hardcoded'), value: 'hardcoded' }
+        ],
+        onFilter: (value, record) => record.contentSourceType === value,
+        render: (_, row) => {
+          const colorByType = { db_template: 'blue', spine_bucket: 'purple', hardcoded: 'default' };
+          const labelByType = {
+            db_template: t('admin.tools.messaging.jobManager.contentSource.dbTemplate'),
+            spine_bucket: t('admin.tools.messaging.jobManager.contentSource.spineBucket'),
+            hardcoded: t('admin.tools.messaging.jobManager.contentSource.hardcoded')
+          };
+          return <Tag color={colorByType[row.contentSourceType] || 'default'}>{labelByType[row.contentSourceType] || row.contentSourceType}</Tag>;
+        }
+      },
+      {
+        title: t('admin.tools.messaging.jobManager.templateOrBucket'),
+        key: 'templateOrBucket',
+        render: (_, row) => (
+          <span style={{ fontSize: 12, color: '#595959' }}>{row.templateName || row.bucketPath || '—'}</span>
+        )
+      },
+      {
+        title: t('admin.tools.messaging.jobManager.active'),
+        key: 'active',
+        width: 80,
+        filters: [
+          { text: t('admin.tools.messaging.templateManager.filter.active'), value: true },
+          { text: t('admin.tools.messaging.templateManager.filter.inactive'), value: false }
+        ],
+        onFilter: (value, record) => record.isActive === value,
+        render: (_, row) => (
+          <Tooltip title={t('admin.tools.messaging.jobManager.activeStatusOnlyHint')}>
+            <Switch
+              size="small"
+              checked={row.isActive}
+              loading={jobManagerSavingKey === row.jobKey}
+              onChange={checked => {
+                onUpsertingJob(emailId, row.jobKey, row.displayName, row.scheduleDescription, row.contentSourceType, row.templateName, row.bucketPath, checked, row.notes)
+                  .then(() => loadJobs());
+              }}
+            />
+          </Tooltip>
+        )
+      },
+      {
+        title: '',
+        key: 'edit',
+        width: 48,
+        render: (_, row) => (
+          <Button
+            type="text"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setEditingJob({ ...row, isExisting: true });
+              setJobManagerTab('createEdit');
+            }}
+          />
+        )
+      }
+    ];
+
+    const listTab = (
+      <Table
+        dataSource={rows}
+        columns={listColumns}
+        rowKey="key"
+        pagination={false}
+        size="small"
+        scroll={{ y: 360 }}
+      />
+    );
+
+    const isEditValid = editingJob?.jobKey?.trim() && editingJob?.displayName?.trim() &&
+      editingJob?.scheduleDescription?.trim() && editingJob?.contentSourceType;
+
+    const matchingTemplates = editingJob?.contentSourceType === 'db_template' && editingJob?.templateName?.trim()
+      ? (messageTemplates?.rows || []).filter(r => r.templateName === editingJob.templateName.trim())
+      : [];
+
+    const createEditTab = (
+      <div style={{ maxWidth: 560 }}>
+        <Alert
+          type="info"
+          showIcon
+          message={t('admin.tools.messaging.jobManager.referenceFieldsNote')}
+          style={{ marginBottom: 12 }}
+        />
+        <Row gutter={[12, 12]}>
+          <Col xs={24} md={12}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.jobManager.jobKey')}</div>
+            <Tooltip title={t('admin.tools.messaging.jobManager.jobKeyHint')}>
+              <Input
+                value={editingJob?.jobKey || ''}
+                onChange={e => setEditingJob(prev => ({ ...prev, jobKey: e.target.value }))}
+                placeholder="e.g. birthdays"
+                disabled={!!editingJob?.isExisting}
+              />
+            </Tooltip>
+          </Col>
+          <Col xs={24} md={12}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.jobManager.displayName')}</div>
+            <Input
+              value={editingJob?.displayName || ''}
+              onChange={e => setEditingJob(prev => ({ ...prev, displayName: e.target.value }))}
+              placeholder="e.g. Birthday Messages"
+            />
+          </Col>
+          <Col xs={24} md={12}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>
+              <Tooltip title={t('admin.tools.messaging.jobManager.scheduleHint')}>
+                {t('admin.tools.messaging.jobManager.schedule')} <QuestionCircleOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
+              </Tooltip>
+            </div>
+            <Input
+              value={editingJob?.scheduleDescription || ''}
+              onChange={e => setEditingJob(prev => ({ ...prev, scheduleDescription: e.target.value }))}
+              placeholder="e.g. Daily 8 AM"
+            />
+          </Col>
+          <Col xs={24} md={12}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>
+              <Tooltip title={t('admin.tools.messaging.jobManager.contentSourceHint')}>
+                {t('admin.tools.messaging.jobManager.contentSource.label')} <QuestionCircleOutlined style={{ color: '#8c8c8c', fontSize: 12 }} />
+              </Tooltip>
+            </div>
+            <Select
+              value={editingJob?.contentSourceType || undefined}
+              onChange={value => setEditingJob(prev => ({ ...prev, contentSourceType: value }))}
+              options={CONTENT_SOURCE_TYPE_OPTIONS}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24}>
+            <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.jobManager.notes')}</div>
+            <Input.TextArea
+              value={editingJob?.notes || ''}
+              rows={2}
+              onChange={e => setEditingJob(prev => ({ ...prev, notes: e.target.value }))}
+            />
+          </Col>
+          <Col xs={24}>
+            <Space align="center">
+              <Switch
+                checked={editingJob?.isActive !== false}
+                onChange={checked => setEditingJob(prev => ({ ...prev, isActive: checked }))}
+              />
+              <span>{t('admin.tools.messaging.jobManager.active')}</span>
+              <Tooltip title={t('admin.tools.messaging.jobManager.activeStatusOnlyHint')}>
+                <QuestionCircleOutlined style={{ color: '#8c8c8c' }} />
+              </Tooltip>
+            </Space>
+          </Col>
+
+          <Col xs={24}><Divider style={{ margin: '4px 0' }}>{t('admin.tools.messaging.jobManager.behaviorSectionTitle')}</Divider></Col>
+
+          {editingJob?.contentSourceType === 'db_template' && (
+            <Col xs={24}>
+              <div style={{ marginBottom: 4, fontWeight: 500 }}>
+                {t('admin.tools.messaging.jobManager.templateName')}
+              </div>
+              <Alert type="warning" showIcon message={t('admin.tools.messaging.jobManager.templateNameLiveHint')} style={{ marginBottom: 6 }} />
+              <Input
+                value={editingJob?.templateName || ''}
+                onChange={e => setEditingJob(prev => ({ ...prev, templateName: e.target.value }))}
+                placeholder="e.g. birthday"
+              />
+              <div style={{ marginTop: 10, padding: 10, background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 4 }}>
+                <div style={{ fontWeight: 500, fontSize: 12, marginBottom: 6 }}>{t('admin.tools.messaging.jobManager.templatePreviewTitle')}</div>
+                {editingJob?.templateName?.trim() ? (
+                  matchingTemplates.length > 0 ? (
+                    matchingTemplates.map(tpl => (
+                      <div key={tpl.key} style={{ fontSize: 12, marginBottom: 4 }}>
+                        <Tag>{tpl.localeCode}</Tag> {tpl.subject}
+                      </div>
+                    ))
+                  ) : (
+                    <Alert type="error" showIcon message={t('admin.tools.messaging.jobManager.templatePreviewEmpty')} />
+                  )
+                ) : (
+                  <span style={{ fontSize: 12, color: '#8c8c8c' }}>—</span>
+                )}
+                <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 6 }}>{t('admin.tools.messaging.jobManager.templatePreviewEditHint')}</div>
+              </div>
+            </Col>
+          )}
+
+          {editingJob?.contentSourceType === 'spine_bucket' && (
+            <Col xs={24}>
+              <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.jobManager.bucketPath')}</div>
+              <Alert type="info" showIcon message={t('admin.tools.messaging.jobManager.bucketPathHint')} style={{ marginBottom: 6 }} />
+              <Input
+                value={editingJob?.bucketPath || ''}
+                onChange={e => setEditingJob(prev => ({ ...prev, bucketPath: e.target.value }))}
+                placeholder="e.g. titulino-spine-data/welcome-messages.json"
+              />
+            </Col>
+          )}
+
+          {editingJob?.contentSourceType === 'hardcoded' && (
+            <Col xs={24}>
+              <Alert type="info" showIcon message={t('admin.tools.messaging.jobManager.hardcodedNote')} />
+            </Col>
+          )}
+
+          <Col xs={24}>
+            <Space>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                loading={jobManagerSavingKey === (editingJob?.jobKey || 'new')}
+                disabled={!isEditValid}
+                onClick={() => {
+                  Modal.confirm({
+                    title: t('admin.tools.messaging.jobManager.confirmTitle'),
+                    content: t('admin.tools.messaging.jobManager.confirmContent'),
+                    okText: t('admin.tools.messaging.templateManager.create.save'),
+                    onOk: saveJob
+                  });
+                }}
+              >
+                {t('admin.tools.messaging.templateManager.create.save')}
+              </Button>
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => setEditingJob({ jobKey: '', displayName: '', scheduleDescription: '', contentSourceType: 'db_template', templateName: '', bucketPath: '', isActive: true, notes: '' })}
+              >
+                New
+              </Button>
+            </Space>
+          </Col>
+        </Row>
+      </div>
+    );
+
+    const jobLogsRows = processLogEventsBySource?.missive?.rows || [];
+
+    const logsTab = (
+      <div>
+        <Alert
+          type="info"
+          showIcon
+          message={t('admin.tools.messaging.jobManager.logs.description')}
+          style={{ marginBottom: 12 }}
+        />
+        <Row gutter={[12, 12]} style={{ marginBottom: 12 }}>
+          <Col xs={24} sm={12} md={8}>
+            <Select
+              value={jobLogFilters.severity}
+              onChange={value => {
+                const next = { ...jobLogFilters, severity: value };
+                setJobLogFilters(next);
+                loadJobLogs(editingJob?.jobKey, next);
+              }}
+              options={getProcessLogSeverityOptions().map(option => ({
+                value: option.value,
+                label: option.labelKey ? t(option.labelKey) : option.value
+              }))}
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col xs={24} sm={12} md={10}>
+            <DatePicker.RangePicker
+              value={jobLogFilters.dateRange?.length ? jobLogFilters.dateRange : null}
+              onChange={dates => {
+                const next = { ...jobLogFilters, dateRange: dates || [] };
+                setJobLogFilters(next);
+                loadJobLogs(editingJob?.jobKey, next);
+              }}
+              style={{ width: '100%' }}
+              allowClear
+            />
+          </Col>
+          <Col xs={24} md={6}>
+            <Button
+              icon={<ReloadOutlined />}
+              loading={jobLogsLoading}
+              onClick={() => loadJobLogs(editingJob?.jobKey)}
+              block
+            >
+              {t('admin.tools.messaging.jobManager.logs.refresh')}
+            </Button>
+          </Col>
+        </Row>
+        <Table
+          size="small"
+          rowKey="key"
+          columns={processLogColumns}
+          dataSource={jobLogsRows}
+          loading={jobLogsLoading}
+          scroll={{ x: 900, y: 360 }}
+          pagination={{ pageSize: 25, showSizeChanger: true }}
+        />
+      </div>
+    );
+
+    return (
+      <Modal
+        title={t('admin.tools.messaging.jobManager.title')}
+        open={jobManagerVisible}
+        onCancel={() => {
+          setJobManagerVisible(false);
+          setJobManagerTab('list');
+          setEditingJob(null);
+        }}
+        footer={null}
+        width={720}
+      >
+        <Tabs
+          activeKey={jobManagerTab}
+          onChange={key => {
+            setJobManagerTab(key);
+            if (key === 'createEdit' && !editingJob) {
+              setEditingJob({ jobKey: '', displayName: '', scheduleDescription: '', contentSourceType: 'db_template', templateName: '', bucketPath: '', isActive: true, notes: '' });
+            }
+            if (key === 'logs' && editingJob?.jobKey) {
+              loadJobLogs(editingJob.jobKey);
+            }
+          }}
+          items={[
+            { key: 'list', label: t('admin.tools.messaging.jobManager.tabs.list'), children: listTab },
+            { key: 'createEdit', label: t('admin.tools.messaging.jobManager.tabs.createEdit'), children: createEditTab },
+            {
+              key: 'logs',
+              label: t('admin.tools.messaging.jobManager.tabs.logs'),
+              children: logsTab,
+              disabled: !editingJob?.jobKey
+            }
+          ]}
+        />
+      </Modal>
+    );
+  };
+
   const renderMessagingDashboard = () => (
     <Card variant="outlined" size="small" style={{ marginBottom: 16 }}>
       <h4 style={{ marginBottom: 12 }}>
@@ -8981,6 +9419,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       {renderCategoryManager()}
       {renderVariableManager()}
       {renderTemplateManager()}
+      {renderJobManager()}
     </Card>
   );
 
@@ -9621,6 +10060,8 @@ function mapDispatchToProps(dispatch) {
     onUpsertingMessageVariable,
     onLoadingMessageTemplates,
     onUpsertingMessageTemplate,
+    onLoadingJobs,
+    onUpsertingJob,
     onRenderingCourseRegistration,
     onRequestingGeographicalDivision,
     onSessionTokenExpired,
@@ -9659,6 +10100,7 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     communicationTrackingHistory,
     messageVariables,
     messageTemplates,
+    jobs,
     adminToolsTabOrders
   } = adminTools;
   return {
@@ -9691,6 +10133,7 @@ const mapStateToProps = ({ adminTools, grant, lrn }) => {
     communicationTrackingHistory,
     messageVariables,
     messageTemplates,
+    jobs,
     adminToolsTabOrders
   };
 };

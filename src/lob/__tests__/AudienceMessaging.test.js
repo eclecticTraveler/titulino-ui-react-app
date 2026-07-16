@@ -15,6 +15,7 @@ const {
   buildMessageVariableRegistryOptions,
   buildMessageTemplateTableModel,
   buildMessageTemplateOptions,
+  buildJobTableModel,
   buildAudienceFilterClauses,
   buildAudienceSummary,
   buildCourseSearchGroupsByYear,
@@ -993,6 +994,70 @@ describe('buildMessageTemplateOptions', () => {
     const [opt] = buildMessageTemplateOptions(rows);
     expect(opt.value).toBe(5);
     expect(opt.label).toBe('golden (en_US)');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// buildJobTableModel
+// ---------------------------------------------------------------------------
+describe('buildJobTableModel', () => {
+  it('returns empty array for empty input', () => {
+    expect(buildJobTableModel([])).toEqual([]);
+  });
+
+  it('returns empty array for non-array input', () => {
+    expect(buildJobTableModel(null)).toEqual([]);
+  });
+
+  it('normalizes PascalCase DB fields to camelCase', () => {
+    const rows = [{
+      JobKey: 'birthdays', DisplayName: 'Birthday Messages', ScheduleDescription: 'Daily 8 AM',
+      ContentSourceType: 'db_template', TemplateName: 'birthday', BucketPath: null, IsActive: true, Notes: 'note'
+    }];
+    const [row] = buildJobTableModel(rows);
+    expect(row.jobKey).toBe('birthdays');
+    expect(row.displayName).toBe('Birthday Messages');
+    expect(row.scheduleDescription).toBe('Daily 8 AM');
+    expect(row.contentSourceType).toBe('db_template');
+    expect(row.templateName).toBe('birthday');
+    expect(row.bucketPath).toBeNull();
+    expect(row.isActive).toBe(true);
+    expect(row.notes).toBe('note');
+  });
+
+  it('uses JobKey as the row key', () => {
+    const rows = [{ JobKey: 'welcome', DisplayName: 'Welcome', ScheduleDescription: 'Every 15 min', ContentSourceType: 'spine_bucket' }];
+    expect(buildJobTableModel(rows)[0].key).toBe('welcome');
+  });
+
+  it('falls back to index-based key when jobKey is missing', () => {
+    const rows = [{ DisplayName: 'Untitled' }];
+    expect(buildJobTableModel(rows)[0].key).toBe('job-0');
+  });
+
+  it('defaults isActive to true when field is missing', () => {
+    const rows = [{ JobKey: 'goldcerts', DisplayName: 'Golden Certs', ScheduleDescription: 'On demand', ContentSourceType: 'db_template' }];
+    expect(buildJobTableModel(rows)[0].isActive).toBe(true);
+  });
+
+  it('respects isActive: false', () => {
+    const rows = [{ JobKey: 'testing', DisplayName: 'Smoke Test', ScheduleDescription: 'On deploy', ContentSourceType: 'hardcoded', IsActive: false }];
+    expect(buildJobTableModel(rows)[0].isActive).toBe(false);
+  });
+
+  it('templateName and bucketPath can both be null (hardcoded jobs)', () => {
+    const rows = [{ JobKey: 'testing', DisplayName: 'Smoke Test', ScheduleDescription: 'On deploy', ContentSourceType: 'hardcoded' }];
+    const [row] = buildJobTableModel(rows);
+    expect(row.templateName).toBeNull();
+    expect(row.bucketPath).toBeNull();
+  });
+
+  it('handles multiple rows', () => {
+    const rows = [
+      { JobKey: 'birthdays', DisplayName: 'Birthday Messages', ScheduleDescription: 'Daily 8 AM', ContentSourceType: 'db_template' },
+      { JobKey: 'welcome', DisplayName: 'Welcome', ScheduleDescription: 'Every 15 min', ContentSourceType: 'spine_bucket' },
+    ];
+    expect(buildJobTableModel(rows)).toHaveLength(2);
   });
 });
 

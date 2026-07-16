@@ -44,6 +44,8 @@ import {
   ON_UPSERTING_MESSAGE_VARIABLE,
   ON_LOADING_MESSAGE_TEMPLATES,
   ON_UPSERTING_MESSAGE_TEMPLATE,
+  ON_LOADING_JOBS,
+  ON_UPSERTING_JOB,
   ON_LOADING_ADMIN_TOOLS_TAB_ORDER,
   ON_SAVING_ADMIN_TOOLS_TAB_ORDER
 } from '../constants/AdminTools';
@@ -67,6 +69,8 @@ const initState = {
   lastUpsertMessageVariableResult: null,
   messageTemplates: null,
   lastUpsertMessageTemplateResult: null,
+  jobs: null,
+  lastUpsertJobResult: null,
   adminToolsTabOrders: {}
 };
 
@@ -295,6 +299,10 @@ const adminTools = (state = initState, action) => {
       return { ...state, messageTemplates: action.messageTemplates };
     case ON_UPSERTING_MESSAGE_TEMPLATE:
       return { ...state, lastUpsertMessageTemplateResult: action.upsertMessageTemplateResult };
+    case ON_LOADING_JOBS:
+      return { ...state, jobs: action.jobs };
+    case ON_UPSERTING_JOB:
+      return { ...state, lastUpsertJobResult: action.upsertJobResult };
     case ON_LOADING_ADMIN_TOOLS_TAB_ORDER:
     case ON_SAVING_ADMIN_TOOLS_TAB_ORDER:
       return {

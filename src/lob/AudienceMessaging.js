@@ -1088,6 +1088,32 @@ export const buildMessageTemplateOptions = (rows = []) => (
     }))
 );
 
+export const buildJobTableModel = (rows = []) => (
+  (Array.isArray(rows) ? rows : []).map((row, index) => {
+    const jobKey = getValue(row, 'JobKey', 'jobKey') || '';
+    const displayName = getValue(row, 'DisplayName', 'displayName') || '';
+    const scheduleDescription = getValue(row, 'ScheduleDescription', 'scheduleDescription') || '';
+    const contentSourceType = getValue(row, 'ContentSourceType', 'contentSourceType') || '';
+    const templateName = getValue(row, 'TemplateName', 'templateName') || null;
+    const bucketPath = getValue(row, 'BucketPath', 'bucketPath') || null;
+    const isActive = getValue(row, 'IsActive', 'isActive') !== false;
+    const notes = getValue(row, 'Notes', 'notes') || '';
+
+    return {
+      ...row,
+      key: jobKey || `job-${index}`,
+      jobKey,
+      displayName,
+      scheduleDescription,
+      contentSourceType,
+      templateName,
+      bucketPath,
+      isActive,
+      notes
+    };
+  })
+);
+
 export const buildAudienceFilterClauses = (filters = {}, lookups = {}) => {
   const {
     courseNames = {},
@@ -1185,6 +1211,7 @@ const AudienceMessaging = {
   buildMessageVariableRegistryOptions,
   buildMessageTemplateTableModel,
   buildMessageTemplateOptions,
+  buildJobTableModel,
   buildAudienceFilterClauses
 };
 
