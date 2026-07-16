@@ -1426,6 +1426,8 @@ const AdminToolsManager = {
   upsertMessageVariable: (...args) => upsertMessageVariable(...args),
   getMessageTemplates: (...args) => getMessageTemplates(...args),
   upsertMessageTemplate: (...args) => upsertMessageTemplate(...args),
+  getJobs: (...args) => getJobs(...args),
+  upsertJob: (...args) => upsertJob(...args),
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,
@@ -1554,6 +1556,41 @@ export const upsertMessageTemplate = async (emailId, id, templateName, subject, 
 
   const row = Array.isArray(result) ? result[0] : result;
   return row?.MessageTemplateId ?? null;
+};
+
+export const getJobs = async (emailId) => {
+  const token = await getTokenFromEmail(emailId);
+  if (!token) return { emailId, rows: [] };
+
+  const rows = await TitulinoAdminAuthService.getJobs(
+    token,
+    'AdminToolsManager.getJobs'
+  );
+
+  return { emailId, rows: AudienceMessaging.buildJobTableModel(rows) };
+};
+
+export const upsertJob = async (emailId, jobKey, displayName, scheduleDescription, contentSourceType, templateName, bucketPath, isActive, notes) => {
+  const token = await getTokenFromEmail(emailId);
+  if (!token) return null;
+
+  const result = await TitulinoAdminAuthService.upsertJob(
+    {
+      p_job_key: jobKey ?? null,
+      p_display_name: displayName ?? null,
+      p_schedule_description: scheduleDescription ?? null,
+      p_content_source_type: contentSourceType ?? null,
+      p_template_name: templateName ?? null,
+      p_bucket_path: bucketPath ?? null,
+      p_is_active: isActive,
+      p_notes: notes ?? null
+    },
+    token,
+    'AdminToolsManager.upsertJob'
+  );
+
+  const row = Array.isArray(result) ? result[0] : result;
+  return row?.JobKey ?? null;
 };
 
 export default AdminToolsManager;

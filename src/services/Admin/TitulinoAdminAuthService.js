@@ -159,6 +159,15 @@ export const upsertMessageTemplate = async (payload = {}, token, whoCalledMe = '
   postJsonEndpoint('UpsertMessageTemplate', payload, token, whoCalledMe, null)
 );
 
+export const getJobs = async (token, whoCalledMe = 'getJobs') => {
+  const apiResult = await postJsonEndpoint('GetJobs', {}, token, whoCalledMe, EMPTY_RESULT);
+  return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
+};
+
+export const upsertJob = async (payload = {}, token, whoCalledMe = 'upsertJob') => (
+  postJsonEndpoint('UpsertJob', payload, token, whoCalledMe, null)
+);
+
 export const detectPossibleDuplicateContacts = async (payload = {}, token, whoCalledMe = 'detectPossibleDuplicateContacts') => {
   const apiResult = await postJsonEndpoint('DetectPossibleDuplicateContacts', payload, token, whoCalledMe);
   return Array.isArray(apiResult) ? apiResult : EMPTY_RESULT;
@@ -387,6 +396,8 @@ const TitulinoAdminAuthService = {
   upsertMessageVariable,
   getMessageTemplates,
   upsertMessageTemplate,
+  getJobs,
+  upsertJob,
   detectPossibleDuplicateContacts,
   getContactMergeDashboard,
   previewContactMerge,
