@@ -9080,6 +9080,17 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       ? (messageTemplates?.rows || []).filter(r => r.templateName === editingJob.templateName.trim())
       : [];
 
+    const existingTemplateNameOptions = [...new Set((messageTemplates?.rows || []).map(r => r.templateName).filter(Boolean))]
+      .sort()
+      .map(name => ({ value: name }));
+
+    const openTemplateForEditing = (tpl) => {
+      setEditingTemplate({ ...tpl });
+      setTemplateManagerTab('createEdit');
+      setJobManagerVisible(false);
+      setTemplateManagerVisible(true);
+    };
+
     const createEditTab = (
       <div style={{ maxWidth: 560 }}>
         <Divider style={{ margin: '4px 0 12px' }}>{t('admin.tools.messaging.jobManager.referenceSectionTitle')}</Divider>
@@ -9163,18 +9174,33 @@ const GlobalAdminToolsLandingDashboard = (props) => {
                 {t('admin.tools.messaging.jobManager.templateName')}
               </div>
               <Alert type="warning" showIcon message={t('admin.tools.messaging.jobManager.templateNameLiveHint')} style={{ marginBottom: 6 }} />
-              <Input
+              <AutoComplete
                 value={editingJob?.templateName || ''}
-                onChange={e => setEditingJob(prev => ({ ...prev, templateName: e.target.value }))}
+                onChange={value => setEditingJob(prev => ({ ...prev, templateName: value }))}
+                options={existingTemplateNameOptions}
+                filterOption={(input, option) => option.value.toLowerCase().includes(input.toLowerCase())}
                 placeholder="e.g. birthday"
+                style={{ width: '100%' }}
               />
               <div style={{ marginTop: 10, padding: 10, background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 4 }}>
                 <div style={{ fontWeight: 500, fontSize: 12, marginBottom: 6 }}>{t('admin.tools.messaging.jobManager.templatePreviewTitle')}</div>
                 {editingJob?.templateName?.trim() ? (
                   matchingTemplates.length > 0 ? (
                     matchingTemplates.map(tpl => (
-                      <div key={tpl.key} style={{ fontSize: 12, marginBottom: 4 }}>
-                        <Tag>{tpl.localeCode}</Tag> {tpl.subject}
+                      <div key={tpl.key} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid #f0f0f0' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                          <Tag>{tpl.localeCode}</Tag>
+                          <Button
+                            type="link"
+                            size="small"
+                            icon={<EditOutlined />}
+                            onClick={() => openTemplateForEditing(tpl)}
+                          >
+                            {t('admin.tools.messaging.jobManager.templatePreviewEditButton')}
+                          </Button>
+                        </div>
+                        <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 4 }}>{tpl.subject}</div>
+                        <div style={{ fontSize: 12, color: '#595959', whiteSpace: 'pre-wrap', maxHeight: 160, overflowY: 'auto' }}>{tpl.body}</div>
                       </div>
                     ))
                   ) : (
