@@ -801,6 +801,7 @@
 	"admin.tools.messaging.jobManager.active": "Activo",
 	"admin.tools.messaging.jobManager.activeStatusOnlyHint": "En vivo: el crontab sigue disparando este trabajo según su horario, pero si esto está apagado, el trabajo termina de inmediato sin enviar nada. Esto no cambia el horario del crontab en sí — vuelve a activarlo para reanudar.",
 	"admin.tools.messaging.jobManager.referenceSectionTitle": "Solo informativo",
+	"admin.tools.messaging.jobManager.newJob": "Nuevo Trabajo",
 	"admin.tools.messaging.jobManager.referenceFieldsNote": "Clave del Trabajo, Nombre para Mostrar, Horario, Fuente de Contenido, Ruta del Bucket y Notas son solo referencia/documentación. Activo y Nombre de Plantilla (abajo) son los dos campos que realmente cambian lo que pasa cuando corre este trabajo.",
 	"admin.tools.messaging.jobManager.behaviorSectionTitle": "Afecta el comportamiento real",
 	"admin.tools.messaging.jobManager.confirmTitle": "Guardar trabajo",

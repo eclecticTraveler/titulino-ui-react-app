@@ -800,6 +800,7 @@
 	"admin.tools.messaging.jobManager.active": "Active",
 	"admin.tools.messaging.jobManager.activeStatusOnlyHint": "Live: cron still fires this job on schedule, but if this is off, the job exits immediately without sending anything. This does not change the crontab schedule itself — turn it back on to resume.",
 	"admin.tools.messaging.jobManager.referenceSectionTitle": "Informational only",
+	"admin.tools.messaging.jobManager.newJob": "New Job",
 	"admin.tools.messaging.jobManager.referenceFieldsNote": "Job Key, Display Name, Schedule, Content Source, Bucket Path, and Notes are reference/documentation only. Active and Template Name (below) are the two fields that actually change what happens when this job runs.",
 	"admin.tools.messaging.jobManager.behaviorSectionTitle": "Affects real behavior",
 	"admin.tools.messaging.jobManager.confirmTitle": "Save job",

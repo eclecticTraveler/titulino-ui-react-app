@@ -36,6 +36,7 @@ On 2026-07-14, `pd-titulino-lang` (an `f1-micro`, 0.6 GB RAM, no swap) was found
 | `TitulinoWorkerService` (`KnowMeEssayWorker`) | Same VM, always-on `BackgroundService` | Polls every 30s; actual work happens roughly **once a week** |
 | `TitulinoWorkerService` (dev) | Same VM, always-on | Same pattern, dev-only |
 | Redis | Same VM | Backs welcome/purchase/audience-message queues; lightweight (~55 MB RSS observed) |
+| Caddy reverse proxy — dev Supabase workaround | Same VM, added 2026-07-16 | `dev.sb.titulino.com` → dev Supabase project. Unrelated to the 4 components above — routes around a corporate network policy blocking direct access to the dev Supabase domain from Alberto's machine. Not part of the original architecture this plan was written against. |
 
 Everything above shares one VM's CPU/RAM, which is what caused this week's incident.
 
@@ -50,6 +51,7 @@ Everything above shares one VM's CPU/RAM, which is what caused this week's incid
 | `TitulinoWorkerService` (`KnowMeEssayWorker`) | **Cloud Run service** (not a Job — see Phase 4 design note) receiving Pub/Sub push messages, polling loop removed | At ~weekly usage, a 30s poller is awake ~99.98% of the time for nothing; event-driven means it only runs (and is billed) when there's an actual submission |
 | Redis | **Dedicated `e2-micro` VM, isolated from everything else, one per environment (or a shared dev/prod instance — see D02)** | Redis is stateful — can't scale to zero. GCP's Always Free tier includes 1 `e2-micro`/month in `us-west1` (already our region) — likely **$0/month** for one instance; a second (dev) instance would be a real small cost, hence D02 |
 | Dev variants (api-dev, worker-dev) | **Cloud Run with `min-instances=0`**, same container image as prod, separate service/revision + separate env vars | Costs ~nothing when not actively being tested against; promotion path (see below) means dev and prod always run the exact same image |
+| Caddy reverse proxy — dev Supabase workaround | **Open — either retired (if the underlying network block is resolved another way, e.g. an allowlist exception or a Supabase custom domain) or moved to a minimal Cloud Run service before Phase 6** | Not one of the 4 core components, but still a live dependency — can't be silently dropped when the VM goes, or local dev breaks again. See Phase 6 note and Open questions. |
 | `pd-titulino-lang` VM | **Decommissioned** once everything above is migrated and verified in both environments | No reason to keep paying for it once nothing depends on it |
 
 ---
@@ -282,6 +284,7 @@ Still comfortably fits an end-of-2026 target — the actual hands-on-keyboard to
 
 ### Phase 6 — Decommission
 
+- [ ] X00 — Resolve the Caddy dev-Supabase-proxy dependency (`dev.sb.titulino.com`, added 2026-07-16) before touching the VM: either confirm the underlying network block that required it has been resolved another way and the proxy is no longer needed, or stand up a minimal replacement (e.g. a small Cloud Run service running the same reverse-proxy config) so local dev doesn't silently break the moment the VM is deleted. This is not one of the 4 core components tracked elsewhere in this plan — it'll be easy to miss.
 - [ ] X01 — Confirm nothing on `pd-titulino-lang` is still in use (API, worker, cron, Redis all migrated and stable in both dev and prod)
 - [ ] X02 — Snapshot the disk before deleting, just in case
 - [ ] X03 — Delete the instance (via `gcloud`/console — it was never imported into Terraform, so no `terraform destroy` needed); release the reserved static IP if nothing needs it anymore
@@ -317,3 +320,4 @@ Compare against continuing to pay for an ever-larger VM (`e2-small` now, possibl
 - D01–D05 above, plus:
 - Does `titulino-net-api` have any WebSocket/SignalR (`Hub` project) usage that needs Cloud Run's WebSocket support considerations, or any long-lived connection assumptions that don't fit a request-scoped serverless model?
 - Is GCP's Always Free `e2-micro` allowance one-per-billing-account or one-per-project/region — this determines whether a separate dev Redis VM is actually free or a real (if small) cost (feeds D02).
+- Will the Caddy dev-Supabase-proxy workaround (added 2026-07-16, see X00) still be needed by the time Phase 6 arrives, or will the underlying network block be resolved by other means (allowlist exception, Supabase custom domain) before then? Revisit at Phase 6, don't assume either way.

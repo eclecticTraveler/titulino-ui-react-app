@@ -801,6 +801,7 @@
 	"admin.tools.messaging.jobManager.active": "Ativo",
 	"admin.tools.messaging.jobManager.activeStatusOnlyHint": "Ativo: o crontab continua disparando este job no horario, mas se isso estiver desligado, o job encerra imediatamente sem enviar nada. Isso nao muda o horario do crontab em si — ligue novamente para retomar.",
 	"admin.tools.messaging.jobManager.referenceSectionTitle": "Apenas informativo",
+	"admin.tools.messaging.jobManager.newJob": "Novo Job",
 	"admin.tools.messaging.jobManager.referenceFieldsNote": "Chave do Job, Nome de Exibicao, Horario, Fonte de Conteudo, Caminho do Bucket e Notas sao apenas referencia/documentacao. Ativo e Nome do Modelo (abaixo) sao os dois campos que realmente mudam o que acontece quando este job roda.",
 	"admin.tools.messaging.jobManager.behaviorSectionTitle": "Afeta o comportamento real",
 	"admin.tools.messaging.jobManager.confirmTitle": "Salvar job",
