@@ -9018,30 +9018,59 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       {
         title: '',
         key: 'edit',
-        width: 48,
+        width: 80,
         render: (_, row) => (
-          <Button
-            type="text"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setEditingJob({ ...row, isExisting: true });
-              setJobManagerTab('createEdit');
-            }}
-          />
+          <Space size={4}>
+            <Tooltip title={t('admin.tools.messaging.jobManager.tabs.createEdit')}>
+              <Button
+                type="text"
+                size="small"
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setEditingJob({ ...row, isExisting: true });
+                  setJobManagerTab('createEdit');
+                }}
+              />
+            </Tooltip>
+            <Tooltip title={t('admin.tools.messaging.jobManager.tabs.logs')}>
+              <Button
+                type="text"
+                size="small"
+                icon={<UnorderedListOutlined />}
+                onClick={() => {
+                  setEditingJob({ ...row, isExisting: true });
+                  setJobManagerTab('logs');
+                  loadJobLogs(row.jobKey);
+                }}
+              />
+            </Tooltip>
+          </Space>
         )
       }
     ];
 
     const listTab = (
-      <Table
-        dataSource={rows}
-        columns={listColumns}
-        rowKey="key"
-        pagination={false}
-        size="small"
-        scroll={{ y: 360 }}
-      />
+      <>
+        <div style={{ marginBottom: 12, textAlign: 'right' }}>
+          <Button
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setEditingJob({ jobKey: '', displayName: '', scheduleDescription: '', contentSourceType: 'db_template', templateName: '', bucketPath: '', isActive: true, notes: '' });
+              setJobManagerTab('createEdit');
+            }}
+          >
+            {t('admin.tools.messaging.jobManager.newJob')}
+          </Button>
+        </div>
+        <Table
+          dataSource={rows}
+          columns={listColumns}
+          rowKey="key"
+          pagination={false}
+          size="small"
+          scroll={{ y: 360 }}
+        />
+      </>
     );
 
     const isEditValid = editingJob?.jobKey?.trim() && editingJob?.displayName?.trim() &&
@@ -9053,6 +9082,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
 
     const createEditTab = (
       <div style={{ maxWidth: 560 }}>
+        <Divider style={{ margin: '4px 0 12px' }}>{t('admin.tools.messaging.jobManager.referenceSectionTitle')}</Divider>
         <Alert
           type="info"
           showIcon
@@ -9112,6 +9142,8 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               onChange={e => setEditingJob(prev => ({ ...prev, notes: e.target.value }))}
             />
           </Col>
+          <Col xs={24}><Divider style={{ margin: '4px 0' }}>{t('admin.tools.messaging.jobManager.behaviorSectionTitle')}</Divider></Col>
+
           <Col xs={24}>
             <Space align="center">
               <Switch
@@ -9124,8 +9156,6 @@ const GlobalAdminToolsLandingDashboard = (props) => {
               </Tooltip>
             </Space>
           </Col>
-
-          <Col xs={24}><Divider style={{ margin: '4px 0' }}>{t('admin.tools.messaging.jobManager.behaviorSectionTitle')}</Divider></Col>
 
           {editingJob?.contentSourceType === 'db_template' && (
             <Col xs={24}>
@@ -9206,7 +9236,11 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       </div>
     );
 
-    const jobLogsRows = processLogEventsBySource?.missive?.rows || [];
+    // The server-side methodSearchText filter is ILIKE '%value%' (substring match), so it's not
+    // enough on its own — e.g. "birthdays" is a substring of "churchmemberbirthdays" and would
+    // otherwise leak that job's entries in here too. Re-filter to an exact methodName match.
+    const jobLogsRows = (processLogEventsBySource?.missive?.rows || [])
+      .filter(row => row.methodName === editingJob?.jobKey);
 
     const logsTab = (
       <div>
@@ -9283,16 +9317,18 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           activeKey={jobManagerTab}
           onChange={key => {
             setJobManagerTab(key);
-            if (key === 'createEdit' && !editingJob) {
-              setEditingJob({ jobKey: '', displayName: '', scheduleDescription: '', contentSourceType: 'db_template', templateName: '', bucketPath: '', isActive: true, notes: '' });
-            }
             if (key === 'logs' && editingJob?.jobKey) {
               loadJobLogs(editingJob.jobKey);
             }
           }}
           items={[
             { key: 'list', label: t('admin.tools.messaging.jobManager.tabs.list'), children: listTab },
-            { key: 'createEdit', label: t('admin.tools.messaging.jobManager.tabs.createEdit'), children: createEditTab },
+            {
+              key: 'createEdit',
+              label: t('admin.tools.messaging.jobManager.tabs.createEdit'),
+              children: createEditTab,
+              disabled: !editingJob
+            },
             {
               key: 'logs',
               label: t('admin.tools.messaging.jobManager.tabs.logs'),

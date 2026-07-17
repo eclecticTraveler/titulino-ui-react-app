@@ -155,11 +155,11 @@ User asked whether the fix should push `{externalId, courseCodeId}` pairs from t
 - No extra DB load vs. the queue-pair option — same 2 queries per course either way, and the course scoping happens in the query itself instead of trusting loop-iteration timing.
 - Course attribution becomes a property of the query, not of when a pop happens to land — eliminates the bug class entirely rather than papering over it.
 
-- [ ] T34 — Rewrite `SendWelcomeMessagesToNewCourseEnrolleesAsync`: per course, call `GetEnrolleesByCourseAsync(courseCodeId)` instead of popping `welcomeToCourseEnrollee`; call `GetCommunicationTrackingAsync(courseCodeId, CommunicationCategory.welcome, CommunicationProvider.email)` and filter out contacts already in that result before sending.
-- [ ] T35 — Confirm `reprocesswelcome`/`reprocessinFaultyWelcomeToCourseEnrollee` (the dead-letter retry path) is unaffected — that queue holds specific failed *attempts*, not course-attribution signals, so it's a legitimate queue use and stays as-is.
-- [ ] T36 — Retire the `welcomeToCourseEnrollee` queue and its producer push in titulino-net-api once T34 is verified live — nothing consumes it anymore.
-- [ ] T37 — Update `docs/Architecture.md`'s Redis Queues table (remove `welcomeToCourseEnrollee` row) and remove the `⚠ Known bug` note once T34–T36 ship.
-- [ ] T38 — Manual verification: enroll a test contact in 2 different active courses between two `welcome` runs, confirm exactly 2 correctly-attributed emails (not 0, not the wrong course).
+- [x] T34 — Rewrote `SendWelcomeMessagesToNewCourseEnrolleesAsync` (2026-07-16): per course, calls `GetEnrolleesByCourseAsync(courseCodeId)` instead of popping `welcomeToCourseEnrollee`, then `GetCommunicationTrackingAsync(courseCodeId, CommunicationCategory.welcome, CommunicationProvider.email)` and filters out contacts already in that result before calling the existing `ProcessEnrolleesAsync` directly (bypassing `ProcessMessagesFromGivenQueueAsync`'s queue-pop path entirely). Skips the course early if nothing's pending. `dotnet build` clean (0 errors).
+- [x] T35 — Confirmed `reprocesswelcome`/`reprocessinFaultyWelcomeToCourseEnrollee` is unaffected — `ProcessEnrolleesAsync` still receives the same `reprocessQueueName`, so failed sends still land on the dead-letter queue exactly as before; only the *initial* course-attribution pop was removed.
+- [ ] T36 — Retire the `welcomeToCourseEnrollee` queue and its producer push in titulino-net-api. **Not yet** — waiting for T34 to run live for a while first, per the plan's own caution.
+- [x] T37 — Updated `docs/Architecture.md`'s Redis Queues section: replaced the `⚠ Known bug` note with a `✅ Fixed 2026-07-16` note describing the fix, and flagged that `titulino-net-api` still pushes to `welcomeToCourseEnrollee` with nothing consuming it (T36).
+- [ ] T38 — Manual verification: enroll a test contact in 2 different active courses between two `welcome` runs, confirm exactly 2 correctly-attributed emails (not 0, not the wrong course). **Blocked on server deploy** — same as T48/T49/T51, needs the updated `titulino-communication` build published to `pd-titulino-lang` first.
 
 ### Deferred — combine multi-course welcomes into one email (user's original ask)
 
@@ -214,6 +214,7 @@ User noticed the Monitoring tab already has a Missive log source and asked to sc
 - [x] 6 — Filter bar scoped to just this job: severity `Select` + `DatePicker.RangePicker`, both re-fetching on change; `methodSearchText` stays locked to the job key, no free-text search box (not needed — the job key already scopes it).
 - [x] 7 — Locale keys (`jobManager.tabs.logs`, `jobManager.logs.description`, `jobManager.logs.refresh`) in all 3 locale files, including a note that older activity won't retroactively appear.
 - [x] 8 — Build verification: `dotnet build` (TitulinoMissive) 0 errors; frontend `npm run build` 0 errors. **DB deployed 2026-07-16.** Live manual verification (run a job, confirm entries appear on its Logs tab) still needs the updated `titulino-communication` code published to `pd-titulino-lang` — same as T48/T49.
+- [x] Gap found and fixed 2026-07-16: the `IsJobActiveAsync` skip branch in `Program.cs` only did `Console.WriteLine` — nothing landed in the structured Missive log table, so a skipped job's Logs tab would show nothing. Added a `LogSeverity.Warning` call there too, tagged with the job key like the others.
 
 **Known shared-state nuance (not a bug, just worth knowing):** the Logs tab reuses the same `processLogEventsBySource.missive` redux slot the Monitoring tab's Missive view uses. If both are open at once with different filters, the last one to fetch wins that slot — low practical risk, but not fully isolated.
 

@@ -30,6 +30,7 @@ SupabaseService.signOutRequest = async () => {
 SupabaseService.signInGoogleRequest = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
+    options: { redirectTo: window.location.origin },
   });
   if (error) {
     console.error("Error signing in with Google:", error);
@@ -42,6 +43,7 @@ SupabaseService.signInGoogleRequest = async () => {
 SupabaseService.signInFacebookRequest = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'facebook',
+    options: { redirectTo: window.location.origin },
   });
   if (error) {
     console.error("Error signing in with Facebook:", error);
