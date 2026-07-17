@@ -9217,7 +9217,7 @@ const GlobalAdminToolsLandingDashboard = (props) => {
           {editingJob?.contentSourceType === 'spine_bucket' && (
             <Col xs={24}>
               <div style={{ marginBottom: 4, fontWeight: 500 }}>{t('admin.tools.messaging.jobManager.bucketPath')}</div>
-              <Alert type="info" showIcon message={t('admin.tools.messaging.jobManager.bucketPathHint')} style={{ marginBottom: 6 }} />
+              <Alert type="warning" showIcon message={t('admin.tools.messaging.jobManager.bucketPathHint')} style={{ marginBottom: 6 }} />
               <Input
                 value={editingJob?.bucketPath || ''}
                 onChange={e => setEditingJob(prev => ({ ...prev, bucketPath: e.target.value }))}

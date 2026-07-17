@@ -194,15 +194,16 @@ User asked (looking at the built UI): what if toggling a job inactive didn't jus
 - [x] Frontend: renamed `isActiveDisplay`→`isActive` across `AudienceMessaging.js` (+ tests, 171/171 pass), `AdminToolsManager.js`, `redux/actions/AdminTools.js`, `GlobalAdminToolsLandingDashboard.js`. Rewrote the Active tooltip/confirm-dialog copy in all 3 locale files to describe the real short-circuit behavior instead of "status note only" — and moved Active into the "affects real behavior" framing alongside Template Name (the `referenceFieldsNote` banner text now says so explicitly).
 - [x] Manual verification passed (2026-07-17): toggled `testing` off, confirmed it skipped and logged nothing extra; toggled back on, confirmed normal execution and logging.
 
-### T50 — Bucket Path: scoped, not built (see chat — user asked to scope only)
+### T50 — Bucket Path made functional for `welcome` (built 2026-07-17)
 
-Same idea as T49, applied to the `welcome` job's bucket path. Currently `BucketPath` on the Job registry is descriptive only — `SendWelcomeMessagesToNewCourseEnrolleesAsync` → `GetWelcomeMessageConfigsAsync` still hardcodes `titulino-spine-data/welcome-messages.json`, it doesn't read `Job.BucketPath` at all. Scope if this gets picked up:
-- [ ] Change `GetWelcomeMessageConfigsAsync`'s signature (or add an overload) to accept a bucket path parameter instead of a hardcoded literal.
-- [ ] In `SendWelcomeMessagesToNewCourseEnrolleesAsync`, resolve the path via a `ResolveJobBucketPath("welcome", fallbackPath)` helper mirroring `ResolveJobTemplateName`, then pass it through.
-- [ ] Same fail-safe-default requirement: missing row or empty `BucketPath` must fall back to today's hardcoded literal, not break the job.
-- [ ] `welcome` is currently the *only* bucket-driven job, so this is a single call-site change, not a sweep — smaller than T45 was.
-- [ ] Frontend: no changes needed — the Bucket Path field/UI already exists; it just goes from "reference only" to "live," so the field's helper text (`bucketPathHint`) would need updating to match, same as Active's did in T49.
-- [ ] Not started. Estimate: small (~1-2 hours), mirrors T45's pattern almost exactly.
+Same idea as T49, applied to the `welcome` job's bucket path.
+
+- [x] Added a `GetWelcomeMessageConfigsAsync(string bucketPath)` overload to `IBucketAdapter`/`GcpBucketAdapter`/`IRepositoryClient`/`RepositoryClient` (all triplicated across titulino-communication, titulino-net-api, TitulinoWorkerService) — the existing no-arg method now just delegates to it with today's hardcoded literal, so nothing else calling it changes behavior.
+- [x] Added `ResolveJobBucketPath(jobKey, fallbackPath)` to `MessageManager.cs`, mirroring `ResolveJobTemplateName` exactly (same fail-safe-default: missing row or empty `BucketPath` falls back to the hardcoded literal).
+- [x] `SendWelcomeMessagesToNewCourseEnrolleesAsync` now resolves the path via `ResolveJobBucketPath("welcome", "titulino-spine-data/welcome-messages.json")` before calling `GetWelcomeMessageConfigsAsync(bucketPath)`.
+- [x] `dotnet build` clean (0 errors) in all 3 repos.
+- [x] Frontend: updated `bucketPathHint` copy (now says "Live", matches Active/Template Name's warning-style Alert) and `referenceFieldsNote` (Bucket Path moved out of the reference-only list) in all 3 locale files. No structural UI change needed — the field/section placement was already correct from T49's divider work.
+- [ ] Manual verification: not yet done. Same test pattern as T48 — point `welcome`'s Bucket Path at a duplicate test JSON file with obviously different content, run manually, confirm the test content is what's used; then revert.
 
 ### T51 — Job Manager "Logs" tab, filtered by job key (built 2026-07-16)
 
