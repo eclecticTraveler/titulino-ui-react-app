@@ -799,6 +799,12 @@ const getKnowMeAiResult = async (levelTheme, emailId, classNumber = 0) => {
   return await TitulinoLrnNetService.getKnowMeAiResult(user.innerToken, courseCodeId, classNumber);
 };
 
+const getKnowMeAiStatusByCourse = async (courseCodeId, emailId) => {
+  const user = await getCachedUserProfile(emailId);
+  if (!user?.innerToken || !courseCodeId) return null;
+  return await TitulinoLrnNetService.getKnowMeAiStatusByCourse(user.innerToken, courseCodeId);
+};
+
 const resolveFacilitadorCourseCodeId = async (courseTheme, emailId) => {
   const user = await getCachedUserProfile(emailId);
   const userCourses = user?.userCourses;
@@ -830,6 +836,7 @@ const LrnManager = {
   upsertUserKnowMeProgress,
   upsertKnowMeProfilePicture,
   getKnowMeAiResult,
+  getKnowMeAiStatusByCourse,
   getEnrollmentProfilePictureRequirement,
   ensureEnrollmentProfilePicture,
   submitAuthenticatedEnrollment,

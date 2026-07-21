@@ -4,8 +4,9 @@ import { bindActionCreators } from "redux";
 import { App, Row, Col, Card, Tabs, Input, Select } from 'antd';
 import { useIntl } from 'react-intl';
 import IntlMessage from 'components/util-components/IntlMessage';
-import { faPieChart, faMapPin, faPersonHiking, faListCheck, faChartLine } from '@fortawesome/free-solid-svg-icons';
+import { faPieChart, faMapPin, faPersonHiking, faListCheck, faChartLine, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { faBook } from '@fortawesome/free-solid-svg-icons';
+import KnowMeStatusTab from './KnowMeStatusTab';
 import { SearchOutlined } from '@ant-design/icons';
 import IconAdapter from "components/util-components/IconAdapter";
 import {
@@ -415,6 +416,16 @@ const FacilitatorsLandingDashboard = (props) => {
       ),
         children: <TimelineTrendGraph localizedTitle="facilitador.dashboard.trends.progressOverTime" dates={facilitadorEnrolleeData?.progressDates} lineColor="#e35aff" enableGradientArea />
       },
+    {
+      key: 'knowme',
+      label: (
+        <span>
+          <IconAdapter icon={faPenToSquare} iconType={ICON_LIBRARY_TYPE_CONFIG.fontAwesome} />
+          {setLocale(locale, 'facilitador.dashboard.knowme')}
+        </span>
+      ),
+      children: <KnowMeStatusTab courseCodeId={courseCodeId} />
+    },
     ...(showMyProgressTab ? [{
       key: 'myProgress',
       label: (

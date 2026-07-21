@@ -154,10 +154,53 @@ export const getKnowMeAiResult = async (token, courseCodeId, classNumber, whoCal
   }
 };
 
+export const getKnowMeAiStatusByCourse = async (token, courseCodeId, whoCalledMe = 'getKnowMeAiStatusByCourse') => {
+  if (!token) {
+    return { success: false, status: 401, errorMessage: 'Missing token.', entries: [] };
+  }
+
+  const url = `${titulinoNetLrnApiUri}/know-me/ai-status?courseCodeId=${encodeURIComponent(courseCodeId)}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: getHeaders(token),
+      redirect: 'follow'
+    });
+    const result = await parseJsonResponse(response);
+
+    if (!response.ok) {
+      return {
+        success: false,
+        status: response.status,
+        errorMessage: result?.message || result?.error || result?.raw || response.statusText,
+        entries: []
+      };
+    }
+
+    return {
+      success: true,
+      status: response.status,
+      entries: Array.isArray(result) ? result : []
+    };
+  } catch (error) {
+    if (env.ENVIROMENT !== 'prod') {
+      console.error(`[TitulinoLrnNetService.getKnowMeAiStatusByCourse] ${whoCalledMe}`, error);
+    }
+    return {
+      success: false,
+      status: 500,
+      errorMessage: error?.message || 'Unable to fetch Know Me AI status.',
+      entries: []
+    };
+  }
+};
+
 const TitulinoLrnNetService = {
   getWebsitePreferences,
   putWebsitePreferences,
-  getKnowMeAiResult
+  getKnowMeAiResult,
+  getKnowMeAiStatusByCourse
 };
 
 export default TitulinoLrnNetService;

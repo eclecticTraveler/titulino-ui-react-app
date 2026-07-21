@@ -70,6 +70,7 @@ import {
   ON_FETCHING_KNOW_ME_SURVEY_QUESTIONS,
   ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE,
   ON_FETCHING_KNOW_ME_AI_RESULT,
+  ON_FETCHING_KNOW_ME_AI_STATUS_BY_COURSE,
   ON_FETCHING_FLOATING_ACTIONS
 } from "../constants/Lrn";
 import LrnManager from "managers/LrnManager";
@@ -718,6 +719,14 @@ export const onFetchingKnowMeAiResult = async (levelTheme, emailId, chapterNo) =
   return {
     type: ON_FETCHING_KNOW_ME_AI_RESULT,
     aiResult
+  };
+}
+
+export const onFetchingKnowMeAiStatusByCourse = async (courseCodeId, emailId) => {
+  const result = await LrnManager.getKnowMeAiStatusByCourse(courseCodeId, emailId);
+  return {
+    type: ON_FETCHING_KNOW_ME_AI_STATUS_BY_COURSE,
+    entries: result?.entries ?? []
   };
 }
 
