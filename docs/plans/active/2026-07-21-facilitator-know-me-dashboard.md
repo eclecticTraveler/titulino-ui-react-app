@@ -98,7 +98,7 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION "TitulinoApi_v1"."GetKnowMeAiStatusByCourse"(text)
-    TO postgres, service_role, titulino_facilitator, titulino_administrator, super_admin;
+    TO postgres, service_role, titulino_facilitator, titulino_administrator, titulino_super_admin;
 ```
 
 ---
