@@ -68,10 +68,10 @@ sqitch add Enrollment/2026/07/23_course_facilitators_rpc -n "RPC returning all c
 ## Phase B — LOB Fix + Redux Wiring
 
 ### Progress
-- [ ] B1 — LOB: `getFacilitadorCourseCodeIdsForTheme` returns `string[]`; tests written
-- [ ] B2 — Manager: `resolveFacilitadorCourseCodeIds` returns `string[]`
-- [ ] B3 — Redux: action stores array; reducer adds `facilitadorCourseCodeIds: []`; scalar `facilitadorCourseCodeId` kept as `ids[0]`
-- [ ] B4 — CourseLevel: pass `facilitadorCourseCodeIds` as extra prop to FacilitatorsLandingDashboard (dashboard ignores it until Phase C)
+- [x] B1 — LOB: `getFacilitadorCourseCodeIdsForTheme` returns `string[]`; 11 tests written
+- [x] B2 — Manager: `resolveFacilitadorCourseCodeId` returns `string[]`
+- [x] B3 — Redux: action stores array; reducer adds `facilitadorCourseCodeIds: []`; scalar `facilitadorCourseCodeId` kept as `ids[0]`
+- [x] B4 — CourseLevel: passes `courseCodeIds` prop to FacilitatorsLandingDashboard
 
 ### Files touched
 - `src/lob/LrnConfiguration.js`

@@ -643,10 +643,11 @@ export const onVerifyingIfUserIsEnrolledInCourse = async (courseTheme, emailId) 
 }
 
 export const onResolvingFacilitadorForThemeCourse = async (courseTheme, emailId) => {
-  const facilitadorCourseCodeId = await TitulinoManager.resolveFacilitadorCourseCodeId(courseTheme, emailId);
+  const facilitadorCourseCodeIds = await TitulinoManager.resolveFacilitadorCourseCodeId(courseTheme, emailId);
   return {
     type: ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE,
-    facilitadorCourseCodeId: facilitadorCourseCodeId
+    facilitadorCourseCodeIds: facilitadorCourseCodeIds,
+    facilitadorCourseCodeId: facilitadorCourseCodeIds?.[0] ?? null
   }
 }
 

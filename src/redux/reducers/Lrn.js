@@ -59,7 +59,9 @@ const initState = {
   isToEditUserProfile: false,
   isCorrectionModalOpened: false,
   selectedCoursesToEnroll: [],
-  floatingActionsConfig: floatingActionsDefault
+  floatingActionsConfig: floatingActionsDefault,
+  facilitadorCourseCodeId: null,
+  facilitadorCourseCodeIds: []
 };
 
 const lrn = (state = initState, action) => {
@@ -77,7 +79,8 @@ const lrn = (state = initState, action) => {
     case ON_RESOLVING_FACILITADOR_FOR_THEME_COURSE:
       return {
         ...state,
-        facilitadorCourseCodeId: action.facilitadorCourseCodeId
+        facilitadorCourseCodeId: action.facilitadorCourseCodeId,
+        facilitadorCourseCodeIds: action.facilitadorCourseCodeIds ?? []
       }
     case ON_MODAL_INTERACTION:
       return {

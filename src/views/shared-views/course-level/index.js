@@ -81,6 +81,7 @@ class CourseLevel extends Component {
                         <div id="unathenticated-landing-page-margin">
                             <FacilitatorsLandingDashboard
                                 courseCodeId={facilitatorDashboardCourseCodeId}
+                                courseCodeIds={this.props.facilitadorCourseCodeIds?.length > 0 ? this.props.facilitadorCourseCodeIds : [facilitatorDashboardCourseCodeId].filter(Boolean)}
                                 showMyProgressTab={this.props.userIsEnrolledInCourse === true}
                                 ebookUrl={this.props.ebookUrl}
                             />
@@ -172,12 +173,12 @@ function mapDispatchToProps(dispatch){
 }
 
 const mapStateToProps = ({lrn, theme, grant, auth}) => {
-	const { baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse, facilitadorCourseCodeId, currentCourseCodeId } = lrn;
+	const { baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, userIsEnrolledInCourse, facilitadorCourseCodeId, facilitadorCourseCodeIds, currentCourseCodeId } = lrn;
     const { locale, direction, contentLanguage } =  theme;
     const { user } = grant;
     const userCoursesSignature = user?.userCoursesSignature || '';
-    const { token } = auth; 
-	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, userCoursesSignature, token, userIsEnrolledInCourse, facilitadorCourseCodeId, currentCourseCodeId }
+    const { token } = auth;
+	return { locale, direction, contentLanguage, baseLanguage, ebookUrl, enrolleeCountByRegion, totalEnrolleeCount, user, userCoursesSignature, token, userIsEnrolledInCourse, facilitadorCourseCodeId, facilitadorCourseCodeIds, currentCourseCodeId }
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CourseLevel);

@@ -3,6 +3,7 @@ import LrnConfiguration from '../LrnConfiguration';
 const {
   getCertificationDisplayKey,
   getCourseThemeByCourseCodeId,
+  getFacilitadorCourseCodeIdsForTheme,
 } = LrnConfiguration;
 
 // Registry shape: { themeName: [courseCodeId1, courseCodeId2, ...] }
@@ -71,5 +72,61 @@ describe('getCourseThemeByCourseCodeId', () => {
   it('returns null when courseCodeId is falsy', () => {
     expect(getCourseThemeByCourseCodeId('', registry)).toBeNull();
     expect(getCourseThemeByCourseCodeId(null, registry)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getFacilitadorCourseCodeIdsForTheme
+// ---------------------------------------------------------------------------
+describe('getFacilitadorCourseCodeIdsForTheme', () => {
+  const userCourses = {
+    'EC1A-2026': { userRoleIdForTheCourse: 'titulino_facilitator' },
+    'EC1B-2026': { userRoleIdForTheCourse: 'titulino_facilitator' },
+    'EC2A-2026': { userRoleIdForTheCourse: 'titulino_student' },
+  };
+
+  it('returns [] when userCourses is null', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme(null, ['EC1A-2026'])).toEqual([]);
+  });
+
+  it('returns [] when userCourses is not an object', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme('bad', ['EC1A-2026'])).toEqual([]);
+  });
+
+  it('returns [] when courseCodeIds is empty', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme(userCourses, [])).toEqual([]);
+  });
+
+  it('returns [] when courseCodeIds is not an array', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme(userCourses, null)).toEqual([]);
+  });
+
+  it('returns the single matching facilitator courseCodeId', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme(userCourses, ['EC1A-2026', 'EC2A-2026'])).toEqual(['EC1A-2026']);
+  });
+
+  it('returns all matching facilitator courseCodeIds when facilitator teaches multiple sections', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme(userCourses, ['EC1A-2026', 'EC1B-2026', 'EC2A-2026'])).toEqual(['EC1A-2026', 'EC1B-2026']);
+  });
+
+  it('returns [] when no course in the list matches a facilitator role', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme(userCourses, ['EC2A-2026'])).toEqual([]);
+  });
+
+  it('returns [] when no course in courseCodeIds is found in userCourses at all', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme(userCourses, ['UNKNOWN-001'])).toEqual([]);
+  });
+
+  it('global access user: returns all courseCodeIds that exist in userCourses regardless of role', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme(userCourses, ['EC1A-2026', 'EC2A-2026', 'UNKNOWN-001'], true))
+      .toEqual(['EC1A-2026', 'EC2A-2026']);
+  });
+
+  it('global access user: returns [] when none of the courseCodeIds exist in userCourses', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme(userCourses, ['UNKNOWN-001'], true)).toEqual([]);
+  });
+
+  it('is case-insensitive for courseCodeId matching', () => {
+    expect(getFacilitadorCourseCodeIdsForTheme(userCourses, ['ec1a-2026', 'ec1b-2026'])).toEqual(['ec1a-2026', 'ec1b-2026']);
   });
 });

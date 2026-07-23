@@ -84,38 +84,31 @@ export const getCourseCodeIdByCourseTheme = async (courseTheme, registry) => {
 
 /**
  * Given the userCourses object and an array of courseCodeIds for a theme,
- * find which courseCodeId the user can administer for a theme.
+ * return ALL courseCodeIds the user can administer for a theme.
  * Global access users bypass the facilitator role-name check because the
  * backend intentionally stamps their global role onto each course permission.
  * @param {Object} userCourses - keyed by courseCodeId
  * @param {string[]} courseCodeIds - from the theme registry
  * @param {boolean} isGlobalAccessUser
- * @returns {string|null}
+ * @returns {string[]}
  */
-export const getFacilitadorCourseCodeIdForTheme = (userCourses, courseCodeIds, isGlobalAccessUser = false) => {
+export const getFacilitadorCourseCodeIdsForTheme = (userCourses, courseCodeIds, isGlobalAccessUser = false) => {
   if (!userCourses || typeof userCourses !== 'object') {
-    console.log('[LrnConfiguration] getFacilitadorCourseCodeIdForTheme: userCourses is falsy or not an object');
-    return null;
+    return [];
   }
   if (!Array.isArray(courseCodeIds) || courseCodeIds.length === 0) {
-    console.log('[LrnConfiguration] getFacilitadorCourseCodeIdForTheme: courseCodeIds is not a valid array');
-    return null;
+    return [];
   }
 
   if (isGlobalAccessUser) {
-    return courseCodeIds.find(courseCodeId => getUserCourseByCode(userCourses, courseCodeId)) || null;
+    return courseCodeIds.filter(courseCodeId => getUserCourseByCode(userCourses, courseCodeId));
   }
 
-  for (const courseCodeId of courseCodeIds) {
+  return courseCodeIds.filter(courseCodeId => {
     const course = getUserCourseByCode(userCourses, courseCodeId);
     const role = course?.userRoleIdForTheCourse;
-    const isFacilitator = typeof role === 'string' && role.toLowerCase().includes('facilitat');
-    if (isFacilitator) {
-      return courseCodeId;
-    }
-  }
-
-  return null;
+    return typeof role === 'string' && role.toLowerCase().includes('facilitat');
+  });
 };
 
 export const buildSingleFullKnowMeProgressWithCourseCodeId = async (
@@ -233,7 +226,7 @@ const LrnConfiguration = {
   getCourseThemeByCourseCodeId,
   getBadgeMetadataForCertification,
   getCourseCodeIdByCourseTheme,
-  getFacilitadorCourseCodeIdForTheme,
+  getFacilitadorCourseCodeIdsForTheme,
   buildSingleFullKnowMeProgressWithCourseCodeId,
   buildStudentKnowMeFileName,
   buildMultipleFullKnowMeProgressWithCourseCodeId

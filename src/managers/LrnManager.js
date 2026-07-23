@@ -810,12 +810,11 @@ const resolveFacilitadorCourseCodeId = async (courseTheme, emailId) => {
   const userCourses = user?.userCourses;
   const registry = await getCourseThemeRegistry();
   const themeCourseCodeIds = registry[courseTheme?.toLowerCase()] || [];
-  const facilitadorCourseCodeId = LrnConfiguration.getFacilitadorCourseCodeIdForTheme(
+  return LrnConfiguration.getFacilitadorCourseCodeIdsForTheme(
     userCourses,
     themeCourseCodeIds,
     !!user?.isGlobalAccessUser
   );
-  return facilitadorCourseCodeId;
 };
 
 const LrnManager = {
