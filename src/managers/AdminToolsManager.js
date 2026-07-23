@@ -1,5 +1,6 @@
 import TitulinoRestService from "services/TitulinoRestService";
 import TitulinoAdminAuthService from "services/Admin/TitulinoAdminAuthService";
+import TitulinoAdminNetService from "services/Admin/TitulinoAdminNetService";
 import TitulinoLrnAuthService from "services/Lrn/TitulinoLrnAuthService";
 import TitulinoNetService from "services/TitulinoNetService";
 import TitulinoShopAuthService from "services/Shop/TitulinoShopAuthService";
@@ -1343,6 +1344,12 @@ export const getContactGeoMaps = async (selectedContact) => {
   return { birth, residency };
 };
 
+export const getCourseFacilitators = async (emailId) => {
+  const token = await getTokenFromEmail(emailId);
+  if (!token) return null;
+  return await TitulinoAdminNetService.getCourseFacilitators(token);
+};
+
 const AdminToolsManager = {
   initAdminTools,
   assignEnrolleeRoleToCourse,
@@ -1428,6 +1435,7 @@ const AdminToolsManager = {
   upsertMessageTemplate: (...args) => upsertMessageTemplate(...args),
   getJobs: (...args) => getJobs(...args),
   upsertJob: (...args) => upsertJob(...args),
+  getCourseFacilitators: (...args) => getCourseFacilitators(...args),
   generateCourseCodeId: AdminTools.generateCourseCodeId,
   buildCourseUpsertPayload: AdminTools.buildCourseUpsertPayload,
   buildEnrollExistingContactToCoursePayload: AdminTools.buildEnrollExistingContactToCoursePayload,

@@ -26,6 +26,7 @@ import dayjs from 'dayjs';
 import { onRenderingCourseRegistration, onRequestingGeographicalDivision } from 'redux/actions/Lrn';
 import { onSessionTokenExpired } from 'redux/actions/Grant';
 import useSessionTokenExpiryGuard from 'hooks/useSessionTokenExpiryGuard';
+import CourseFacilitatorsTable from 'components/admin-components/Insights/CourseFacilitatorsTable';
 import {
   onLoadingAdminToolsInit,
   onAssigningEnrolleeRoleToCourse,
@@ -5506,6 +5507,12 @@ const GlobalAdminToolsLandingDashboard = (props) => {
       {!selectedContact && !searchText && !advancedContactSearchResult && (
         <Empty description={setLocale(locale, 'admin.tools.searchToGetStarted')} style={{ marginTop: 40 }} />
       )}
+
+      {/* Facilitators by course — always visible */}
+      <Card variant="outlined" size="small" style={{ marginTop: 24 }}>
+        <h4 style={{ marginBottom: 12 }}>Facilitators by Course</h4>
+        <CourseFacilitatorsTable />
+      </Card>
     </>
   );
 

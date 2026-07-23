@@ -46,7 +46,8 @@ import {
   ON_LOADING_JOBS,
   ON_UPSERTING_JOB,
   ON_LOADING_ADMIN_TOOLS_TAB_ORDER,
-  ON_SAVING_ADMIN_TOOLS_TAB_ORDER
+  ON_SAVING_ADMIN_TOOLS_TAB_ORDER,
+  ON_FETCHING_COURSE_FACILITATORS
 } from '../constants/AdminTools';
 
 // Pure helpers re-exported via the manager so components keep a single
@@ -490,4 +491,9 @@ export const onSavingAdminToolsTabOrder = async (dashboardKey, emailId, order, d
     dashboardKey,
     tabOrder
   };
+};
+
+export const onFetchingCourseFacilitators = async (emailId) => {
+  const result = await AdminToolsManager.getCourseFacilitators(emailId);
+  return { type: ON_FETCHING_COURSE_FACILITATORS, entries: result?.entries ?? [] };
 };
