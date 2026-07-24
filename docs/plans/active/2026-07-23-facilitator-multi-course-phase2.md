@@ -86,11 +86,11 @@ sqitch add Enrollment/2026/07/23_course_facilitators_rpc -n "RPC returning all c
 ## Phase C — Course Picker UI
 
 ### Progress
-- [ ] C1 — `FacilitatorsLandingDashboard.js` receives `courseCodeIds: string[]` prop
-- [ ] C2 — Internal `selectedCourseCodeId` state; auto-selects `courseCodeIds[0]`; no picker shown if only 1 course (zero regression for single-course facilitators)
-- [ ] C3 — Ant Design Select rendered above dashboard tabs when `courseCodeIds.length > 1`; switching drives all tabs
-- [ ] C4 — `KnowMeStatusTab` receives `selectedCourseCodeId` instead of raw `courseCodeId` prop; re-fetches automatically on change (already wired via useEffect dependency)
-- [ ] C5 — Verify all other tab data fetches (progress, enrollees, trends) re-trigger on course switch
+- [x] C1 — `FacilitatorsLandingDashboard.js` receives `courseCodeIds: string[]` prop
+- [x] C2 — Internal `activeCourseCodeId` state; auto-selects `courseCodeIds[0]`; no picker shown if only 1 course (zero regression for single-course facilitators)
+- [x] C3 — Ant Design Select rendered above dashboard tabs when `courseCodeIds.length > 1`; switching drives all tabs
+- [x] C4 — `KnowMeStatusTab` receives `activeCourseCodeId`; re-fetches automatically on change via useEffect dep
+- [x] C5 — All tab fetches (overview, enrollees, demographics, trends, card order) use `activeCourseCodeId` in their useEffect deps
 
 ---
 

@@ -59,6 +59,7 @@ const defaultOverviewCardOrder = [
 const FacilitatorsLandingDashboard = (props) => {
   const {
     courseCodeId,
+    courseCodeIds,
     showMyProgressTab,
     ebookUrl,
     onLoadingFacilitadorDashboardContents,
@@ -91,35 +92,41 @@ const FacilitatorsLandingDashboard = (props) => {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedDemoCountry, setSelectedDemoCountry] = useState(null);
   const [localOverviewCardOrder, setLocalOverviewCardOrder] = useState(defaultOverviewCardOrder);
+  const [activeCourseCodeId, setActiveCourseCodeId] = useState(courseCodeIds?.[0] ?? courseCodeId);
+
+  useEffect(() => {
+    setActiveCourseCodeId(courseCodeIds?.[0] ?? courseCodeId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseCodeId, courseCodeIds]);
 
   const locale = true;
   const setLocale = (isLocaleOn, localeKey) => {
     return isLocaleOn ? <IntlMessage id={localeKey} /> : localeKey.toString();
   };
 
-  // Load dashboard data on mount
+  // Load dashboard data on mount and on course switch
   useEffect(() => {
-    if (courseCodeId && user?.emailId) {      
+    if (activeCourseCodeId && user?.emailId) {
       setLoading(true);
-      onLoadingFacilitadorDashboardContents(courseCodeId, user.emailId)
+      onLoadingFacilitadorDashboardContents(activeCourseCodeId, user.emailId)
         ?.finally(() => setLoading(false));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseCodeId, user?.emailId]);
+  }, [activeCourseCodeId, user?.emailId]);
 
   useEffect(() => {
     setLocalOverviewCardOrder(defaultOverviewCardOrder);
 
-    if (!courseCodeId || !user?.emailId) {
+    if (!activeCourseCodeId || !user?.emailId) {
       return;
     }
 
     onLoadingFacilitadorOverviewCardOrder(
       user.emailId,
-      courseCodeId,
+      activeCourseCodeId,
       defaultOverviewCardOrder
     )?.catch((error) => console.error("Error loading facilitador overview card order:", error));
-  }, [courseCodeId, user?.emailId, onLoadingFacilitadorOverviewCardOrder]);
+  }, [activeCourseCodeId, user?.emailId, onLoadingFacilitadorOverviewCardOrder]);
 
   useEffect(() => {
     if (facilitadorOverviewCardOrder?.length) {
@@ -179,7 +186,7 @@ const FacilitatorsLandingDashboard = (props) => {
       onLoadingFacilitadorDrillDownDemographics(null, null, null);
       return;
     }
-    onLoadingFacilitadorDrillDownDemographics(courseCodeId, countryId, user?.emailId);
+    onLoadingFacilitadorDrillDownDemographics(activeCourseCodeId, countryId, user?.emailId);
   };
 
   const handleSearch = (event) => {
@@ -197,9 +204,9 @@ const FacilitatorsLandingDashboard = (props) => {
     try {
       await onSubmittingAdminEnrolleeProgress(formattedData, selectedCourseCodeId, user?.emailId);
       messageApi.success(t('admin.progressEditable.saveProgress'));
-      if (courseCodeId && user?.emailId) {
+      if (activeCourseCodeId && user?.emailId) {
         setLoading(true);
-        onLoadingFacilitadorDashboardContents(courseCodeId, user.emailId)
+        onLoadingFacilitadorDashboardContents(activeCourseCodeId, user.emailId)
           ?.finally(() => setLoading(false));
       }
     } catch (error) {
@@ -227,7 +234,7 @@ const FacilitatorsLandingDashboard = (props) => {
 
     onSavingFacilitadorOverviewCardOrder(
       user?.emailId,
-      courseCodeId,
+      activeCourseCodeId,
       nextCardOrder,
       defaultOverviewCardOrder
     )?.catch((error) => console.error("Error saving facilitador overview card order:", error));
@@ -424,7 +431,7 @@ const FacilitatorsLandingDashboard = (props) => {
           {setLocale(locale, 'facilitador.dashboard.knowme')}
         </span>
       ),
-      children: <KnowMeStatusTab courseCodeId={courseCodeId} />
+      children: <KnowMeStatusTab courseCodeId={activeCourseCodeId} />
     },
     ...(showMyProgressTab ? [{
       key: 'myProgress',
@@ -466,6 +473,16 @@ const FacilitatorsLandingDashboard = (props) => {
         </h1>
       </Card>
       <Card loading={loading} variant="outlined">
+        {courseCodeIds?.length > 1 && (
+          <div style={{ marginBottom: 16 }}>
+            <Select
+              value={activeCourseCodeId}
+              onChange={setActiveCourseCodeId}
+              style={{ width: 320 }}
+              options={courseCodeIds.map(id => ({ value: id, label: id }))}
+            />
+          </div>
+        )}
         <Tabs
           activeKey={activeTabKey}
           onChange={setActiveTabKey}
